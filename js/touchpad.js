@@ -6,6 +6,15 @@
   var held = { left: 0, right: 0, fire: 0 };
   var ptr = {};
 
+  function isStandalone() {
+    if (window.navigator && window.navigator.standalone === true) return true;
+    if (!window.matchMedia) return false;
+    return window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches ||
+      window.matchMedia("(display-mode: minimal-ui)").matches;
+  }
+  document.documentElement.classList.toggle("is-pwa", isStandalone());
+
   function game() { return window.__galaga; }
 
   function btnFor(dir) {

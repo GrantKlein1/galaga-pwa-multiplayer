@@ -510,7 +510,19 @@ html, body {
   user-select: none;
   -webkit-touch-callout: none;
 }
-#touchpad.hidden { display: none; }
+/* Desktop browser: keyboard/mouse, so hide the on-screen pad.
+   Phone/tablet (coarse pointer) and installed PWA keep it. */
+@media (hover: hover) and (pointer: fine) {
+  #touchpad { display: none !important; }
+}
+@media (display-mode: standalone),
+       (display-mode: fullscreen),
+       (display-mode: minimal-ui) {
+  #touchpad { display: flex !important; }
+}
+html.is-pwa #touchpad { display: flex !important; }
+html.is-pwa #touchpad.hidden,
+#touchpad.hidden { display: none !important; }
 .pad-btn {
   flex: 1;
   height: 100%;
