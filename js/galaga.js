@@ -23,8 +23,8 @@
   var PROFILE_VER = 2;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
-  // Run score used to convert 1:1 into XP. 0.2x makes a ~10k run ~2k XP instead of a full early level-up burst.
-  var XP_SCORE_MUL = 0.2;
+  // Run score used to convert 1:1 into XP. 0.15x (25% below the old 0.2x) makes a ~10k run ~1.5k XP.
+  var XP_SCORE_MUL = 0.15;
   var PICKUP_PAD = 16;
   var PICKUP_CLAIM_R = 96;
   var POWER_WEIGHTS = [
@@ -455,61 +455,65 @@
   function buildSlots(kind, n) {
     var slots = [], i, x, y, t, a, tn = typeWave(n);
     if (kind === "line") {
-      for (i = 0; i < 5; i++) addSlot(slots, (i - 2) * 36, 0, "grunt");
+      for (i = 0; i < 5; i++) addSlot(slots, (i - 2) * 42, 0, "grunt");
     } else if (kind === "grid") {
       for (y = 0; y < 3; y++) {
         for (x = 0; x < 5; x++) {
           t = mixType(tn, x + y * 5, y === 0 ? "back" : y === 1 ? "mid" : "front");
-          addSlot(slots, (x - 2) * 34, y * 28, t);
+          addSlot(slots, (x - 2) * 40, y * 34, t);
         }
       }
     } else if (kind === "chevron") {
-      var chev = [[-72, 0], [-36, 16], [0, 32], [36, 16], [72, 0], [-48, 40], [48, 40], [0, 58]];
+      var chev = [[-84, 0], [-42, 20], [0, 40], [42, 20], [84, 0], [-56, 52], [56, 52], [0, 74]];
       for (i = 0; i < chev.length; i++) addSlot(slots, chev[i][0], chev[i][1], mixType(tn, i, i < 3 ? "back" : "front"));
     } else if (kind === "diamond") {
-      var dia = [[0, 0], [-24, 24], [24, 24], [-48, 48], [0, 48], [48, 48], [-24, 72], [24, 72], [0, 96]];
+      var dia = [[0, 0], [-32, 32], [32, 32], [-64, 64], [0, 64], [64, 64], [-32, 96], [32, 96], [0, 128]];
       for (i = 0; i < dia.length; i++) addSlot(slots, dia[i][0], dia[i][1], mixType(tn, i, i < 3 ? "back" : i > 5 ? "front" : "mid"));
     } else if (kind === "wings") {
       for (y = 0; y < 3; y++) {
         for (x = 0; x < 2; x++) {
-          addSlot(slots, -70 + x * 28, y * 26, mixType(tn, x + y, y === 0 ? "back" : "front"));
-          addSlot(slots, 42 + x * 28, y * 26, mixType(tn, x + y + 3, y === 0 ? "back" : "front"));
+          addSlot(slots, -82 + x * 36, y * 32, mixType(tn, x + y, y === 0 ? "back" : "front"));
+          addSlot(slots, 46 + x * 36, y * 32, mixType(tn, x + y + 3, y === 0 ? "back" : "front"));
         }
       }
     } else if (kind === "columns") {
       for (y = 0; y < 4; y++) {
-        addSlot(slots, -40, y * 26, mixType(tn, y, y === 0 ? "back" : "front"));
-        addSlot(slots, 40, y * 26, mixType(tn, y + 4, y === 0 ? "back" : "front"));
+        addSlot(slots, -48, y * 32, mixType(tn, y, y === 0 ? "back" : "front"));
+        addSlot(slots, 48, y * 32, mixType(tn, y + 4, y === 0 ? "back" : "front"));
       }
     } else if (kind === "arc") {
       for (i = 0; i < 7; i++) {
         a = (i / 6) * Math.PI;
-        addSlot(slots, Math.cos(a) * -78, 10 + Math.sin(a) * 50, mixType(tn, i, i === 3 ? "back" : "mid"));
+        addSlot(slots, Math.cos(a) * -96, 10 + Math.sin(a) * 64, mixType(tn, i, i === 3 ? "back" : "mid"));
       }
     } else if (kind === "escort") {
-      addSlot(slots, 0, 36, tn >= 4 ? "shield" : "tank");
+      addSlot(slots, 0, 42, tn >= 4 ? "shield" : "tank");
       for (i = 0; i < 8; i++) {
         a = (i / 8) * Math.PI * 2;
-        addSlot(slots, Math.cos(a) * 48, 36 + Math.sin(a) * 28, mixType(tn, i, "front"));
+        addSlot(slots, Math.cos(a) * 64, 42 + Math.sin(a) * 42, mixType(tn, i, "front"));
       }
     } else if (kind === "stagger") {
-      for (x = 0; x < 5; x++) addSlot(slots, (x - 2) * 36, 0, mixType(tn, x, "back"));
-      for (x = 0; x < 4; x++) addSlot(slots, (x - 1.5) * 36, 30, mixType(tn, x, "mid"));
-      for (x = 0; x < 5; x++) addSlot(slots, (x - 2) * 36, 60, mixType(tn, x, "front"));
+      for (x = 0; x < 5; x++) addSlot(slots, (x - 2) * 42, 0, mixType(tn, x, "back"));
+      for (x = 0; x < 4; x++) addSlot(slots, (x - 1.5) * 42, 36, mixType(tn, x, "mid"));
+      for (x = 0; x < 5; x++) addSlot(slots, (x - 2) * 42, 72, mixType(tn, x, "front"));
     } else if (kind === "pincer") {
       for (i = 0; i < 5; i++) {
-        addSlot(slots, -70 + i * 10, i * 22, tn >= 6 ? "kami" : mixType(tn, i, "front"));
-        addSlot(slots, 70 - i * 10, i * 22, tn >= 6 ? "kami" : mixType(tn, i + 5, "front"));
+        addSlot(slots, -80 + i * 16, i * 30, tn >= 6 ? "kami" : mixType(tn, i, "front"));
+        addSlot(slots, 80 - i * 16, i * 30, tn >= 6 ? "kami" : mixType(tn, i + 5, "front"));
       }
     } else {
-      for (i = 0; i < 6; i++) addSlot(slots, (i - 2.5) * 32, (i % 2) * 24, mixType(tn, i, "mid"));
+      for (i = 0; i < 6; i++) addSlot(slots, (i - 2.5) * 38, (i % 2) * 32, mixType(tn, i, "mid"));
     }
     injectElites(slots, n);
-    return padFormation(slots, n);
+    padFormation(slots, n);
+    thinEarlyWave(slots, n);
+    thinArchonEscorts(slots);
+    relaxSlots(slots);
+    return slots;
   }
 
   function isMiniWave(n) {
-    return n >= 8 && n % BOSS_EVERY === 3 && !isBossWave(n);
+    return n > 10 && n % BOSS_EVERY === 3 && !isBossWave(n);
   }
   function staysInForm(type) {
     return type === "sniper" || type === "shield" || type === "mortar" || type === "hex" || type === "bulwark" || type === "archon";
@@ -525,16 +529,81 @@
     }
     return best;
   }
-  function dropNearestSlot(slots, idx) {
-    var i, best = -1, d, bestD = 1e12, dx, dy;
+  function nearestSlotDist2(slots, idx) {
+    var i, best = 1e12, dx, dy, d;
     for (i = 0; i < slots.length; i++) {
       if (i === idx) continue;
       dx = slots[i].ox - slots[idx].ox;
       dy = slots[i].oy - slots[idx].oy;
       d = dx * dx + dy * dy;
-      if (d < bestD) { bestD = d; best = i; }
+      if (d < best) best = d;
     }
-    if (best >= 0) slots.splice(best, 1);
+    return best;
+  }
+  function dropCrowdedEscorts(slots, count) {
+    var i, best, bestD, escortN, d;
+    while (count > 0) {
+      escortN = 0;
+      best = -1;
+      bestD = 1e12;
+      for (i = 0; i < slots.length; i++) {
+        if (slots[i].type === "archon") continue;
+        escortN += 1;
+        d = nearestSlotDist2(slots, i);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      if (best < 0 || escortN <= 1) break;
+      slots.splice(best, 1);
+      count -= 1;
+    }
+  }
+  function thinEarlyWave(slots, n) {
+    if (n < 1 || n > 10 || isBossWave(n) || slots.length <= 1) return slots;
+    dropCrowdedEscorts(slots, 1);
+    return slots;
+  }
+  function thinArchonEscorts(slots) {
+    var i, escorts = 0, hasArchon = false, keep, drop;
+    for (i = 0; i < slots.length; i++) {
+      if (slots[i].type === "archon") hasArchon = true;
+      else escorts += 1;
+    }
+    if (!hasArchon || escorts <= 0) return slots;
+    keep = Math.max(1, Math.round(escorts * 0.65));
+    drop = escorts - keep;
+    if (drop > 0) dropCrowdedEscorts(slots, drop);
+    return slots;
+  }
+  function relaxSlots(slots) {
+    var iter, i, j, dx, dy, dist, minDist, push, ux, uy;
+    for (iter = 0; iter < 8; iter++) {
+      for (i = 0; i < slots.length; i++) {
+        for (j = i + 1; j < slots.length; j++) {
+          dx = slots[j].ox - slots[i].ox;
+          dy = slots[j].oy - slots[i].oy;
+          dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 0.01) {
+            dx = 1;
+            dy = 0;
+            dist = 0.01;
+          }
+          minDist = enemyR(slots[i].type) + enemyR(slots[j].type) + 6;
+          if (dist >= minDist) continue;
+          push = (minDist - dist) * 0.5;
+          ux = dx / dist;
+          uy = dy / dist;
+          slots[i].ox -= ux * push;
+          slots[i].oy -= uy * push;
+          slots[j].ox += ux * push;
+          slots[j].oy += uy * push;
+        }
+      }
+    }
+    for (i = 0; i < slots.length; i++) {
+      if (slots[i].ox > 108) slots[i].ox = 108;
+      if (slots[i].ox < -108) slots[i].ox = -108;
+    }
+    return slots;
   }
   function injectElites(slots, n) {
     var used = {}, added = 0, i, h, type, types, ti, tries, archonIdx;
@@ -542,7 +611,6 @@
     if (isMiniWave(n)) {
       archonIdx = pickCenteredBack(slots);
       slots[archonIdx].type = "archon";
-      dropNearestSlot(slots, archonIdx);
     }
     types = ["mortar", "hex", "harrier", "bulwark"];
     for (i = 0; i < slots.length && added < 2; i++) {
@@ -564,7 +632,7 @@
   }
 
   // Co-op keeps the solo shape, then adds ships so the count is 4/3 of solo
-  // (wave 2 is 15 solo → 20 co-op). Packed as rear ranks so the 240px field still fits.
+  // (wave 2 is 15 solo → 20 co-op). Extra ranks sit behind with room to breathe.
   function padFormation(slots, n) {
     var extra = extraPlayers();
     var i, add, src, row, ox, oy, base, target;
@@ -575,10 +643,10 @@
       for (i = 0; i < add; i++) {
         src = slots[i % slots.length];
         row = 1 + Math.floor(i / slots.length);
-        ox = src.ox + ((i % 2) ? 12 : -12);
-        if (ox > 100) ox = 100;
-        if (ox < -100) ox = -100;
-        oy = src.oy - 26 * row;
+        ox = src.ox + ((i % 2) ? 22 : -22);
+        if (ox > 108) ox = 108;
+        if (ox < -108) ox = -108;
+        oy = src.oy - 34 * row;
         addSlot(slots, ox, oy, mixType(n, slots.length + i, "back"));
       }
     }
@@ -587,10 +655,10 @@
       for (i = 0; i < add; i++) {
         src = slots[i % slots.length];
         row = 1 + Math.floor(i / slots.length);
-        ox = src.ox + ((i % 2) ? 12 : -12);
-        if (ox > 100) ox = 100;
-        if (ox < -100) ox = -100;
-        oy = src.oy - 26 * row;
+        ox = src.ox + ((i % 2) ? 22 : -22);
+        if (ox > 108) ox = 108;
+        if (ox < -108) ox = -108;
+        oy = src.oy - 34 * row;
         addSlot(slots, ox, oy, mixType(typeWave(n), slots.length + i, "back"));
       }
     }
@@ -713,7 +781,7 @@
     return p;
   }
   // XP curve, levels 1-100. Banked XP is run score * XP_SCORE_MUL (Ascension still adds +25%).
-  // A ~10k run is ~2k XP. Level 100 still needs ~2.5M XP total.
+  // A ~10k run is ~1.5k XP. Level 100 still needs ~2.5M XP total.
   function xpForLevel(lvl) {
     var l = Math.max(1, Math.min(MAX_LEVEL, lvl | 0)) - 1;
     return Math.round(100 * Math.pow(l, 2.2) + 400 * l);
@@ -3130,6 +3198,16 @@
         if (!btn) return;
         w = btn.getAttribute("data-wave") | 0;
         setPreferredStartWave(w);
+        // Already-selected Wave 1 would otherwise be a no-op; start on any tap.
+        if (id === "start-wave-opts") {
+          leaveNet();
+          startNewGame({ startWave: w });
+          return;
+        }
+        if (id === "lobby-start-wave-opts" && netRole === "host" && lobbyGuest) {
+          lobbyStart();
+          return;
+        }
         renderStartWavePicker("start-wave-opts");
         renderStartWavePicker("lobby-start-wave-opts");
       };
