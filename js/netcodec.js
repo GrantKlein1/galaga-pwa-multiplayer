@@ -21,7 +21,7 @@
     "", "barrier", "magnet", "fortune", "overdrive", "reactor",
     "afterburner", "salvage", "guardian", "berserk", "ascension"
   ];
-  var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin"];
+  var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone"];
   var WEAPONS = ["normal", "spread", "double", "rapid", "shield", "speed"];
 

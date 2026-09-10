@@ -21,6 +21,9 @@
   var LS_KEY = "galaga.profile";
   var PROFILE_VER = 2;
   var COIN_SPAWN_MUL = 0.75;
+  var COOP_SPAWN_RATIO = 20 / 15;
+  var PICKUP_PAD = 16;
+  var PICKUP_CLAIM_R = 96;
   var POWER_WEIGHTS = [
     { kind: "spread", w: 1 },
     { kind: "double", w: 1 },
@@ -289,6 +292,8 @@
   var lastInputN = 0;
   var lastInputNBySlot = [0, 0];
   var lastInputKey = "";
+  var pendingPickAt = {};
+  var pickSeq = 0;
   var disconnectNote = "";
   var lobbyMode = "pick";
   var lobbyGuest = null;
@@ -388,6 +393,7 @@
     if (kind === "speed") return "#b6ff4d";
     if (kind === "life") return "#ff4d9a";
     if (kind === "heal") return "#ff3355";
+    if (kind === "revive") return "#ffe08a";
     if (kind === "coin") return "#ffd23d";
     return "#fff";
   }
@@ -399,6 +405,7 @@
     if (kind === "speed") return "SPEED";
     if (kind === "life") return "1UP";
     if (kind === "heal") return "HEAL";
+    if (kind === "revive") return "REVIVE";
     if (kind === "coin") return "COIN";
     return kind.toUpperCase();
   }
@@ -478,12 +485,15 @@
     return padFormation(slots, n);
   }
 
-  // Extra players get extra ships, packed as rear ranks so the 240px field still fits.
+  // Co-op keeps the solo shape, then adds ships so the count is 4/3 of solo
+  // (wave 2 is 15 solo → 20 co-op). Packed as rear ranks so the 240px field still fits.
   function padFormation(slots, n) {
     var extra = extraPlayers();
-    var i, add, src, row, ox, oy;
+    var i, add, src, row, ox, oy, base, target;
     if (extra < 1 || !slots.length) return slots;
-    add = Math.max(3, Math.round(slots.length * 0.5 * extra));
+    base = slots.length;
+    target = Math.max(base + extra, Math.round(base * (1 + extra * (COOP_SPAWN_RATIO - 1))));
+    add = target - base;
     for (i = 0; i < add; i++) {
       src = slots[i % slots.length];
       row = 1 + Math.floor(i / slots.length);
@@ -954,17 +964,43 @@
     if (player.speedT > 0) bits.push("SPD " + Math.ceil(player.speedT) + "s");
     return bits.length ? bits.join("  ·  ") : "None";
   }
-  function livesHud() {
-    if (!players.length) return String(lives);
-    if (players.length === 1) return String(players[0].lives);
-    var i, parts = [];
-    for (i = 0; i < players.length; i++) parts.push(String(players[i] ? players[i].lives : 0));
-    return parts.join(" | ");
+  function playerTag(slot) {
+    if (slot === localSlot) return "You";
+    return "P" + ((slot || 0) + 1);
+  }
+  function renderLivesHud() {
+    var label = document.getElementById("lives-label");
+    var i, p, slot, tag, col, html, mine;
+    if (!livesEl) return;
+    if (!players.length || players.length === 1) {
+      livesEl.classList.remove("lives-coop");
+      livesEl.textContent = players.length ? String(players[0].lives) : String(lives);
+      if (label) label.textContent = "Lives";
+      if (document.getElementById("hud")) document.getElementById("hud").classList.remove("coop-lives");
+      return;
+    }
+    livesEl.classList.add("lives-coop");
+    if (label) label.textContent = "Lives";
+    if (document.getElementById("hud")) document.getElementById("hud").classList.toggle("coop-lives", true);
+    html = "";
+    function addRow(pl, idx) {
+      slot = pl && pl.slot != null ? pl.slot : idx;
+      mine = slot === localSlot;
+      tag = playerTag(slot);
+      col = pl ? (shipDef(pl).color || "#7ef9ff") : "#7ef9ff";
+      html += '<span class="life-p' + (mine ? " me" : "") + '" style="color:' + col + '">' + tag + "  " + (pl ? pl.lives : 0) + "</span>";
+    }
+    if (players[localSlot]) addRow(players[localSlot], localSlot);
+    for (i = 0; i < players.length; i++) {
+      if (i === localSlot) continue;
+      addRow(players[i], i);
+    }
+    livesEl.innerHTML = html;
   }
   function updateHud() {
     scoreEl.textContent = String(score);
     bestEl.textContent = String(best);
-    livesEl.textContent = livesHud();
+    renderLivesHud();
     waveEl.textContent = String(wave);
     if (coinsEl) coinsEl.textContent = String(started && !gameOver ? run.coins : profile.coins);
     pwrEl.textContent = powerHud();
@@ -1264,7 +1300,11 @@
   }
 
   function spawnPickup(x, y, kind, amount) {
-    pickups.push({ id: allocId(), x: x, y: y, vy: 48, kind: kind, bob: Math.random() * 6, amount: amount || 1 });
+    var big = kind === "revive";
+    pickups.push({
+      id: allocId(), x: x, y: y, vy: big ? 30 : 48, kind: kind,
+      bob: Math.random() * 6, amount: amount || 1
+    });
   }
   function fortuneMul() {
     var i, mul = 1, p, s;
@@ -1359,8 +1399,11 @@
     }
     notePickup(kind);
     if (kind === "life") sfxLife();
+    else if (kind === "revive") sfxLife();
     else sfxPickup();
-    if (kind === "life") {
+    if (kind === "revive") {
+      reviveDownedFrom(who);
+    } else if (kind === "life") {
       if (who.lives < MAX_LIVES) who.lives += 1;
       banner = { text: "1UP", life: 0.8 };
     } else if (kind === "heal") {
@@ -1385,6 +1428,81 @@
     syncLocalPlayer();
     syncQuestProgress();
     updateHud();
+  }
+  function pickupScale(pk) {
+    return pk && pk.kind === "revive" ? 1.85 : 1;
+  }
+  function pickupReach(who, pk) {
+    return ((who && who.r) || PLAYER_R) + PICKUP_PAD + (pk && pk.kind === "revive" ? 12 : 0);
+  }
+  function nearestPicker(pk) {
+    var i, pl, d2, reach, best = null, bestD = 1e12;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
+      d2 = dist2(pl.x, pl.y, pk.x, pk.y);
+      reach = pickupReach(pl, pk);
+      if (d2 < reach * reach && d2 < bestD) {
+        bestD = d2;
+        best = pl;
+      }
+    }
+    return best;
+  }
+  function consumePickupAt(i, who) {
+    var p = pickups[i];
+    if (!p || !who) return false;
+    grantPickup(p.kind, p.amount, who);
+    if (p.id != null) delete pendingPickAt[p.id];
+    pickups.splice(i, 1);
+    return true;
+  }
+  function requestClientPickups() {
+    var who, i, p, now, reach;
+    if (netRole !== "client") return;
+    who = players[localSlot];
+    if (!who || !who.alive) return;
+    now = time;
+    for (i = 0; i < pickups.length; i++) {
+      p = pickups[i];
+      if (!p || p.id == null) continue;
+      if (pendingPickAt[p.id] && now - pendingPickAt[p.id] < 0.4) continue;
+      reach = pickupReach(who, p);
+      if (dist2(who.x, who.y, p.x, p.y) >= reach * reach) continue;
+      pendingPickAt[p.id] = now;
+      pickSeq += 1;
+      netSend({ t: "pick", n: pickSeq, id: p.id, slot: localSlot, x: who.x, y: who.y });
+    }
+  }
+  function hideClaimedPickups() {
+    var i, p, t0;
+    for (i = pickups.length - 1; i >= 0; i--) {
+      p = pickups[i];
+      if (!p || p.id == null) continue;
+      t0 = pendingPickAt[p.id];
+      if (!t0) continue;
+      if (time - t0 < 0.45) pickups.splice(i, 1);
+      else delete pendingPickAt[p.id];
+    }
+  }
+  function hostGrantPickup(msg) {
+    var slot, who, i, p, px, py, near;
+    if (netRole !== "host" || !msg) return;
+    slot = msg.slot == null ? 1 : msg.slot;
+    if (slot === localSlot) return;
+    who = players[slot];
+    if (!who || !who.alive) return;
+    px = msg.x != null && isFinite(msg.x) ? msg.x : who.x;
+    py = msg.y != null && isFinite(msg.y) ? msg.y : who.y;
+    for (i = pickups.length - 1; i >= 0; i--) {
+      p = pickups[i];
+      if (p.id !== msg.id) continue;
+      near = dist2(px, py, p.x, p.y) < PICKUP_CLAIM_R * PICKUP_CLAIM_R
+        || dist2(who.x, who.y, p.x, p.y) < PICKUP_CLAIM_R * PICKUP_CLAIM_R;
+      if (!near) return;
+      consumePickupAt(i, who);
+      return;
+    }
   }
 
   function addEbul(x, y, vx, vy, opt) {
@@ -1450,6 +1568,7 @@
       form.minOff = -20; form.maxOff = 20; form.ox = W / 2;
       run.bossHits = 0;
       enemies.push(makeEnemy(0, 0, meta.type, { isBoss: true, tier: meta.tier }));
+      maybeSpawnBossRevive();
     } else {
       banner = { text: "WAVE " + n, life: 1.1 };
       var slots = buildSlots(waveKind, n);
@@ -1634,6 +1753,7 @@
     if (who.lives <= 0) {
       who.alive = false;
       if (!anyPlayerAlive()) endGame();
+      else maybeSpawnBossRevive(true);
       return;
     }
     who.x = spawnXFor(who.slot, players.length);
@@ -1642,6 +1762,50 @@
     if (hasMod("guardian", who)) { who.shieldHp = Math.max(who.shieldHp, 2); who.shieldT = 0; }
     who.muzzle = 0;
     who.fireCd = 0.2;
+  }
+
+  function downedPlayer() {
+    var i, p;
+    for (i = 0; i < players.length; i++) {
+      p = players[i];
+      if (p && !p.alive) return p;
+    }
+    return null;
+  }
+  function hasRevivePickup() {
+    var i;
+    for (i = 0; i < pickups.length; i++) if (pickups[i] && pickups[i].kind === "revive") return true;
+    return false;
+  }
+  function maybeSpawnBossRevive(announce) {
+    if (!isCoop() || extraPlayers() < 1) return;
+    if (!currentBoss() && !isBossWave(wave)) return;
+    if (!downedPlayer() || hasRevivePickup()) return;
+    spawnPickup(W / 2, 36, "revive");
+    if (announce) banner = { text: "REVIVE", life: 1.15 };
+  }
+  function reviveDownedFrom(collector) {
+    var target = downedPlayer();
+    if (!target) {
+      if (collector && collector.lives < MAX_LIVES) collector.lives += 1;
+      banner = { text: "1UP", life: 0.8 };
+      return;
+    }
+    target.alive = true;
+    target.lives = Math.max(1, target.lives);
+    target.x = spawnXFor(target.slot, players.length);
+    target.targetX = target.x;
+    target.invuln = (target.invulnDur || INVULN) + (hasMod("guardian", target) ? 0.6 : 0);
+    target.weapon = "normal";
+    target.weaponT = 0;
+    target.speedT = 0;
+    target.slowT = 0;
+    target.muzzle = 0;
+    target.fireCd = 0.2;
+    if (hasMod("guardian", target)) { target.shieldHp = Math.max(target.shieldHp, 2); target.shieldT = 0; }
+    rings.push({ x: target.x, y: target.y, r: 6, vr: 220, life: 0.5, color: "#ffe08a" });
+    banner = { text: "REVIVE P" + (target.slot + 1), life: 1.15 };
+    syncLocalPlayer();
   }
 
   // Build the list of shots for the equipped gun, with in-run gems layered on top:
@@ -3058,6 +3222,8 @@
     lastInputN = 0;
     lastInputNBySlot = [0, 0];
     lastInputKey = "";
+    pendingPickAt = {};
+    pickSeq = 0;
     var specs = opts.coopPlayers;
     if (!specs) specs = [profileLoadoutSpec()];
     lastCoopSpecs = specs.length > 1 ? specs : null;
@@ -3428,6 +3594,7 @@
     teles = (sb.te || []).slice();
     for (i = 0; i < (sb.pl || []).length; i++) applyPlayerSnap(sb.pl[i]);
     syncLocalPlayer();
+    if (netRole === "client") hideClaimedPickups();
     updateHud();
   }
   function advanceNetWorld(dt) {
@@ -3513,7 +3680,8 @@
       netSend({
         t: "input", n: inputSeq, slot: localSlot,
         l: !!(p && p.input.left), r: !!(p && p.input.right),
-        f: !!(p && p.input.fire), aimX: p ? p.input.aimX : null
+        f: !!(p && p.input.fire), aimX: p ? p.input.aimX : null,
+        x: p ? p.x : null, targetX: p ? p.targetX : null
       });
     }
   }
@@ -3688,6 +3856,16 @@
       p.input.right = !!msg.r;
       p.input.fire = !!msg.f;
       p.input.aimX = msg.aimX == null ? null : msg.aimX;
+      if (msg.x != null && isFinite(msg.x)) {
+        p.x = msg.x;
+        p.netPlaced = true;
+      }
+      if (msg.targetX != null && isFinite(msg.targetX)) p.targetX = msg.targetX;
+      else if (msg.x != null && isFinite(msg.x)) p.targetX = msg.x;
+    });
+    n.on("pick", function (msg) {
+      if (netRole !== "host") return;
+      hostGrantPickup(msg);
     });
     n.on("snap", function (msg) {
       if (netRole !== "client") return;
@@ -3736,7 +3914,6 @@
     lastTs = ts;
     time += dt;
     if (netRole === "client") {
-      sendLocalInput(dt);
       advanceNetWorld(dt);
       copyLocalInput();
       updateOneShip(players[localSlot], dt, true);
@@ -3744,6 +3921,9 @@
       for (ri = 0; ri < players.length; ri++) {
         if (ri !== localSlot) updateOneShip(players[ri], dt, false);
       }
+      sendLocalInput(dt);
+      requestClientPickups();
+      hideClaimedPickups();
     } else {
       update(dt);
       if (netRole === "host") {
@@ -3809,7 +3989,7 @@
     aimX = (p.slot === localSlot && pointerSteer.aimX != null) ? pointerSteer.aimX : inp.aimX;
     if (aimX != null) {
       p.targetX = aimX;
-    } else {
+    } else if (!(netRole === "host" && p.slot !== localSlot)) {
       p.targetX += steerDelta(inp, inp.left, "holdL", -1, spd, dt);
       p.targetX += steerDelta(inp, inp.right, "holdR", 1, spd, dt);
     }
@@ -3979,16 +4159,8 @@
       p.y += p.vy * dt;
       p.bob += dt * 6;
       if (p.y > H + 12) { pickups.splice(i, 1); continue; }
-      for (pi = 0; pi < players.length; pi++) {
-        pl = players[pi];
-        if (!pl || !pl.alive) continue;
-        if (dist2(pl.x, pl.y, p.x, p.y) < 14 * 14) {
-          grantPickup(p.kind, p.amount, pl);
-          pickups.splice(i, 1);
-          pl = null;
-          break;
-        }
-      }
+      pl = nearestPicker(p);
+      if (pl) consumePickupAt(i, pl);
     }
 
     for (i = pbul.length - 1; i >= 0; i--) {
@@ -4591,9 +4763,10 @@
 
     for (i = 0; i < pickups.length; i++) {
       p = pickups[i];
+      var pkScale = pickupScale(p);
       ctx.save();
       ctx.translate(p.x, p.y + Math.sin(p.bob) * 2);
-      glow(ctx, pickupColor(p.kind), 10);
+      glow(ctx, pickupColor(p.kind), p.kind === "revive" ? 18 : 10);
       ctx.fillStyle = pickupColor(p.kind);
       if (p.kind === "coin") {
         ctx.beginPath();
@@ -4607,13 +4780,16 @@
         ctx.fillText(p.amount > 1 ? String(p.amount) : "C", 0, 0.5);
       } else {
         ctx.beginPath();
-        ctx.moveTo(0, -7); ctx.lineTo(6, 0); ctx.lineTo(0, 7); ctx.lineTo(-6, 0);
+        ctx.moveTo(0, -7 * pkScale); ctx.lineTo(6 * pkScale, 0); ctx.lineTo(0, 7 * pkScale); ctx.lineTo(-6 * pkScale, 0);
         ctx.closePath(); ctx.fill();
         noGlow(ctx);
         ctx.fillStyle = "#fff8f8";
         if (p.kind === "heal") {
           ctx.fillRect(-1.4, -5.2, 2.8, 10.4);
           ctx.fillRect(-5.2, -1.4, 10.4, 2.8);
+        } else if (p.kind === "revive") {
+          ctx.fillRect(-2.2, -8, 4.4, 16);
+          ctx.fillRect(-8, -2.2, 16, 4.4);
         } else {
           ctx.fillStyle = "#041018";
           ctx.font = "bold 6px ui-sans-serif, system-ui, sans-serif";
@@ -4697,12 +4873,12 @@
       if (!p || !p.alive) continue;
       drawShip(ctx, p.x, p.y, p.invuln > 0, currentLoadout(p));
       if (players.length > 1) {
-        ctx.globalAlpha = 0.85;
-        ctx.fillStyle = "#e8f6ff";
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = shipDef(p).color || "#e8f6ff";
         ctx.font = "bold 6px ui-sans-serif, system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillText("P" + (p.slot + 1), p.x, p.y + 10);
+        ctx.fillText(playerTag(p.slot) + "  " + p.lives, p.x, p.y + 10);
         ctx.globalAlpha = 1;
       }
     }
@@ -5038,10 +5214,20 @@
       getWave: function () { return wave; },
       getPickups: function () {
         var out = [], i;
-        for (i = 0; i < pickups.length; i++) out.push({ kind: pickups[i].kind, y: Math.round(pickups[i].y), amount: pickups[i].amount || 1 });
+        for (i = 0; i < pickups.length; i++) out.push({ id: pickups[i].id, kind: pickups[i].kind, x: Math.round(pickups[i].x), y: Math.round(pickups[i].y), amount: pickups[i].amount || 1 });
         return out;
       },
       getLives: function () { return lives; },
+      getPlayers: function () {
+        var out = [], i, p;
+        for (i = 0; i < players.length; i++) {
+          p = players[i];
+          if (!p) continue;
+          out.push({ slot: p.slot, x: +p.x.toFixed(1), lives: p.lives, alive: p.alive, weapon: p.weapon, weaponT: p.weaponT });
+        }
+        return out;
+      },
+      COOP_SPAWN_RATIO: COOP_SPAWN_RATIO,
       getAudio: function () {
         return {
           muted: muted,
@@ -5108,6 +5294,15 @@
         return null;
       },
       godMode: function (on) { var i; for (i = 0; i < players.length; i++) if (players[i]) players[i].invuln = on ? 1e9 : 0; },
+      downSlot: function (slot) {
+        var p = players[slot];
+        if (!p) return null;
+        p.shieldHp = 0;
+        p.invuln = 0;
+        p.lives = 1;
+        playerDie(p);
+        return { slot: p.slot, alive: p.alive, lives: p.lives };
+      },
       setLives: function (n) {
         var i;
         lives = n;
