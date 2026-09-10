@@ -347,6 +347,11 @@
     if (type === "weaver") return "#3df0ff";
     if (type === "kami") return "#ff9a3d";
     if (type === "shield") return "#6b8cff";
+    if (type === "mortar") return "#ff6b3d";
+    if (type === "hex") return "#c44dff";
+    if (type === "harrier") return "#e8ff6b";
+    if (type === "bulwark") return "#9aa8c8";
+    if (type === "archon") return "#ffd6a0";
     var d = bossDef(type);
     return d ? d.color : "#ffffff";
   }
@@ -360,19 +365,27 @@
     return Math.round(d.hp * (1 + 0.8 * tier) + 72 * tier);
   }
   // Regular enemies gain a little HP deep into a run so upgraded guns stay relevant.
+  // Solo also +1s everything except grunt/kami, which stay 1-shot for Pulse (dmg 1).
   function enemyHp(type, tier, n) {
     n = n || wave || 1;
     var hp;
     if (isBossType(type)) hp = bossHp(type, tier);
+    else if (type === "archon") hp = 16 + 5 * Math.max(0, Math.floor((n - 8) / 5));
     else if (type === "tank") hp = 3 + Math.floor(n / 12);
+    else if (type === "bulwark") hp = 3 + Math.floor(n / 15);
+    else if (type === "mortar") hp = 2 + Math.floor(n / 20);
+    else if (type === "hex" || type === "harrier") hp = 2;
     else hp = 1 + Math.floor(n / 25);
+    if (!isCoop() && type !== "grunt" && type !== "kami") hp += 1;
     return scaleHp(hp);
   }
   function enemyR(type) {
     var d = bossDef(type);
     if (d) return d.r;
-    if (type === "tank") return 12;
+    if (type === "archon") return 15;
+    if (type === "tank" || type === "bulwark") return 12;
     if (type === "shield") return 11;
+    if (type === "mortar") return 10;
     if (type === "sniper") return 8;
     return 9;
   }
@@ -384,6 +397,11 @@
     else if (type === "kami") base = 100;
     else if (type === "tank") base = 130;
     else if (type === "shield") base = 110;
+    else if (type === "mortar") base = 160;
+    else if (type === "hex") base = 180;
+    else if (type === "harrier") base = 140;
+    else if (type === "bulwark") base = 200;
+    else if (type === "archon") base = 450;
     return diving ? base * 2 : base;
   }
   function pickupColor(kind) {
@@ -432,58 +450,114 @@
   function addSlot(slots, ox, oy, type) { slots.push({ ox: ox, oy: oy, type: type }); }
 
   function buildSlots(kind, n) {
-    var slots = [], i, x, y, t, a;
+    var slots = [], i, x, y, t, a, tn = typeWave(n);
     if (kind === "line") {
       for (i = 0; i < 5; i++) addSlot(slots, (i - 2) * 36, 0, "grunt");
     } else if (kind === "grid") {
       for (y = 0; y < 3; y++) {
         for (x = 0; x < 5; x++) {
-          t = mixType(n, x + y * 5, y === 0 ? "back" : y === 1 ? "mid" : "front");
+          t = mixType(tn, x + y * 5, y === 0 ? "back" : y === 1 ? "mid" : "front");
           addSlot(slots, (x - 2) * 34, y * 28, t);
         }
       }
     } else if (kind === "chevron") {
       var chev = [[-72, 0], [-36, 16], [0, 32], [36, 16], [72, 0], [-48, 40], [48, 40], [0, 58]];
-      for (i = 0; i < chev.length; i++) addSlot(slots, chev[i][0], chev[i][1], mixType(n, i, i < 3 ? "back" : "front"));
+      for (i = 0; i < chev.length; i++) addSlot(slots, chev[i][0], chev[i][1], mixType(tn, i, i < 3 ? "back" : "front"));
     } else if (kind === "diamond") {
       var dia = [[0, 0], [-24, 24], [24, 24], [-48, 48], [0, 48], [48, 48], [-24, 72], [24, 72], [0, 96]];
-      for (i = 0; i < dia.length; i++) addSlot(slots, dia[i][0], dia[i][1], mixType(n, i, i < 3 ? "back" : i > 5 ? "front" : "mid"));
+      for (i = 0; i < dia.length; i++) addSlot(slots, dia[i][0], dia[i][1], mixType(tn, i, i < 3 ? "back" : i > 5 ? "front" : "mid"));
     } else if (kind === "wings") {
       for (y = 0; y < 3; y++) {
         for (x = 0; x < 2; x++) {
-          addSlot(slots, -70 + x * 28, y * 26, mixType(n, x + y, y === 0 ? "back" : "front"));
-          addSlot(slots, 42 + x * 28, y * 26, mixType(n, x + y + 3, y === 0 ? "back" : "front"));
+          addSlot(slots, -70 + x * 28, y * 26, mixType(tn, x + y, y === 0 ? "back" : "front"));
+          addSlot(slots, 42 + x * 28, y * 26, mixType(tn, x + y + 3, y === 0 ? "back" : "front"));
         }
       }
     } else if (kind === "columns") {
       for (y = 0; y < 4; y++) {
-        addSlot(slots, -40, y * 26, mixType(n, y, y === 0 ? "back" : "front"));
-        addSlot(slots, 40, y * 26, mixType(n, y + 4, y === 0 ? "back" : "front"));
+        addSlot(slots, -40, y * 26, mixType(tn, y, y === 0 ? "back" : "front"));
+        addSlot(slots, 40, y * 26, mixType(tn, y + 4, y === 0 ? "back" : "front"));
       }
     } else if (kind === "arc") {
       for (i = 0; i < 7; i++) {
         a = (i / 6) * Math.PI;
-        addSlot(slots, Math.cos(a) * -78, 10 + Math.sin(a) * 50, mixType(n, i, i === 3 ? "back" : "mid"));
+        addSlot(slots, Math.cos(a) * -78, 10 + Math.sin(a) * 50, mixType(tn, i, i === 3 ? "back" : "mid"));
       }
     } else if (kind === "escort") {
-      addSlot(slots, 0, 36, n >= 4 ? "shield" : "tank");
+      addSlot(slots, 0, 36, tn >= 4 ? "shield" : "tank");
       for (i = 0; i < 8; i++) {
         a = (i / 8) * Math.PI * 2;
-        addSlot(slots, Math.cos(a) * 48, 36 + Math.sin(a) * 28, mixType(n, i, "front"));
+        addSlot(slots, Math.cos(a) * 48, 36 + Math.sin(a) * 28, mixType(tn, i, "front"));
       }
     } else if (kind === "stagger") {
-      for (x = 0; x < 5; x++) addSlot(slots, (x - 2) * 36, 0, mixType(n, x, "back"));
-      for (x = 0; x < 4; x++) addSlot(slots, (x - 1.5) * 36, 30, mixType(n, x, "mid"));
-      for (x = 0; x < 5; x++) addSlot(slots, (x - 2) * 36, 60, mixType(n, x, "front"));
+      for (x = 0; x < 5; x++) addSlot(slots, (x - 2) * 36, 0, mixType(tn, x, "back"));
+      for (x = 0; x < 4; x++) addSlot(slots, (x - 1.5) * 36, 30, mixType(tn, x, "mid"));
+      for (x = 0; x < 5; x++) addSlot(slots, (x - 2) * 36, 60, mixType(tn, x, "front"));
     } else if (kind === "pincer") {
       for (i = 0; i < 5; i++) {
-        addSlot(slots, -70 + i * 10, i * 22, n >= 6 ? "kami" : mixType(n, i, "front"));
-        addSlot(slots, 70 - i * 10, i * 22, n >= 6 ? "kami" : mixType(n, i + 5, "front"));
+        addSlot(slots, -70 + i * 10, i * 22, tn >= 6 ? "kami" : mixType(tn, i, "front"));
+        addSlot(slots, 70 - i * 10, i * 22, tn >= 6 ? "kami" : mixType(tn, i + 5, "front"));
       }
     } else {
-      for (i = 0; i < 6; i++) addSlot(slots, (i - 2.5) * 32, (i % 2) * 24, mixType(n, i, "mid"));
+      for (i = 0; i < 6; i++) addSlot(slots, (i - 2.5) * 32, (i % 2) * 24, mixType(tn, i, "mid"));
     }
+    injectElites(slots, n);
     return padFormation(slots, n);
+  }
+
+  function isMiniWave(n) {
+    return n >= 8 && n % BOSS_EVERY === 3 && !isBossWave(n);
+  }
+  function staysInForm(type) {
+    return type === "sniper" || type === "shield" || type === "mortar" || type === "hex" || type === "bulwark" || type === "archon";
+  }
+  function weaves(type) {
+    return type === "weaver" || type === "harrier";
+  }
+  function pickCenteredBack(slots) {
+    var i, best = 0;
+    for (i = 1; i < slots.length; i++) {
+      if (slots[i].oy < slots[best].oy) best = i;
+      else if (slots[i].oy === slots[best].oy && Math.abs(slots[i].ox) < Math.abs(slots[best].ox)) best = i;
+    }
+    return best;
+  }
+  function dropNearestSlot(slots, idx) {
+    var i, best = -1, d, bestD = 1e12, dx, dy;
+    for (i = 0; i < slots.length; i++) {
+      if (i === idx) continue;
+      dx = slots[i].ox - slots[idx].ox;
+      dy = slots[i].oy - slots[idx].oy;
+      d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    if (best >= 0) slots.splice(best, 1);
+  }
+  function injectElites(slots, n) {
+    var used = {}, added = 0, i, h, type, types, ti, tries, archonIdx;
+    if (n < 6 || isBossWave(n) || !slots.length) return slots;
+    if (isMiniWave(n)) {
+      archonIdx = pickCenteredBack(slots);
+      slots[archonIdx].type = "archon";
+      dropNearestSlot(slots, archonIdx);
+    }
+    types = ["mortar", "hex", "harrier", "bulwark"];
+    for (i = 0; i < slots.length && added < 2; i++) {
+      if (slots[i].type === "archon") continue;
+      h = (n * 17 + i * 31) % 100;
+      if (h >= 9) continue;
+      ti = (n + i) % types.length;
+      type = null;
+      for (tries = 0; tries < types.length; tries++) {
+        if (!used[types[ti]]) { type = types[ti]; break; }
+        ti = (ti + 1) % types.length;
+      }
+      if (!type) break;
+      used[type] = true;
+      slots[i].type = type;
+      added += 1;
+    }
+    return slots;
   }
 
   // Co-op keeps the solo shape, then adds ships so the count is 4/3 of solo
@@ -491,23 +565,46 @@
   function padFormation(slots, n) {
     var extra = extraPlayers();
     var i, add, src, row, ox, oy, base, target;
-    if (extra < 1 || !slots.length) return slots;
-    base = slots.length;
-    target = Math.max(base + extra, Math.round(base * (1 + extra * (COOP_SPAWN_RATIO - 1))));
-    add = target - base;
-    for (i = 0; i < add; i++) {
-      src = slots[i % slots.length];
-      row = 1 + Math.floor(i / slots.length);
-      ox = src.ox + ((i % 2) ? 12 : -12);
-      if (ox > 100) ox = 100;
-      if (ox < -100) ox = -100;
-      oy = src.oy - 26 * row;
-      addSlot(slots, ox, oy, mixType(n, slots.length + i, "back"));
+    if (extra >= 1 && slots.length) {
+      base = slots.length;
+      target = Math.max(base + extra, Math.round(base * (1 + extra * (COOP_SPAWN_RATIO - 1))));
+      add = target - base;
+      for (i = 0; i < add; i++) {
+        src = slots[i % slots.length];
+        row = 1 + Math.floor(i / slots.length);
+        ox = src.ox + ((i % 2) ? 12 : -12);
+        if (ox > 100) ox = 100;
+        if (ox < -100) ox = -100;
+        oy = src.oy - 26 * row;
+        addSlot(slots, ox, oy, mixType(n, slots.length + i, "back"));
+      }
+    }
+    if (soloEarly(n) && slots.length) {
+      add = n <= 3 ? 4 : 3;
+      for (i = 0; i < add; i++) {
+        src = slots[i % slots.length];
+        row = 1 + Math.floor(i / slots.length);
+        ox = src.ox + ((i % 2) ? 12 : -12);
+        if (ox > 100) ox = 100;
+        if (ox < -100) ox = -100;
+        oy = src.oy - 26 * row;
+        addSlot(slots, ox, oy, mixType(typeWave(n), slots.length + i, "back"));
+      }
     }
     return slots;
   }
 
   function formationKind(n) {
+    if (soloEarly(n)) {
+      if (n === 1) return "grid";
+      if (n === 2) return "stagger";
+      if (n === 3) return "wings";
+      if (n === 4) return "escort";
+      if (n === 6) return "pincer";
+      if (n === 7) return "stagger";
+      if (n === 8) return "grid";
+      if (n === 9) return "diamond";
+    }
     if (n === 1) return "line";
     if (n === 2) return "grid";
     if (n === 3) return "chevron";
@@ -783,6 +880,18 @@
   function isCoop() { return players.length > 1 || netRole === "host" || netRole === "client"; }
   function playerCount() { return Math.max(1, players.length); }
   function extraPlayers() { return Math.max(0, playerCount() - 1); }
+  function soloEarly(n) {
+    n = n == null ? wave : n;
+    return !isCoop() && n <= 10;
+  }
+  function pressureWave(n) {
+    n = n == null ? wave : n;
+    return soloEarly(n) ? n + 4 : n;
+  }
+  function typeWave(n) {
+    n = n == null ? wave : n;
+    return soloEarly(n) ? n + 3 : n;
+  }
   // Each extra person adds a full solo budget: 1p = 1x, 2p = 2x, 3p = 3x.
   function coopMul() { return playerCount(); }
   function scaleHp(hp) {
@@ -963,6 +1072,7 @@
     if (player.weaponT > 0 && player.weapon !== "normal") bits.push(pickupLabel(player.weapon) + " " + Math.ceil(player.weaponT) + "s");
     if (player.shieldHp > 0) bits.push("SHIELD x" + player.shieldHp);
     if (player.speedT > 0) bits.push("SPD " + Math.ceil(player.speedT) + "s");
+    if ((player.jamT || 0) > 0) bits.push("JAM " + Math.ceil(player.jamT) + "s");
     return bits.length ? bits.join("  ·  ") : "None";
   }
   function playerTag(slot) {
@@ -1275,11 +1385,11 @@
       hp: hp, maxHp: hp, alive: true, state: "enter", t: 0, hitFlash: 0,
       x: W / 2 + offX * 0.2, y: -28 - Math.random() * 18,
       sx: 0, sy: 0, cx: 0, cy: 0, ex: 0, ey: 0, dur: 1,
-      shotsLeft: 0, shotAt: 0, shotCd: rand(0.7, 2.0),
+      shotsLeft: 0, shotAt: 0, shotCd: soloEarly() ? rand(0.4, 1.35) : rand(0.7, 2.0),
       shieldHp: type === "shield" ? 2 + Math.floor(wave / 20) + extraPlayers() : 0,
       phase: Math.random() * 6.2,
       isBoss: !!extra.isBoss, tier: extra.tier || 0,
-      atkCd: extra.isBoss ? 1.7 : 0, atk: "", lastAtk: "", tele: null,
+      atkCd: extra.isBoss ? 1.7 : (type === "archon" ? 1.2 : 0), atk: "", lastAtk: "", tele: null,
       phaseIdx: 0, followups: [], stream: null, afterReturn: "", combo: false, aimX: 0, aimY: 0,
       r: enemyR(type), patrolDir: 1,
       leech: !!extra.leech, leechHp: 0, leechAcc: 0, healFlash: 0
@@ -1334,7 +1444,7 @@
       spawnPickup(e.x + rand(-6, 6), e.y + 10, "coin", amount);
       return;
     }
-    if (e.type === "tank" || e.type === "shield") {
+    if (e.type === "tank" || e.type === "shield" || e.type === "mortar" || e.type === "hex" || e.type === "harrier" || e.type === "bulwark") {
       chance = 0.25 * mul * COIN_SPAWN_MUL * pc;
       amount = 1 + Math.floor(wave / 6);
     } else {
@@ -1375,7 +1485,7 @@
     }
     var roll = Math.random();
     var pc = playerCount();
-    var wrate = ((e.type === "tank" || e.type === "shield") ? 0.07 : 0.05) * pc;
+    var wrate = ((e.type === "tank" || e.type === "shield" || e.type === "mortar" || e.type === "hex" || e.type === "harrier" || e.type === "bulwark") ? 0.07 : 0.05) * pc;
     var healEnd = (0.01 + healDropChance()) * pc;
     if (roll < 0.01 * pc) spawnPickup(e.x, e.y, "life");
     else if (roll < healEnd) spawnPickup(e.x, e.y, "heal");
@@ -1550,6 +1660,84 @@
     teles.push({ kind: "zone", x: x, y: y, x2: hw, y2: hh, t: dur, max: dur, color: color || "#ff6b9a" });
     sfxTele();
   }
+  function armLaneBomb(x, y, color) {
+    x = clamp(x, 20, W - 20);
+    y = H - 40;
+    teles.push({ kind: "zone", x: x, y: y, x2: 18, y2: 22, t: 0.65, max: 0.65, color: color || "#ff6b3d", blast: true });
+    sfxTele();
+  }
+  function detonateLaneBomb(z) {
+    var i, ang, pl, pr;
+    explode(z.x, z.y, z.color || "#ff6b3d", false);
+    for (i = 0; i < 4; i++) {
+      ang = -0.85 + i * (1.7 / 3);
+      addEbul(z.x, z.y, Math.sin(ang) * 115, Math.cos(ang) * 115 + 20, {
+        color: "#ffb080", glow: z.color || "#ff6b3d", r: 2.4
+      });
+    }
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive || pl.invuln > 0) continue;
+      pr = pl.r || PLAYER_R;
+      if (Math.abs(pl.x - z.x) < (z.x2 || 18) + pr && Math.abs(pl.y - z.y) < (z.y2 || 22) + pr) playerDie(pl);
+    }
+  }
+  function applyHexJam() {
+    var i, p;
+    for (i = 0; i < players.length; i++) {
+      p = players[i];
+      if (p && p.alive) p.jamT = 1.1;
+    }
+    banner = { text: "JAMMED", life: 0.7 };
+  }
+  function auraDamp(e, dmg) {
+    var i, b, r2 = 40 * 40;
+    if (!e || e.type === "archon" || e.type === "bulwark") return dmg;
+    for (i = 0; i < enemies.length; i++) {
+      b = enemies[i];
+      if (!b.alive || b.type !== "bulwark" || b === e) continue;
+      if (dist2(e.x, e.y, b.x, b.y) < r2) return dmg * 0.5;
+    }
+    return dmg;
+  }
+  function spawnHarrierDarts(e) {
+    var tgt, tx, i, k, side;
+    if (netReplay) return;
+    tgt = targetPlayer(e.x, e.y);
+    tx = tgt ? tgt.x : W / 2;
+    for (i = 0; i < 2; i++) {
+      side = i === 0 ? -1 : 1;
+      k = makeEnemy((e.offX || 0) + side * 12, e.offY || 0, "kami");
+      k.state = "kami";
+      k.t = 0;
+      k.dur = rand(0.85, 1.15);
+      k.x = e.x + side * 10;
+      k.y = e.y;
+      k.sx = k.x;
+      k.sy = k.y;
+      k.cx = k.x + side * 28;
+      k.cy = k.y + 40;
+      k.ex = clamp(tx + side * 16, 16, W - 16);
+      k.ey = H + 40;
+      k.shotsLeft = 0;
+      k.expendable = true;
+      enemies.push(k);
+    }
+    sfxDive();
+  }
+  function dropArchonLoot(e) {
+    var mul = fortuneMul();
+    var pc = playerCount();
+    var amount = 10 + 3 * Math.floor(wave / 5);
+    var roll;
+    if (anyHasMod("salvage")) amount *= 1.6;
+    amount = Math.max(1, Math.round(amount * 0.45 * mul * COIN_SPAWN_MUL * pc));
+    spawnPickup(e.x + rand(-6, 6), e.y + 10, "coin", amount);
+    roll = Math.random();
+    if (roll < 0.01 * pc) spawnPickup(e.x, e.y - 8, "life");
+    else if (roll < (0.01 + healDropChance()) * pc) spawnPickup(e.x, e.y - 8, "heal");
+    else if (roll < 0.14 * pc) spawnPickup(e.x, e.y - 8, pickWeightedPowerup());
+  }
 
   function spawnWave(n) {
     wave = n;
@@ -1559,7 +1747,7 @@
     teles = [];
     form.oy = 46;
     form.dir = 1;
-    form.speed = (24 + Math.min(22, (n - 1) * 3.2)) * (1 + extraPlayers() * 0.12);
+    form.speed = (24 + Math.min(22, (pressureWave(n) - 1) * 3.2)) * (1 + extraPlayers() * 0.12);
     enterT = isBossWave(n) ? 1.15 : 0.75;
     diveCd = isBossWave(n) ? 99 : 1.2;
     waveKind = isBossWave(n) ? "boss" : formationKind(n);
@@ -1572,7 +1760,7 @@
       run.bossHits = 0;
       enemies.push(makeEnemy(0, 0, meta.type, { isBoss: true, tier: meta.tier }));
     } else {
-      banner = { text: "WAVE " + n, life: 1.1 };
+      banner = { text: isMiniWave(n) ? "ARCHON" : ("WAVE " + n), life: isMiniWave(n) ? 1.4 : 1.1 };
       var slots = buildSlots(waveKind, n);
       setFormBounds(slots);
       var i;
@@ -1600,7 +1788,7 @@
       loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null },
       x: x, targetX: x, y: H - 34,
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
-      weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0,
+      weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0,
       r: loadoutR(s, spec.mod), speed: loadoutSpeed(s, spec.mod), invulnDur: s.invuln, regen: s.regen, regenT: 0,
       shotCount: 0,
       lives: loadoutLives(s),
@@ -1659,12 +1847,17 @@
       sfxArmor();
       return;
     }
+    dmg = auraDamp(e, dmg);
     e.hp -= dmg;
     e.hitFlash = 0.08;
     if (e.hp > 0) {
       shake = Math.min(10, shake + (e.isBoss ? 1.8 : 1.2));
       sfxTick();
       if (e.isBoss) checkBossPhase(e);
+      if (e.type === "archon" && e.phaseIdx < 1 && e.hp <= e.maxHp * 0.5) {
+        e.phaseIdx = 1;
+        banner = { text: "ARCHON ENRAGES", life: 1.05 };
+      }
       return;
     }
     e.alive = false;
@@ -1695,7 +1888,7 @@
       }
       syncLocalPlayer();
     }
-    explode(e.x, e.y, enemyColor(e.type), e.isBoss || e.type === "tank");
+    explode(e.x, e.y, enemyColor(e.type), e.isBoss || e.type === "tank" || e.type === "archon");
     if (diving) {
       run.diveKills = (run.diveKills || 0) + 1;
       profile.stats.diveKills = (profile.stats.diveKills || 0) + 1;
@@ -1712,6 +1905,7 @@
         }
       }
     }
+    if (e.type === "harrier") spawnHarrierDarts(e);
     if (e.isBoss) {
       explode(e.x - 12, e.y + 6, "#ffffff", true);
       explode(e.x + 10, e.y - 8, enemyColor(e.type), true);
@@ -1720,6 +1914,10 @@
       ebul.length = 0;
       teles.length = 0;
       spawnReviveAfterBoss(e);
+    } else if (e.type === "archon") {
+      explode(e.x - 8, e.y + 4, "#ff5c7a", true);
+      dropArchonLoot(e);
+      banner = { text: "ARCHON DOWN", life: 1.15 };
     } else {
       maybeDrop(e, false);
     }
@@ -1748,7 +1946,7 @@
     who.lives -= 1;
     run.livesLost = (run.livesLost || 0) + 1;
     ebul.length = 0;
-    who.weapon = "normal"; who.weaponT = 0; who.speedT = 0; who.slowT = 0;
+    who.weapon = "normal"; who.weaponT = 0; who.speedT = 0; who.slowT = 0; who.jamT = 0;
     if (shipDef(who).passive === "nova") novaBurst(who.x, who.y, 6);
     syncLocalPlayer();
     syncQuestProgress();
@@ -1806,6 +2004,7 @@
     target.weaponT = 0;
     target.speedT = 0;
     target.slowT = 0;
+    target.jamT = 0;
     target.muzzle = 0;
     target.fireCd = 0.2;
     if (hasMod("guardian", target)) { target.shieldHp = Math.max(target.shieldHp, 2); target.shieldT = 0; }
@@ -1837,6 +2036,7 @@
   function shootPlayer(who) {
     who = who || player;
     if (!who || !who.alive || who.fireCd > 0) return;
+    if ((who.jamT || 0) > 0) return;
     var ghost = netRole === "client";
     var g = findGun(equippedGun(who));
     var gem = (who.weaponT > 0 && who.weapon !== "normal") ? who.weapon : "";
@@ -1905,15 +2105,87 @@
     e.state = e.type === "kami" ? "kami" : "dive";
     e.t = 0;
     e.dur = e.type === "kami" ? rand(0.95, 1.35) : e.type === "tank" ? rand(1.8, 2.4) : rand(1.45, 2.15);
+    if (soloEarly()) e.dur *= 0.88;
     e.sx = e.x; e.sy = e.y;
     e.cx = e.x + (Math.random() < 0.5 ? -1 : 1) * rand(30, 78);
     e.cy = e.y + rand(30, 70);
     var tgt = targetPlayer(e.x, e.y);
     e.ex = clamp((tgt ? tgt.x : W / 2) + rand(-24, 24), 16, W - 16);
     e.ey = H + 40;
-    e.shotsLeft = e.type === "kami" ? 0 : ((e.type === "tank" ? 2 : (1 + (wave > 2 && Math.random() < 0.5 ? 1 : 0))) + extraPlayers());
+    e.shotsLeft = e.type === "kami" ? 0 : ((e.type === "tank" ? 2 : (1 + ((wave > 2 || soloEarly()) && Math.random() < (soloEarly() ? 0.65 : 0.5) ? 1 : 0))) + extraPlayers());
     e.shotAt = rand(0.28, 0.5);
     sfxDive();
+  }
+
+  function updateEliteForm(e, dt) {
+    var tgt;
+    if ((e.jamTele || 0) > 0) {
+      e.jamTele -= dt;
+      if (e.jamTele <= 0) applyHexJam();
+    }
+    e.shotCd -= dt;
+    if (e.shotCd > 0) return;
+    if (e.type === "mortar") {
+      tgt = targetPlayer(e.x, e.y);
+      armLaneBomb(tgt ? tgt.x : W / 2, H - 40, "#ff6b3d");
+      e.shotCd = 2.4 / (1 + extraPlayers() * 0.2);
+    } else if (e.type === "hex") {
+      e.jamTele = 0.4;
+      addTele("glow", e.x, e.y, 0, 0, 0.4, "#c44dff");
+      e.shotCd = 3.6;
+    } else if (e.type === "bulwark") {
+      aimedShot(e, 0.7, 130 + pressureWave() * 5, { color: "#c8d0e8", glow: "#9aa8c8" });
+      e.shotCd = 3.2;
+    }
+  }
+  function startArchonCharge(e) {
+    var tgt = targetPlayer(e.x, e.y);
+    e.aimX = tgt ? tgt.x : W / 2;
+    e.state = "charge";
+    e.t = 0;
+    e.dur = 0.9;
+    e.sx = e.x;
+    e.sy = e.y;
+    e.ex = e.aimX;
+    e.ey = H - 50;
+  }
+  function updateArchon(e, dt) {
+    var enraged, tgt, count, spread;
+    if (e.hp <= e.maxHp * 0.5 && e.phaseIdx < 1) {
+      e.phaseIdx = 1;
+      banner = { text: "ARCHON ENRAGES", life: 1.05 };
+    }
+    if (e.tele && e.tele.atk === "charge") {
+      e.tele.t -= dt;
+      if (e.tele.t <= 0) {
+        startArchonCharge(e);
+        e.tele = null;
+        e.atkCd = e.phaseIdx >= 1 ? 1.05 : 1.4;
+      }
+      return;
+    }
+    e.atkCd -= dt;
+    if (e.atkCd > 0) return;
+    enraged = e.phaseIdx >= 1;
+    tgt = targetPlayer(e.x, e.y);
+    e.aimX = tgt ? tgt.x : W / 2;
+    if (Math.random() < (enraged ? 0.22 : 0.28)) {
+      addTele("line", e.x, e.y, e.aimX, H - 50, 0.38, "#ff5c7a");
+      e.tele = { atk: "charge", t: 0.38 };
+      return;
+    }
+    count = enraged ? 5 : 3;
+    spread = enraged ? 0.7 : 0.48;
+    fanShot(e.x, e.y + 8, count, spread, 150 + wave * 2, 20, { color: "#ffd6a0", glow: "#ff5c7a" });
+    if (enraged) armLaneBomb(e.aimX, H - 40, "#ff5c7a");
+    e.atkCd = enraged ? 1.05 : 1.4;
+  }
+  function currentArchon() {
+    var i;
+    for (i = 0; i < enemies.length; i++) {
+      if (enemies[i].alive && enemies[i].type === "archon") return enemies[i];
+    }
+    return null;
   }
 
   // ---- Boss kits -------------------------------------------------------------------------
@@ -2545,8 +2817,8 @@
     for (i = 0; i < enemies.length; i++) {
       e = enemies[i];
       if (!e.alive || e.state !== "form" || e.isBoss) continue;
-      if (e.type === "sniper" || e.type === "shield") continue;
-      w = e.type === "kami" ? 5 : e.type === "grunt" ? 3 : e.type === "weaver" ? 3 : 1;
+      if (staysInForm(e.type)) continue;
+      w = e.type === "kami" ? 5 : e.type === "grunt" ? 3 : weaves(e.type) ? 3 : 1;
       while (w--) pool.push(e);
     }
     if (!pool.length) return null;
@@ -3456,7 +3728,7 @@
       slot: p.slot, x: p.x, y: p.y, alive: p.alive ? 1 : 0, invuln: p.invuln || 0,
       muzzle: p.muzzle || 0, shieldHp: p.shieldHp || 0, weapon: p.weapon || "normal",
       weaponT: p.weaponT || 0, speedT: p.speedT || 0, lives: p.lives, r: p.r,
-      slowT: p.slowT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
+      slowT: p.slowT || 0, jamT: p.jamT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
       mod: lo.mod || null, targetX: p.targetX != null ? p.targetX : p.x
     };
   }
@@ -3486,6 +3758,7 @@
     p.lives = row.lives;
     p.r = row.r;
     p.slowT = row.slowT;
+    p.jamT = row.jamT || 0;
   }
   function buildSnap() {
     var i, en = [], pb = [], eb = [], pk = [], te = [], pl = [];
@@ -3943,7 +4216,7 @@
     rafId = requestAnimationFrame(tick);
   }
 
-  function formPosX(e) { return form.ox + e.offX + (e.type === "weaver" ? Math.sin(time * 3.2 + e.phase) * 7 : 0); }
+  function formPosX(e) { return form.ox + e.offX + (weaves(e.type) ? Math.sin(time * 3.2 + e.phase) * 7 : 0); }
   function formPosY(e) { return form.oy + e.offY; }
 
   function steerDelta(inp, held, holdKey, dir, cruise, dt) {
@@ -3991,6 +4264,7 @@
     }
     inp = p.input || input;
     if (p.slowT > 0) p.slowT = Math.max(0, p.slowT - dt);
+    if (p.jamT > 0) p.jamT = Math.max(0, p.jamT - dt);
     spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1);
     margin = Math.max(10, (p.r || PLAYER_R) + 4);
     aimX = (p.slot === localSlot && pointerSteer.aimX != null) ? pointerSteer.aimX : inp.aimX;
@@ -4033,7 +4307,10 @@
 
     for (i = teles.length - 1; i >= 0; i--) {
       teles[i].t -= dt;
-      if (teles[i].t <= 0) teles.splice(i, 1);
+      if (teles[i].t <= 0) {
+        if (teles[i].blast) detonateLaneBomb(teles[i]);
+        teles.splice(i, 1);
+      }
     }
 
     for (i = 0; i < stars.length; i++) {
@@ -4055,8 +4332,8 @@
       form.oy = 46 + Math.sin(time * 1.3) * 3;
     }
 
-    maxD = 1 + Math.min(2, Math.floor((wave - 1) / 3)) + extraPlayers();
-    d = (2.5 - Math.min(1.5, (wave - 1) * 0.18)) / (1 + extraPlayers() * 0.5);
+    maxD = 1 + Math.min(2, Math.floor((pressureWave() - 1) / 3)) + extraPlayers();
+    d = (2.5 - Math.min(1.5, (pressureWave() - 1) * 0.18)) / (1 + extraPlayers() * 0.5);
     if (!isBossWave(wave) && enterT <= 0 && divingCount() < maxD) {
       diveCd -= dt;
       if (diveCd <= 0) {
@@ -4086,25 +4363,31 @@
         } else if (e.state === "form") {
           e.x = fx;
           e.y = fy;
-          if (e.type === "sniper" && enterT <= 0) {
-            e.shotCd -= dt;
-            if (e.shotCd <= 0) {
-              aimedShot(e, 0.92, 150 + wave * 6, { color: "#ffd0e8", glow: "#ff4d9a" });
-              e.shotCd = Math.max(0.7, (2.3 - wave * 0.08) / (1 + extraPlayers() * 0.35));
+          if (enterT <= 0) {
+            if (e.type === "archon") updateArchon(e, dt);
+            else if (e.type === "mortar" || e.type === "hex" || e.type === "bulwark") updateEliteForm(e, dt);
+            else if (e.type === "sniper") {
+              e.shotCd -= dt;
+              if (e.shotCd <= 0) {
+                aimedShot(e, 0.92, 150 + pressureWave() * 6, { color: "#ffd0e8", glow: "#ff4d9a" });
+                e.shotCd = Math.max(0.7, (2.3 - pressureWave() * 0.08) / (1 + extraPlayers() * 0.35));
+              }
             }
           }
         } else if (e.state === "dive" || e.state === "kami") {
           e.t += dt / e.dur;
           t = e.t > 1 ? 1 : e.t;
-          e.x = bezier(t, e.sx, e.cx + (e.type === "weaver" ? Math.sin(t * 12) * 22 : 0), e.ex);
+          e.x = bezier(t, e.sx, e.cx + (weaves(e.type) ? Math.sin(t * 12) * 22 : 0), e.ex);
           e.y = bezier(t, e.sy, e.cy, e.ey);
           if (e.shotsLeft > 0 && t >= e.shotAt) {
-            aimedShot(e, e.type === "tank" ? 0.35 : 0.55, 130 + wave * 6);
+            aimedShot(e, e.type === "tank" ? 0.35 : 0.55, 130 + pressureWave() * 6);
             e.shotsLeft -= 1;
             e.shotAt += 0.22;
           }
           if (e.t >= 1) {
-            if (e.state === "kami") {
+            // Formation kami used to vanish at the bottom of the dive. Only
+            // expendable spawns (harrier darts) should die off-screen.
+            if (e.state === "kami" && e.expendable) {
               if (e.leech) stripLeechHeal(e);
               e.alive = false;
               continue;
@@ -4724,6 +5007,45 @@
         context.lineWidth = 2 + e.shieldHp;
         context.beginPath(); context.arc(0, 3, 11, 0.15, Math.PI - 0.15); context.stroke();
       }
+    } else if (e.type === "mortar") {
+      context.beginPath();
+      context.moveTo(-8, 4); context.lineTo(-5, -7); context.lineTo(5, -7); context.lineTo(8, 4);
+      context.lineTo(3, 8); context.lineTo(-3, 8);
+      context.closePath(); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#401408";
+      context.fillRect(-2, -2, 4, 9);
+    } else if (e.type === "hex") {
+      context.beginPath();
+      for (var hx = 0; hx < 6; hx++) {
+        var ha = hx * Math.PI / 3 - Math.PI / 6;
+        if (hx === 0) context.moveTo(Math.cos(ha) * 8, Math.sin(ha) * 8);
+        else context.lineTo(Math.cos(ha) * 8, Math.sin(ha) * 8);
+      }
+      context.closePath(); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#2a1040";
+      context.beginPath(); context.arc(0, 0, 2.4, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "harrier") {
+      context.beginPath();
+      context.moveTo(0, 9); context.lineTo(9, -2); context.lineTo(3, -7); context.lineTo(0, -3);
+      context.lineTo(-3, -7); context.lineTo(-9, -2);
+      context.closePath(); context.fill();
+    } else if (e.type === "bulwark") {
+      context.beginPath();
+      context.moveTo(-10, 2); context.lineTo(-7, -8); context.lineTo(7, -8); context.lineTo(10, 2);
+      context.lineTo(6, 8); context.lineTo(-6, 8);
+      context.closePath(); context.fill();
+      context.strokeStyle = "#d8e0f0";
+      context.lineWidth = 1.6;
+      context.globalAlpha = 0.55 + 0.25 * Math.sin(time * 6 + e.phase);
+      context.beginPath(); context.arc(0, 0, 16 + Math.sin(time * 5) * 1.5, 0, Math.PI * 2); context.stroke();
+      context.globalAlpha = 1;
+    } else if (e.type === "archon") {
+      context.beginPath();
+      context.moveTo(0, 12); context.lineTo(12, -2); context.lineTo(7, -10); context.lineTo(0, -6);
+      context.lineTo(-7, -10); context.lineTo(-12, -2);
+      context.closePath(); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : (e.phaseIdx >= 1 ? "#ff5c7a" : "#ff8a5c");
+      context.beginPath(); context.arc(0, -1, 3.2, 0, Math.PI * 2); context.fill();
     }
     noGlow(context);
     if (e.leech) {
@@ -4901,6 +5223,22 @@
     }
 
     boss = currentBoss();
+    if (!boss) {
+      var arch = currentArchon();
+      if (arch) {
+        pct = Math.max(0, arch.hp / arch.maxHp);
+        ctx.fillStyle = "rgba(8,10,24,0.7)";
+        ctx.fillRect(28, 8, W - 56, 8);
+        ctx.fillStyle = arch.phaseIdx >= 1 ? "#ff5c7a" : "#ffd6a0";
+        ctx.fillRect(28, 8, (W - 56) * pct, 8);
+        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.strokeRect(28, 8, W - 56, 8);
+        ctx.fillStyle = "#e8f6ff";
+        ctx.font = "bold 7px ui-sans-serif, system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(arch.phaseIdx >= 1 ? "ARCHON  ·  ENRAGED" : "ARCHON", W / 2, 15);
+      }
+    }
     if (boss) {
       var bd = bossDef(boss.type) || BOSS_DEFS[0];
       var th = boss.tier >= 1 ? [Math.max(0.6, bd.p2Thresh || 0.5), 0.25] : [bd.p2Thresh || 0.5];
@@ -5240,7 +5578,7 @@
         for (i = 0; i < players.length; i++) {
           p = players[i];
           if (!p) continue;
-          out.push({ slot: p.slot, x: +p.x.toFixed(1), lives: p.lives, alive: p.alive, weapon: p.weapon, weaponT: p.weaponT });
+          out.push({ slot: p.slot, x: +p.x.toFixed(1), lives: p.lives, alive: p.alive, weapon: p.weapon, weaponT: p.weaponT, jamT: +(p.jamT || 0).toFixed(2) });
         }
         return out;
       },
@@ -5298,6 +5636,17 @@
         }
         return out;
       },
+      killType: function (type, dmg) {
+        var i, e;
+        for (i = 0; i < enemies.length; i++) {
+          e = enemies[i];
+          if (e.alive && e.type === type) {
+            killEnemy(e, false, dmg || 99);
+            return { type: e.type, hp: e.hp, alive: e.alive, phaseIdx: e.phaseIdx || 0 };
+          }
+        }
+        return null;
+      },
       killLeech: function () {
         var i, e, given;
         for (i = 0; i < enemies.length; i++) {
@@ -5344,6 +5693,11 @@
       isOver: function () { return gameOver; },
       bossMeta: bossMeta,
       bossHp: bossHp,
+      enemyHp: enemyHp,
+      soloEarly: soloEarly,
+      pressureWave: pressureWave,
+      typeWave: typeWave,
+      formationKind: formationKind,
       healDropChance: healDropChance,
       xpLevel: xpLevel,
       xpForLevel: xpForLevel,
