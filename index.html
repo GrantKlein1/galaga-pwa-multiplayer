@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050510">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Galaga Co-op">
+<meta name="description" content="Galaga arcade shooter with 2-player co-op. Install to your home screen.">
+<title>Galaga Co-op</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body tabindex="0">
+<div id="app">
+  <div id="hud-bar">
+    <div id="hud">
+      <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
+      <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
+      <div class="stat"><div class="label">Lives</div><div class="value" id="lives">3</div></div>
+      <div class="stat"><div class="label">Wave</div><div class="value" id="wave">1</div></div>
+      <div class="stat"><div class="label">Coins</div><div class="value" id="hud-coins">0</div></div>
+    </div>
+    <div id="hud-actions">
+      <button type="button" class="hud-btn" id="btn-pause" aria-label="Pause">Pause</button>
+      <button type="button" class="hud-btn" id="btn-mute" aria-label="Mute">Mute</button>
+    </div>
+  </div>
+  <div id="pwr-row">
+    <div class="label">Power</div>
+    <div class="value" id="pwr">None</div>
+  </div>
+  <div id="board-wrap">
+    <canvas id="board" tabindex="0"></canvas>
+  </div>
+  <div id="touchpad" aria-label="Game controls">
+    <button type="button" class="pad-btn pad-move" id="pad-left" data-dir="left" aria-label="Move left">&#9664;</button>
+    <button type="button" class="pad-btn pad-fire" id="pad-fire" data-dir="fire" aria-label="Fire">FIRE</button>
+    <button type="button" class="pad-btn pad-move" id="pad-right" data-dir="right" aria-label="Move right">&#9654;</button>
+  </div>
+  <div id="hint">Drag / hold field to move &middot; tap / hold to fire &middot; or use the pad</div>
+</div>
+<div id="overlay">
+  <div id="screen-hub" class="screen">
+    <div class="screen-title">Galaga</div>
+    <canvas id="hub-preview" width="160" height="88"></canvas>
+    <div id="hub-equip" class="hub-equip">Wisp  ·  Pulse  ·  No mod</div>
+    <div class="hub-stats"><span id="hub-coins">0c</span><span id="hub-lv">Lv 1</span><span id="hub-title" class="hub-title">Cadet</span></div>
+    <div class="xp-track"><div id="hub-xp-fill" class="xp-fill"></div></div>
+    <div id="hub-xp-label" class="xp-label">0 / 500 XP to Lv 2</div>
+    <button type="button" class="btn" id="btn-play">Play</button>
+    <button type="button" class="btn btn-ghost" id="btn-coop">Co-op</button>
+    <div class="btn-row-2">
+      <button type="button" class="btn btn-ghost" id="btn-hangar">Hangar</button>
+      <button type="button" class="btn btn-ghost" id="btn-quests">Quests</button>
+    </div>
+    <div class="help" id="hub-help">
+      Drag or hold the play field to move &nbsp;&middot;&nbsp; tap / hold to fire<br>
+      Or use the pad &nbsp;&middot;&nbsp; Pause / Mute in the HUD
+    </div>
+  </div>
+  <div id="screen-hangar" class="screen hidden">
+    <div class="screen-title">Hangar</div>
+    <div id="hangar-coins" class="hub-stats">0 coins</div>
+    <div id="hangar-equip" class="hangar-equip"></div>
+    <div id="hangar-tabs" class="tabs">
+      <button type="button" class="tab active" data-tab="ship">Ships</button>
+      <button type="button" class="tab" data-tab="gun">Guns</button>
+      <button type="button" class="tab" data-tab="mod">Mods</button>
+    </div>
+    <div id="hangar-lists" class="lists"></div>
+    <button type="button" class="btn btn-ghost" id="btn-hangar-back">Back</button>
+  </div>
+  <div id="screen-quests" class="screen hidden">
+    <div class="screen-title">Quests</div>
+    <div id="quest-lists" class="lists"></div>
+    <button type="button" class="btn btn-ghost" id="btn-quests-back">Back</button>
+    <button type="button" class="btn btn-danger" id="btn-reset-progress">Reset All Progress</button>
+    <div class="reset-note" id="reset-note">Erases coins, XP, hangar, quests, stats, and high score. Same as a new player. Cannot be undone.</div>
+    <div id="reset-confirm" class="reset-confirm hidden">
+      <div class="reset-confirm-title">Erase all progress?</div>
+      <div class="reset-confirm-body">Coins, XP, hangar, quests, stats, and high score will be wiped. This cannot be undone.</div>
+      <button type="button" class="btn btn-danger" id="btn-reset-confirm">Yes, Reset Everything</button>
+      <button type="button" class="btn btn-ghost" id="btn-reset-cancel">Cancel</button>
+    </div>
+  </div>
+  <div id="screen-lobby" class="screen hidden">
+    <div id="lobby-pick" class="lobby-panel">
+      <div class="screen-title">Co-op</div>
+      <div class="help">Two ships, same waves. One of you hosts. The other joins with a code. Both devices need internet — they do not have to see each other on the LAN.</div>
+      <button type="button" class="btn" id="btn-lobby-host">Host a game</button>
+      <button type="button" class="btn btn-ghost" id="btn-lobby-join">Join a game</button>
+      <button type="button" class="btn btn-ghost" id="btn-lobby-back">Back</button>
+    </div>
+    <div id="lobby-host" class="lobby-panel hidden">
+      <div class="screen-title">Host</div>
+      <div class="help">Share this code. Stay on this screen until they are in.</div>
+      <div id="lobby-code" class="lobby-code">----</div>
+      <div id="lobby-host-wait" class="lobby-status">Waiting for them to join… keep this screen open.</div>
+      <div id="lobby-err-host" class="lobby-err hidden"></div>
+      <button type="button" class="btn btn-ghost" id="btn-lobby-host-leave">Back</button>
+    </div>
+    <div id="lobby-join" class="lobby-panel hidden">
+      <div class="screen-title">Join</div>
+      <div class="help">Type the 4-letter code from the host</div>
+      <label class="lobby-code-lab" for="lobby-code-in">Room code</label>
+      <input id="lobby-code-in" class="lobby-code-in" type="text" maxlength="4" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text" enterkeyhint="go" placeholder="ABCD">
+      <div id="lobby-err-join" class="lobby-err hidden"></div>
+      <div id="lobby-join-wait" class="lobby-status hidden">Connecting…</div>
+      <button type="button" class="btn" id="btn-lobby-join-go">Join</button>
+      <button type="button" class="btn btn-ghost" id="btn-lobby-join-back">Back</button>
+    </div>
+    <div id="lobby-ready" class="lobby-panel hidden">
+      <div class="screen-title">Ready</div>
+      <div class="help">Both players are in</div>
+      <div id="lobby-players" class="lobby-players"></div>
+      <button type="button" class="btn" id="btn-lobby-start">Start</button>
+      <div id="lobby-wait-start" class="lobby-status hidden">Waiting for host to start…</div>
+      <button type="button" class="btn btn-ghost" id="btn-lobby-leave">Leave</button>
+    </div>
+  </div>
+  <div id="screen-pause" class="screen hidden">
+    <div class="screen-title">Paused</div>
+    <div id="pause-sub" class="screen-sub"></div>
+    <button type="button" class="btn" id="btn-resume">Resume</button>
+    <button type="button" class="btn btn-ghost" id="btn-quit">Quit to Hub</button>
+  </div>
+  <div id="screen-summary" class="screen hidden">
+    <div class="screen-title">Run Over</div>
+    <div id="summary-body" class="summary-body"></div>
+    <button type="button" class="btn" id="btn-again">Play Again</button>
+    <button type="button" class="btn btn-ghost" id="btn-summary-hub">Hub</button>
+  </div>
+</div>
+<script src="js/vendor/peerjs.min.js"></script>
+<script src="js/net.js"></script>
+<script src="js/galaga.js"></script>
+<script src="js/touchpad.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
