@@ -13,10 +13,17 @@
     { urls: "stun:stun.cloudflare.com:3478" },
     { urls: "stun:stun.relay.metered.ca:80" },
     {
+      urls: ["turn:eu-0.turn.peerjs.com:3478", "turn:us-0.turn.peerjs.com:3478"],
+      username: "peerjs",
+      credential: "peerjsp"
+    },
+    {
       urls: [
+        "turn:openrelay.metered.ca:80?transport=udp",
+        "turn:openrelay.metered.ca:443?transport=udp",
         "turn:openrelay.metered.ca:80",
-        "turn:openrelay.metered.ca:80?transport=tcp",
         "turn:openrelay.metered.ca:443",
+        "turn:openrelay.metered.ca:80?transport=tcp",
         "turn:openrelay.metered.ca:443?transport=tcp",
         "turns:openrelay.metered.ca:443?transport=tcp"
       ],
@@ -27,6 +34,7 @@
 
   var peer = null;
   var conn = null;
+  var gameDc = null;
   var role = null;
   var code = "";
   var handlers = {};
@@ -52,7 +60,8 @@
       config: {
         iceServers: ICE_SERVERS,
         sdpSemantics: "unified-plan",
-        iceCandidatePoolSize: 4
+        iceCandidatePoolSize: 4,
+        iceTransportPolicy: "all"
       }
     };
   }
@@ -245,7 +254,7 @@
     };
     ws.onclose = function () {
       if (closed || suppressClose || sock.dead) return;
-      if (mqttLive === sock && openedOnce) emit("close", { reason: "mqtt-closed" });
+      if (mqttLive === sock && openedOnce && transport === "mqtt") emit("close", { reason: "mqtt-closed" });
     };
     ws.onerror = function () {};
     sock.onOpen = function () {
@@ -282,7 +291,8 @@
   }
 
   function adoptMqtt(sock) {
-    if (transport || closed) return;
+    if (closed || transport === "webrtc") return;
+    if (transport === "mqtt") return;
     transport = "mqtt";
     mqttLive = sock;
     startMqttKeepalive(sock);
@@ -291,7 +301,6 @@
       s = mqttSocks[i];
       if (s !== sock) closeMqttSock(s);
     }
-    destroyPeer();
     markConnected();
   }
 
@@ -306,7 +315,7 @@
       if (role === "client") adoptMqtt(sock);
       return;
     }
-    if (transport && transport !== "mqtt") return;
+    if (transport === "webrtc") return;
     if (mqttLive && sock !== mqttLive) return;
     emit(msg.t || "data", msg);
   }
@@ -326,7 +335,7 @@
     }
     if (role === "client") {
       mqttHsTimer = setInterval(function () {
-        if (closed || transport) {
+        if (closed || transport === "webrtc") {
           clearMqttTimers();
           return;
         }
@@ -339,12 +348,77 @@
     }
   }
 
+  function closeGameDc() {
+    var dc = gameDc;
+    gameDc = null;
+    if (dc) {
+      try { dc.close(); } catch (err) {}
+    }
+  }
+
+  function parseIncoming(raw) {
+    var text, msg;
+    if (typeof raw === "string") text = raw;
+    else if (raw && typeof raw === "object" && !(raw instanceof ArrayBuffer) && !ArrayBuffer.isView(raw)) return raw;
+    else {
+      try { text = new TextDecoder().decode(raw); } catch (err) { return null; }
+    }
+    try { return JSON.parse(text); } catch (err) { return null; }
+  }
+
+  function bindGameDc(dc) {
+    if (!dc) return;
+    gameDc = dc;
+    try { dc.binaryType = "arraybuffer"; } catch (err) {}
+    dc.onmessage = function (ev) {
+      var msg = parseIncoming(ev.data);
+      if (!msg || typeof msg !== "object") return;
+      emit(msg.t || "data", msg);
+    };
+  }
+
+  function listenGameDc(c) {
+    var pc = c && c.peerConnection;
+    if (!pc || c._galagaGameListen) return;
+    c._galagaGameListen = true;
+    pc.addEventListener("datachannel", function (ev) {
+      if (ev.channel && ev.channel.label === "game") bindGameDc(ev.channel);
+    });
+  }
+
+  function createGameDc(c) {
+    var pc = c && c.peerConnection;
+    if (!pc || gameDc) return false;
+    try {
+      bindGameDc(pc.createDataChannel("game", { ordered: false, maxRetransmits: 0 }));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function ensureGameDc(c) {
+    listenGameDc(c);
+    if (role !== "client") return;
+    if (createGameDc(c)) return;
+    var n = 0;
+    var t = setInterval(function () {
+      n += 1;
+      if (closed || gameDc || n > 40) {
+        clearInterval(t);
+        return;
+      }
+      createGameDc(c);
+    }, 50);
+  }
+
   function destroyPeer() {
     var p = peer;
     var c = conn;
     suppressClose = true;
     peer = null;
     conn = null;
+    closeGameDc();
     if (c) {
       try { c.close(); } catch (err) {}
     }
@@ -385,8 +459,8 @@
     if (openedOnce || closed) return;
     openedOnce = true;
     clearJoinTimer();
-    clearMqttTimers();
-    emit("connected", { role: role, code: code });
+    if (transport === "webrtc") clearMqttTimers();
+    emit("connected", { role: role, code: code, transport: transport });
   }
 
   function dropStaleConn(next) {
@@ -397,25 +471,28 @@
     conn = next;
   }
 
+  function adoptWebrtc(c) {
+    if (closed) return;
+    transport = "webrtc";
+    destroyMqtt();
+    markConnected();
+    ensureGameDc(c);
+  }
+
   function wireConn(c) {
-    if (transport === "mqtt") {
-      try { c.close(); } catch (err) {}
-      return;
-    }
-    if (conn && conn !== c && conn.open) {
+    if (conn && conn !== c && conn.open && transport === "webrtc") {
       try { c.close(); } catch (err) {}
       return;
     }
     dropStaleConn(c);
+    listenGameDc(c);
     c.on("data", function (msg) {
       if (!msg || typeof msg !== "object") return;
       emit(msg.t || "data", msg);
     });
     c.on("open", function () {
-      if (closed || transport === "mqtt") return;
-      transport = "webrtc";
-      markConnected();
-      destroyMqtt();
+      if (closed) return;
+      adoptWebrtc(c);
     });
     c.on("close", function () {
       if (closed || suppressClose) return;
@@ -428,6 +505,7 @@
       if (!openedOnce || transport !== "webrtc") return;
       fail("Connection error", false);
     });
+    if (c.open) adoptWebrtc(c);
   }
 
   function makePeer(id, onOpen) {
@@ -460,11 +538,7 @@
     makePeer(PREFIX + code, null);
     if (peer) {
       peer.on("connection", function (c) {
-        if (transport === "mqtt") {
-          try { c.close(); } catch (err) {}
-          return;
-        }
-        if (conn && conn.open) {
+        if (conn && conn.open && transport === "webrtc") {
           try { c.close(); } catch (err) {}
           return;
         }
@@ -476,9 +550,10 @@
 
   function startWebrtcJoin() {
     makePeer(null, function () {
-      if (closed || !peer || transport) return;
+      if (closed || !peer || transport === "webrtc") return;
       var c = peer.connect(PREFIX + code, { serialization: "json", reliable: true });
       wireConn(c);
+      ensureGameDc(c);
     });
   }
 
@@ -523,8 +598,23 @@
     }, JOIN_MS);
   }
 
+  function isUnreliableMsg(msg) {
+    return msg && (msg.t === "snap" || msg.t === "input");
+  }
+
+  function sendUnreliable(msg) {
+    if (!gameDc || gameDc.readyState !== "open") return false;
+    try {
+      gameDc.send(JSON.stringify(msg));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
   function send(msg) {
     if (!msg || !openedOnce) return false;
+    if (transport === "webrtc" && isUnreliableMsg(msg) && sendUnreliable(msg)) return true;
     if (transport === "mqtt") return mqttPublish(mqttLive, mqttLive && mqttLive.pubTopic, msg);
     if (conn && conn.open) {
       try { conn.send(msg); return true; } catch (err) { return false; }
@@ -563,6 +653,7 @@
     isHost: function () { return role === "host"; },
     isConnected: function () { return !!(openedOnce && (transport === "mqtt" ? mqttLive : conn && conn.open)); },
     role: function () { return role; },
-    code: function () { return code; }
+    code: function () { return code; },
+    transport: function () { return transport; }
   };
 })();

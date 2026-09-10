@@ -275,7 +275,11 @@
   var netReplay = false;
   var pendingSnap = null;
   var snapAcc = 0;
+  var snapSeq = 0;
+  var lastSnapN = 0;
   var inputAcc = 0;
+  var inputSeq = 0;
+  var lastInputN = 0;
   var lastInputKey = "";
   var disconnectNote = "";
   var lobbyMode = "pick";
@@ -2867,7 +2871,11 @@
     pendingSnap = null;
     netEvents = [];
     snapAcc = 0;
+    snapSeq = 0;
+    lastSnapN = 0;
     inputAcc = 0;
+    inputSeq = 0;
+    lastInputN = 0;
     lastInputKey = "";
     var specs = opts.coopPlayers;
     if (!specs) specs = [profileLoadoutSpec()];
@@ -3046,16 +3054,16 @@
     return { x: a[0], y: a[1], type: a[2], alive: !!a[3], state: a[4], hitFlash: a[5], healFlash: a[6], isBoss: !!a[7], hp: a[8], maxHp: a[9], tier: a[10], phaseIdx: a[11], shieldHp: a[12], r: a[13], leech: !!a[14], leechHp: a[15], phase: a[16] };
   }
   function packPb(b) {
-    return [Math.round(b.x * 10) / 10, Math.round(b.y * 10) / 10, Math.round((b.vx || 0) * 10) / 10, b.r || 2, b.gun || "", b.pierce || 0, b.homing ? 1 : 0, b.bolt ? 1 : 0, b.splash ? 1 : 0, b.helix ? 1 : 0];
+    return [Math.round(b.x * 10) / 10, Math.round(b.y * 10) / 10, Math.round((b.vx || 0) * 10) / 10, Math.round((b.vy || 0) * 10) / 10, b.r || 2, b.gun || "", b.pierce || 0, b.homing ? 1 : 0, b.bolt ? 1 : 0, b.splash ? 1 : 0, b.helix ? 1 : 0];
   }
   function unpackPb(a) {
-    return { x: a[0], y: a[1], vx: a[2], r: a[3], gun: a[4], pierce: a[5], homing: !!a[6], bolt: !!a[7], splash: a[8] ? { r: 34, dmg: 2 } : null, helix: !!a[9] };
+    return { x: a[0], y: a[1], vx: a[2], vy: a[3], r: a[4], gun: a[5], pierce: a[6], homing: !!a[7], bolt: !!a[8], splash: a[9] ? { r: 34, dmg: 2 } : null, helix: !!a[10] };
   }
   function packEb(b) {
-    return [Math.round(b.x * 10) / 10, Math.round(b.y * 10) / 10, b.r || 2.3, b.color || "#ffd0e0", b.glow || "#ff6b9a", b.mine ? 1 : 0];
+    return [Math.round(b.x * 10) / 10, Math.round(b.y * 10) / 10, Math.round((b.vx || 0) * 10) / 10, Math.round((b.vy || 0) * 10) / 10, b.r || 2.3, b.color || "#ffd0e0", b.glow || "#ff6b9a", b.mine ? 1 : 0];
   }
   function unpackEb(a) {
-    return { x: a[0], y: a[1], r: a[2], color: a[3], glow: a[4], mine: !!a[5] };
+    return { x: a[0], y: a[1], vx: a[2], vy: a[3], r: a[4], color: a[5], glow: a[6], mine: !!a[7] };
   }
   function packPk(p) {
     return [Math.round(p.x * 10) / 10, Math.round(p.y * 10) / 10, p.kind, p.amount || 1, +(p.bob || 0).toFixed(2)];
@@ -3083,8 +3091,14 @@
     }
     p.loadout = spec;
     p.hostX = row[1];
-    if (slot !== localSlot || Math.abs((p.x || 0) - row[1]) > 6) {
-      p.x = row[1];
+    if (slot === localSlot) {
+      if (Math.abs((p.x || 0) - row[1]) > 6) {
+        p.x = row[1];
+        p.targetX = row[1];
+      }
+    } else {
+      p.tx = row[1];
+      if (p.x == null) p.x = row[1];
       p.targetX = row[1];
     }
     p.y = row[2];
@@ -3107,14 +3121,28 @@
     for (i = 0; i < pickups.length; i++) pk.push(packPk(pickups[i]));
     for (i = 0; i < teles.length; i++) te.push(packTe(teles[i]));
     for (i = 0; i < players.length; i++) pl.push(packPl(players[i]));
-    return {
+    var snap = {
       sc: score, rc: run.coins, w: wave, sh: +(shake.toFixed(2)), fl: +(flash.toFixed(2)), tm: +time.toFixed(3),
       bn: banner ? { text: banner.text, life: +banner.life.toFixed(2) } : null,
-      en: en, pb: pb, eb: eb, pk: pk, te: te, pl: pl, ev: netEvents.slice()
+      en: en, pb: pb, eb: eb, pk: pk, te: te, pl: pl
     };
+    if (netEvents.length) snap.ev = netEvents.slice();
+    return snap;
+  }
+  function keepDisplayPos(old, neu, maxJump) {
+    if (old && Math.abs(old.x - neu.x) < maxJump && Math.abs(old.y - neu.y) < maxJump) {
+      neu.tx = neu.x;
+      neu.ty = neu.y;
+      neu.x = old.x;
+      neu.y = old.y;
+    } else {
+      neu.tx = neu.x;
+      neu.ty = neu.y;
+    }
+    return neu;
   }
   function applySnap(s) {
-    var i;
+    var i, oldEn, oldPk;
     if (!s) return;
     score = s.sc;
     if (s.rc != null) run.coins = s.rc;
@@ -3123,14 +3151,20 @@
     flash = s.fl;
     time = s.tm;
     banner = s.bn;
+    oldEn = enemies;
     enemies = [];
-    for (i = 0; i < (s.en || []).length; i++) enemies.push(unpackEn(s.en[i]));
+    for (i = 0; i < (s.en || []).length; i++) {
+      enemies.push(keepDisplayPos(oldEn[i] && oldEn[i].type === s.en[i][2] ? oldEn[i] : null, unpackEn(s.en[i]), 36));
+    }
     pbul = [];
     for (i = 0; i < (s.pb || []).length; i++) pbul.push(unpackPb(s.pb[i]));
     ebul = [];
     for (i = 0; i < (s.eb || []).length; i++) ebul.push(unpackEb(s.eb[i]));
+    oldPk = pickups;
     pickups = [];
-    for (i = 0; i < (s.pk || []).length; i++) pickups.push(unpackPk(s.pk[i]));
+    for (i = 0; i < (s.pk || []).length; i++) {
+      pickups.push(keepDisplayPos(oldPk[i] && oldPk[i].kind === s.pk[i][2] ? oldPk[i] : null, unpackPk(s.pk[i]), 28));
+    }
     teles = [];
     for (i = 0; i < (s.te || []).length; i++) teles.push(unpackTe(s.te[i]));
     for (i = 0; i < (s.pl || []).length; i++) applyPlayerRow(s.pl[i]);
@@ -3164,27 +3198,36 @@
     }
     netReplay = false;
   }
+  function netTransport() {
+    return window.__net && window.__net.transport ? window.__net.transport() : null;
+  }
   function sendSnap(dt) {
+    var hz;
     if (netRole !== "host") return;
+    hz = netTransport() === "mqtt" ? 12 : 20;
     snapAcc += dt;
-    if (snapAcc < 1 / 30) return;
+    if (snapAcc < 1 / hz) return;
     snapAcc = 0;
-    netSend({ t: "snap", s: buildSnap() });
+    snapSeq += 1;
+    netSend({ t: "snap", n: snapSeq, s: buildSnap() });
     netEvents = [];
   }
   function sendLocalInput(dt) {
-    var key;
+    var key, hz;
     copyLocalInput();
     inputAcc += dt;
+    hz = netTransport() === "mqtt" ? 12 : 30;
     key = (input.left ? "1" : "0") + (input.right ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX));
-    if (key !== lastInputKey || inputAcc >= 1 / 30) {
+    if (key !== lastInputKey || inputAcc >= 1 / hz) {
       lastInputKey = key;
       inputAcc = 0;
-      netSend({ t: "input", l: !!input.left, r: !!input.right, f: !!(input.fire || pointerSteer.fire), aimX: pointerSteer.aimX });
+      inputSeq += 1;
+      netSend({ t: "input", n: inputSeq, l: !!input.left, r: !!input.right, f: !!(input.fire || pointerSteer.fire), aimX: pointerSteer.aimX });
     }
   }
   function updateClientFx(dt) {
-    var i, p;
+    var i, p, b, e, k;
+    k = 1 - Math.exp(-dt * 18);
     shake *= Math.exp(-dt * 7);
     if (shake < 0.05) shake = 0;
     flash *= Math.exp(-dt * 8);
@@ -3192,6 +3235,33 @@
     for (i = 0; i < stars.length; i++) {
       stars[i].y += stars[i].v * dt;
       if (stars[i].y > H) { stars[i].y = 0; stars[i].x = Math.random() * W; }
+    }
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (e.tx == null) continue;
+      e.x += (e.tx - e.x) * k;
+      e.y += (e.ty - e.y) * k;
+    }
+    for (i = 0; i < pbul.length; i++) {
+      b = pbul[i];
+      b.x += (b.vx || 0) * dt;
+      b.y += (b.vy || 0) * dt;
+    }
+    for (i = 0; i < ebul.length; i++) {
+      b = ebul[i];
+      b.x += (b.vx || 0) * dt;
+      b.y += (b.vy || 0) * dt;
+    }
+    for (i = 0; i < pickups.length; i++) {
+      p = pickups[i];
+      if (p.tx == null) continue;
+      p.x += (p.tx - p.x) * k;
+      p.y += (p.ty - p.y) * k;
+    }
+    for (i = 0; i < players.length; i++) {
+      if (i === localSlot) continue;
+      p = players[i];
+      if (p && p.tx != null) p.x += (p.tx - p.x) * k;
     }
     for (i = particles.length - 1; i >= 0; i--) {
       p = particles[i];
@@ -3268,13 +3338,18 @@
     n.on("input", function (msg) {
       var p = players[1];
       if (netRole !== "host" || !p) return;
+      if (msg.n && msg.n < lastInputN) return;
+      if (msg.n) lastInputN = msg.n;
       p.input.left = !!msg.l;
       p.input.right = !!msg.r;
       p.input.fire = !!msg.f;
       p.input.aimX = msg.aimX == null ? null : msg.aimX;
     });
     n.on("snap", function (msg) {
-      if (netRole === "client") pendingSnap = msg.s;
+      if (netRole !== "client") return;
+      if (msg.n && msg.n < lastSnapN) return;
+      if (msg.n) lastSnapN = msg.n;
+      pendingSnap = msg.s;
     });
     n.on("pause", function () { pauseGame(true); });
     n.on("resume", function () {
