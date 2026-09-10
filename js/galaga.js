@@ -1,7 +1,8 @@
 (function () {
   var W = 240;
   var H = 360;
-  var FIRE_MS = 175;
+  // Base player fire interval. 212ms = Pulse 4.7/s (was 175ms / 5.7/s; base ROF down by 1).
+  var FIRE_MS = 212;
   var MAX_PBUL = 26;
   var MAX_EBUL = 64;
   var PLAYER_R = 9;
@@ -86,25 +87,25 @@
   // first HP threshold), t1 (tier 1+), t2 (tier 2+). Tier 1+ fights get a third phase; tier 2+
   // fights chain attacks into combos.
   var BOSS_DEFS = [
-    { id: "seraph", name: "SERAPH", color: "#e8f6ff", dark: "#203044", r: 18, hp: 48, spd: 42, amp: 6, freq: 1.2, cd: 1.15, tele: 0.44, pts: 1500,
+    { id: "seraph", name: "SERAPH", color: "#e8f6ff", dark: "#203044", r: 18, hp: 48, spd: 42, amp: 6, freq: 1.2, cd: 1.39, tele: 0.44, pts: 1500,
       base: ["aimed", "fan", "ram"], p2: ["halo", "fan2"], t1: ["feathers"], t2: ["ramfan"], p2Text: "SERAPH ASCENDS", flavor: "Aimed volleys, fans, dive ram" },
-    { id: "wraith", name: "WRAITH", color: "#d46bff", dark: "#2a1040", r: 16, hp: 72, spd: 55, amp: 16, freq: 2.4, cd: 1.15, tele: 0.44, pts: 1750,
+    { id: "wraith", name: "WRAITH", color: "#d46bff", dark: "#2a1040", r: 16, hp: 72, spd: 55, amp: 16, freq: 2.4, cd: 1.39, tele: 0.44, pts: 1750,
       base: ["spiral", "mines", "sweep", "blink"], p2: ["blink2"], t1: ["clones"], t2: ["sweepgap"], p2Text: "WRAITH UNBOUND", flavor: "Spirals, mines, sweeps, blinks" },
-    { id: "hydra", name: "HYDRA", color: "#3dffb0", dark: "#143322", r: 22, hp: 102, spd: 42, amp: 6, freq: 1.2, cd: 1.2, tele: 0.46, pts: 2000,
-      base: ["beam", "rain", "fan", "summon"], p2: ["summontank"], t1: ["beam3"], t2: ["regrow"], p2Text: "HYDRA REGROWS", flavor: "Beams, rain, siphoning escorts" },
-    { id: "colossus", name: "COLOSSUS", color: "#ffc14d", dark: "#40280a", r: 24, hp: 154, spd: 28, amp: 5, freq: 1.0, cd: 1.5, tele: 0.48, pts: 2250,
+    { id: "hydra", name: "HYDRA", color: "#3dffb0", dark: "#143322", r: 22, hp: 102, spd: 42, amp: 6, freq: 1.2, cd: 1.45, tele: 0.46, pts: 2000,
+      base: ["beam", "rain", "fan", "summon", "lunge"], p2: ["summontank", "lunge2"], t1: ["beam3"], t2: ["regrow"], p2Text: "HYDRA REGROWS", flavor: "Beams, rain, siphoning escorts, lunges" },
+    { id: "colossus", name: "COLOSSUS", color: "#ffc14d", dark: "#40280a", r: 24, hp: 154, spd: 28, amp: 5, freq: 1.0, cd: 1.82, tele: 0.48, pts: 2250,
       base: ["ring", "charge", "homing", "shock"], p2: ["ring2", "shockgap"], t1: ["artillery"], t2: ["charge2"], p2Text: "COLOSSUS OVERHEATS", flavor: "Rings, charges, missiles, shockwaves" },
-    { id: "chronos", name: "CHRONOS", color: "#7ef9ff", dark: "#0a3040", r: 20, hp: 162, spd: 36, amp: 10, freq: 0.9, cd: 1.3, tele: 0.48, pts: 2500,
+    { id: "chronos", name: "CHRONOS", color: "#7ef9ff", dark: "#0a3040", r: 20, hp: 162, spd: 36, amp: 10, freq: 0.9, cd: 1.57, tele: 0.48, pts: 2500,
       base: ["tick", "pendulum", "rewind"], p2: ["ticksplit"], t1: ["slowfield"], t2: ["pendulum2"], p2Text: "TIME FRACTURES", flavor: "Frozen bullets, pendulums, rewinds" },
-    { id: "leviathan", name: "LEVIATHAN", color: "#4d88ff", dark: "#081838", r: 24, hp: 192, spd: 48, amp: 14, freq: 1.6, cd: 1.3, tele: 0.48, pts: 2750,
+    { id: "leviathan", name: "LEVIATHAN", color: "#4d88ff", dark: "#081838", r: 24, hp: 192, spd: 48, amp: 14, freq: 1.6, cd: 1.57, tele: 0.48, pts: 2750,
       base: ["surge", "depth", "whip"], p2: ["surge2"], t1: ["whirlpool"], t2: ["torpedo"], p2Text: "THE DEEP RISES", flavor: "Tidal surges, depth charges, tail whips" },
-    { id: "inferno", name: "INFERNO", color: "#ff7a3d", dark: "#401008", r: 22, hp: 228, spd: 40, amp: 8, freq: 1.4, cd: 1.25, tele: 0.46, pts: 3000,
+    { id: "inferno", name: "INFERNO", color: "#ff7a3d", dark: "#401008", r: 22, hp: 228, spd: 40, amp: 8, freq: 1.4, cd: 1.51, tele: 0.46, pts: 3000,
       base: ["flare", "embers", "lance2"], p2: ["emberssplit"], t1: ["novaring"], t2: ["lancesweep"], p2Text: "INFERNO IGNITES", flavor: "Flares, ember rain, twin lances" },
-    { id: "nullwarden", name: "NULLWARDEN", color: "#b07cff", dark: "#100418", r: 21, hp: 264, spd: 34, amp: 12, freq: 1.1, cd: 1.3, tele: 0.5, pts: 3250,
+    { id: "nullwarden", name: "NULLWARDEN", color: "#b07cff", dark: "#100418", r: 21, hp: 264, spd: 34, amp: 12, freq: 1.1, cd: 1.57, tele: 0.5, pts: 3250,
       base: ["well", "gates", "collapse"], p2: ["voidguard"], t1: ["singularity"], t2: ["gates2"], p2Text: "THE VOID ANSWERS", flavor: "Gravity wells, void gates, collapses" },
-    { id: "basilisk", name: "BASILISK", color: "#c8ff3d", dark: "#203008", r: 22, hp: 300, spd: 46, amp: 10, freq: 1.5, cd: 1.25, tele: 0.48, pts: 3500,
+    { id: "basilisk", name: "BASILISK", color: "#c8ff3d", dark: "#203008", r: 22, hp: 300, spd: 46, amp: 10, freq: 1.5, cd: 1.51, tele: 0.48, pts: 3500,
       base: ["venom", "gaze", "coil"], p2: ["venompool"], t1: ["gaze2"], t2: ["spitburst"], p2Text: "BASILISK SHEDS", flavor: "Arcing venom, sweeping gaze, coils" },
-    { id: "overlord", name: "OVERLORD", color: "#ffd23d", dark: "#3a1a0a", r: 26, hp: 384, spd: 32, amp: 6, freq: 1.0, cd: 1.35, tele: 0.5, pts: 4000,
+    { id: "overlord", name: "OVERLORD", color: "#ffd23d", dark: "#3a1a0a", r: 26, hp: 384, spd: 32, amp: 6, freq: 1.0, cd: 1.64, tele: 0.5, pts: 4000,
       base: ["barrage", "grid", "escorts"], p2: ["core", "corering"], t1: ["orbital"], t2: ["frenzy"], p2Thresh: 0.6, p2Text: "CORE EXPOSED", flavor: "Barrages, laser grids, kami escorts" }
   ];
 
@@ -642,6 +643,7 @@
       ownedGuns: ["pulse"],
       ownedMods: [],
       equipped: { ship: "wisp", gun: "pulse", mod: null },
+      startWave: 1,
       dailies: { date: "", ids: [], progress: {}, claimed: {} },
       longTerm: {},
       stats: emptyStats()
@@ -678,6 +680,7 @@
     if (p.ownedShips.indexOf(p.equipped.ship) < 0) p.equipped.ship = "wisp";
     if (p.ownedGuns.indexOf(p.equipped.gun) < 0) p.equipped.gun = "pulse";
     if (p.equipped.mod && p.ownedMods.indexOf(p.equipped.mod) < 0) p.equipped.mod = null;
+    if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp));
     if (raw.dailies && typeof raw.dailies === "object") {
       p.dailies.date = typeof raw.dailies.date === "string" ? raw.dailies.date : "";
       p.dailies.ids = cloneArr(raw.dailies.ids, []);
@@ -723,6 +726,54 @@
       if (xpForLevel(mid) <= xp) lo = mid; else hi = mid - 1;
     }
     return lo;
+  }
+  // Lv 10 → start wave 5, lv 15 → 10, then +5 wave every +5 levels.
+  function maxStartWave(lv) {
+    lv = lv == null ? xpLevel(profile.totalXp) : (lv | 0);
+    if (lv < 10) return 1;
+    return 5 + Math.floor((lv - 10) / 5) * 5;
+  }
+  function startWaveOptions(lv) {
+    var max = maxStartWave(lv), out = [1], n;
+    for (n = 5; n <= max; n += 5) out.push(n);
+    return out;
+  }
+  function clampStartWave(n, lv) {
+    var opts = startWaveOptions(lv), i, best = 1;
+    n = n | 0;
+    for (i = 0; i < opts.length; i++) if (opts[i] <= n) best = opts[i];
+    return best;
+  }
+  function preferredStartWave() {
+    return clampStartWave(profile.startWave || 1);
+  }
+  function setPreferredStartWave(n) {
+    profile.startWave = clampStartWave(n);
+    saveProfile();
+  }
+  function skipCredit(startN) {
+    var n, slots, i, pts = 0, meta, d;
+    startN = Math.max(1, startN | 0);
+    for (n = 1; n < startN; n++) {
+      if (isBossWave(n)) {
+        meta = bossMeta(n);
+        d = bossDef(meta.type);
+        pts += (d ? d.pts : 1500) + 800 * (meta.tier || 0);
+      } else {
+        slots = buildSlots(formationKind(n), n);
+        for (i = 0; i < slots.length; i++) pts += enemyPts(slots[i].type, false);
+      }
+    }
+    return { score: pts };
+  }
+  function applySkipState(startN) {
+    var credit;
+    startN = clampStartWave(startN, MAX_LEVEL);
+    if (startN <= 1) return 1;
+    credit = skipCredit(startN);
+    score += credit.score;
+    run.maxWave = Math.max(run.maxWave || 1, startN);
+    return startN;
   }
   function levelTitle(lv) {
     if (lv >= 100) return "Eternal";
@@ -1387,11 +1438,11 @@
       hp: hp, maxHp: hp, alive: true, state: "enter", t: 0, hitFlash: 0,
       x: W / 2 + offX * 0.2, y: -28 - Math.random() * 18,
       sx: 0, sy: 0, cx: 0, cy: 0, ex: 0, ey: 0, dur: 1,
-      shotsLeft: 0, shotAt: 0, shotCd: soloEarly() ? rand(0.4, 1.35) : rand(0.7, 2.0),
+      shotsLeft: 0, shotAt: 0, shotCd: soloEarly() ? rand(0.48, 1.64) : rand(0.85, 2.42),
       shieldHp: type === "shield" ? 2 + Math.floor(wave / 20) + extraPlayers() : 0,
       phase: Math.random() * 6.2,
       isBoss: !!extra.isBoss, tier: extra.tier || 0,
-      atkCd: extra.isBoss ? 1.7 : (type === "archon" ? 1.2 : 0), atk: "", lastAtk: "", tele: null,
+      atkCd: extra.isBoss ? 2.06 : (type === "archon" ? 1.45 : 0), atk: "", lastAtk: "", tele: null,
       phaseIdx: 0, followups: [], stream: null, afterReturn: "", combo: false, aimX: 0, aimY: 0,
       r: enemyR(type), patrolDir: 1,
       leech: !!extra.leech, leechHp: 0, leechAcc: 0, healFlash: 0
@@ -2130,14 +2181,14 @@
     if (e.type === "mortar") {
       tgt = targetPlayer(e.x, e.y);
       armLaneBomb(tgt ? tgt.x : W / 2, H - 40, "#ff6b3d");
-      e.shotCd = 2.4 / (1 + extraPlayers() * 0.2);
+      e.shotCd = 2.9 / (1 + extraPlayers() * 0.2);
     } else if (e.type === "hex") {
       e.jamTele = 0.4;
       addTele("glow", e.x, e.y, 0, 0, 0.4, "#c44dff");
-      e.shotCd = 3.6;
+      e.shotCd = 4.35;
     } else if (e.type === "bulwark") {
       aimedShot(e, 0.7, 130 + pressureWave() * 5, { color: "#c8d0e8", glow: "#9aa8c8" });
-      e.shotCd = 3.2;
+      e.shotCd = 3.87;
     }
   }
   function startArchonCharge(e) {
@@ -2162,7 +2213,7 @@
       if (e.tele.t <= 0) {
         startArchonCharge(e);
         e.tele = null;
-        e.atkCd = e.phaseIdx >= 1 ? 1.05 : 1.4;
+        e.atkCd = e.phaseIdx >= 1 ? 1.27 : 1.69;
       }
       return;
     }
@@ -2180,7 +2231,7 @@
     spread = enraged ? 0.7 : 0.48;
     fanShot(e.x, e.y + 8, count, spread, 150 + wave * 2, 20, { color: "#ffd6a0", glow: "#ff5c7a" });
     if (enraged) armLaneBomb(e.aimX, H - 40, "#ff5c7a");
-    e.atkCd = enraged ? 1.05 : 1.4;
+    e.atkCd = enraged ? 1.27 : 1.69;
   }
   function currentArchon() {
     var i;
@@ -2358,9 +2409,9 @@
       addTele("glow", clamp(e.x + 60, 20, W - 20), e.y, 0, 0, delay + 0.1, col);
     } else if (atk === "fan" || atk === "fan2" || atk === "flare" || atk === "barrage" || atk === "frenzy" || atk === "mines" || atk === "summon" || atk === "summontank" || atk === "depth" || atk === "escorts" || atk === "tick" || atk === "ticksplit" || atk === "singularity") {
       addTele("glow", e.x, e.y + (atk === "mines" || atk === "depth" ? 12 : 0), 0, 0, delay, atk === "mines" || atk === "depth" ? "#ff9a3d" : col);
-    } else if (atk === "ram" || atk === "ramfan" || atk === "charge" || atk === "charge2") {
-      addTele("flash", e.x, e.y, e.aimX, e.aimY, delay + 0.1, "#ff4d4d");
-      addTele("line", e.x, e.y, e.aimX, e.aimY, delay + 0.1, "#ff4d4d");
+    } else if (atk === "ram" || atk === "ramfan" || atk === "charge" || atk === "charge2" || atk === "lunge" || atk === "lunge2") {
+      addTele("flash", e.x, e.y, e.aimX, e.aimY, delay + 0.1, atk === "lunge" || atk === "lunge2" ? "#3dffb0" : "#ff4d4d");
+      addTele("line", e.x, e.y, e.aimX, e.aimY, delay + 0.1, atk === "lunge" || atk === "lunge2" ? "#3dffb0" : "#ff4d4d");
     } else if (atk === "blink" || atk === "blink2" || atk === "rewind") {
       addTele("flash", e.x, e.y, 0, 0, Math.max(0.26, delay - 0.12), col);
       delay = Math.max(0.26, delay - 0.12);
@@ -2540,9 +2591,18 @@
       e.sx = e.x; e.sy = e.y;
       e.ex = e.aimX != null ? e.aimX : ((targetPlayer(e.x, e.y) || player || {}).x || W / 2); e.ey = H - 50;
       if (atk === "charge2") e.afterReturn = "charge";
+    } else if (atk === "lunge" || atk === "lunge2") {
+      e.state = "lunge";
+      e.t = 0; e.dur = 0.68;
+      e.sx = e.x; e.sy = e.y;
+      e.ex = clamp(e.aimX != null ? e.aimX : ((targetPlayer(e.x, e.y) || player || {}).x || W / 2), 28, W - 28);
+      e.ey = H - 78;
+      e.cx = (e.sx + e.ex) * 0.5 + (e.ex >= e.sx ? 38 : -38);
+      e.cy = (e.sy + e.ey) * 0.5 - 8;
+      if (atk === "lunge2") e.afterReturn = "lunge";
     } else if (atk === "homing") {
-      addEbul(e.x - 10, e.y + 8, -14, 62, { homing: true, homeT: 1.35, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
-      addEbul(e.x + 10, e.y + 8, 14, 62, { homing: true, homeT: 1.35, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
+      addEbul(e.x - 10, e.y + 8, -18, 80, { homing: true, homeT: 2.05, hsp: 102, hturn: 1.28, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
+      addEbul(e.x + 10, e.y + 8, 18, 80, { homing: true, homeT: 2.05, hsp: 102, hturn: 1.28, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
     } else if (atk === "shock") {
       fireRow(e.y + 24, 9, 70, -1, -1, { r: 2.8, color: "#ffe08a", glow: col });
     } else if (atk === "shockgap") {
@@ -2658,8 +2718,8 @@
       summonKami(e, 2 + (e.tier > 0 ? 1 : 0));
     } else if (atk === "corering") {
       ringShot(e.x, e.y, 14, 105, opt);
-      addEbul(e.x - 10, e.y + 8, -14, 62, { homing: true, homeT: 1.5, r: 3.2, color: "#ffe0a0", glow: col });
-      addEbul(e.x + 10, e.y + 8, 14, 62, { homing: true, homeT: 1.5, r: 3.2, color: "#ffe0a0", glow: col });
+      addEbul(e.x - 10, e.y + 8, -18, 80, { homing: true, homeT: 2.15, hsp: 102, hturn: 1.28, r: 3.2, color: "#ffe0a0", glow: col });
+      addEbul(e.x + 10, e.y + 8, 18, 80, { homing: true, homeT: 2.15, hsp: 102, hturn: 1.28, r: 3.2, color: "#ffe0a0", glow: col });
     } else if (atk === "orbital") {
       for (i = 0; i < 5; i++) {
         if (i === e.gapIdx) continue;
@@ -2740,6 +2800,18 @@
       }
       return;
     }
+    if (e.state === "lunge") {
+      e.t += dt / e.dur;
+      t = e.t > 1 ? 1 : e.t;
+      e.x = bezier(t, e.sx, e.cx, e.ex);
+      e.y = bezier(t, e.sy, e.cy, e.ey);
+      if (e.t >= 1) {
+        fanShot(e.x, e.y + 8, 3, 0.62, 132 + e.tier * 8, 0, { color: "#b8ffe0", glow: enemyColor(e.type) });
+        e.state = "return"; e.t = 0; e.dur = 0.72;
+        e.sx = e.x; e.sy = e.y;
+      }
+      return;
+    }
     if (e.state === "whip") {
       e.t += dt / e.dur;
       t = e.t > 1 ? 1 : e.t;
@@ -2810,7 +2882,7 @@
     var n = 0, i, s;
     for (i = 0; i < enemies.length; i++) {
       s = enemies[i].state;
-      if (enemies[i].alive && (s === "dive" || s === "return" || s === "kami" || s === "charge")) n += 1;
+      if (enemies[i].alive && (s === "dive" || s === "return" || s === "kami" || s === "charge" || s === "lunge")) n += 1;
     }
     return n;
   }
@@ -3029,7 +3101,44 @@
     var pct = hi <= lo ? 1 : (profile.totalXp - lo) / (hi - lo);
     if (fill) fill.style.width = Math.round(Math.max(0, Math.min(1, pct)) * 100) + "%";
     if (lab) lab.textContent = lv >= MAX_LEVEL ? "MAX LEVEL  ·  " + profile.totalXp + " XP" : (profile.totalXp - lo) + " / " + (hi - lo) + " XP to Lv " + (lv + 1);
+    renderStartWavePicker("start-wave-opts");
     drawHubPreview();
+  }
+  function renderStartWavePicker(id, readOnly) {
+    var box = el(id);
+    var hint = el(id === "start-wave-opts" ? "start-wave-hint" : "lobby-start-wave-hint");
+    var lv = xpLevel(profile.totalXp);
+    var opts = startWaveOptions(lv);
+    var chosen = preferredStartWave();
+    var html = "", i, n, label;
+    if (!box) return;
+    if (readOnly) {
+      box.innerHTML = "";
+      if (hint) hint.textContent = "Host chooses the starting wave";
+      return;
+    }
+    for (i = 0; i < opts.length; i++) {
+      n = opts[i];
+      label = n === 1 ? "Wave 1" : ("Wave " + n);
+      html += '<button type="button" class="start-wave-opt' + (n === chosen ? " active" : "") + '" data-wave="' + n + '"' + (readOnly ? " disabled" : "") + ">" + label + "</button>";
+    }
+    box.innerHTML = html;
+    if (!readOnly) {
+      box.onclick = function (ev) {
+        var btn = ev.target && ev.target.closest ? ev.target.closest(".start-wave-opt") : null;
+        var w;
+        if (!btn) return;
+        w = btn.getAttribute("data-wave") | 0;
+        setPreferredStartWave(w);
+        renderStartWavePicker("start-wave-opts");
+        renderStartWavePicker("lobby-start-wave-opts");
+      };
+    }
+    if (hint) {
+      hint.textContent = lv < 10
+        ? "Reach level 10 to skip early waves"
+        : ("Unlocked through wave " + maxStartWave(lv));
+    }
   }
 
   var boardFetch = 0;
@@ -3507,7 +3616,6 @@
     var specs = opts.coopPlayers;
     if (!specs) specs = [profileLoadoutSpec()];
     lastCoopSpecs = specs.length > 1 ? specs : null;
-    if (netRole === "host" && specs.length > 1) netSend({ t: "start", players: specs });
     players = [];
     var i, p, s;
     for (i = 0; i < specs.length; i++) {
@@ -3534,7 +3642,10 @@
     snapshotDailies();
     resetInput();
     makeStars();
-    if (netRole !== "client") spawnWave(1);
+    var startN = opts.startWave != null ? clampStartWave(opts.startWave, MAX_LEVEL) : preferredStartWave();
+    startN = applySkipState(startN);
+    if (netRole === "host" && specs.length > 1) netSend({ t: "start", players: specs, startWave: startN });
+    if (netRole !== "client") spawnWave(startN);
     startMusic();
     showScreen("play");
     startLoop();
@@ -3634,6 +3745,7 @@
     if (codeEl) codeEl.textContent = (window.__net && window.__net.code()) || "----";
     if (startBtn) startBtn.classList.toggle("hidden", netRole !== "host");
     if (waitEl) waitEl.classList.toggle("hidden", netRole === "host" || lobbyMode !== "ready");
+    renderStartWavePicker("lobby-start-wave-opts", netRole !== "host");
     setLobbyErr(lobbyErr);
   }
 
@@ -4123,7 +4235,7 @@
     });
     n.on("start", function (msg) {
       if (netRole === "host") return;
-      startNewGame({ coopPlayers: msg.players, fromNet: true, localSlot: 1 });
+      startNewGame({ coopPlayers: msg.players, fromNet: true, localSlot: 1, startWave: msg.startWave || 1 });
     });
     n.on("input", function (msg) {
       var slot = msg.slot;
@@ -4372,7 +4484,7 @@
               e.shotCd -= dt;
               if (e.shotCd <= 0) {
                 aimedShot(e, 0.92, 150 + pressureWave() * 6, { color: "#ffd0e8", glow: "#ff4d9a" });
-                e.shotCd = Math.max(0.7, (2.3 - pressureWave() * 0.08) / (1 + extraPlayers() * 0.35));
+                e.shotCd = Math.max(0.85, (2.78 - pressureWave() * 0.08) / (1 + extraPlayers() * 0.35));
               }
             }
           }
@@ -4500,7 +4612,7 @@
         if (!e.alive) continue;
         if (b.hit && b.hit.indexOf(e) >= 0) continue;
         if (dist2(b.x, b.y, e.x, e.y) < (e.r + br) * (e.r + br)) {
-          killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge", b.dmg || 1);
+          killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", b.dmg || 1);
           if (b.splash) {
             var sj, se;
             for (sj = 0; sj < enemies.length; sj++) {
@@ -4974,7 +5086,7 @@
     var col = e.hitFlash > 0 ? "#ffffff" : enemyColor(e.type);
     context.save();
     context.translate(e.x, e.y);
-    if (e.state === "dive" || e.state === "kami" || e.state === "charge") context.rotate(Math.sin(time * 10 + e.phase) * 0.2);
+    if (e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge") context.rotate(Math.sin(time * 10 + e.phase) * 0.2);
     glow(context, col, e.isBoss ? 14 : 8);
     context.fillStyle = col;
     if (e.isBoss) {
@@ -5607,7 +5719,7 @@
       getProfile: function () { return profile; },
       resetAllProgress: resetAllProgress,
       COIN_SPAWN_MUL: COIN_SPAWN_MUL,
-      setXp: function (xp) { profile.totalXp = Math.max(0, xp | 0); saveProfile(); if (uiScreen === "hub") renderHub(); else if (uiScreen === "hangar") renderHangar(); else if (uiScreen === "quests") renderQuests(); return xpLevel(profile.totalXp); },
+      setXp: function (xp) { profile.totalXp = Math.max(0, xp | 0); profile.startWave = clampStartWave(profile.startWave || 1); saveProfile(); if (uiScreen === "hub") renderHub(); else if (uiScreen === "hangar") renderHangar(); else if (uiScreen === "quests") renderQuests(); return xpLevel(profile.totalXp); },
       setCoins: function (c) { profile.coins = Math.max(0, c | 0); saveProfile(); if (uiScreen === "hangar") renderHangar(); else renderHub(); },
       equip: function (cat, id) { if (!isOwned(cat, id)) ownedList(cat).push(id); equipItem(cat, id); },
       spawnBoss: function (type, tier) {
@@ -5696,6 +5808,12 @@
       bossMeta: bossMeta,
       bossHp: bossHp,
       enemyHp: enemyHp,
+      FIRE_MS: FIRE_MS,
+      maxStartWave: maxStartWave,
+      startWaveOptions: startWaveOptions,
+      skipCredit: skipCredit,
+      preferredStartWave: preferredStartWave,
+      setPreferredStartWave: setPreferredStartWave,
       XP_SCORE_MUL: XP_SCORE_MUL,
       soloEarly: soloEarly,
       pressureWave: pressureWave,

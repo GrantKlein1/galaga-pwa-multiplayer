@@ -130,6 +130,49 @@ html, body {
   overflow: hidden;
 }
 .xp-fill { height: 100%; width: 0; background: linear-gradient(90deg, #3df0ff, #7ef9ff); }
+.start-wave-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 2px 0 2px;
+}
+.start-wave-lab {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9ab8ff;
+  text-align: left;
+}
+.start-wave-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+}
+.start-wave-opt {
+  flex: 1 1 28%;
+  min-width: 72px;
+  background: transparent;
+  color: #9ab8ff;
+  border: 1px solid #2a3a66;
+  border-radius: 6px;
+  padding: 7px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 34px;
+}
+.start-wave-opt.active { background: #7ef9ff; color: #041018; border-color: #7ef9ff; }
+.start-wave-opt:hover:not(.active):not(:disabled) { background: rgba(126, 249, 255, 0.12); }
+.start-wave-opt:disabled { opacity: 0.7; cursor: default; }
+.start-wave-hint {
+  font-size: 8px;
+  line-height: 1.4;
+  opacity: 0.5;
+  text-align: left;
+}
 .btn {
   color: #041018;
   background: #7ef9ff;
