@@ -504,9 +504,9 @@
     } else {
       for (i = 0; i < 6; i++) addSlot(slots, (i - 2.5) * 38, (i % 2) * 32, mixType(tn, i, "mid"));
     }
-    injectElites(slots, n);
     padFormation(slots, n);
     thinEarlyWave(slots, n);
+    injectElites(slots, n);
     thinArchonEscorts(slots);
     relaxSlots(slots);
     return slots;
@@ -547,7 +547,7 @@
       best = -1;
       bestD = 1e12;
       for (i = 0; i < slots.length; i++) {
-        if (slots[i].type === "archon") continue;
+        if (slots[i].type === "archon" || slots[i].type === "mortar" || slots[i].type === "hex" || slots[i].type === "harrier" || slots[i].type === "bulwark") continue;
         escortN += 1;
         d = nearestSlotDist2(slots, i);
         if (d < bestD) { bestD = d; best = i; }
@@ -559,7 +559,7 @@
   }
   function thinEarlyWave(slots, n) {
     if (n < 1 || n > 10 || isBossWave(n) || slots.length <= 1) return slots;
-    dropCrowdedEscorts(slots, 1);
+    dropCrowdedEscorts(slots, n <= 3 ? 2 : 1);
     return slots;
   }
   function thinArchonEscorts(slots) {
@@ -606,33 +606,55 @@
     return slots;
   }
   function injectElites(slots, n) {
-    var used = {}, added = 0, i, h, type, types, ti, tries, archonIdx;
+    var typeCount = {}, added = 0, i, h, type, types, ti, tries, archonIdx, cap, chance, perType, minElites;
     if (n < 6 || isBossWave(n) || !slots.length) return slots;
     if (isMiniWave(n)) {
       archonIdx = pickCenteredBack(slots);
       slots[archonIdx].type = "archon";
     }
     types = ["mortar", "hex", "harrier", "bulwark"];
-    for (i = 0; i < slots.length && added < 2; i++) {
-      if (slots[i].type === "archon") continue;
-      h = (n * 17 + i * 31) % 100;
-      if (h >= 9) continue;
-      ti = (n + i) % types.length;
+    cap = n >= 21 ? 4 : n >= 11 ? 3 : 2;
+    chance = n >= 21 ? 18 : n >= 11 ? 14 : 9;
+    perType = n >= 11 ? 2 : 1;
+    minElites = n >= 21 ? 3 : n >= 11 ? 2 : 0;
+    function takeElite(idx) {
+      ti = (n + idx) % types.length;
       type = null;
       for (tries = 0; tries < types.length; tries++) {
-        if (!used[types[ti]]) { type = types[ti]; break; }
+        if (!(typeCount[types[ti]])) { type = types[ti]; break; }
         ti = (ti + 1) % types.length;
       }
-      if (!type) break;
-      used[type] = true;
-      slots[i].type = type;
+      if (!type) {
+        ti = (n + idx) % types.length;
+        for (tries = 0; tries < types.length; tries++) {
+          if ((typeCount[types[ti]] || 0) < perType) { type = types[ti]; break; }
+          ti = (ti + 1) % types.length;
+        }
+      }
+      if (!type) return false;
+      typeCount[type] = (typeCount[type] || 0) + 1;
+      slots[idx].type = type;
       added += 1;
+      return true;
+    }
+    for (i = 0; i < slots.length && added < cap; i++) {
+      if (slots[i].type === "archon") continue;
+      h = (n * 17 + i * 31) % 100;
+      if (h >= chance) continue;
+      takeElite(i);
+    }
+    for (i = 0; i < slots.length && added < Math.min(cap, minElites); i++) {
+      if (slots[i].type === "archon") continue;
+      if (slots[i].type === "mortar" || slots[i].type === "hex" || slots[i].type === "harrier" || slots[i].type === "bulwark") continue;
+      takeElite(i);
     }
     return slots;
   }
 
   // Co-op keeps the solo shape, then adds ships so the count is 4/3 of solo
   // (wave 2 is 15 solo → 20 co-op). Extra ranks sit behind with room to breathe.
+  // Solo 1–10 used to pad +4/+3, which made the opening denser than wave 11+.
+  // Early now pads +2; later waves fill up to a rising floor so they stay fuller.
   function padFormation(slots, n) {
     var extra = extraPlayers();
     var i, add, src, row, ox, oy, base, target;
@@ -651,7 +673,7 @@
       }
     }
     if (soloEarly(n) && slots.length) {
-      add = n <= 3 ? 4 : 3;
+      add = 2;
       for (i = 0; i < add; i++) {
         src = slots[i % slots.length];
         row = 1 + Math.floor(i / slots.length);
@@ -660,6 +682,18 @@
         if (ox < -108) ox = -108;
         oy = src.oy - 34 * row;
         addSlot(slots, ox, oy, mixType(typeWave(n), slots.length + i, "back"));
+      }
+    } else if (!isCoop() && n > 10 && !isBossWave(n) && slots.length) {
+      target = 13 + Math.min(3, Math.floor((n - 11) / 8));
+      add = Math.max(0, target - slots.length);
+      for (i = 0; i < add; i++) {
+        src = slots[i % slots.length];
+        row = 1 + Math.floor(i / slots.length);
+        ox = src.ox + ((i % 2) ? 22 : -22);
+        if (ox > 108) ox = 108;
+        if (ox < -108) ox = -108;
+        oy = src.oy - 34 * row;
+        addSlot(slots, ox, oy, mixType(n, slots.length + i, "back"));
       }
     }
     return slots;
@@ -1055,6 +1089,7 @@
     return (ship || shipDef()).r + (mod === "reactor" ? 1 : 0);
   }
   function loadoutLives(ship) { return Math.max(1, START_LIVES + ((ship || shipDef()).extraLives || 0)); }
+  function lifeCap(who) { return Math.min(MAX_LIVES, loadoutLives(shipDef(who)) + 1); }
   function gunInterval(g) {
     return g.cd * FIRE_MS / 140;
   }
@@ -1592,11 +1627,12 @@
     }
     return POWER_WEIGHTS[POWER_WEIGHTS.length - 1].kind;
   }
-  // HEAL gems: originally a 1.2% band after the 1% 1UP roll, then 0.72%. Cut again to 0.36%
-  // at wave 1, then climb with wave so later fights still see some sustain — still below the old cap.
+  // HEAL gems: originally a 1.2% band after the 1% 1UP roll, then 0.72%, then 0.36%.
+  // Cut another 20% to 0.288% at wave 1; still climbs with wave. 1UPs are 0.8% (was 1%).
+  function lifeDropChance() { return 0.008; }
   function healDropChance(n) {
     n = n || wave || 1;
-    return 0.0036 * (1 + Math.min(0.6, (n - 1) * 0.012));
+    return 0.00288 * (1 + Math.min(0.6, (n - 1) * 0.012));
   }
   function maybeDrop(e, guaranteed) {
     if (guaranteed) {
@@ -1607,8 +1643,8 @@
     var roll = Math.random();
     var pc = playerCount();
     var wrate = ((e.type === "tank" || e.type === "shield" || e.type === "mortar" || e.type === "hex" || e.type === "harrier" || e.type === "bulwark") ? 0.07 : 0.05) * pc;
-    var healEnd = (0.01 + healDropChance()) * pc;
-    if (roll < 0.01 * pc) spawnPickup(e.x, e.y, "life");
+    var healEnd = (lifeDropChance() + healDropChance()) * pc;
+    if (roll < lifeDropChance() * pc) spawnPickup(e.x, e.y, "life");
     else if (roll < healEnd) spawnPickup(e.x, e.y, "heal");
     else if (roll < wrate) spawnPickup(e.x, e.y, pickWeightedPowerup());
     dropCoins(e, false);
@@ -1636,10 +1672,10 @@
     if (kind === "revive") {
       reviveDownedFrom(who);
     } else if (kind === "life") {
-      if (who.lives < MAX_LIVES) who.lives += 1;
+      if (who.lives < lifeCap(who)) who.lives += 1;
       banner = { text: "1UP", life: 0.8 };
     } else if (kind === "heal") {
-      if (who.lives < START_LIVES) {
+      if (who.lives < loadoutLives(shipDef(who))) {
         who.lives += 1;
         banner = { text: "HEAL", life: 0.8 };
       } else {
@@ -1855,8 +1891,8 @@
     amount = Math.max(1, Math.round(amount * 0.45 * mul * COIN_SPAWN_MUL * pc));
     spawnPickup(e.x + rand(-6, 6), e.y + 10, "coin", amount);
     roll = Math.random();
-    if (roll < 0.01 * pc) spawnPickup(e.x, e.y - 8, "life");
-    else if (roll < (0.01 + healDropChance()) * pc) spawnPickup(e.x, e.y - 8, "heal");
+    if (roll < lifeDropChance() * pc) spawnPickup(e.x, e.y - 8, "life");
+    else if (roll < (lifeDropChance() + healDropChance()) * pc) spawnPickup(e.x, e.y - 8, "heal");
     else if (roll < 0.14 * pc) spawnPickup(e.x, e.y - 8, pickWeightedPowerup());
   }
 
@@ -2002,7 +2038,7 @@
       var pi, pl;
       for (pi = 0; pi < players.length; pi++) {
         pl = players[pi];
-        if (pl && pl.alive && shipDef(pl).passive === "eclipse" && pl.lives < MAX_LIVES) {
+        if (pl && pl.alive && shipDef(pl).passive === "eclipse" && pl.lives < lifeCap(pl)) {
           pl.lives += 1;
           sfxLife();
         }
@@ -2112,7 +2148,7 @@
   function reviveDownedFrom(collector) {
     var target = downedPlayer();
     if (!target) {
-      if (collector && collector.lives < MAX_LIVES) collector.lives += 1;
+      if (collector && collector.lives < lifeCap(collector)) collector.lives += 1;
       banner = { text: "1UP", life: 0.8 };
       return;
     }
@@ -2669,8 +2705,8 @@
       e.cy = (e.sy + e.ey) * 0.5 - 8;
       if (atk === "lunge2") e.afterReturn = "lunge";
     } else if (atk === "homing") {
-      addEbul(e.x - 10, e.y + 8, -18, 80, { homing: true, homeT: 2.05, hsp: 102, hturn: 1.28, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
-      addEbul(e.x + 10, e.y + 8, 18, 80, { homing: true, homeT: 2.05, hsp: 102, hturn: 1.28, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
+      addEbul(e.x - 10, e.y + 8, -18, 80, { homing: true, homeT: 2.05, hsp: 153, hturn: 1.92, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
+      addEbul(e.x + 10, e.y + 8, 18, 80, { homing: true, homeT: 2.05, hsp: 153, hturn: 1.92, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
     } else if (atk === "shock") {
       fireRow(e.y + 24, 9, 70, -1, -1, { r: 2.8, color: "#ffe08a", glow: col });
     } else if (atk === "shockgap") {
@@ -2858,6 +2894,8 @@
       return;
     }
     if (e.state === "charge") {
+      var chAim = targetPlayer(e.x, e.y);
+      if (e.type === "colossus" && chAim && chAim.alive) e.ex += (chAim.x - e.ex) * Math.min(1, 0.96 * dt);
       e.t += dt / e.dur;
       t = e.t > 1 ? 1 : e.t;
       e.x = lerp(e.sx, e.ex, t);
@@ -2928,6 +2966,19 @@
     fy = 70 + Math.sin(time * d.freq + e.phase) * amp;
     e.y += (fy - e.y) * Math.min(1, 4 * dt);
     if (e.tele) {
+      if (e.type === "colossus" && (e.tele.atk === "charge" || e.tele.atk === "charge2" || e.tele.atk === "homing")) {
+        var liveAim = targetPlayer(e.x, e.y);
+        if (liveAim) {
+          e.aimX += (liveAim.x - e.aimX) * Math.min(1, 0.96 * dt);
+          e.aimY += (liveAim.y - e.aimY) * Math.min(1, 0.96 * dt);
+          for (i = 0; i < teles.length; i++) {
+            if (teles[i].kind === "line" || teles[i].kind === "flash") {
+              teles[i].x2 = e.aimX;
+              teles[i].y2 = e.aimY;
+            }
+          }
+        }
+      }
       e.tele.t -= dt;
       if (e.tele.t <= 0) {
         fireBossAttack(e, e.tele.atk);
@@ -5897,7 +5948,9 @@
       pressureWave: pressureWave,
       typeWave: typeWave,
       formationKind: formationKind,
+      lifeDropChance: lifeDropChance,
       healDropChance: healDropChance,
+      lifeCap: lifeCap,
       xpLevel: xpLevel,
       xpForLevel: xpForLevel,
       levelTitle: levelTitle,
