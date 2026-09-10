@@ -5,6 +5,7 @@
 
   var ENEMY_TYPES = [
     "grunt", "sniper", "tank", "weaver", "kami", "shield",
+    "mortar", "hex", "harrier", "bulwark", "archon",
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord"
   ];
@@ -325,6 +326,7 @@
     w.u8w(idxOf(GUN_IDS, p.gun || "pulse"));
     w.u8w(idxOf(MOD_IDS, p.mod || ""));
     w.coord(p.targetX != null ? p.targetX : p.x);
+    w.u8frac(p.jamT, 10);
   }
 
   function readPl(r) {
@@ -347,6 +349,7 @@
       mod: MOD_IDS[r.u8r()] || null
     };
     p.targetX = r.coord();
+    p.jamT = r.u8frac(10);
     if (!p.mod) p.mod = null;
     return p;
   }
@@ -475,7 +478,7 @@
       pl: [{
         slot: 0, x: 120, y: 326, alive: 1, invuln: 0, muzzle: 0, shieldHp: 0,
         weapon: "normal", weaponT: 0, speedT: 0, lives: 3, r: 9, slowT: 0,
-        ship: "wisp", gun: "pulse", mod: null, targetX: 120
+        ship: "wisp", gun: "pulse", mod: null, targetX: 120, jamT: 0
       }]
     };
     buf = encodeSnap(4, s);
