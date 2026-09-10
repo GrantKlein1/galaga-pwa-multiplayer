@@ -1,4 +1,4 @@
-var CACHE = "galaga-coop-v7";
+var CACHE = "galaga-coop-v10";
 var PRECACHE = [
   "/",
   "/index.html",
@@ -6,6 +6,7 @@ var PRECACHE = [
   "/js/galaga.js",
   "/js/touchpad.js",
   "/js/net.js",
+  "/js/netcodec.js",
   "/js/vendor/peerjs.min.js",
   "/manifest.webmanifest",
   "/icons/icon-192.png",
@@ -16,7 +17,12 @@ var PRECACHE = [
 self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE).then(function (cache) {
-      return cache.addAll(PRECACHE);
+      return Promise.all(PRECACHE.map(function (url) {
+        return fetch(url, { cache: "reload" }).then(function (res) {
+          if (!res || res.status !== 200) throw new Error("precached failed");
+          return cache.put(url, res);
+        });
+      }));
     }).then(function () {
       return self.skipWaiting();
     })
@@ -40,6 +46,7 @@ self.addEventListener("fetch", function (event) {
   if (req.method !== "GET") return;
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.indexOf("/api/") === 0) return;
   event.respondWith(
     fetch(req).then(function (res) {
       if (!res || res.status !== 200 || res.type === "opaque") return res;

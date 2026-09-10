@@ -273,13 +273,21 @@
   var netRole = null;
   var netEvents = [];
   var netReplay = false;
-  var pendingSnap = null;
+  var snapBuf = [];
   var snapAcc = 0;
   var snapSeq = 0;
   var lastSnapN = 0;
+  var clientClock = 0;
+  var hostOffset = 0;
+  var hostClockReady = false;
+  var interpDelay = 0.055;
+  var nextEntId = 1;
+  var evSeq = 0;
+  var lastEvN = 0;
   var inputAcc = 0;
   var inputSeq = 0;
   var lastInputN = 0;
+  var lastInputNBySlot = [0, 0];
   var lastInputKey = "";
   var disconnectNote = "";
   var lobbyMode = "pick";
@@ -299,6 +307,12 @@
   var form = { ox: 0, oy: 46, dir: 1, speed: 28, minOff: 0, maxOff: 0 };
 
   function el(id) { return document.getElementById(id); }
+  function allocId() {
+    var id = nextEntId;
+    nextEntId += 1;
+    if (nextEntId > 65535) nextEntId = 1;
+    return id;
+  }
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -511,6 +525,8 @@
       coins: 0,
       totalXp: 0,
       best: 0,
+      pid: "",
+      name: "",
       muted: false,
       ownedShips: ["wisp"],
       ownedGuns: ["pulse"],
@@ -533,6 +549,11 @@
     if (typeof raw.coins === "number") p.coins = Math.max(0, raw.coins | 0);
     if (typeof raw.totalXp === "number") p.totalXp = Math.max(0, raw.totalXp | 0);
     if (typeof raw.best === "number") p.best = Math.max(0, raw.best | 0);
+    if (typeof raw.pid === "string" && /^[a-zA-Z0-9_-]{8,64}$/.test(raw.pid)) p.pid = raw.pid;
+    if (typeof raw.name === "string") {
+      var nm = sanitizeName(raw.name);
+      if (nm) p.name = nm;
+    }
     if (typeof raw.muted === "boolean") p.muted = raw.muted;
     p.ownedShips = cloneArr(raw.ownedShips, ["wisp"]);
     p.ownedGuns = cloneArr(raw.ownedGuns, ["pulse"]);
@@ -801,6 +822,53 @@
     if (g.bolt) per += (g.boltDmg || 2) / g.bolt;
     return per * (1000 / gunInterval(g)) * loadoutDmgMul(ship, mod) * loadoutFireMul(ship, mod);
   }
+  function sanitizeName(s) {
+    s = String(s || "").replace(/[^\w .\-]/g, "").replace(/\s+/g, " ").trim();
+    if (s.length > 16) s = s.slice(0, 16).trim();
+    return s;
+  }
+  function makePid() {
+    var out = "", i, n;
+    try {
+      var buf = new Uint8Array(16);
+      (window.crypto || window.msCrypto).getRandomValues(buf);
+      for (i = 0; i < buf.length; i++) {
+        n = buf[i];
+        out += (n < 16 ? "0" : "") + n.toString(16);
+      }
+      return out;
+    } catch (err) {
+      for (i = 0; i < 32; i++) out += "0123456789abcdef".charAt(Math.floor(Math.random() * 16));
+      return out;
+    }
+  }
+  function defaultPilotName(pid) {
+    return "Pilot-" + String(pid || "0000").slice(0, 4).toUpperCase();
+  }
+  function ensurePilot() {
+    var changed = false;
+    if (!profile.pid || typeof profile.pid !== "string" || !/^[a-zA-Z0-9_-]{8,64}$/.test(profile.pid)) {
+      profile.pid = makePid();
+      changed = true;
+    }
+    if (!profile.name) {
+      profile.name = defaultPilotName(profile.pid);
+      changed = true;
+    }
+    return changed;
+  }
+  function fmtScore(n) {
+    n = Math.max(0, n | 0);
+    var s = String(n), out = "", i;
+    for (i = 0; i < s.length; i++) {
+      if (i && (s.length - i) % 3 === 0) out += ",";
+      out += s.charAt(i);
+    }
+    return out;
+  }
+  function escHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
   function saveProfile() {
     profile.best = best;
     profile.muted = muted;
@@ -810,11 +878,14 @@
     profile = migrateProfile(raw);
     muted = profile.muted;
     best = profile.best;
-    if (ensureDailies()) saveProfile();
+    var dirty = ensurePilot();
+    if (ensureDailies()) dirty = true;
+    if (dirty) saveProfile();
     updateHud();
     if (!started || gameOver) {
       if (uiScreen === "hangar") renderHangar();
       else if (uiScreen === "quests") renderQuests();
+      else if (uiScreen === "ranks") refreshRanks();
       else showScreen("hub");
     }
   }
@@ -839,8 +910,13 @@
   }
   function resetAllProgress() {
     var keepMuted = muted;
+    var keepPid = profile.pid;
+    var keepName = profile.name;
     profile = defaultProfile();
     profile.muted = keepMuted;
+    profile.pid = keepPid;
+    profile.name = keepName;
+    ensurePilot();
     best = 0;
     muted = keepMuted;
     qSnap = {};
@@ -1010,8 +1086,9 @@
       src.stop(t + dur + 0.02);
     } catch (err) {}
   }
-  function sfxShoot() {
-    queueNet("sfx", "shoot");
+  function sfxShoot(who) {
+    var slot = who && who.slot != null ? who.slot : localSlot;
+    queueNet("sfx", "shoot", slot);
     if (!takeVoice("shoot", 0.042, 2, 0.06)) return;
     var spread = activeWeapon() === "spread";
     beep({ pulse: true, freq: spread ? 1240 : 1560, slide: spread ? 340 : 420, dur: 0.048, vol: 0.07 });
@@ -1156,6 +1233,7 @@
     extra = extra || {};
     var hp = enemyHp(type, extra.tier || 0, wave);
     return {
+      id: extra.id || allocId(),
       offX: offX, offY: offY, type: type,
       hp: hp, maxHp: hp, alive: true, state: "enter", t: 0, hitFlash: 0,
       x: W / 2 + offX * 0.2, y: -28 - Math.random() * 18,
@@ -1186,7 +1264,7 @@
   }
 
   function spawnPickup(x, y, kind, amount) {
-    pickups.push({ x: x, y: y, vy: 48, kind: kind, bob: Math.random() * 6, amount: amount || 1 });
+    pickups.push({ id: allocId(), x: x, y: y, vy: 48, kind: kind, bob: Math.random() * 6, amount: amount || 1 });
   }
   function fortuneMul() {
     var i, mul = 1, p, s;
@@ -1314,6 +1392,7 @@
     opt = opt || {};
     if (!opt.silent) sfxEnemyShot();
     ebul.push({
+      id: allocId(),
       x: x, y: y, vx: vx, vy: vy,
       r: opt.r || 2.3,
       homing: !!opt.homing,
@@ -1586,9 +1665,9 @@
     return out;
   }
   function shootPlayer(who) {
-    if (netRole === "client") return;
     who = who || player;
     if (!who || !who.alive || who.fireCd > 0) return;
+    var ghost = netRole === "client";
     var g = findGun(equippedGun(who));
     var gem = (who.weaponT > 0 && who.weapon !== "normal") ? who.weapon : "";
     var shots = gunShots(g, gem);
@@ -1601,11 +1680,12 @@
     for (i = 0; i < shots.length; i++) {
       s = shots[i];
       b = {
+        id: allocId(),
         x: who.x + s.dx, y: y, vx: Math.sin(s.ang) * s.spd, vy: -Math.cos(s.ang) * s.spd,
         dmg: dmg, r: g.r || 2, age: 0, life: g.life || 0,
         pierce: g.pierce || 0, hit: g.pierce ? [] : null,
         homing: !!g.homing, homeT: g.homeT || 0,
-        splash: g.splash || null, gun: g.id, owner: who.slot
+        splash: g.splash || null, gun: g.id, owner: who.slot, ghost: ghost
       };
       if (g.helix) {
         b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
@@ -1614,8 +1694,9 @@
     }
     if (bolt) {
       pbul.push({
+        id: allocId(),
         x: who.x, y: y, vx: 0, vy: -300, dmg: (g.boltDmg || 2) * loadoutDmgMul(shipDef(who), equippedMod(who), who), r: 3, age: 0, life: 0,
-        pierce: 0, hit: null, homing: true, homeT: 2.2, splash: null, gun: g.id, bolt: true, owner: who.slot
+        pierce: 0, hit: null, homing: true, homeT: 2.2, splash: null, gun: g.id, bolt: true, owner: who.slot, ghost: ghost
       });
     }
     var cd = gunInterval(g);
@@ -1623,7 +1704,7 @@
     cd /= loadoutFireMul(shipDef(who), equippedMod(who));
     who.fireCd = Math.max(0.035, cd / 1000);
     who.muzzle = 1;
-    sfxShoot();
+    sfxShoot(who);
   }
 
   function aimedShot(e, spread, spd, opt) {
@@ -2507,6 +2588,96 @@
     drawHubPreview();
   }
 
+  var boardFetch = 0;
+  function paintBoard(data) {
+    var list = el("board-list");
+    var status = el("board-status");
+    var youLine = el("board-you");
+    var entries = (data && data.entries) || [];
+    var you = data && data.you;
+    var i, h = "", row, rankCls, isYou;
+    if (youLine) {
+      youLine.textContent = you
+        ? "Your best  " + fmtScore(best) + "  ·  Rank #" + you.rank
+        : "Your best  " + fmtScore(best);
+    }
+    if (!entries.length) {
+      if (status) status.textContent = best > 0 ? "You're first. Finish a run on the live site to post it." : "No scores yet. Finish a run to post yours.";
+      if (list) list.innerHTML = "";
+      return;
+    }
+    if (status) status.textContent = (data.total || entries.length) + " pilot" + ((data.total || entries.length) === 1 ? "" : "s");
+    for (i = 0; i < entries.length; i++) {
+      row = entries[i];
+      isYou = !!(you && you.rank === i + 1);
+      rankCls = i === 0 ? " gold" : i === 1 ? " silver" : i === 2 ? " bronze" : "";
+      h += '<div class="board-row' + (isYou ? " you" : "") + '">';
+      h += '<div class="board-rank' + rankCls + '">' + (i + 1) + "</div>";
+      h += '<div class="board-pilot">' + escHtml(row.name) + (isYou ? "  (you)" : "") + "</div>";
+      h += '<div class="board-score">' + fmtScore(row.score) + "</div></div>";
+    }
+    if (you && you.rank > entries.length) {
+      h += '<div class="board-out">Your rank  #' + you.rank + "  ·  " + fmtScore(you.score) + "</div>";
+    }
+    if (list) list.innerHTML = h;
+  }
+  function refreshRanks() {
+    ensurePilot();
+    var nameIn = el("board-name");
+    if (nameIn && document.activeElement !== nameIn) nameIn.value = profile.name || "";
+    var youLine = el("board-you");
+    if (youLine) youLine.textContent = "Your best  " + fmtScore(best);
+    var status = el("board-status");
+    if (status) status.textContent = "Loading…";
+    var ticket = ++boardFetch;
+    var req;
+    if (profile.best > 0) {
+      req = fetch("/api/leaderboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: profile.pid, name: profile.name, score: profile.best | 0 })
+      });
+    } else {
+      req = fetch("/api/leaderboard?id=" + encodeURIComponent(profile.pid), { cache: "no-store" });
+    }
+    req.then(function (res) {
+      if (!res.ok) throw new Error("bad");
+      return res.json();
+    }).then(function (data) {
+      if (ticket !== boardFetch || uiScreen !== "ranks") return;
+      paintBoard(data);
+    }).catch(function () {
+      if (ticket !== boardFetch || uiScreen !== "ranks") return;
+      if (status) status.textContent = "Can't reach the board. Open the live game URL (needs internet).";
+      var list = el("board-list");
+      if (list) list.innerHTML = "";
+    });
+  }
+  function submitLeaderboard() {
+    ensurePilot();
+    if (!profile.pid || !(profile.best > 0)) return;
+    fetch("/api/leaderboard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: profile.pid, name: profile.name, score: profile.best | 0 })
+    }).then(function (res) {
+      if (res.ok && uiScreen === "ranks") return res.json().then(paintBoard);
+    }).catch(function () {});
+  }
+  function commitPilotName() {
+    var nameIn = el("board-name");
+    if (!nameIn) return;
+    var next = sanitizeName(nameIn.value);
+    if (!next) next = defaultPilotName(profile.pid);
+    nameIn.value = next;
+    if (next !== profile.name) {
+      profile.name = next;
+      saveProfile();
+    }
+    if (uiScreen === "ranks") refreshRanks();
+    else submitLeaderboard();
+  }
+
   // ---- Hangar ----------------------------------------------------------------------------
   var hangarTab = "ship";
   var RARITIES = ["common", "rare", "epic", "legendary"];
@@ -2757,7 +2928,7 @@
       return;
     }
     overlay.classList.remove("hidden");
-    var ids = ["hub", "hangar", "quests", "lobby", "pause", "summary"];
+    var ids = ["hub", "hangar", "quests", "ranks", "lobby", "pause", "summary"];
     var i;
     for (i = 0; i < ids.length; i++) {
       var node = el("screen-" + ids[i]);
@@ -2768,6 +2939,7 @@
       stopHubAnim();
       if (name === "hangar") renderHangar();
       if (name === "quests") { setResetConfirm(false); renderQuests(); }
+      if (name === "ranks") refreshRanks();
       if (name === "lobby") renderLobby();
     }
   }
@@ -2813,6 +2985,7 @@
     var newly = newlyCompleteNames();
     saveProfile();
     updateHud();
+    submitLeaderboard();
     if (showSummary) {
       var body = el("summary-body");
       if (body) {
@@ -2868,14 +3041,22 @@
     score = 0;
     coopOverSent = false;
     disconnectNote = "";
-    pendingSnap = null;
+    snapBuf = [];
     netEvents = [];
     snapAcc = 0;
     snapSeq = 0;
     lastSnapN = 0;
+    clientClock = 0;
+    hostOffset = 0;
+    hostClockReady = false;
+    interpDelay = 0.055;
+    nextEntId = 1;
+    evSeq = 0;
+    lastEvN = 0;
     inputAcc = 0;
     inputSeq = 0;
     lastInputN = 0;
+    lastInputNBySlot = [0, 0];
     lastInputKey = "";
     var specs = opts.coopPlayers;
     if (!specs) specs = [profileLoadoutSpec()];
@@ -2948,7 +3129,8 @@
     netRole = null;
     lobbyGuest = null;
     localSlot = 0;
-    pendingSnap = null;
+    snapBuf = [];
+    hostClockReady = false;
     if (window.__net) window.__net.close();
   }
 
@@ -3008,6 +3190,25 @@
     setLobbyErr(lobbyErr);
   }
 
+  function updateLobbyLink(info) {
+    var t = (info && info.transport) || netTransport();
+    var text = t === "mqtt" ? "Slow relay — still trying a faster link…" : "";
+    var node = el("lobby-link");
+    if (node) {
+      node.textContent = text;
+      node.classList.toggle("hidden", !text);
+    }
+    var hostWait = el("lobby-host-wait");
+    if (hostWait && lobbyMode === "host") {
+      hostWait.textContent = text || "Waiting for them to join… keep this screen open.";
+    }
+    var joinWait = el("lobby-join-wait");
+    if (joinWait && lobbyMode === "join" && text) {
+      joinWait.textContent = text;
+      joinWait.classList.remove("hidden");
+    }
+  }
+
   function openLobby() {
     bindNet();
     leaveNet();
@@ -3047,130 +3248,208 @@
     startNewGame({ coopPlayers: [profileLoadoutSpec(), lobbyGuest.loadout] });
   }
 
-  function packEn(e) {
-    return [Math.round(e.x * 10) / 10, Math.round(e.y * 10) / 10, e.type, e.alive ? 1 : 0, e.state || "", +(e.hitFlash || 0).toFixed(2), +(e.healFlash || 0).toFixed(2), e.isBoss ? 1 : 0, e.hp, e.maxHp, e.tier || 0, e.phaseIdx || 0, e.shieldHp || 0, e.r || 8, e.leech ? 1 : 0, +(e.leechHp || 0).toFixed(2), e.phase || 0];
+  function snapEn(e) {
+    return {
+      id: e.id, x: e.x, y: e.y, type: e.type, alive: e.alive ? 1 : 0, state: e.state || "",
+      hitFlash: e.hitFlash || 0, healFlash: e.healFlash || 0, isBoss: e.isBoss ? 1 : 0,
+      hp: e.hp, maxHp: e.maxHp, tier: e.tier || 0, phaseIdx: e.phaseIdx || 0,
+      shieldHp: e.shieldHp || 0, r: e.r || 8, leech: e.leech ? 1 : 0, leechHp: e.leechHp || 0,
+      phase: e.phase || 0
+    };
   }
-  function unpackEn(a) {
-    return { x: a[0], y: a[1], type: a[2], alive: !!a[3], state: a[4], hitFlash: a[5], healFlash: a[6], isBoss: !!a[7], hp: a[8], maxHp: a[9], tier: a[10], phaseIdx: a[11], shieldHp: a[12], r: a[13], leech: !!a[14], leechHp: a[15], phase: a[16] };
+  function snapPb(b) {
+    return {
+      id: b.id, x: b.x, y: b.y, vx: b.vx || 0, vy: b.vy || 0, r: b.r || 2,
+      gun: b.gun || "pulse", pierce: b.pierce || 0, homing: b.homing ? 1 : 0,
+      bolt: b.bolt ? 1 : 0, splash: b.splash ? 1 : 0, helix: b.helix ? 1 : 0,
+      owner: b.owner || 0
+    };
   }
-  function packPb(b) {
-    return [Math.round(b.x * 10) / 10, Math.round(b.y * 10) / 10, Math.round((b.vx || 0) * 10) / 10, Math.round((b.vy || 0) * 10) / 10, b.r || 2, b.gun || "", b.pierce || 0, b.homing ? 1 : 0, b.bolt ? 1 : 0, b.splash ? 1 : 0, b.helix ? 1 : 0];
+  function snapEb(b) {
+    return {
+      id: b.id, x: b.x, y: b.y, vx: b.vx || 0, vy: b.vy || 0, r: b.r || 2.3,
+      color: b.color || "#ffd0e0", glow: b.glow || "#ff6b9a", mine: b.mine ? 1 : 0
+    };
   }
-  function unpackPb(a) {
-    return { x: a[0], y: a[1], vx: a[2], vy: a[3], r: a[4], gun: a[5], pierce: a[6], homing: !!a[7], bolt: !!a[8], splash: a[9] ? { r: 34, dmg: 2 } : null, helix: !!a[10] };
+  function snapPk(p) {
+    return { id: p.id, x: p.x, y: p.y, kind: p.kind, amount: p.amount || 1, bob: p.bob || 0 };
   }
-  function packEb(b) {
-    return [Math.round(b.x * 10) / 10, Math.round(b.y * 10) / 10, Math.round((b.vx || 0) * 10) / 10, Math.round((b.vy || 0) * 10) / 10, b.r || 2.3, b.color || "#ffd0e0", b.glow || "#ff6b9a", b.mine ? 1 : 0];
+  function snapTe(t) {
+    return { kind: t.kind, x: t.x, y: t.y, x2: t.x2, y2: t.y2, t: t.t || 0, max: t.max, color: t.color };
   }
-  function unpackEb(a) {
-    return { x: a[0], y: a[1], vx: a[2], vy: a[3], r: a[4], color: a[5], glow: a[6], mine: !!a[7] };
-  }
-  function packPk(p) {
-    return [Math.round(p.x * 10) / 10, Math.round(p.y * 10) / 10, p.kind, p.amount || 1, +(p.bob || 0).toFixed(2)];
-  }
-  function unpackPk(a) {
-    return { x: a[0], y: a[1], kind: a[2], amount: a[3], bob: a[4] };
-  }
-  function packTe(t) {
-    return [t.kind, t.x, t.y, t.x2, t.y2, +(t.t || 0).toFixed(2), t.max, t.color];
-  }
-  function unpackTe(a) {
-    return { kind: a[0], x: a[1], y: a[2], x2: a[3], y2: a[4], t: a[5], max: a[6], color: a[7] };
-  }
-  function packPl(p) {
+  function snapPl(p) {
     var lo = p.loadout || {};
-    return [p.slot, Math.round(p.x * 10) / 10, Math.round(p.y * 10) / 10, p.alive ? 1 : 0, +(p.invuln || 0).toFixed(2), +(p.muzzle || 0).toFixed(2), p.shieldHp || 0, p.weapon || "normal", +(p.weaponT || 0).toFixed(2), +(p.speedT || 0).toFixed(2), p.lives, p.r, +(p.slowT || 0).toFixed(2), lo.ship || "wisp", lo.gun || "pulse", lo.mod || null];
+    return {
+      slot: p.slot, x: p.x, y: p.y, alive: p.alive ? 1 : 0, invuln: p.invuln || 0,
+      muzzle: p.muzzle || 0, shieldHp: p.shieldHp || 0, weapon: p.weapon || "normal",
+      weaponT: p.weaponT || 0, speedT: p.speedT || 0, lives: p.lives, r: p.r,
+      slowT: p.slowT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
+      mod: lo.mod || null, targetX: p.targetX != null ? p.targetX : p.x
+    };
   }
-  function applyPlayerRow(row) {
-    var slot = row[0];
+  function applyPlayerSnap(row) {
+    var slot = row.slot;
     var p = players[slot];
-    var spec = { ship: row[13], gun: row[14], mod: row[15] };
+    var spec = { ship: row.ship, gun: row.gun, mod: row.mod };
     if (!p) {
       p = makePlayer(slot, spec);
       players[slot] = p;
     }
     p.loadout = spec;
-    p.hostX = row[1];
-    if (slot === localSlot) {
-      if (Math.abs((p.x || 0) - row[1]) > 6) {
-        p.x = row[1];
-        p.targetX = row[1];
-      }
-    } else {
-      p.tx = row[1];
-      if (p.x == null) p.x = row[1];
-      p.targetX = row[1];
+    p.hostX = row.x;
+    if (slot !== localSlot && !p.netPlaced) {
+      p.x = row.x;
+      p.targetX = row.targetX != null ? row.targetX : row.x;
+      p.netPlaced = true;
     }
-    p.y = row[2];
-    p.alive = !!row[3];
-    p.invuln = row[4];
-    p.muzzle = row[5];
-    p.shieldHp = row[6];
-    p.weapon = row[7];
-    p.weaponT = row[8];
-    p.speedT = row[9];
-    p.lives = row[10];
-    p.r = row[11];
-    p.slowT = row[12];
+    p.y = row.y;
+    p.alive = !!row.alive;
+    p.invuln = row.invuln;
+    p.muzzle = row.muzzle;
+    p.shieldHp = row.shieldHp;
+    p.weapon = row.weapon;
+    p.weaponT = row.weaponT;
+    p.speedT = row.speedT;
+    p.lives = row.lives;
+    p.r = row.r;
+    p.slowT = row.slowT;
   }
   function buildSnap() {
     var i, en = [], pb = [], eb = [], pk = [], te = [], pl = [];
-    for (i = 0; i < enemies.length; i++) if (enemies[i].alive) en.push(packEn(enemies[i]));
-    for (i = 0; i < pbul.length; i++) pb.push(packPb(pbul[i]));
-    for (i = 0; i < ebul.length; i++) eb.push(packEb(ebul[i]));
-    for (i = 0; i < pickups.length; i++) pk.push(packPk(pickups[i]));
-    for (i = 0; i < teles.length; i++) te.push(packTe(teles[i]));
-    for (i = 0; i < players.length; i++) pl.push(packPl(players[i]));
-    var snap = {
+    for (i = 0; i < enemies.length; i++) if (enemies[i].alive) en.push(snapEn(enemies[i]));
+    for (i = 0; i < pbul.length; i++) if (!pbul[i].ghost) pb.push(snapPb(pbul[i]));
+    for (i = 0; i < ebul.length; i++) eb.push(snapEb(ebul[i]));
+    for (i = 0; i < pickups.length; i++) pk.push(snapPk(pickups[i]));
+    for (i = 0; i < teles.length; i++) te.push(snapTe(teles[i]));
+    for (i = 0; i < players.length; i++) pl.push(snapPl(players[i]));
+    return {
       sc: score, rc: run.coins, w: wave, sh: +(shake.toFixed(2)), fl: +(flash.toFixed(2)), tm: +time.toFixed(3),
       bn: banner ? { text: banner.text, life: +banner.life.toFixed(2) } : null,
       en: en, pb: pb, eb: eb, pk: pk, te: te, pl: pl
     };
-    if (netEvents.length) snap.ev = netEvents.slice();
-    return snap;
   }
-  function keepDisplayPos(old, neu, maxJump) {
-    if (old && Math.abs(old.x - neu.x) < maxJump && Math.abs(old.y - neu.y) < maxJump) {
-      neu.tx = neu.x;
-      neu.ty = neu.y;
-      neu.x = old.x;
-      neu.y = old.y;
-    } else {
-      neu.tx = neu.x;
-      neu.ty = neu.y;
+  function indexById(list) {
+    var m = {}, i, it;
+    list = list || [];
+    for (i = 0; i < list.length; i++) {
+      it = list[i];
+      if (it && it.id != null) m[it.id] = it;
     }
-    return neu;
+    return m;
   }
-  function applySnap(s) {
-    var i, oldEn, oldPk;
+  function copyEnt(src) {
+    var o = {}, k;
+    for (k in src) o[k] = src[k];
+    return o;
+  }
+  function interpKeyed(aList, bList, t, extra, skipOwner, isPb) {
+    var am = indexById(aList || []);
+    var out = [], i, b, a, o;
+    bList = bList || [];
+    for (i = 0; i < bList.length; i++) {
+      b = bList[i];
+      if (isPb && skipOwner >= 0 && b.owner === skipOwner) continue;
+      a = b.id != null ? am[b.id] : null;
+      o = copyEnt(b);
+      if (a) {
+        o.x = a.x + (b.x - a.x) * t;
+        o.y = a.y + (b.y - a.y) * t;
+      }
+      if (extra && (b.vx || b.vy)) {
+        o.x += (b.vx || 0) * extra;
+        o.y += (b.vy || 0) * extra;
+      }
+      if (o.splash) o.splash = { r: 34, dmg: 2 };
+      out.push(o);
+    }
+    return out;
+  }
+  function snapHz() {
+    return netTransport() === "mqtt" ? 12 : 30;
+  }
+  function onSnapMsg(msg) {
+    var s = msg && msg.s;
+    var now, est, targetDelay;
     if (!s) return;
-    score = s.sc;
-    if (s.rc != null) run.coins = s.rc;
-    wave = s.w;
-    shake = s.sh;
-    flash = s.fl;
-    time = s.tm;
-    banner = s.bn;
-    oldEn = enemies;
-    enemies = [];
-    for (i = 0; i < (s.en || []).length; i++) {
-      enemies.push(keepDisplayPos(oldEn[i] && oldEn[i].type === s.en[i][2] ? oldEn[i] : null, unpackEn(s.en[i]), 36));
+    if (msg.n && msg.n < lastSnapN) return;
+    if (msg.n) lastSnapN = msg.n;
+    now = clientClock;
+    snapBuf.push({ n: msg.n || 0, tm: s.tm, s: s, recv: now });
+    while (snapBuf.length > 4) snapBuf.shift();
+    est = s.tm - now;
+    if (!hostClockReady) {
+      hostOffset = est;
+      hostClockReady = true;
+    } else {
+      hostOffset += (est - hostOffset) * 0.2;
     }
-    pbul = [];
-    for (i = 0; i < (s.pb || []).length; i++) pbul.push(unpackPb(s.pb[i]));
-    ebul = [];
-    for (i = 0; i < (s.eb || []).length; i++) ebul.push(unpackEb(s.eb[i]));
-    oldPk = pickups;
-    pickups = [];
-    for (i = 0; i < (s.pk || []).length; i++) {
-      pickups.push(keepDisplayPos(oldPk[i] && oldPk[i].kind === s.pk[i][2] ? oldPk[i] : null, unpackPk(s.pk[i]), 28));
+    targetDelay = 1.5 / snapHz();
+    if (targetDelay < 0.045) targetDelay = 0.045;
+    if (targetDelay > 0.12) targetDelay = 0.12;
+    interpDelay += (targetDelay - interpDelay) * 0.15;
+  }
+  function applyInterp(rt) {
+    var a = null, b = null, i, t, extra = 0, sa, sb;
+    if (!snapBuf.length) return;
+    if (rt <= snapBuf[0].tm) {
+      b = snapBuf[0];
+      t = 1;
+    } else if (rt >= snapBuf[snapBuf.length - 1].tm) {
+      a = snapBuf.length > 1 ? snapBuf[snapBuf.length - 2] : null;
+      b = snapBuf[snapBuf.length - 1];
+      t = 1;
+      extra = rt - b.tm;
+      if (extra > 0.12) extra = 0.12;
+    } else {
+      for (i = 1; i < snapBuf.length; i++) {
+        if (snapBuf[i].tm >= rt) {
+          a = snapBuf[i - 1];
+          b = snapBuf[i];
+          break;
+        }
+      }
+      t = (rt - a.tm) / Math.max(0.0001, b.tm - a.tm);
+      if (t < 0) t = 0;
+      if (t > 1) t = 1;
     }
-    teles = [];
-    for (i = 0; i < (s.te || []).length; i++) teles.push(unpackTe(s.te[i]));
-    for (i = 0; i < (s.pl || []).length; i++) applyPlayerRow(s.pl[i]);
+    sa = a ? a.s : null;
+    sb = b.s;
+    score = sb.sc;
+    if (sb.rc != null) run.coins = sb.rc;
+    wave = sb.w;
+    shake = sa ? lerp(sa.sh, sb.sh, t) : sb.sh;
+    flash = sa ? lerp(sa.fl, sb.fl, t) : sb.fl;
+    time = sa ? lerp(sa.tm, sb.tm, t) : sb.tm;
+    banner = sb.bn;
+    enemies = interpKeyed(sa && sa.en, sb.en, t, 0, -1, false);
+    pbul = interpKeyed(sa && sa.pb, sb.pb, t, extra, localSlot, true);
+    ebul = interpKeyed(sa && sa.eb, sb.eb, t, extra, -1, false);
+    pickups = interpKeyed(sa && sa.pk, sb.pk, t, 0, -1, false);
+    teles = (sb.te || []).slice();
+    for (i = 0; i < (sb.pl || []).length; i++) applyPlayerSnap(sb.pl[i]);
     syncLocalPlayer();
-    applyNetEvents(s.ev);
     updateHud();
+  }
+  function advanceNetWorld(dt) {
+    var ghosts = [], i;
+    clientClock += dt;
+    for (i = 0; i < pbul.length; i++) {
+      if (pbul[i] && pbul[i].ghost) ghosts.push(pbul[i]);
+    }
+    if (snapBuf.length) applyInterp(clientClock + hostOffset - interpDelay);
+    if (ghosts.length) pbul = ghosts.concat(pbul);
+    updateClientFx(dt);
+  }
+  function sparkHit(x, y) {
+    var i, a, sp;
+    for (i = 0; i < 6; i++) {
+      a = Math.random() * Math.PI * 2;
+      sp = rand(40, 110);
+      particles.push({
+        x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+        life: rand(0.15, 0.32), color: i % 2 ? "#ffffff" : "#7ef9ff", size: rand(1, 2.2)
+      });
+    }
   }
   function applyNetEvents(evs) {
     var i, ev, name;
@@ -3183,8 +3462,10 @@
       else if (ev[0] === "nova") novaBurst(ev[1], ev[2], 0);
       else if (ev[0] === "sfx") {
         name = ev[1];
-        if (name === "shoot") sfxShoot();
-        else if (name === "eshot") sfxEnemyShot();
+        if (name === "shoot") {
+          if (ev[2] != null && ev[2] === localSlot) continue;
+          sfxShoot();
+        } else if (name === "eshot") sfxEnemyShot();
         else if (name === "hit") sfxHit();
         else if (name === "dive") sfxDive();
         else if (name === "tele") sfxTele();
@@ -3204,30 +3485,40 @@
   function sendSnap(dt) {
     var hz;
     if (netRole !== "host") return;
-    hz = netTransport() === "mqtt" ? 12 : 20;
+    hz = snapHz();
     snapAcc += dt;
     if (snapAcc < 1 / hz) return;
     snapAcc = 0;
     snapSeq += 1;
     netSend({ t: "snap", n: snapSeq, s: buildSnap() });
+  }
+  function flushNetEvents() {
+    if (netRole !== "host" || !netEvents.length) return;
+    evSeq += 1;
+    netSend({ t: "ev", n: evSeq, ev: netEvents.slice() });
     netEvents = [];
   }
   function sendLocalInput(dt) {
-    var key, hz;
+    var key, hz, p;
+    if (!netRole) return;
     copyLocalInput();
+    p = players[localSlot];
     inputAcc += dt;
-    hz = netTransport() === "mqtt" ? 12 : 30;
-    key = (input.left ? "1" : "0") + (input.right ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX));
+    hz = netTransport() === "mqtt" ? 12 : 60;
+    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX));
     if (key !== lastInputKey || inputAcc >= 1 / hz) {
       lastInputKey = key;
       inputAcc = 0;
       inputSeq += 1;
-      netSend({ t: "input", n: inputSeq, l: !!input.left, r: !!input.right, f: !!(input.fire || pointerSteer.fire), aimX: pointerSteer.aimX });
+      netSend({
+        t: "input", n: inputSeq, slot: localSlot,
+        l: !!(p && p.input.left), r: !!(p && p.input.right),
+        f: !!(p && p.input.fire), aimX: p ? p.input.aimX : null
+      });
     }
   }
   function updateClientFx(dt) {
-    var i, p, b, e, k;
-    k = 1 - Math.exp(-dt * 18);
+    var i, p, b, e, j, consumed, br, hid, dx;
     shake *= Math.exp(-dt * 7);
     if (shake < 0.05) shake = 0;
     flash *= Math.exp(-dt * 8);
@@ -3236,32 +3527,77 @@
       stars[i].y += stars[i].v * dt;
       if (stars[i].y > H) { stars[i].y = 0; stars[i].x = Math.random() * W; }
     }
-    for (i = 0; i < enemies.length; i++) {
-      e = enemies[i];
-      if (e.tx == null) continue;
-      e.x += (e.tx - e.x) * k;
-      e.y += (e.ty - e.y) * k;
-    }
-    for (i = 0; i < pbul.length; i++) {
-      b = pbul[i];
-      b.x += (b.vx || 0) * dt;
-      b.y += (b.vy || 0) * dt;
-    }
-    for (i = 0; i < ebul.length; i++) {
-      b = ebul[i];
-      b.x += (b.vx || 0) * dt;
-      b.y += (b.vy || 0) * dt;
-    }
-    for (i = 0; i < pickups.length; i++) {
-      p = pickups[i];
-      if (p.tx == null) continue;
-      p.x += (p.tx - p.x) * k;
-      p.y += (p.ty - p.y) * k;
+    p = players[localSlot];
+    if (p && p.hostX != null) {
+      dx = p.hostX - p.x;
+      if (Math.abs(dx) > 48) {
+        p.x = p.hostX;
+        p.targetX = p.hostX;
+      } else {
+        p.x += dx * (1 - Math.exp(-dt * 6));
+      }
     }
     for (i = 0; i < players.length; i++) {
       if (i === localSlot) continue;
       p = players[i];
-      if (p && p.tx != null) p.x += (p.tx - p.x) * k;
+      if (p && p.hostX != null) {
+        dx = p.hostX - p.x;
+        if (Math.abs(dx) > 48) p.x = p.hostX;
+        else p.x += dx * (1 - Math.exp(-dt * 8));
+      }
+    }
+    for (i = pbul.length - 1; i >= 0; i--) {
+      b = pbul[i];
+      if (!b.ghost) continue;
+      if (b.homing && b.homeT > 0) {
+        b.homeT -= dt;
+        var bestE = null, bestD = 1e12, dd;
+        for (j = 0; j < enemies.length; j++) {
+          e = enemies[j];
+          if (!e.alive) continue;
+          dd = dist2(b.x, b.y, e.x, e.y);
+          if (dd < bestD) { bestD = dd; bestE = e; }
+        }
+        if (bestE) {
+          var pdx = bestE.x - b.x, pdy = bestE.y - b.y;
+          var plen = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
+          var psp = b.bolt ? 300 : 220;
+          b.vx += (pdx / plen * psp - (b.vx || 0)) * Math.min(1, 3.2 * dt);
+          b.vy += (pdy / plen * psp - b.vy) * Math.min(1, 3.2 * dt);
+        }
+      }
+      b.age = (b.age || 0) + dt;
+      if (b.life && b.age > b.life) { pbul.splice(i, 1); continue; }
+      if (b.helix) {
+        b.bx += (b.vx || 0) * dt;
+        b.x = b.bx + Math.sin(b.age * b.hf + b.hp0) * b.ha;
+      } else {
+        b.x += (b.vx || 0) * dt;
+      }
+      b.y += b.vy * dt;
+      if (b.y < -14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
+      consumed = false;
+      br = (b.r || 2) + 1;
+      for (j = 0; j < enemies.length; j++) {
+        e = enemies[j];
+        if (!e.alive) continue;
+        hid = e.id;
+        if (b.hit && b.hit.indexOf(hid) >= 0) continue;
+        if (dist2(b.x, b.y, e.x, e.y) < (e.r + br) * (e.r + br)) {
+          e.hitFlash = 0.1;
+          sparkHit(b.x, b.y);
+          if (b.pierce && b.pierce > 0) {
+            b.pierce -= 1;
+            if (!b.hit) b.hit = [];
+            b.hit.push(hid);
+          } else {
+            pbul.splice(i, 1);
+            consumed = true;
+            break;
+          }
+        }
+      }
+      if (consumed) continue;
     }
     for (i = particles.length - 1; i >= 0; i--) {
       p = particles[i];
@@ -3312,11 +3648,15 @@
       var node = el("lobby-code");
       if (node && info && info.code) node.textContent = info.code;
     });
-    n.on("connected", function () {
+    n.on("connected", function (info) {
       setLobbyErr("");
+      updateLobbyLink(info);
       if (netRole === "client") {
         n.send({ t: "hello", loadout: profileLoadoutSpec() });
       }
+    });
+    n.on("transport", function (info) {
+      updateLobbyLink(info);
     });
     n.on("hello", function (msg) {
       if (netRole !== "host") return;
@@ -3336,10 +3676,14 @@
       startNewGame({ coopPlayers: msg.players, fromNet: true, localSlot: 1 });
     });
     n.on("input", function (msg) {
-      var p = players[1];
-      if (netRole !== "host" || !p) return;
-      if (msg.n && msg.n < lastInputN) return;
-      if (msg.n) lastInputN = msg.n;
+      var slot = msg.slot;
+      var p;
+      if (slot == null) slot = netRole === "host" ? 1 : 0;
+      if (slot === localSlot) return;
+      p = players[slot];
+      if (!p) return;
+      if (msg.n && msg.n < (lastInputNBySlot[slot] || 0)) return;
+      if (msg.n) lastInputNBySlot[slot] = msg.n;
       p.input.left = !!msg.l;
       p.input.right = !!msg.r;
       p.input.fire = !!msg.f;
@@ -3347,9 +3691,13 @@
     });
     n.on("snap", function (msg) {
       if (netRole !== "client") return;
-      if (msg.n && msg.n < lastSnapN) return;
-      if (msg.n) lastSnapN = msg.n;
-      pendingSnap = msg.s;
+      onSnapMsg(msg);
+    });
+    n.on("ev", function (msg) {
+      if (netRole !== "client") return;
+      if (msg.n && msg.n <= lastEvN) return;
+      if (msg.n) lastEvN = msg.n;
+      applyNetEvents(msg.ev);
     });
     n.on("pause", function () { pauseGame(true); });
     n.on("resume", function () {
@@ -3389,13 +3737,20 @@
     time += dt;
     if (netRole === "client") {
       sendLocalInput(dt);
-      if (pendingSnap) { applySnap(pendingSnap); pendingSnap = null; }
-      updateClientFx(dt);
+      advanceNetWorld(dt);
       copyLocalInput();
-      updateOneShip(players[localSlot], dt, false);
+      updateOneShip(players[localSlot], dt, true);
+      var ri;
+      for (ri = 0; ri < players.length; ri++) {
+        if (ri !== localSlot) updateOneShip(players[ri], dt, false);
+      }
     } else {
       update(dt);
-      if (netRole === "host") sendSnap(dt);
+      if (netRole === "host") {
+        sendLocalInput(dt);
+        sendSnap(dt);
+        flushNetEvents();
+      }
     }
     draw();
     rafId = requestAnimationFrame(tick);
@@ -4409,7 +4764,39 @@
       ctx.fillText("MUTED", W - 8, 14);
     }
 
+    if (netRole) drawNetBadge(ctx);
+
     ctx.restore();
+  }
+
+  function drawNetBadge(context) {
+    var st = window.__net && window.__net.stats ? window.__net.stats() : null;
+    var path, label, rtt, fill;
+    if (!st) return;
+    path = st.path || "";
+    rtt = st.rtt | 0;
+    if (path === "mqtt") {
+      label = "MQTT";
+      fill = "#ff9a3d";
+    } else if (path === "relay") {
+      label = "RELAY";
+      fill = "#ffd23d";
+    } else {
+      label = "P2P";
+      fill = "#7ef9ff";
+    }
+    if (rtt > 0) label += " " + rtt + "ms";
+    context.save();
+    context.globalAlpha = 0.72;
+    context.font = "bold 7px ui-sans-serif, system-ui, sans-serif";
+    context.textAlign = "left";
+    context.textBaseline = "top";
+    var w = context.measureText(label).width + 8;
+    context.fillStyle = "rgba(4,6,18,0.55)";
+    context.fillRect(4, H - 14, w, 11);
+    context.fillStyle = fill;
+    context.fillText(label, 8, H - 12);
+    context.restore();
   }
 
   function applyDesktopHints() {
@@ -4477,7 +4864,7 @@
         if (k === "Escape") { leaveNet(); showScreen("hub"); }
         else if (lobbyMode === "join" && (k === "Enter" || k === " ")) lobbyJoinGo();
         else if (lobbyMode === "ready" && netRole === "host" && (k === "Enter" || k === " ")) lobbyStart();
-      } else if (uiScreen === "hangar" || uiScreen === "quests") {
+      } else if (uiScreen === "hangar" || uiScreen === "quests" || uiScreen === "ranks") {
         if (k === "Escape" || k === "Backspace") showScreen("hub");
       } else if (uiScreen === "pause") {
         if (k === "Enter" || k === " " || k === "p" || k === "P" || k === "Escape") resumeGame();
@@ -4516,8 +4903,17 @@
   el("btn-coop").addEventListener("click", function (e) { e.preventDefault(); openLobby(); });
   el("btn-hangar").addEventListener("click", function (e) { e.preventDefault(); showScreen("hangar"); });
   el("btn-quests").addEventListener("click", function (e) { e.preventDefault(); showScreen("quests"); });
+  el("btn-board").addEventListener("click", function (e) { e.preventDefault(); showScreen("ranks"); });
   el("btn-hangar-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
   el("btn-quests-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
+  el("btn-board-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
+  var boardName = el("board-name");
+  if (boardName) {
+    boardName.addEventListener("blur", commitPilotName);
+    boardName.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); boardName.blur(); }
+    });
+  }
   el("btn-reset-progress").addEventListener("click", function (e) { e.preventDefault(); setResetConfirm(true); });
   el("btn-reset-confirm").addEventListener("click", function (e) { e.preventDefault(); resetAllProgress(); });
   el("btn-reset-cancel").addEventListener("click", function (e) { e.preventDefault(); setResetConfirm(false); });

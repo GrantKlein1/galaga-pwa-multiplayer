@@ -59,6 +59,7 @@
       <button type="button" class="btn btn-ghost" id="btn-hangar">Hangar</button>
       <button type="button" class="btn btn-ghost" id="btn-quests">Quests</button>
     </div>
+    <button type="button" class="btn btn-ghost" id="btn-board">Leaderboard</button>
     <div class="help" id="hub-help">
       Drag or hold the play field to move &nbsp;&middot;&nbsp; tap / hold to fire<br>
       Or use the pad &nbsp;&middot;&nbsp; Pause / Mute in the HUD
@@ -88,6 +89,16 @@
       <button type="button" class="btn btn-danger" id="btn-reset-confirm">Yes, Reset Everything</button>
       <button type="button" class="btn btn-ghost" id="btn-reset-cancel">Cancel</button>
     </div>
+  </div>
+  <div id="screen-ranks" class="screen hidden">
+    <div class="screen-title">Leaderboard</div>
+    <div class="help">Highest score per pilot. Anyone on the live site can see it.</div>
+    <label class="lobby-code-lab" for="board-name">Pilot name</label>
+    <input id="board-name" class="board-name-in" type="text" maxlength="16" autocomplete="nickname" autocapitalize="words" spellcheck="false" enterkeyhint="done" placeholder="Your name">
+    <div id="board-you" class="board-you">Your best  0</div>
+    <div id="board-status" class="lobby-status">Loading…</div>
+    <div id="board-list" class="lists"></div>
+    <button type="button" class="btn btn-ghost" id="btn-board-back">Back</button>
   </div>
   <div id="screen-lobby" class="screen hidden">
     <div id="lobby-pick" class="lobby-panel">
@@ -119,6 +130,7 @@
       <div class="screen-title">Ready</div>
       <div class="help">Both players are in</div>
       <div id="lobby-players" class="lobby-players"></div>
+      <div id="lobby-link" class="lobby-status hidden"></div>
       <button type="button" class="btn" id="btn-lobby-start">Start</button>
       <div id="lobby-wait-start" class="lobby-status hidden">Waiting for host to start…</div>
       <button type="button" class="btn btn-ghost" id="btn-lobby-leave">Leave</button>
@@ -138,6 +150,7 @@
   </div>
 </div>
 <script src="js/vendor/peerjs.min.js"></script>
+<script src="js/netcodec.js"></script>
 <script src="js/net.js"></script>
 <script src="js/galaga.js"></script>
 <script src="js/touchpad.js"></script>

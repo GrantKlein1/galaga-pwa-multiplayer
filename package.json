@@ -5,7 +5,11 @@
   "description": "Galaga arcade shooter as an installable PWA with 2-player co-op",
   "scripts": {
     "dev": "npx --yes serve .",
+    "dev:api": "vercel dev",
     "deploy": "vercel --prod",
     "icons": "node scripts/make-icons.js"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
   }
 }

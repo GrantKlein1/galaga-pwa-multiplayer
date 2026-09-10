@@ -2,6 +2,8 @@
   var ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   var PREFIX = "galaga-";
   var JOIN_MS = 18000;
+  var TURN_MS = 1500;
+  var WEBRTC_RETRY_MS = 8000;
   var MQTT_BROKERS = [
     "wss://broker.emqx.io:8084/mqtt",
     "wss://broker.hivemq.com:8884/mqtt",
@@ -11,25 +13,7 @@
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
     { urls: "stun:stun.cloudflare.com:3478" },
-    { urls: "stun:stun.relay.metered.ca:80" },
-    {
-      urls: ["turn:eu-0.turn.peerjs.com:3478", "turn:us-0.turn.peerjs.com:3478"],
-      username: "peerjs",
-      credential: "peerjsp"
-    },
-    {
-      urls: [
-        "turn:openrelay.metered.ca:80?transport=udp",
-        "turn:openrelay.metered.ca:443?transport=udp",
-        "turn:openrelay.metered.ca:80",
-        "turn:openrelay.metered.ca:443",
-        "turn:openrelay.metered.ca:80?transport=tcp",
-        "turn:openrelay.metered.ca:443?transport=tcp",
-        "turns:openrelay.metered.ca:443?transport=tcp"
-      ],
-      username: "openrelayproject",
-      credential: "openrelayproject"
-    }
+    { urls: "stun:stun.relay.metered.ca:80" }
   ];
 
   var peer = null;
@@ -48,6 +32,14 @@
   var mqttPingTimer = 0;
   var mqttHsTimer = 0;
   var pktId = 1;
+  var turnServers = [];
+  var webrtcRetryTimer = 0;
+  var lastWebrtcTry = 0;
+  var pingTimer = 0;
+  var statsTimer = 0;
+  var lastRtt = 0;
+  var icePath = "";
+  var iceRtt = 0;
 
   function peerOpts() {
     return {
@@ -58,12 +50,66 @@
       debug: 0,
       pingInterval: 4000,
       config: {
-        iceServers: ICE_SERVERS,
+        iceServers: iceList(),
         sdpSemantics: "unified-plan",
         iceCandidatePoolSize: 4,
         iceTransportPolicy: "all"
       }
     };
+  }
+
+  function iceList() {
+    var list = ICE_SERVERS.slice();
+    var i;
+    for (i = 0; i < turnServers.length; i++) list.push(turnServers[i]);
+    return list;
+  }
+
+  function filterIce(list) {
+    var out = [], i, one, urls, j, u, ok, entry;
+    if (!list || !list.length) return out;
+    for (i = 0; i < list.length; i++) {
+      one = list[i];
+      if (!one) continue;
+      urls = Array.isArray(one.urls) ? one.urls : [one.urls];
+      ok = [];
+      for (j = 0; j < urls.length; j++) {
+        u = String(urls[j] || "");
+        if (!u) continue;
+        if (u.indexOf("transport=tcp") >= 0) continue;
+        ok.push(u);
+      }
+      if (!ok.length) continue;
+      entry = { urls: ok.length === 1 ? ok[0] : ok };
+      if (one.username) entry.username = one.username;
+      if (one.credential) entry.credential = one.credential;
+      out.push(entry);
+    }
+    return out;
+  }
+
+  function fetchTurn(cb) {
+    var done = false;
+    var t = setTimeout(function () { finish([]); }, TURN_MS);
+    function finish(servers) {
+      if (done) return;
+      done = true;
+      clearTimeout(t);
+      cb(filterIce(servers) || []);
+    }
+    try {
+      fetch("/api/turn", { cache: "no-store" }).then(function (res) {
+        if (!res.ok) { finish([]); return null; }
+        return res.json();
+      }).then(function (data) {
+        if (!data) return;
+        if (Array.isArray(data.iceServers)) finish(data.iceServers);
+        else if (Array.isArray(data)) finish(data);
+        else finish([]);
+      }).catch(function () { finish([]); });
+    } catch (err) {
+      finish([]);
+    }
   }
 
   function emit(type, data) {
@@ -99,6 +145,12 @@
   function clearMqttTimers() {
     if (mqttPingTimer) { clearInterval(mqttPingTimer); mqttPingTimer = 0; }
     if (mqttHsTimer) { clearInterval(mqttHsTimer); mqttHsTimer = 0; }
+  }
+
+  function clearNetTimers() {
+    if (webrtcRetryTimer) { clearInterval(webrtcRetryTimer); webrtcRetryTimer = 0; }
+    if (pingTimer) { clearInterval(pingTimer); pingTimer = 0; }
+    if (statsTimer) { clearInterval(statsTimer); statsTimer = 0; }
   }
 
   function nextPktId() {
@@ -155,8 +207,8 @@
     ]));
   }
 
-  function publishPacket(topic, text) {
-    return mqttPacket(0x30, concatBytes([mqttStr(topic), new TextEncoder().encode(text)]));
+  function publishPacket(topic, payloadU8) {
+    return mqttPacket(0x30, concatBytes([mqttStr(topic), payloadU8]));
   }
 
   function pingPacket() {
@@ -182,19 +234,29 @@
     buf.set(incoming, sock.buf.length);
     sock.buf = buf;
     while (sock.buf.length >= 2) {
-      var rem = readRemain(sock.buf, 1);
-      if (!rem) break;
-      var need = rem.i + rem.n;
+      var remaining = readRemain(sock.buf, 1);
+      if (!remaining) break;
+      var need = remaining.i + remaining.n;
       if (sock.buf.length < need) break;
       var pkt = sock.buf.slice(0, need);
       sock.buf = sock.buf.slice(need);
-      handleMqttPacket(sock, pkt, rem.i, rem.n);
+      handleMqttPacket(sock, pkt, remaining.i, remaining.n);
     }
+  }
+
+  function decodePayload(bytes) {
+    var msg, text;
+    if (bytes && bytes.length && window.__netcodec && window.__netcodec.isBinaryFrame(bytes)) {
+      try { return window.__netcodec.decode(bytes); } catch (err) { return null; }
+    }
+    try { text = new TextDecoder().decode(bytes); } catch (err) { return null; }
+    try { msg = JSON.parse(text); } catch (err) { return null; }
+    return msg;
   }
 
   function handleMqttPacket(sock, pkt, hdrEnd, len) {
     var type = pkt[0] >> 4;
-    var qos, i, tlen, topic, payload, msg;
+    var qos, i, tlen, payload, msg;
     if (type === 2) {
       sock.connected = pkt[hdrEnd + 1] === 0;
       if (sock.connected && sock.onOpen) sock.onOpen();
@@ -210,12 +272,11 @@
       i = hdrEnd;
       tlen = (pkt[i] << 8) | pkt[i + 1];
       i += 2;
-      topic = new TextDecoder().decode(pkt.slice(i, i + tlen));
       i += tlen;
       if (qos > 0) i += 2;
-      payload = new TextDecoder().decode(pkt.slice(i, hdrEnd + len));
-      try { msg = JSON.parse(payload); } catch (err) { return; }
-      onMqttMsg(sock, topic, msg);
+      payload = pkt.slice(i, hdrEnd + len);
+      msg = decodePayload(payload);
+      if (msg) onMqttMsg(sock, msg);
     }
   }
 
@@ -272,10 +333,17 @@
     return sock;
   }
 
+  function toU8(obj) {
+    if (obj instanceof Uint8Array) return obj;
+    if (obj instanceof ArrayBuffer) return new Uint8Array(obj);
+    if (ArrayBuffer.isView(obj)) return new Uint8Array(obj.buffer, obj.byteOffset, obj.byteLength);
+    return new TextEncoder().encode(JSON.stringify(obj));
+  }
+
   function mqttPublish(sock, topic, obj) {
     if (!sock || sock.dead || !sock.ws || sock.ws.readyState !== 1) return false;
     try {
-      sock.ws.send(publishPacket(topic, JSON.stringify(obj)));
+      sock.ws.send(publishPacket(topic, toU8(obj)));
       return true;
     } catch (err) {
       return false;
@@ -290,6 +358,25 @@
     }, 15000);
   }
 
+  function startWebrtcRetry() {
+    if (webrtcRetryTimer || closed || transport === "webrtc") return;
+    webrtcRetryTimer = setInterval(function () {
+      if (closed || transport === "webrtc") {
+        if (webrtcRetryTimer) { clearInterval(webrtcRetryTimer); webrtcRetryTimer = 0; }
+        return;
+      }
+      retryWebrtc();
+    }, WEBRTC_RETRY_MS);
+  }
+
+  function retryWebrtc() {
+    if (closed || transport === "webrtc") return;
+    lastWebrtcTry = Date.now();
+    destroyPeer();
+    if (role === "host") startWebrtcHost();
+    else startWebrtcJoin();
+  }
+
   function adoptMqtt(sock) {
     if (closed || transport === "webrtc") return;
     if (transport === "mqtt") return;
@@ -302,9 +389,12 @@
       if (s !== sock) closeMqttSock(s);
     }
     markConnected();
+    startPing();
+    startWebrtcRetry();
+    emit("transport", stats());
   }
 
-  function onMqttMsg(sock, topic, msg) {
+  function onMqttMsg(sock, msg) {
     if (!msg || typeof msg !== "object") return;
     if (msg.t === "netping") {
       mqttPublish(sock, sock.pubTopic, { t: "netpong" });
@@ -315,6 +405,7 @@
       if (role === "client") adoptMqtt(sock);
       return;
     }
+    if (handleRtt(msg)) return;
     if (transport === "webrtc") return;
     if (mqttLive && sock !== mqttLive) return;
     emit(msg.t || "data", msg);
@@ -357,13 +448,20 @@
   }
 
   function parseIncoming(raw) {
-    var text, msg;
-    if (typeof raw === "string") text = raw;
-    else if (raw && typeof raw === "object" && !(raw instanceof ArrayBuffer) && !ArrayBuffer.isView(raw)) return raw;
-    else {
-      try { text = new TextDecoder().decode(raw); } catch (err) { return null; }
+    var text, msg, u8;
+    if (raw instanceof ArrayBuffer || ArrayBuffer.isView(raw)) {
+      u8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
+      if (window.__netcodec && window.__netcodec.isBinaryFrame(u8)) {
+        try { return window.__netcodec.decode(u8); } catch (err) { return null; }
+      }
+      try { text = new TextDecoder().decode(u8); } catch (err) { return null; }
+      try { return JSON.parse(text); } catch (err) { return null; }
     }
-    try { return JSON.parse(text); } catch (err) { return null; }
+    if (typeof raw === "string") {
+      try { return JSON.parse(raw); } catch (err) { return null; }
+    }
+    if (raw && typeof raw === "object") return raw;
+    return null;
   }
 
   function bindGameDc(dc) {
@@ -373,7 +471,11 @@
     dc.onmessage = function (ev) {
       var msg = parseIncoming(ev.data);
       if (!msg || typeof msg !== "object") return;
+      if (handleRtt(msg)) return;
       emit(msg.t || "data", msg);
+    };
+    dc.onopen = function () {
+      sendPing();
     };
   }
 
@@ -438,10 +540,15 @@
 
   function destroyAll() {
     clearJoinTimer();
+    clearNetTimers();
     destroyMqtt();
     destroyPeer();
     openedOnce = false;
     transport = null;
+    lastRtt = 0;
+    icePath = "";
+    iceRtt = 0;
+    turnServers = [];
   }
 
   function fail(message, fatal) {
@@ -460,7 +567,7 @@
     openedOnce = true;
     clearJoinTimer();
     if (transport === "webrtc") clearMqttTimers();
-    emit("connected", { role: role, code: code, transport: transport });
+    emit("connected", { role: role, code: code, transport: transport, path: pathLabel() });
   }
 
   function dropStaleConn(next) {
@@ -472,11 +579,17 @@
   }
 
   function adoptWebrtc(c) {
+    var upgraded = transport === "mqtt";
     if (closed) return;
     transport = "webrtc";
+    if (webrtcRetryTimer) { clearInterval(webrtcRetryTimer); webrtcRetryTimer = 0; }
     destroyMqtt();
     markConnected();
     ensureGameDc(c);
+    startPing();
+    startStats();
+    sampleIce();
+    if (upgraded) emit("transport", stats());
   }
 
   function wireConn(c) {
@@ -487,8 +600,11 @@
     dropStaleConn(c);
     listenGameDc(c);
     c.on("data", function (msg) {
-      if (!msg || typeof msg !== "object") return;
-      emit(msg.t || "data", msg);
+      var parsed = msg;
+      if (typeof msg !== "object" || (msg && msg.byteLength)) parsed = parseIncoming(msg);
+      if (!parsed || typeof parsed !== "object") return;
+      if (handleRtt(parsed)) return;
+      emit(parsed.t || "data", parsed);
     });
     c.on("open", function () {
       if (closed) return;
@@ -535,6 +651,7 @@
   }
 
   function startWebrtcHost() {
+    lastWebrtcTry = Date.now();
     makePeer(PREFIX + code, null);
     if (peer) {
       peer.on("connection", function (c) {
@@ -549,11 +666,22 @@
   }
 
   function startWebrtcJoin() {
+    lastWebrtcTry = Date.now();
     makePeer(null, function () {
       if (closed || !peer || transport === "webrtc") return;
       var c = peer.connect(PREFIX + code, { serialization: "json", reliable: true });
       wireConn(c);
       ensureGameDc(c);
+    });
+  }
+
+  function beginSession() {
+    startMqttSession();
+    fetchTurn(function (servers) {
+      if (closed) return;
+      turnServers = servers;
+      if (role === "host") startWebrtcHost();
+      else startWebrtcJoin();
     });
   }
 
@@ -572,8 +700,7 @@
       on("ready", once);
     }
     emit("ready", { code: code, role: "host" });
-    startMqttSession();
-    startWebrtcHost();
+    beginSession();
   }
 
   function join(raw) {
@@ -589,8 +716,7 @@
     openedOnce = false;
     transport = null;
     emit("error", { message: "Connecting… this can take a few seconds", retrying: true });
-    startMqttSession();
-    startWebrtcJoin();
+    beginSession();
     clearJoinTimer();
     joinTimer = setTimeout(function () {
       if (closed || openedOnce) return;
@@ -599,27 +725,108 @@
   }
 
   function isUnreliableMsg(msg) {
-    return msg && (msg.t === "snap" || msg.t === "input");
+    return msg && (msg.t === "snap" || msg.t === "input" || msg.t === "rtt" || msg.t === "rttp");
+  }
+
+  function encodeOutgoing(msg) {
+    if (msg && msg.t === "snap" && window.__netcodec) {
+      try { return window.__netcodec.encodeSnap(msg.n, msg.s); } catch (err) { return msg; }
+    }
+    return msg;
+  }
+
+  function sendRaw(payload) {
+    if (gameDc && gameDc.readyState === "open") {
+      try {
+        if (payload instanceof Uint8Array) gameDc.send(payload.buffer.slice(payload.byteOffset, payload.byteOffset + payload.byteLength));
+        else if (payload instanceof ArrayBuffer) gameDc.send(payload);
+        else gameDc.send(JSON.stringify(payload));
+        return true;
+      } catch (err) {}
+    }
+    return false;
   }
 
   function sendUnreliable(msg) {
-    if (!gameDc || gameDc.readyState !== "open") return false;
-    try {
-      gameDc.send(JSON.stringify(msg));
-      return true;
-    } catch (err) {
-      return false;
-    }
+    return sendRaw(encodeOutgoing(msg));
   }
 
   function send(msg) {
+    var payload;
     if (!msg || !openedOnce) return false;
-    if (transport === "webrtc" && isUnreliableMsg(msg) && sendUnreliable(msg)) return true;
-    if (transport === "mqtt") return mqttPublish(mqttLive, mqttLive && mqttLive.pubTopic, msg);
+    payload = encodeOutgoing(msg);
+    if (transport === "webrtc" && (payload instanceof Uint8Array || isUnreliableMsg(msg)) && sendRaw(payload)) return true;
+    if (transport === "mqtt") return mqttPublish(mqttLive, mqttLive && mqttLive.pubTopic, payload);
     if (conn && conn.open) {
       try { conn.send(msg); return true; } catch (err) { return false; }
     }
     return false;
+  }
+
+  function handleRtt(msg) {
+    if (!msg || typeof msg !== "object") return false;
+    if (msg.t === "rtt") {
+      send({ t: "rttp", t0: msg.t0 });
+      return true;
+    }
+    if (msg.t === "rttp") {
+      lastRtt = Math.max(0, Math.round(performance.now() - (msg.t0 || 0)));
+      return true;
+    }
+    return false;
+  }
+
+  function sendPing() {
+    if (!openedOnce || closed) return;
+    send({ t: "rtt", t0: performance.now() });
+  }
+
+  function startPing() {
+    if (pingTimer) clearInterval(pingTimer);
+    pingTimer = setInterval(sendPing, 1000);
+    sendPing();
+  }
+
+  function pathLabel() {
+    if (transport === "mqtt") return "mqtt";
+    if (transport === "webrtc") return icePath === "relay" ? "relay" : "p2p";
+    return "";
+  }
+
+  function sampleIce() {
+    var pc = conn && conn.peerConnection;
+    if (!pc || !pc.getStats) return;
+    pc.getStats().then(function (report) {
+      var picked = null;
+      report.forEach(function (row) {
+        if (row.type !== "candidate-pair") return;
+        if (row.state && row.state !== "succeeded") return;
+        if (row.nominated || row.selected || row.state === "succeeded") {
+          if (!picked || row.nominated) picked = row;
+        }
+      });
+      if (!picked) return;
+      if (typeof picked.currentRoundTripTime === "number") {
+        iceRtt = Math.round(picked.currentRoundTripTime * 1000);
+      }
+      var local = picked.localCandidateId ? report.get(picked.localCandidateId) : null;
+      if (local && (local.candidateType || local.type)) icePath = local.candidateType || local.type;
+    }).catch(function () {});
+  }
+
+  function startStats() {
+    if (statsTimer) clearInterval(statsTimer);
+    statsTimer = setInterval(sampleIce, 2000);
+  }
+
+  function stats() {
+    var rtt = lastRtt || iceRtt || 0;
+    return {
+      transport: transport,
+      rtt: rtt,
+      path: pathLabel(),
+      ice: icePath
+    };
   }
 
   function on(type, fn) {
@@ -654,6 +861,7 @@
     isConnected: function () { return !!(openedOnce && (transport === "mqtt" ? mqttLive : conn && conn.open)); },
     role: function () { return role; },
     code: function () { return code; },
-    transport: function () { return transport; }
+    transport: function () { return transport; },
+    stats: stats
   };
 })();
