@@ -251,6 +251,7 @@
   var flash = 0;
   var diveCd = 0;
   var enterT = 0;
+  var waveHold = 0;
   var banner = null;
   var actx = null;
   var masterGain = null;
@@ -1302,7 +1303,7 @@
   function spawnPickup(x, y, kind, amount) {
     var big = kind === "revive";
     pickups.push({
-      id: allocId(), x: x, y: y, vy: big ? 30 : 48, kind: kind,
+      id: allocId(), x: x, y: y, vy: big ? 56 : 48, kind: kind,
       bob: Math.random() * 6, amount: amount || 1
     });
   }
@@ -1452,6 +1453,7 @@
   function consumePickupAt(i, who) {
     var p = pickups[i];
     if (!p || !who) return false;
+    if (p.kind === "revive") waveHold = Math.max(waveHold, 0.55);
     grantPickup(p.kind, p.amount, who);
     if (p.id != null) delete pendingPickAt[p.id];
     pickups.splice(i, 1);
@@ -1551,6 +1553,7 @@
 
   function spawnWave(n) {
     wave = n;
+    waveHold = 0;
     enemies = [];
     ebul = [];
     teles = [];
@@ -1568,7 +1571,6 @@
       form.minOff = -20; form.maxOff = 20; form.ox = W / 2;
       run.bossHits = 0;
       enemies.push(makeEnemy(0, 0, meta.type, { isBoss: true, tier: meta.tier }));
-      maybeSpawnBossRevive();
     } else {
       banner = { text: "WAVE " + n, life: 1.1 };
       var slots = buildSlots(waveKind, n);
@@ -1717,6 +1719,7 @@
       banner = { text: bossName(e.type) + (run.bossHits ? " DOWN" : " FLAWLESS"), life: 1.2 };
       ebul.length = 0;
       teles.length = 0;
+      spawnReviveAfterBoss(e);
     } else {
       maybeDrop(e, false);
     }
@@ -1753,7 +1756,6 @@
     if (who.lives <= 0) {
       who.alive = false;
       if (!anyPlayerAlive()) endGame();
-      else maybeSpawnBossRevive(true);
       return;
     }
     who.x = spawnXFor(who.slot, players.length);
@@ -1777,12 +1779,16 @@
     for (i = 0; i < pickups.length; i++) if (pickups[i] && pickups[i].kind === "revive") return true;
     return false;
   }
-  function maybeSpawnBossRevive(announce) {
+  function spawnReviveAfterBoss(e) {
+    var x, y;
     if (!isCoop() || extraPlayers() < 1) return;
-    if (!currentBoss() && !isBossWave(wave)) return;
     if (!downedPlayer() || hasRevivePickup()) return;
-    spawnPickup(W / 2, 36, "revive");
-    if (announce) banner = { text: "REVIVE", life: 1.15 };
+    x = e && e.x != null ? clamp(e.x, 24, W - 24) : W / 2;
+    y = e && e.y != null ? e.y : 40;
+    if (y < 20) y = 20;
+    if (y > H - 90) y = H - 90;
+    spawnPickup(x, y, "revive");
+    banner = { text: "REVIVE", life: 1.2 };
   }
   function reviveDownedFrom(collector) {
     var target = downedPlayer();
@@ -3248,6 +3254,7 @@
     gameOver = false; started = true; paused = false; runFinished = false;
     pbul = []; ebul = []; particles = []; rings = []; pickups = []; teles = [];
     shake = 0; flash = 0; time = 0;
+    waveHold = 0;
     run = emptyRun();
     ensureDailies();
     snapshotDailies();
@@ -4136,10 +4143,6 @@
 
     updateHydraLeech(dt);
 
-    if (aliveCount() === 0 && started && !gameOver) {
-      spawnWave(wave + 1);
-    }
-
     for (i = pickups.length - 1; i >= 0; i--) {
       p = pickups[i];
       var magP = null, magD = 1e12, magLen;
@@ -4158,9 +4161,23 @@
       }
       p.y += p.vy * dt;
       p.bob += dt * 6;
-      if (p.y > H + 12) { pickups.splice(i, 1); continue; }
+      if (p.y > H + 12) {
+        if (p.kind === "revive") waveHold = Math.max(waveHold, 0.25);
+        pickups.splice(i, 1);
+        continue;
+      }
       pl = nearestPicker(p);
       if (pl) consumePickupAt(i, pl);
+    }
+
+    if (aliveCount() === 0 && started && !gameOver) {
+      if (hasRevivePickup()) {
+        /* hold the next wave until the revive gem reaches the ships or is gone */
+      } else if (waveHold > 0) {
+        waveHold -= dt;
+      } else {
+        spawnWave(wave + 1);
+      }
     }
 
     for (i = pbul.length - 1; i >= 0; i--) {
