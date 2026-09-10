@@ -22,6 +22,8 @@
   var PROFILE_VER = 2;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
+  // Run score used to convert 1:1 into XP. 0.2x makes a ~10k run ~2k XP instead of a full early level-up burst.
+  var XP_SCORE_MUL = 0.2;
   var PICKUP_PAD = 16;
   var PICKUP_CLAIM_R = 96;
   var POWER_WEIGHTS = [
@@ -610,8 +612,8 @@
     p.v = PROFILE_VER;
     return p;
   }
-  // XP curve, levels 1-100. XP == run score, so a ~10k run is one early level and a ~40k run
-  // is a fraction of a late one. Level 100 needs ~2.5M XP total.
+  // XP curve, levels 1-100. Banked XP is run score * XP_SCORE_MUL (Ascension still adds +25%).
+  // A ~10k run is ~2k XP. Level 100 still needs ~2.5M XP total.
   function xpForLevel(lvl) {
     var l = Math.max(1, Math.min(MAX_LEVEL, lvl | 0)) - 1;
     return Math.round(100 * Math.pow(l, 2.2) + 400 * l);
@@ -3138,7 +3140,7 @@
         pickups: run.pickups
       });
     }
-    var xpGain = Math.round(score * (hasMod("ascension") ? 1.25 : 1));
+    var xpGain = Math.round(score * XP_SCORE_MUL * (hasMod("ascension") ? 1.25 : 1));
     var oldLv = xpLevel(profile.totalXp);
     profile.totalXp += xpGain;
     var newLv = xpLevel(profile.totalXp);
@@ -5344,6 +5346,7 @@
       isOver: function () { return gameOver; },
       bossMeta: bossMeta,
       bossHp: bossHp,
+      XP_SCORE_MUL: XP_SCORE_MUL,
       healDropChance: healDropChance,
       xpLevel: xpLevel,
       xpForLevel: xpForLevel,
