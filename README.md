@@ -21,9 +21,9 @@ Two players, same battlefield. Shared score and waves; each ship has its own liv
 3. The other taps **Co-op** → **Join** and types the code.
 4. Host taps **Start**.
 
-Both devices need internet. The game prefers a direct WebRTC link. If that is blocked, it uses a free TURN relay, then a public MQTT broker as a last resort. Stay on the host code screen until the guest is in.
+Both devices need internet. MQTT is only used to introduce the two browsers; gameplay goes over a WebRTC data channel (direct if possible, otherwise your Metered TURN relay). A public MQTT broker is a last-resort fallback after about 8 seconds if WebRTC never connects. Stay on the host code screen until the guest is in.
 
-During a run a tiny badge in the top-left of the field shows the path:
+During a run a tiny badge in the bottom-left of the field shows the path:
 
 - **P2P** — direct (best). Number is round-trip time.
 - **RELAY** — traffic bouncing through TURN. Playable, a bit more delay.

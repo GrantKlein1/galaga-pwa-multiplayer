@@ -7,7 +7,6 @@ var PRECACHE = [
   "/js/touchpad.js",
   "/js/net.js",
   "/js/netcodec.js",
-  "/js/vendor/peerjs.min.js",
   "/manifest.webmanifest",
   "/icons/icon-192.png",
   "/icons/icon-512.png",

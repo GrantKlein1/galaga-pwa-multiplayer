@@ -1,9 +1,9 @@
 (function () {
   var ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  var PREFIX = "galaga-";
   var JOIN_MS = 18000;
   var TURN_MS = 1500;
-  var WEBRTC_RETRY_MS = 8000;
+  var RTC_FALLBACK_MS = 8000;
+  var RTC_RETRY_MS = 8000;
   var MQTT_BROKERS = [
     "wss://broker.emqx.io:8084/mqtt",
     "wss://broker.hivemq.com:8884/mqtt",
@@ -16,9 +16,9 @@
     { urls: "stun:stun.relay.metered.ca:80" }
   ];
 
-  var peer = null;
-  var conn = null;
+  var rtc = null;
   var gameDc = null;
+  var reliableDc = null;
   var role = null;
   var code = "";
   var handlers = {};
@@ -33,30 +33,23 @@
   var mqttHsTimer = 0;
   var pktId = 1;
   var turnServers = [];
-  var webrtcRetryTimer = 0;
-  var lastWebrtcTry = 0;
+  var turnDone = false;
+  var rtcFallbackTimer = 0;
   var pingTimer = 0;
   var statsTimer = 0;
   var lastRtt = 0;
   var icePath = "";
   var iceRtt = 0;
-
-  function peerOpts() {
-    return {
-      host: "0.peerjs.com",
-      port: 443,
-      secure: true,
-      path: "/",
-      debug: 0,
-      pingInterval: 4000,
-      config: {
-        iceServers: iceList(),
-        sdpSemantics: "unified-plan",
-        iceCandidatePoolSize: 4,
-        iceTransportPolicy: "all"
-      }
-    };
-  }
+  var pendingIce = [];
+  var pendingSig = [];
+  var remoteSet = false;
+  var rtcGen = 0;
+  var lastOffer = null;
+  var lastAnswer = null;
+  var localCands = [];
+  var answering = false;
+  var rtcRetryTimer = 0;
+  var offerTimer = 0;
 
   function iceList() {
     var list = ICE_SERVERS.slice();
@@ -66,26 +59,35 @@
   }
 
   function filterIce(list) {
-    var out = [], i, one, urls, j, u, ok, entry;
-    if (!list || !list.length) return out;
+    var udp = [], tcp = [], stun = [], i, one, urls, j, u, udpUrls, tcpUrls, entry;
+    if (!list || !list.length) return [];
     for (i = 0; i < list.length; i++) {
       one = list[i];
       if (!one) continue;
       urls = Array.isArray(one.urls) ? one.urls : [one.urls];
-      ok = [];
+      udpUrls = [];
+      tcpUrls = [];
       for (j = 0; j < urls.length; j++) {
         u = String(urls[j] || "");
         if (!u) continue;
-        if (u.indexOf("transport=tcp") >= 0) continue;
-        ok.push(u);
+        if (u.indexOf("stun:") === 0) stun.push({ urls: u });
+        else if (u.indexOf("transport=tcp") >= 0) tcpUrls.push(u);
+        else udpUrls.push(u);
       }
-      if (!ok.length) continue;
-      entry = { urls: ok.length === 1 ? ok[0] : ok };
-      if (one.username) entry.username = one.username;
-      if (one.credential) entry.credential = one.credential;
-      out.push(entry);
+      if (udpUrls.length) {
+        entry = { urls: udpUrls.length === 1 ? udpUrls[0] : udpUrls };
+        if (one.username) entry.username = one.username;
+        if (one.credential) entry.credential = one.credential;
+        udp.push(entry);
+      }
+      if (tcpUrls.length) {
+        entry = { urls: tcpUrls.length === 1 ? tcpUrls[0] : tcpUrls };
+        if (one.username) entry.username = one.username;
+        if (one.credential) entry.credential = one.credential;
+        tcp.push(entry);
+      }
     }
-    return out;
+    return stun.concat(udp).concat(tcp);
   }
 
   function fetchTurn(cb) {
@@ -148,9 +150,11 @@
   }
 
   function clearNetTimers() {
-    if (webrtcRetryTimer) { clearInterval(webrtcRetryTimer); webrtcRetryTimer = 0; }
+    if (rtcFallbackTimer) { clearTimeout(rtcFallbackTimer); rtcFallbackTimer = 0; }
     if (pingTimer) { clearInterval(pingTimer); pingTimer = 0; }
     if (statsTimer) { clearInterval(statsTimer); statsTimer = 0; }
+    if (rtcRetryTimer) { clearTimeout(rtcRetryTimer); rtcRetryTimer = 0; }
+    if (offerTimer) { clearInterval(offerTimer); offerTimer = 0; }
   }
 
   function nextPktId() {
@@ -350,37 +354,22 @@
     }
   }
 
+  function mqttSignal(msg) {
+    if (!mqttLive) return false;
+    return mqttPublish(mqttLive, mqttLive.pubTopic, msg);
+  }
+
   function startMqttKeepalive(sock) {
-    clearMqttTimers();
+    if (mqttPingTimer) clearInterval(mqttPingTimer);
     mqttPingTimer = setInterval(function () {
       if (!sock || sock.dead || !sock.ws || sock.ws.readyState !== 1) return;
       try { sock.ws.send(pingPacket()); } catch (err) {}
     }, 15000);
   }
 
-  function startWebrtcRetry() {
-    if (webrtcRetryTimer || closed || transport === "webrtc") return;
-    webrtcRetryTimer = setInterval(function () {
-      if (closed || transport === "webrtc") {
-        if (webrtcRetryTimer) { clearInterval(webrtcRetryTimer); webrtcRetryTimer = 0; }
-        return;
-      }
-      retryWebrtc();
-    }, WEBRTC_RETRY_MS);
-  }
-
-  function retryWebrtc() {
-    if (closed || transport === "webrtc") return;
-    lastWebrtcTry = Date.now();
-    destroyPeer();
-    if (role === "host") startWebrtcHost();
-    else startWebrtcJoin();
-  }
-
-  function adoptMqtt(sock) {
-    if (closed || transport === "webrtc") return;
-    if (transport === "mqtt") return;
-    transport = "mqtt";
+  function attachMqtt(sock) {
+    if (closed || !sock) return;
+    if (mqttLive && mqttLive !== sock) return;
     mqttLive = sock;
     startMqttKeepalive(sock);
     var i, s;
@@ -388,9 +377,27 @@
       s = mqttSocks[i];
       if (s !== sock) closeMqttSock(s);
     }
+    startRtcIfReady();
+    scheduleMqttFallback();
+    scheduleRtcRetry();
+  }
+
+  function scheduleMqttFallback() {
+    if (rtcFallbackTimer || closed || transport === "webrtc") return;
+    rtcFallbackTimer = setTimeout(function () {
+      rtcFallbackTimer = 0;
+      if (closed || transport === "webrtc") return;
+      adoptMqttGame();
+    }, RTC_FALLBACK_MS);
+  }
+
+  function adoptMqttGame() {
+    if (closed || transport === "webrtc") return;
+    if (transport === "mqtt") return;
+    if (!mqttLive) return;
+    transport = "mqtt";
     markConnected();
     startPing();
-    startWebrtcRetry();
     emit("transport", stats());
   }
 
@@ -398,15 +405,20 @@
     if (!msg || typeof msg !== "object") return;
     if (msg.t === "netping") {
       mqttPublish(sock, sock.pubTopic, { t: "netpong" });
-      if (role === "host") adoptMqtt(sock);
+      if (role === "host") attachMqtt(sock);
       return;
     }
     if (msg.t === "netpong") {
-      if (role === "client") adoptMqtt(sock);
+      if (role === "client") attachMqtt(sock);
+      return;
+    }
+    if (msg.t === "sig") {
+      attachMqtt(sock);
+      handleSignal(msg);
       return;
     }
     if (handleRtt(msg)) return;
-    if (transport === "webrtc") return;
+    if (transport === "webrtc" && (msg.t === "snap" || msg.t === "input")) return;
     if (mqttLive && sock !== mqttLive) return;
     emit(msg.t || "data", msg);
   }
@@ -417,17 +429,15 @@
     pub = role === "host" ? "c" : "h";
     for (i = 0; i < MQTT_BROKERS.length; i++) {
       cid = "g" + role.charAt(0) + code + Math.random().toString(36).slice(2, 6);
-      sock = openMqtt(MQTT_BROKERS[i], cid, role === "client" ? null : function (readySock) {
-        if (role === "host" && !transport) mqttLive = readySock;
-      });
+      sock = openMqtt(MQTT_BROKERS[i], cid, null);
       if (!sock) continue;
       sock.subTopic = topicFor(sub);
       sock.pubTopic = topicFor(pub);
     }
     if (role === "client") {
       mqttHsTimer = setInterval(function () {
-        if (closed || transport === "webrtc") {
-          clearMqttTimers();
+        if (closed || mqttLive) {
+          if (mqttHsTimer) { clearInterval(mqttHsTimer); mqttHsTimer = 0; }
           return;
         }
         var j, s;
@@ -439,16 +449,8 @@
     }
   }
 
-  function closeGameDc() {
-    var dc = gameDc;
-    gameDc = null;
-    if (dc) {
-      try { dc.close(); } catch (err) {}
-    }
-  }
-
   function parseIncoming(raw) {
-    var text, msg, u8;
+    var text, u8;
     if (raw instanceof ArrayBuffer || ArrayBuffer.isView(raw)) {
       u8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
       if (window.__netcodec && window.__netcodec.isBinaryFrame(u8)) {
@@ -464,70 +466,265 @@
     return null;
   }
 
-  function bindGameDc(dc) {
+  function onDcMessage(ev) {
+    var msg = parseIncoming(ev.data);
+    if (!msg || typeof msg !== "object") return;
+    if (handleRtt(msg)) return;
+    emit(msg.t || "data", msg);
+  }
+
+  function bindDc(dc) {
     if (!dc) return;
-    gameDc = dc;
     try { dc.binaryType = "arraybuffer"; } catch (err) {}
-    dc.onmessage = function (ev) {
-      var msg = parseIncoming(ev.data);
-      if (!msg || typeof msg !== "object") return;
-      if (handleRtt(msg)) return;
-      emit(msg.t || "data", msg);
-    };
+    dc.onmessage = onDcMessage;
     dc.onopen = function () {
+      adoptWebrtc();
       sendPing();
     };
-  }
-
-  function listenGameDc(c) {
-    var pc = c && c.peerConnection;
-    if (!pc || c._galagaGameListen) return;
-    c._galagaGameListen = true;
-    pc.addEventListener("datachannel", function (ev) {
-      if (ev.channel && ev.channel.label === "game") bindGameDc(ev.channel);
-    });
-  }
-
-  function createGameDc(c) {
-    var pc = c && c.peerConnection;
-    if (!pc || gameDc) return false;
-    try {
-      bindGameDc(pc.createDataChannel("game", { ordered: false, maxRetransmits: 0 }));
-      return true;
-    } catch (err) {
-      return false;
+    dc.onclose = function () {
+      if (closed || suppressClose) return;
+      if (transport === "webrtc" && !dcOpen()) {
+        transport = mqttLive ? "mqtt" : null;
+        emit("transport", stats());
+      }
+    };
+    if (dc.label === "game") gameDc = dc;
+    else reliableDc = dc;
+    if (dc.readyState === "open") {
+      adoptWebrtc();
     }
   }
 
-  function ensureGameDc(c) {
-    listenGameDc(c);
-    if (role !== "client") return;
-    if (createGameDc(c)) return;
-    var n = 0;
-    var t = setInterval(function () {
-      n += 1;
-      if (closed || gameDc || n > 40) {
-        clearInterval(t);
+  function dcOpen() {
+    return (gameDc && gameDc.readyState === "open") || (reliableDc && reliableDc.readyState === "open");
+  }
+
+  function candJson(cand) {
+    if (!cand) return null;
+    if (typeof cand.toJSON === "function") return cand.toJSON();
+    return {
+      candidate: cand.candidate,
+      sdpMid: cand.sdpMid,
+      sdpMLineIndex: cand.sdpMLineIndex
+    };
+  }
+
+  function addIce(cand) {
+    if (!rtc || !cand) return;
+    if (!remoteSet) {
+      pendingIce.push(cand);
+      return;
+    }
+    try {
+      rtc.addIceCandidate(new RTCIceCandidate(cand)).catch(function () {});
+    } catch (err) {}
+  }
+
+  function flushIce() {
+    var list = pendingIce;
+    var i;
+    pendingIce = [];
+    for (i = 0; i < list.length; i++) addIce(list[i]);
+  }
+
+  function replayLocalSig() {
+    var i;
+    if (!mqttLive) return;
+    if (role === "host" && lastOffer) {
+      mqttSignal({ t: "sig", k: "offer", sdp: lastOffer });
+    }
+    if (role === "client" && lastAnswer) {
+      mqttSignal({ t: "sig", k: "answer", sdp: lastAnswer });
+    }
+    for (i = 0; i < localCands.length; i++) {
+      mqttSignal({ t: "sig", k: "ice", cand: localCands[i] });
+    }
+  }
+
+  function startOfferRepeat() {
+    if (offerTimer) clearInterval(offerTimer);
+    offerTimer = setInterval(function () {
+      if (closed || transport === "webrtc") {
+        clearInterval(offerTimer);
+        offerTimer = 0;
         return;
       }
-      createGameDc(c);
-    }, 50);
+      if (role === "host" && remoteSet) {
+        clearInterval(offerTimer);
+        offerTimer = 0;
+        return;
+      }
+      replayLocalSig();
+    }, 400);
   }
 
-  function destroyPeer() {
-    var p = peer;
-    var c = conn;
-    suppressClose = true;
-    peer = null;
-    conn = null;
-    closeGameDc();
-    if (c) {
-      try { c.close(); } catch (err) {}
+  function handleSignal(msg) {
+    if (!msg || closed) return;
+    if (msg.k === "hello") {
+      if (role === "host") {
+        if (!rtc) startRtcIfReady();
+        replayLocalSig();
+      }
+      return;
     }
-    if (p) {
-      try { p.destroy(); } catch (err) {}
+    if (!rtc) {
+      pendingSig.push(msg);
+      startRtcIfReady();
+      return;
     }
-    suppressClose = false;
+    if (msg.k === "ice") {
+      addIce(msg.cand);
+      return;
+    }
+    if (msg.k === "offer" && msg.sdp && role === "client") {
+      if (lastAnswer) {
+        mqttSignal({ t: "sig", k: "answer", sdp: lastAnswer });
+        return;
+      }
+      if (answering || remoteSet) return;
+      answering = true;
+      rtc.setRemoteDescription(new RTCSessionDescription(msg.sdp)).then(function () {
+        remoteSet = true;
+        flushIce();
+        return rtc.createAnswer();
+      }).then(function (answer) {
+        return rtc.setLocalDescription(answer);
+      }).then(function () {
+        lastAnswer = { type: rtc.localDescription.type, sdp: rtc.localDescription.sdp };
+        mqttSignal({ t: "sig", k: "answer", sdp: lastAnswer });
+        startOfferRepeat();
+      }).catch(function () {
+        answering = false;
+      });
+      return;
+    }
+    if (msg.k === "answer" && msg.sdp && role === "host") {
+      if (remoteSet) return;
+      rtc.setRemoteDescription(new RTCSessionDescription(msg.sdp)).then(function () {
+        remoteSet = true;
+        flushIce();
+        if (offerTimer) { clearInterval(offerTimer); offerTimer = 0; }
+      }).catch(function () {});
+    }
+  }
+
+  function onRtcFailed() {
+    if (closed) return;
+    if (transport === "webrtc") {
+      transport = mqttLive ? "mqtt" : null;
+      emit("transport", stats());
+    }
+    destroyRtc();
+    if (mqttLive && turnDone && !closed) startRtcIfReady();
+  }
+
+  function startRtcIfReady() {
+    var queued;
+    if (closed || rtc || !mqttLive || !turnDone) return;
+    if (typeof RTCPeerConnection !== "function") {
+      adoptMqttGame();
+      return;
+    }
+    rtcGen += 1;
+    pendingIce = [];
+    remoteSet = false;
+    answering = false;
+    lastOffer = null;
+    lastAnswer = null;
+    localCands = [];
+    icePath = "";
+    try {
+      rtc = new RTCPeerConnection({
+        iceServers: iceList(),
+        iceCandidatePoolSize: 4,
+        bundlePolicy: "max-bundle"
+      });
+    } catch (err) {
+      adoptMqttGame();
+      return;
+    }
+    rtc.onicecandidate = function (ev) {
+      var json;
+      if (!ev || !ev.candidate) return;
+      json = candJson(ev.candidate);
+      if (!json) return;
+      localCands.push(json);
+      mqttSignal({ t: "sig", k: "ice", cand: json });
+    };
+    rtc.ondatachannel = function (ev) {
+      if (ev && ev.channel) bindDc(ev.channel);
+    };
+    rtc.onconnectionstatechange = function () {
+      if (!rtc || closed) return;
+      if (rtc.connectionState === "connected") adoptWebrtc();
+      if (rtc.connectionState === "failed") onRtcFailed();
+    };
+    rtc.oniceconnectionstatechange = function () {
+      if (!rtc || closed) return;
+      if (rtc.iceConnectionState === "connected" || rtc.iceConnectionState === "completed") adoptWebrtc();
+      if (rtc.iceConnectionState === "failed") onRtcFailed();
+    };
+    if (role === "host") {
+      try {
+        bindDc(rtc.createDataChannel("rel", { ordered: true }));
+        bindDc(rtc.createDataChannel("game", { ordered: false, maxRetransmits: 0 }));
+      } catch (err) {
+        destroyRtc();
+        adoptMqttGame();
+        return;
+      }
+      rtc.createOffer().then(function (offer) {
+        return rtc.setLocalDescription(offer);
+      }).then(function () {
+        lastOffer = { type: rtc.localDescription.type, sdp: rtc.localDescription.sdp };
+        mqttSignal({ t: "sig", k: "offer", sdp: lastOffer });
+        startOfferRepeat();
+      }).catch(function () {});
+    } else {
+      mqttSignal({ t: "sig", k: "hello" });
+    }
+    queued = pendingSig;
+    pendingSig = [];
+    if (queued.length) {
+      setTimeout(function () {
+        var i;
+        for (i = 0; i < queued.length; i++) handleSignal(queued[i]);
+      }, 0);
+    }
+  }
+
+  function scheduleRtcRetry() {
+    if (rtcRetryTimer || closed) return;
+    rtcRetryTimer = setTimeout(function () {
+      rtcRetryTimer = 0;
+      if (closed || transport === "webrtc") return;
+      if (rtc && (rtc.connectionState === "connecting" || rtc.iceConnectionState === "checking")) {
+        scheduleRtcRetry();
+        return;
+      }
+      destroyRtc();
+      startRtcIfReady();
+      scheduleRtcRetry();
+    }, RTC_RETRY_MS);
+  }
+
+  function destroyRtc() {
+    var g = gameDc;
+    var r = reliableDc;
+    var pc = rtc;
+    gameDc = null;
+    reliableDc = null;
+    rtc = null;
+    remoteSet = false;
+    answering = false;
+    pendingIce = [];
+    lastOffer = null;
+    lastAnswer = null;
+    localCands = [];
+    if (offerTimer) { clearInterval(offerTimer); offerTimer = 0; }
+    if (g) { try { g.close(); } catch (err) {} }
+    if (r) { try { r.close(); } catch (err) {} }
+    if (pc) { try { pc.close(); } catch (err) {} }
   }
 
   function destroyMqtt() {
@@ -542,13 +739,14 @@
     clearJoinTimer();
     clearNetTimers();
     destroyMqtt();
-    destroyPeer();
+    destroyRtc();
     openedOnce = false;
     transport = null;
     lastRtt = 0;
     icePath = "";
     iceRtt = 0;
     turnServers = [];
+    turnDone = false;
   }
 
   function fail(message, fatal) {
@@ -566,122 +764,33 @@
     if (openedOnce || closed) return;
     openedOnce = true;
     clearJoinTimer();
-    if (transport === "webrtc") clearMqttTimers();
     emit("connected", { role: role, code: code, transport: transport, path: pathLabel() });
   }
 
-  function dropStaleConn(next) {
-    var prev = conn;
-    if (prev && prev !== next) {
-      try { prev.close(); } catch (err) {}
-    }
-    conn = next;
-  }
-
-  function adoptWebrtc(c) {
-    var upgraded = transport === "mqtt";
-    if (closed) return;
+  function adoptWebrtc() {
+    var upgraded;
+    if (closed || !dcOpen()) return;
+    upgraded = transport === "mqtt";
+    if (transport === "webrtc") return;
     transport = "webrtc";
-    if (webrtcRetryTimer) { clearInterval(webrtcRetryTimer); webrtcRetryTimer = 0; }
-    destroyMqtt();
+    if (rtcFallbackTimer) { clearTimeout(rtcFallbackTimer); rtcFallbackTimer = 0; }
+    if (rtcRetryTimer) { clearTimeout(rtcRetryTimer); rtcRetryTimer = 0; }
+    if (offerTimer) { clearInterval(offerTimer); offerTimer = 0; }
     markConnected();
-    ensureGameDc(c);
     startPing();
     startStats();
     sampleIce();
-    if (upgraded) emit("transport", stats());
-  }
-
-  function wireConn(c) {
-    if (conn && conn !== c && conn.open && transport === "webrtc") {
-      try { c.close(); } catch (err) {}
-      return;
-    }
-    dropStaleConn(c);
-    listenGameDc(c);
-    c.on("data", function (msg) {
-      var parsed = msg;
-      if (typeof msg !== "object" || (msg && msg.byteLength)) parsed = parseIncoming(msg);
-      if (!parsed || typeof parsed !== "object") return;
-      if (handleRtt(parsed)) return;
-      emit(parsed.t || "data", parsed);
-    });
-    c.on("open", function () {
-      if (closed) return;
-      adoptWebrtc(c);
-    });
-    c.on("close", function () {
-      if (closed || suppressClose) return;
-      if (conn === c) conn = null;
-      if (!openedOnce || transport !== "webrtc") return;
-      emit("close", { reason: "peer-closed" });
-    });
-    c.on("error", function () {
-      if (closed || suppressClose) return;
-      if (!openedOnce || transport !== "webrtc") return;
-      fail("Connection error", false);
-    });
-    if (c.open) adoptWebrtc(c);
-  }
-
-  function makePeer(id, onOpen) {
-    var p;
-    try {
-      p = id ? new Peer(id, peerOpts()) : new Peer(peerOpts());
-    } catch (err) {
-      return null;
-    }
-    peer = p;
-    p.on("open", function (openId) {
-      if (closed || peer !== p) return;
-      if (onOpen) onOpen(openId);
-    });
-    p.on("error", function (err) {
-      if (closed || peer !== p) return;
-      var type = err && err.type;
-      if (type === "unavailable-id") return;
-      if (type === "peer-unavailable") return;
-      if (type === "network" || type === "server-error" || type === "socket-error" || type === "socket-closed") return;
-    });
-    p.on("disconnected", function () {
-      if (closed || peer !== p || !peer) return;
-      try { peer.reconnect(); } catch (err) {}
-    });
-    return p;
-  }
-
-  function startWebrtcHost() {
-    lastWebrtcTry = Date.now();
-    makePeer(PREFIX + code, null);
-    if (peer) {
-      peer.on("connection", function (c) {
-        if (conn && conn.open && transport === "webrtc") {
-          try { c.close(); } catch (err) {}
-          return;
-        }
-        c.serialization = "json";
-        wireConn(c);
-      });
-    }
-  }
-
-  function startWebrtcJoin() {
-    lastWebrtcTry = Date.now();
-    makePeer(null, function () {
-      if (closed || !peer || transport === "webrtc") return;
-      var c = peer.connect(PREFIX + code, { serialization: "json", reliable: true });
-      wireConn(c);
-      ensureGameDc(c);
-    });
+    if (upgraded || openedOnce) emit("transport", stats());
   }
 
   function beginSession() {
+    turnDone = false;
     startMqttSession();
     fetchTurn(function (servers) {
       if (closed) return;
       turnServers = servers;
-      if (role === "host") startWebrtcHost();
-      else startWebrtcJoin();
+      turnDone = true;
+      startRtcIfReady();
     });
   }
 
@@ -715,7 +824,7 @@
     code = want;
     openedOnce = false;
     transport = null;
-    emit("error", { message: "Connecting… this can take a few seconds", retrying: true });
+    emit("error", { message: "Connecting… trying a fast link first", retrying: true });
     beginSession();
     clearJoinTimer();
     joinTimer = setTimeout(function () {
@@ -735,31 +844,33 @@
     return msg;
   }
 
-  function sendRaw(payload) {
-    if (gameDc && gameDc.readyState === "open") {
-      try {
-        if (payload instanceof Uint8Array) gameDc.send(payload.buffer.slice(payload.byteOffset, payload.byteOffset + payload.byteLength));
-        else if (payload instanceof ArrayBuffer) gameDc.send(payload);
-        else gameDc.send(JSON.stringify(payload));
-        return true;
-      } catch (err) {}
+  function sendDc(dc, payload) {
+    if (!dc || dc.readyState !== "open") return false;
+    try {
+      if (payload instanceof Uint8Array) dc.send(payload.buffer.slice(payload.byteOffset, payload.byteOffset + payload.byteLength));
+      else if (payload instanceof ArrayBuffer) dc.send(payload);
+      else dc.send(JSON.stringify(payload));
+      return true;
+    } catch (err) {
+      return false;
     }
-    return false;
-  }
-
-  function sendUnreliable(msg) {
-    return sendRaw(encodeOutgoing(msg));
   }
 
   function send(msg) {
     var payload;
+    var body;
     if (!msg || !openedOnce) return false;
     payload = encodeOutgoing(msg);
-    if (transport === "webrtc" && (payload instanceof Uint8Array || isUnreliableMsg(msg)) && sendRaw(payload)) return true;
-    if (transport === "mqtt") return mqttPublish(mqttLive, mqttLive && mqttLive.pubTopic, payload);
-    if (conn && conn.open) {
-      try { conn.send(msg); return true; } catch (err) { return false; }
+    body = payload instanceof Uint8Array ? payload : msg;
+    if (payload instanceof Uint8Array || isUnreliableMsg(msg)) {
+      if (sendDc(gameDc, payload)) return true;
+      if (sendDc(reliableDc, payload)) return true;
+    } else {
+      if (sendDc(reliableDc, body)) return true;
+      if (sendDc(gameDc, body)) return true;
     }
+    if (transport === "webrtc") return false;
+    if (mqttLive) return mqttPublish(mqttLive, mqttLive.pubTopic, payload);
     return false;
   }
 
@@ -794,9 +905,8 @@
   }
 
   function sampleIce() {
-    var pc = conn && conn.peerConnection;
-    if (!pc || !pc.getStats) return;
-    pc.getStats().then(function (report) {
+    if (!rtc || !rtc.getStats) return;
+    rtc.getStats().then(function (report) {
       var picked = null;
       report.forEach(function (row) {
         if (row.type !== "candidate-pair") return;
@@ -810,7 +920,11 @@
         iceRtt = Math.round(picked.currentRoundTripTime * 1000);
       }
       var local = picked.localCandidateId ? report.get(picked.localCandidateId) : null;
-      if (local && (local.candidateType || local.type)) icePath = local.candidateType || local.type;
+      var remote = picked.remoteCandidateId ? report.get(picked.remoteCandidateId) : null;
+      var lt = local && (local.candidateType || local.type);
+      var rt = remote && (remote.candidateType || remote.type);
+      if (lt === "relay" || rt === "relay") icePath = "relay";
+      else icePath = lt || rt || "host";
     }).catch(function () {});
   }
 
@@ -858,7 +972,11 @@
     off: off,
     close: close,
     isHost: function () { return role === "host"; },
-    isConnected: function () { return !!(openedOnce && (transport === "mqtt" ? mqttLive : conn && conn.open)); },
+    isConnected: function () {
+      if (!openedOnce) return false;
+      if (transport === "webrtc") return dcOpen();
+      return !!mqttLive;
+    },
     role: function () { return role; },
     code: function () { return code; },
     transport: function () { return transport; },
