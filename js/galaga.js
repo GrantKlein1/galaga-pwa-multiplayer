@@ -2771,7 +2771,7 @@
     } else if (atk === "artillery") {
       for (i = 0; i < 4; i++) addEbul(40 + i * 53, e.y + 20, 0, 60, { mine: true, fuse: 0.9 + i * 0.25, r: 4.5, pellets: 6, pelletSpd: 105, color: "#ffe08a", glow: col });
     } else if (atk === "tick" || atk === "ticksplit") {
-      fanShot(e.x, e.y + 10, 5, 1.4, 150, 30, { color: col, glow: col, r: 3, pauseAt: 170, pauseT: 0.7, resumeSpd: spd + 30, splitOnResume: atk === "ticksplit" });
+      fanShot(e.x, e.y + 10, atk === "ticksplit" ? 3 : 5, 1.4, 150, 30, { color: col, glow: col, r: 3, pauseAt: 170, pauseT: 0.7, resumeSpd: spd + 30, splitOnResume: atk === "ticksplit" });
     } else if (atk === "pendulum" || atk === "pendulum2") {
       for (i = 0; i < 6; i++) addEbul(30 + i * 36, e.y + 20, 0, 85, { color: col, glow: col, sway: 40, swayF: 3, swayPh: 0 });
       if (atk === "pendulum2") queueFollow(e, 0.35, "pendulumB");
