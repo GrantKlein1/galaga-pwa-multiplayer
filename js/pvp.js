@@ -9,6 +9,8 @@
   var PVP_HP = 100;
   var ABILITY_CD = 4;
   var ROUND_HOLD = 1.85;
+  var ROUND_WIN_TEXT = "YOU WIN THE ROUND";
+  var ROUND_LOST_TEXT = "ROUND LOST";
   var WIN_COINS = 80;
   var WIN_XP = 400;
   var LOSE_COINS = 30;
@@ -322,6 +324,17 @@
     return session.wins[slot];
   }
 
+  function roundBannerFor(winnerSlot, viewerSlot) {
+    return (winnerSlot | 0) === (viewerSlot | 0) ? ROUND_WIN_TEXT : ROUND_LOST_TEXT;
+  }
+
+  // Host snapshots author round banners from slot 0's point of view.
+  function localizeHostRoundBanner(text, viewerSlot) {
+    if (text === ROUND_WIN_TEXT) return roundBannerFor(0, viewerSlot);
+    if (text === ROUND_LOST_TEXT) return roundBannerFor(1, viewerSlot);
+    return text;
+  }
+
   function matchWinner() {
     if (session.forfeit != null) return session.forfeit === 0 ? 1 : 0;
     if ((session.wins[0] || 0) >= 2) return 0;
@@ -377,6 +390,10 @@
     PVP_HP: PVP_HP,
     ABILITY_CD: ABILITY_CD,
     ROUND_HOLD: ROUND_HOLD,
+    ROUND_WIN_TEXT: ROUND_WIN_TEXT,
+    ROUND_LOST_TEXT: ROUND_LOST_TEXT,
+    roundBannerFor: roundBannerFor,
+    localizeHostRoundBanner: localizeHostRoundBanner,
     WIN_COINS: WIN_COINS,
     WIN_XP: WIN_XP,
     LOSE_COINS: LOSE_COINS,
