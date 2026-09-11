@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 1;
+  var VER = 2;
   var TYPE_SNAP = 1;
 
   var ENEMY_TYPES = [
@@ -21,6 +21,21 @@
   var MOD_IDS = [
     "", "barrier", "magnet", "fortune", "overdrive", "reactor",
     "afterburner", "salvage", "guardian", "berserk", "ascension"
+  ];
+  var SKIN_IDS = [
+    "stock", "ion", "ember", "void", "gilded", "prism", "novaflux", "frost", "solar", "nebula", "mythic",
+    "wisp-aurora", "wisp-ghostlight",
+    "needle-hotstreak", "needle-pinkvoid",
+    "aegis-chrome", "aegis-ward",
+    "broadwing-goldwing", "broadwing-sunburst",
+    "phantom-spectral", "phantom-rift",
+    "vulture-acid", "vulture-carrion",
+    "bastion-fortress", "bastion-obsidian",
+    "strix-bloodglass", "strix-inferno",
+    "nova-supernova", "nova-starburst",
+    "tempest-cyclone", "tempest-lightning",
+    "warden-jade", "warden-sentinel",
+    "eclipse-umbra", "eclipse-corona"
   ];
   var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone"];
@@ -325,6 +340,7 @@
     w.u8w(idxOf(SHIP_IDS, p.ship || "wisp"));
     w.u8w(idxOf(GUN_IDS, p.gun || "pulse"));
     w.u8w(idxOf(MOD_IDS, p.mod || ""));
+    w.u8w(idxOf(SKIN_IDS, p.skin || "stock"));
     w.coord(p.targetX != null ? p.targetX : p.x);
     w.u8frac(p.jamT, 10);
   }
@@ -346,11 +362,13 @@
       slowT: r.u8frac(10),
       ship: SHIP_IDS[r.u8r()] || "wisp",
       gun: GUN_IDS[r.u8r()] || "pulse",
-      mod: MOD_IDS[r.u8r()] || null
+      mod: MOD_IDS[r.u8r()] || null,
+      skin: SKIN_IDS[r.u8r()] || "stock"
     };
     p.targetX = r.coord();
     p.jamT = r.u8frac(10);
     if (!p.mod) p.mod = null;
+    if (!p.skin) p.skin = "stock";
     return p;
   }
 
@@ -478,7 +496,7 @@
       pl: [{
         slot: 0, x: 120, y: 326, alive: 1, invuln: 0, muzzle: 0, shieldHp: 0,
         weapon: "normal", weaponT: 0, speedT: 0, lives: 3, r: 9, slowT: 0,
-        ship: "wisp", gun: "pulse", mod: null, targetX: 120, jamT: 0
+        ship: "wisp", gun: "pulse", mod: null, skin: "stock", targetX: 120, jamT: 0
       }]
     };
     buf = encodeSnap(4, s);

@@ -20,7 +20,7 @@
   var STEER_TAP_SPD = 42;
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
-  var PROFILE_VER = 2;
+  var PROFILE_VER = 3;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
   // Run score used to convert 1:1 into XP. 0.15x (25% below the old 0.2x) makes a ~10k run ~1.5k XP.
@@ -82,6 +82,46 @@
     { id: "guardian", name: "Guardian", unlockLevel: 52, cost: 3200, rarity: "epic", desc: "Respawn with a 2-hit shield and +0.6s invuln", tags: ["RESPAWN SHIELD 2", "INV +0.6s"] },
     { id: "berserk", name: "Berserk", unlockLevel: 64, cost: 4200, rarity: "legendary", desc: "+10% damage per missing life", tags: ["DMG +10% per lost life"] },
     { id: "ascension", name: "Ascension", unlockLevel: 78, cost: 6000, rarity: "legendary", desc: "+25% XP and +10% fire rate", tags: ["XP +25%", "ROF +10%"] }
+  ];
+  // Shared paint tiers. Free at player levels 7, 12, 17, 22… Each hull keeps its own colorway of the FX.
+  var SKIN_TIERS = [
+    { id: "stock", name: "Stock", unlockLevel: 1, cost: 0, rarity: "common", fx: "solid", hue: 0, sat: 1, lit: 1, desc: "Factory paint" },
+    { id: "ion", name: "Ion", unlockLevel: 7, cost: 0, rarity: "common", fx: "ion", hue: 22, sat: 1.12, lit: 1.06, desc: "Charged cyan arc" },
+    { id: "ember", name: "Ember", unlockLevel: 12, cost: 0, rarity: "common", fx: "ember", hue: -42, sat: 1.22, lit: 1.02, desc: "Furnace glow along the hull" },
+    { id: "void", name: "Void", unlockLevel: 17, cost: 0, rarity: "rare", fx: "void", hue: 78, sat: 0.82, lit: 0.7, desc: "Dark-matter rim light" },
+    { id: "gilded", name: "Gilded", unlockLevel: 22, cost: 0, rarity: "rare", fx: "gilded", hue: -18, sat: 1.18, lit: 1.12, desc: "Gold-leaf shimmer" },
+    { id: "prism", name: "Prism", unlockLevel: 27, cost: 0, rarity: "rare", fx: "prism", hue: 48, sat: 1.2, lit: 1.08, desc: "Refracted outline" },
+    { id: "novaflux", name: "Novaflux", unlockLevel: 32, cost: 0, rarity: "epic", fx: "novaflux", hue: 8, sat: 0.55, lit: 1.28, desc: "White-hot core" },
+    { id: "frost", name: "Frost", unlockLevel: 37, cost: 0, rarity: "epic", fx: "frost", hue: 28, sat: 0.68, lit: 1.22, desc: "Ice-rimmed hull" },
+    { id: "solar", name: "Solar", unlockLevel: 42, cost: 0, rarity: "epic", fx: "solar", hue: -55, sat: 1.28, lit: 1.14, desc: "Corona flare" },
+    { id: "nebula", name: "Nebula", unlockLevel: 47, cost: 0, rarity: "legendary", fx: "nebula", hue: 112, sat: 1.16, lit: 0.96, desc: "Gas-cloud wash" },
+    { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.22, lit: 1.06, desc: "Dual-tone flash" }
+  ];
+  var SHIP_COIN_SKINS = [
+    { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 2500, rarity: "epic", fx: "aurora", hull: "#5cffc4", accent: "#ff9ad6", desc: "Northern-light wash" },
+    { id: "wisp-ghostlight", ship: "wisp", name: "Ghostlight", cost: 7000, rarity: "legendary", fx: "hologram", hull: "#d8fbff", accent: "#ffffff", desc: "Hologram scan, barely there" },
+    { id: "needle-hotstreak", ship: "needle", name: "Hotstreak", cost: 2500, rarity: "epic", fx: "ember", hull: "#ff6b4d", accent: "#ffe08a", desc: "Racing ember stripe" },
+    { id: "needle-pinkvoid", ship: "needle", name: "Pinkvoid", cost: 7000, rarity: "legendary", fx: "void", hull: "#2a0820", accent: "#ff4d9a", desc: "Needle in the dark" },
+    { id: "aegis-chrome", ship: "aegis", name: "Chrome", cost: 2500, rarity: "epic", fx: "chrome", hull: "#c8d8f0", accent: "#ffffff", desc: "Polished plate" },
+    { id: "aegis-ward", ship: "aegis", name: "Ward", cost: 7000, rarity: "legendary", fx: "ion", hull: "#3dffb0", accent: "#e8fff4", desc: "Guardian ion lattice" },
+    { id: "broadwing-goldwing", ship: "broadwing", name: "Goldwing", cost: 2500, rarity: "epic", fx: "gilded", hull: "#ffd23d", accent: "#fff4c0", desc: "Treasury gilt" },
+    { id: "broadwing-sunburst", ship: "broadwing", name: "Sunburst", cost: 7000, rarity: "legendary", fx: "solar", hull: "#ff9a3d", accent: "#fff0a0", desc: "Dawn corona" },
+    { id: "phantom-spectral", ship: "phantom", name: "Spectral", cost: 2500, rarity: "epic", fx: "hologram", hull: "#c8a0ff", accent: "#f0e8ff", desc: "Half-here shimmer" },
+    { id: "phantom-rift", ship: "phantom", name: "Rift", cost: 7000, rarity: "legendary", fx: "void", hull: "#1a0828", accent: "#d46bff", desc: "Tear in the dark" },
+    { id: "vulture-acid", ship: "vulture", name: "Acid", cost: 2500, rarity: "epic", fx: "ember", hull: "#b6ff4d", accent: "#5cff8a", desc: "Venom wash" },
+    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 7000, rarity: "legendary", fx: "mythic", hull: "#6a8a20", accent: "#ff7a5c", desc: "Feast colors" },
+    { id: "bastion-fortress", ship: "bastion", name: "Fortress", cost: 2500, rarity: "epic", fx: "chrome", hull: "#8aa0d8", accent: "#e0e8ff", desc: "Siege plate" },
+    { id: "bastion-obsidian", ship: "bastion", name: "Obsidian", cost: 7000, rarity: "legendary", fx: "void", hull: "#141428", accent: "#6b8cff", desc: "Black-glass bunker" },
+    { id: "strix-bloodglass", ship: "strix", name: "Bloodglass", cost: 2500, rarity: "epic", fx: "ember", hull: "#ff3355", accent: "#ffd0d8", desc: "Crimson canopy" },
+    { id: "strix-inferno", ship: "strix", name: "Inferno", cost: 7000, rarity: "legendary", fx: "solar", hull: "#ff7a3d", accent: "#ffe08a", desc: "Glass cannon fire" },
+    { id: "nova-supernova", ship: "nova", name: "Supernova", cost: 2500, rarity: "epic", fx: "novaflux", hull: "#ffe08a", accent: "#ffffff", desc: "Core going critical" },
+    { id: "nova-starburst", ship: "nova", name: "Starburst", cost: 7000, rarity: "legendary", fx: "solar", hull: "#ffb060", accent: "#fff4d0", desc: "Detonation gold" },
+    { id: "tempest-cyclone", ship: "tempest", name: "Cyclone", cost: 2500, rarity: "epic", fx: "ion", hull: "#3df0ff", accent: "#ffffff", desc: "Storm-cell glow" },
+    { id: "tempest-lightning", ship: "tempest", name: "Lightning", cost: 7000, rarity: "legendary", fx: "prism", hull: "#7ef9ff", accent: "#ffe08a", desc: "Bolt-struck hull" },
+    { id: "warden-jade", ship: "warden", name: "Jade", cost: 2500, rarity: "epic", fx: "aurora", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple green" },
+    { id: "warden-sentinel", ship: "warden", name: "Sentinel", cost: 7000, rarity: "legendary", fx: "chrome", hull: "#a8ffe0", accent: "#ffffff", desc: "Honor plate" },
+    { id: "eclipse-umbra", ship: "eclipse", name: "Umbra", cost: 2500, rarity: "epic", fx: "void", hull: "#1a1028", accent: "#ffd23d", desc: "Shadow disk" },
+    { id: "eclipse-corona", ship: "eclipse", name: "Corona", cost: 7000, rarity: "legendary", fx: "solar", hull: "#e0c8ff", accent: "#ffd23d", desc: "Ring of fire" }
   ];
 
   // Boss roster. Debut wave = (index + 1) * BOSS_EVERY. Kits: base (always), p2 (added below the
@@ -764,7 +804,9 @@
       ownedShips: ["wisp"],
       ownedGuns: ["pulse"],
       ownedMods: [],
+      ownedSkins: { wisp: ["stock"] },
       equipped: { ship: "wisp", gun: "pulse", mod: null },
+      equippedSkins: { wisp: "stock" },
       startWave: 1,
       dailies: { date: "", ids: [], progress: {}, claimed: {} },
       longTerm: {},
@@ -776,6 +818,28 @@
     var out = [], i;
     for (i = 0; i < a.length; i++) if (typeof a[i] === "string") out.push(a[i]);
     return out.length ? out : fallback.slice();
+  }
+  function cloneSkinMap(raw) {
+    var out = {}, k, list;
+    if (!raw || typeof raw !== "object") return { wisp: ["stock"] };
+    for (k in raw) {
+      if (!Object.prototype.hasOwnProperty.call(raw, k) || typeof k !== "string") continue;
+      list = cloneArr(raw[k], ["stock"]);
+      if (list.indexOf("stock") < 0) list.unshift("stock");
+      out[k] = list;
+    }
+    if (!out.wisp) out.wisp = ["stock"];
+    return out;
+  }
+  function cloneSkinEquip(raw) {
+    var out = {}, k;
+    if (!raw || typeof raw !== "object") return { wisp: "stock" };
+    for (k in raw) {
+      if (!Object.prototype.hasOwnProperty.call(raw, k)) continue;
+      if (typeof raw[k] === "string") out[k] = raw[k];
+    }
+    if (!out.wisp) out.wisp = "stock";
+    return out;
   }
   function migrateProfile(raw) {
     var p = defaultProfile();
@@ -802,6 +866,9 @@
     if (p.ownedShips.indexOf(p.equipped.ship) < 0) p.equipped.ship = "wisp";
     if (p.ownedGuns.indexOf(p.equipped.gun) < 0) p.equipped.gun = "pulse";
     if (p.equipped.mod && p.ownedMods.indexOf(p.equipped.mod) < 0) p.equipped.mod = null;
+    p.ownedSkins = cloneSkinMap(raw.ownedSkins);
+    p.equippedSkins = cloneSkinEquip(raw.equippedSkins);
+    grantLevelSkins(p);
     if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp));
     if (raw.dailies && typeof raw.dailies === "object") {
       p.dailies.date = typeof raw.dailies.date === "string" ? raw.dailies.date : "";
@@ -966,6 +1033,113 @@
   function findShip(id) { return findIn(SHIPS, id) || SHIPS[0]; }
   function findGun(id) { return findIn(GUNS, id) || GUNS[0]; }
   function findMod(id) { return id ? findIn(MODS, id) : null; }
+  function findSkin(id) {
+    var d = findIn(SKIN_TIERS, id);
+    return d || findIn(SHIP_COIN_SKINS, id);
+  }
+  function skinsForShip(shipId) {
+    var out = [], i, d;
+    for (i = 0; i < SKIN_TIERS.length; i++) out.push(SKIN_TIERS[i]);
+    for (i = 0; i < SHIP_COIN_SKINS.length; i++) {
+      d = SHIP_COIN_SKINS[i];
+      if (d.ship === shipId) out.push(d);
+    }
+    return out;
+  }
+  function clamp01(n) { return n < 0 ? 0 : n > 1 ? 1 : n; }
+  function hexToRgbArr(hex) {
+    var n, v;
+    if (!hex || typeof hex !== "string") return [126, 249, 255];
+    n = hex.charAt(0) === "#" ? hex.slice(1) : hex;
+    if (n.length === 3) n = n.charAt(0) + n.charAt(0) + n.charAt(1) + n.charAt(1) + n.charAt(2) + n.charAt(2);
+    v = parseInt(n, 16);
+    if (!isFinite(v)) return [126, 249, 255];
+    return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+  }
+  function rgbArrToHex(r, g, b) {
+    function h(n) {
+      n = Math.max(0, Math.min(255, n | 0));
+      return (n < 16 ? "0" : "") + n.toString(16);
+    }
+    return "#" + h(r) + h(g) + h(b);
+  }
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b), h = 0, s, l = (max + min) / 2, d;
+    if (max === min) s = 0;
+    else {
+      d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+    }
+    return { h: h, s: s, l: l };
+  }
+  function hslToRgb(h, s, l) {
+    var c, x, m, hp, r, g, b;
+    s = clamp01(s); l = clamp01(l);
+    h = ((h % 360) + 360) % 360;
+    c = (1 - Math.abs(2 * l - 1)) * s;
+    hp = h / 60;
+    x = c * (1 - Math.abs(hp % 2 - 1));
+    r = 0; g = 0; b = 0;
+    if (hp < 1) { r = c; g = x; }
+    else if (hp < 2) { r = x; g = c; }
+    else if (hp < 3) { g = c; b = x; }
+    else if (hp < 4) { g = x; b = c; }
+    else if (hp < 5) { r = x; b = c; }
+    else { r = c; b = x; }
+    m = l - c / 2;
+    return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+  }
+  function shiftPaint(hex, hue, sat, lit) {
+    var rgb = hexToRgbArr(hex), hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]), out;
+    out = hslToRgb(hsl.h + (hue || 0), hsl.s * (sat == null ? 1 : sat), hsl.l * (lit == null ? 1 : lit));
+    return rgbArrToHex(out[0], out[1], out[2]);
+  }
+  function skinPaint(shipId, skinId) {
+    var ship = findShip(shipId);
+    var def = findSkin(skinId) || SKIN_TIERS[0];
+    var hull = ship.color || "#7ef9ff";
+    var accent = ship.accent || "#3df0ff";
+    if (def.hull) {
+      return { hull: def.hull, accent: def.accent || def.hull, fx: def.fx || "solid", def: def };
+    }
+    return {
+      hull: shiftPaint(hull, def.hue, def.sat, def.lit),
+      accent: shiftPaint(accent, def.hue, def.sat, def.lit),
+      fx: def.fx || "solid",
+      def: def
+    };
+  }
+  function grantLevelSkins(p) {
+    var lv, i, j, ship, list, skin;
+    p = p || profile;
+    if (!p.ownedSkins) p.ownedSkins = {};
+    if (!p.equippedSkins) p.equippedSkins = {};
+    lv = xpLevel(p.totalXp);
+    for (i = 0; i < (p.ownedShips || []).length; i++) {
+      ship = p.ownedShips[i];
+      list = p.ownedSkins[ship];
+      if (!list) { list = ["stock"]; p.ownedSkins[ship] = list; }
+      if (list.indexOf("stock") < 0) list.unshift("stock");
+      for (j = 0; j < SKIN_TIERS.length; j++) {
+        skin = SKIN_TIERS[j];
+        if (skin.cost === 0 && lv >= skin.unlockLevel && list.indexOf(skin.id) < 0) list.push(skin.id);
+      }
+      if (!p.equippedSkins[ship] || list.indexOf(p.equippedSkins[ship]) < 0) p.equippedSkins[ship] = "stock";
+    }
+    return p;
+  }
+  function equippedSkinFor(shipId, p) {
+    var spec, map;
+    if (p && p.loadout && p.loadout.skin) return p.loadout.skin;
+    map = profile.equippedSkins || {};
+    shipId = shipId || ((profile.equipped && profile.equipped.ship) || "wisp");
+    return map[shipId] || "stock";
+  }
   function dailyById(id) { return findIn(DAILY_DEFS, id); }
   function longById(id) { return findIn(LONG_DEFS, id); }
   function equippedGun(p) {
@@ -983,15 +1157,24 @@
   function ownedList(cat) {
     if (cat === "ship") return profile.ownedShips;
     if (cat === "gun") return profile.ownedGuns;
+    if (cat === "skin") {
+      var ship = hangarView().ship;
+      if (!profile.ownedSkins) profile.ownedSkins = {};
+      if (!profile.ownedSkins[ship]) profile.ownedSkins[ship] = ["stock"];
+      return profile.ownedSkins[ship];
+    }
     return profile.ownedMods;
   }
   function isOwned(cat, id) {
     if (cat === "mod" && (!id || id === "none")) return true;
+    if (cat === "skin" && (!id || id === "stock")) return true;
     return ownedList(cat).indexOf(id) >= 0;
   }
   function isEquipped(cat, id) {
+    var view = hangarView();
     if (cat === "ship") return profile.equipped.ship === id;
     if (cat === "gun") return profile.equipped.gun === id;
+    if (cat === "skin") return equippedSkinFor(view.ship) === id && profile.equipped.ship === view.ship;
     if (!id || id === "none") return !profile.equipped.mod;
     return profile.equipped.mod === id;
   }
@@ -1003,17 +1186,22 @@
     return false;
   }
   function profileLoadoutSpec() {
+    var ship = (profile.equipped && profile.equipped.ship) || "wisp";
     return {
-      ship: (profile.equipped && profile.equipped.ship) || "wisp",
+      ship: ship,
       gun: (profile.equipped && profile.equipped.gun) || "pulse",
-      mod: profile.equipped ? profile.equipped.mod : null
+      mod: profile.equipped ? profile.equipped.mod : null,
+      skin: equippedSkinFor(ship)
     };
   }
   function loadoutLabel(spec) {
     var s = findShip(spec && spec.ship);
     var g = findGun(spec && spec.gun);
     var m = spec && spec.mod ? findMod(spec.mod) : null;
-    return s.name + "  ·  " + g.name + "  ·  " + (m ? m.name : "No mod");
+    var sk = spec && spec.skin ? findSkin(spec.skin) : null;
+    var bits = [s.name, g.name, m ? m.name : "No mod"];
+    if (sk && sk.id && sk.id !== "stock") bits.push(sk.name);
+    return bits.join("  ·  ");
   }
   function syncLocalPlayer() {
     player = players[localSlot] || players[0] || null;
@@ -1169,6 +1357,7 @@
   function saveProfile() {
     profile.best = best;
     profile.muted = muted;
+    grantLevelSkins();
     try { localStorage.setItem(LS_KEY, JSON.stringify(profile)); } catch (err) {}
   }
   function applyProfile(raw) {
@@ -1234,6 +1423,7 @@
       ship: spec.ship || "wisp",
       gun: spec.gun || "pulse",
       mod: spec.mod || null,
+      skin: spec.skin || equippedSkinFor(spec.ship || "wisp"),
       shieldHp: p ? p.shieldHp : 0,
       muzzle: p ? p.muzzle : 0
     };
@@ -1275,7 +1465,7 @@
       slot = pl && pl.slot != null ? pl.slot : idx;
       mine = slot === localSlot;
       tag = playerTag(slot);
-      col = pl ? (shipDef(pl).color || "#7ef9ff") : "#7ef9ff";
+      col = pl ? skinPaint((pl.loadout && pl.loadout.ship) || "wisp", (pl.loadout && pl.loadout.skin) || "stock").hull : "#7ef9ff";
       html += '<span class="life-p' + (mine ? " me" : "") + '" style="color:' + col + '">' + tag + "  " + (pl ? pl.lives : 0) + "</span>";
     }
     if (players[localSlot]) addRow(players[localSlot], localSlot);
@@ -1986,7 +2176,7 @@
     var x = spawnXFor(slot, count || 1);
     return {
       slot: slot,
-      loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null },
+      loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null, skin: spec.skin || equippedSkinFor(spec.ship || "wisp") },
       x: x, targetX: x, y: H - 34,
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
       weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0,
@@ -3406,6 +3596,7 @@
       return consolation || 40;
     }
     ownedList(cat).push(id);
+    if (cat === "ship") grantLevelSkins();
     return 0;
   }
   function applyReward(rew) {
@@ -3421,38 +3612,61 @@
   }
   function catalogStatus(cat, def) {
     if (cat === "mod" && (!def.id || def.id === "none")) return isEquipped("mod", null) ? "equipped" : "owned";
+    if (cat === "skin" && def.ship && !isOwned("ship", def.ship) && def.cost > 0) return "locked";
     if (isOwned(cat, def.id)) return isEquipped(cat, def.id) ? "equipped" : "owned";
-    if (xpLevel(profile.totalXp) < def.unlockLevel) return "locked";
+    if (xpLevel(profile.totalXp) < (def.unlockLevel || 1)) return "locked";
     return "buy";
   }
+  function catalogDef(cat, id) {
+    if (cat === "ship") return findIn(SHIPS, id);
+    if (cat === "gun") return findIn(GUNS, id);
+    if (cat === "skin") return findSkin(id);
+    if (cat === "mod" && (!id || id === "none")) return { id: "none", name: "None", unlockLevel: 1, cost: 0, rarity: "common", desc: "No module" };
+    return findIn(MODS, id);
+  }
   function buyItem(cat, id) {
-    var def = cat === "ship" ? findIn(SHIPS, id) : cat === "gun" ? findIn(GUNS, id) : findIn(MODS, id);
+    var def = catalogDef(cat, id);
     if (!def || def.cost <= 0) return;
     if (isOwned(cat, id)) return;
-    if (xpLevel(profile.totalXp) < def.unlockLevel) return;
+    if (xpLevel(profile.totalXp) < (def.unlockLevel || 1)) return;
+    if (cat === "skin" && def.ship && !isOwned("ship", def.ship)) return;
     if (profile.coins < def.cost) return;
     profile.coins -= def.cost;
     ownedList(cat).push(id);
+    if (cat === "ship") grantLevelSkins();
     syncQuestProgress();
     ensureAudio();
     sfxCredit();
     saveProfile();
-    renderHangar();
-    renderHub();
+    equipItem(cat, id);
   }
   function equipItem(cat, id) {
     if (cat === "mod" && (!id || id === "none")) {
       profile.equipped.mod = null;
+    } else if (cat === "skin") {
+      var ship = hangarView().ship;
+      if (!isOwned("ship", ship) || !isOwned("skin", id)) {
+        hangarPick = { cat: "skin", id: id };
+        renderHangar();
+        drawHangarPreview();
+        return;
+      }
+      if (!profile.equippedSkins) profile.equippedSkins = {};
+      profile.equippedSkins[ship] = id;
     } else {
       if (!isOwned(cat, id)) return;
-      if (cat === "ship") profile.equipped.ship = id;
-      else if (cat === "gun") profile.equipped.gun = id;
+      if (cat === "ship") {
+        profile.equipped.ship = id;
+        grantLevelSkins();
+      } else if (cat === "gun") profile.equipped.gun = id;
       else profile.equipped.mod = id;
     }
+    hangarPick = null;
     saveProfile();
     renderHangar();
     renderHub();
     drawHubPreview();
+    drawHangarPreview();
   }
   function claimQuest(scope, id) {
     var q;
@@ -3490,7 +3704,8 @@
     var hubTitle = el("hub-title");
     var fill = el("hub-xp-fill");
     var lab = el("hub-xp-label");
-    if (hubEquip) hubEquip.textContent = ship.name + "  ·  " + gun.name + "  ·  " + (mod ? mod.name : "No mod");
+    var skin = findSkin(equippedSkinFor(ship.id));
+    if (hubEquip) hubEquip.textContent = ship.name + "  ·  " + gun.name + "  ·  " + (mod ? mod.name : "No mod") + (skin && skin.id !== "stock" ? "  ·  " + skin.name : "");
     if (hubCoins) hubCoins.textContent = profile.coins + "c";
     var lv = xpLevel(profile.totalXp);
     if (hubLv) hubLv.textContent = "Lv " + lv;
@@ -3642,6 +3857,13 @@
 
   // ---- Hangar ----------------------------------------------------------------------------
   var hangarTab = "ship";
+  var hangarPick = null;
+  var hangarHover = null;
+  var hangarMuzzle = 0;
+  var hangarFireT = 0;
+  var hangarDrag = null;
+  var hangarGhost = null;
+  var hangarDidDrag = false;
   var RARITIES = ["common", "rare", "epic", "legendary"];
   function rarityLabel(r) { return r === "legendary" ? "Legendary" : r === "epic" ? "Epic" : r === "rare" ? "Rare" : "Common"; }
   function fmtPct(m) {
@@ -3700,23 +3922,62 @@
     }
     return h;
   }
+  function skinChips(d) {
+    var h = "";
+    h += chip("FX", (d.fx || "solid").toUpperCase(), 0, "special");
+    if (d.cost > 0) h += chip("PRICE", d.cost + "c", 0);
+    else if (d.unlockLevel > 1) h += chip("LV", String(d.unlockLevel), 0);
+    return h;
+  }
+  function hangarView() {
+    var ship = (profile.equipped && profile.equipped.ship) || "wisp";
+    var gun = (profile.equipped && profile.equipped.gun) || "pulse";
+    var mod = profile.equipped ? profile.equipped.mod : null;
+    var skin = null;
+    if (hangarPick) {
+      if (hangarPick.cat === "ship") ship = hangarPick.id;
+      else if (hangarPick.cat === "gun") gun = hangarPick.id;
+      else if (hangarPick.cat === "mod") mod = hangarPick.id === "none" ? null : hangarPick.id;
+      else if (hangarPick.cat === "skin") skin = hangarPick.id;
+    }
+    if (!skin) skin = equippedSkinFor(ship);
+    return { ship: ship, gun: gun, mod: mod, skin: skin, preview: !!hangarPick };
+  }
+  function hangarSwatch(cat, d) {
+    var ship, paint;
+    if (cat === "ship") return d.color || "#7ef9ff";
+    if (cat === "skin") {
+      ship = hangarView().ship;
+      paint = skinPaint(ship, d.id);
+      return paint.hull;
+    }
+    if (cat === "gun") return "#9ab8ff";
+    if (!d || d.id === "none") return "#4a5a80";
+    return "#ffd23d";
+  }
   function lockReason(def) {
     var lv = xpLevel(profile.totalXp);
+    if (def.ship && def.cost > 0 && !isOwned("ship", def.ship)) return "Own this ship first";
+    if (!def.unlockLevel || def.unlockLevel <= 1) return "Locked";
     var need = xpForLevel(def.unlockLevel) - profile.totalXp;
     return "Lv " + def.unlockLevel + " · " + (def.unlockLevel - lv) + " to go (" + need + " XP)";
   }
   function itemRow(cat, d, eq) {
     var st = catalogStatus(cat, d);
     var canAfford = profile.coins >= d.cost;
-    var h = '<div class="cat-row ' + st + " r-" + (d.rarity || "common") + '">';
+    var view = hangarView();
+    var preview = hangarPick && hangarPick.cat === cat && hangarPick.id === d.id;
+    var chips = cat === "ship" ? shipChips(d, eq) : cat === "gun" ? gunChips(d, eq) : cat === "skin" ? skinChips(d) : modChips(d);
+    var h = '<div class="cat-row ' + st + (preview ? " preview" : "") + " r-" + (d.rarity || "common") + '" data-cat="' + cat + '" data-id="' + d.id + '">';
+    h += '<div class="cat-swatch" data-drag="1" data-cat="' + cat + '" data-id="' + d.id + '" style="background:' + hangarSwatch(cat, d) + ";color:" + hangarSwatch(cat, d) + '"></div>';
     h += '<div class="cat-info"><div class="cat-name">' + d.name + ' <span class="badge b-' + (d.rarity || "common") + '">' + rarityLabel(d.rarity) + "</span></div>";
     h += '<div class="cat-desc">' + d.desc + "</div>";
-    h += '<div class="chips">' + (cat === "ship" ? shipChips(d, eq) : cat === "gun" ? gunChips(d, eq) : modChips(d)) + "</div>";
+    h += '<div class="chips">' + chips + "</div>";
     if (st === "locked") h += '<div class="lock-reason">Locked · ' + lockReason(d) + "</div>";
     else if (st === "buy" && !canAfford) h += '<div class="lock-reason">Need ' + (d.cost - profile.coins) + "c more</div>";
     h += "</div>";
     h += '<div class="cat-act">';
-    if (st === "locked") h += '<span class="tag">Lv ' + d.unlockLevel + "</span>";
+    if (st === "locked") h += '<span class="tag">' + (d.cost > 0 && d.ship && !isOwned("ship", d.ship) ? "Ship" : ("Lv " + d.unlockLevel)) + "</span>";
     else if (st === "buy") h += '<button type="button" class="btn btn-mini' + (canAfford ? "" : " btn-off") + '" data-act="buy" data-cat="' + cat + '" data-id="' + d.id + '"' + (canAfford ? "" : " disabled") + ">" + d.cost + "c</button>";
     else if (st === "owned") h += '<button type="button" class="btn btn-mini" data-act="equip" data-cat="' + cat + '" data-id="' + d.id + '">Equip</button>';
     else h += '<span class="tag on">Equipped</span>';
@@ -3725,7 +3986,7 @@
   }
   function sectionHtml(items, cat) {
     var h = "", i, r, d, eq, any;
-    eq = cat === "ship" ? shipDef() : cat === "gun" ? findGun(equippedGun()) : null;
+    eq = cat === "ship" ? findShip(hangarView().ship) : cat === "gun" ? findGun(hangarView().gun) : null;
     for (r = 0; r < RARITIES.length; r++) {
       any = false;
       for (i = 0; i < items.length; i++) {
@@ -3742,24 +4003,64 @@
     var lists = el("hangar-lists");
     var tabs = el("hangar-tabs");
     var lv = xpLevel(profile.totalXp);
+    var view, ship, gun, mod, skin, eqLine, mods;
+    grantLevelSkins();
     if (coins) coins.textContent = profile.coins + " coins  ·  Lv " + lv + " " + levelTitle(lv);
     if (tabs) {
       var btns = tabs.querySelectorAll("[data-tab]"), i;
       for (i = 0; i < btns.length; i++) btns[i].classList.toggle("active", btns[i].getAttribute("data-tab") === hangarTab);
     }
     if (!lists) return;
-    var eqLine = el("hangar-equip");
-    var ship = shipDef(), gun = findGun(equippedGun()), mod = findMod(equippedMod());
+    view = hangarView();
+    ship = findShip(view.ship);
+    gun = findGun(view.gun);
+    mod = findMod(view.mod);
+    skin = findSkin(view.skin);
+    eqLine = el("hangar-equip");
     if (eqLine) {
-      eqLine.innerHTML = '<span class="eq-lab">Loadout</span> ' + ship.name + " · " + gun.name + " · " + (mod ? mod.name : "No mod") +
-        '<span class="eq-dps">' + fmtNum(gunDps(gun, ship, equippedMod()), 1) + " DPS · " + loadoutLives(ship) + " lives</span>";
+      eqLine.classList.toggle("preview", !!view.preview);
+      eqLine.innerHTML = '<span class="eq-lab">' + (view.preview ? "Preview" : "Loadout") + "</span> " +
+        ship.name + " · " + gun.name + " · " + (mod ? mod.name : "No mod") + " · " + (skin && skin.id !== "stock" ? skin.name : "Stock") +
+        '<span class="eq-dps">' + fmtNum(gunDps(gun, ship, view.mod), 1) + " DPS · " + loadoutLives(ship) + " lives</span>";
     }
     if (hangarTab === "ship") lists.innerHTML = sectionHtml(SHIPS, "ship");
     else if (hangarTab === "gun") lists.innerHTML = sectionHtml(GUNS, "gun");
+    else if (hangarTab === "skin") lists.innerHTML = sectionHtml(skinsForShip(view.ship), "skin");
     else {
-      var mods = [{ id: "none", name: "None", unlockLevel: 1, cost: 0, rarity: "common", desc: "No module" }].concat(MODS);
+      mods = [{ id: "none", name: "None", unlockLevel: 1, cost: 0, rarity: "common", desc: "No module" }].concat(MODS);
       lists.innerHTML = sectionHtml(mods, "mod");
     }
+  }
+  function selectHangarItem(cat, id) {
+    var def = catalogDef(cat, id);
+    var st;
+    if (!def) return;
+    st = catalogStatus(cat, def);
+    if (st === "owned" || st === "equipped") {
+      equipItem(cat, id);
+      return;
+    }
+    hangarPick = { cat: cat, id: id };
+    if (cat === "ship") hangarTab = "ship";
+    else if (cat === "gun") hangarTab = "gun";
+    else if (cat === "mod") hangarTab = "mod";
+    else hangarTab = "skin";
+    renderHangar();
+    drawHangarPreview();
+  }
+  function applyHangarItem(cat, id) {
+    var def = catalogDef(cat, id);
+    var st;
+    if (!def) return false;
+    st = catalogStatus(cat, def);
+    if (st === "locked") return false;
+    if (st === "buy") {
+      if (profile.coins < def.cost) return false;
+      buyItem(cat, id);
+      return isOwned(cat, id);
+    }
+    equipItem(cat, id);
+    return true;
   }
   function rewardText(rew) {
     if (rew == null) return "";
@@ -3874,7 +4175,7 @@
     stopHubAnim();
     var last = 0;
     function loop(ts) {
-      if (uiScreen !== "hub") { hubRaf = 0; return; }
+      if (uiScreen !== "hub" && uiScreen !== "hangar") { hubRaf = 0; return; }
       if (!last) last = ts;
       var dt = (ts - last) / 1000;
       if (dt > 0.05) dt = 0.05;
@@ -3885,10 +4186,152 @@
         stars[i].y += stars[i].v * dt * 0.35;
         if (stars[i].y > H) { stars[i].y = 0; stars[i].x = Math.random() * W; }
       }
-      drawHubPreview();
+      if (uiScreen === "hangar") {
+        hangarFireT -= dt;
+        hangarMuzzle = Math.max(0, hangarMuzzle - dt * 4);
+        if (hangarFireT <= 0) {
+          hangarMuzzle = 1;
+          hangarFireT = 0.9;
+        }
+        drawHangarPreview();
+      } else {
+        drawHubPreview();
+      }
       hubRaf = requestAnimationFrame(loop);
     }
     hubRaf = requestAnimationFrame(loop);
+  }
+  function hangarStageSize() {
+    var c = el("hangar-preview");
+    var stage = el("hangar-stage");
+    var cssW = 320, cssH = 160;
+    if (stage && stage.clientWidth) cssW = stage.clientWidth;
+    return { c: c, cssW: cssW, cssH: cssH };
+  }
+  function drawHangarStars(pctx, pw, ph) {
+    var i, p;
+    for (i = 0; i < stars.length; i++) {
+      p = stars[i];
+      pctx.globalAlpha = 0.35 + p.s * 0.35;
+      pctx.fillStyle = "#c8e8ff";
+      pctx.fillRect((p.x / W) * pw, (p.y / H) * ph, p.s, p.s);
+    }
+    pctx.globalAlpha = 1;
+  }
+  function hangarLoadout() {
+    var view = hangarView();
+    var shield = 0;
+    if (view.mod === "barrier" || view.mod === "guardian") shield = 2;
+    else if (view.mod === "reactor") shield = 0;
+    return {
+      ship: view.ship,
+      gun: view.gun,
+      mod: view.mod,
+      skin: view.skin,
+      shieldHp: shield,
+      muzzle: hangarMuzzle,
+      scale: 2
+    };
+  }
+  function drawHangarPreview() {
+    var size = hangarStageSize();
+    var c = size.c;
+    var pw = size.cssW, ph = size.cssH;
+    var dpr, w, h, pctx, view, bob, cx, cy;
+    if (!c) return;
+    dpr = window.devicePixelRatio || 1;
+    w = Math.max(1, Math.round(pw * dpr));
+    h = Math.max(1, Math.round(ph * dpr));
+    if (c.width !== w || c.height !== h) {
+      c.width = w; c.height = h;
+      c.style.width = pw + "px";
+      c.style.height = ph + "px";
+    }
+    pctx = c.getContext("2d");
+    pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    pctx.fillStyle = "#050510";
+    pctx.fillRect(0, 0, pw, ph);
+    drawHangarStars(pctx, pw, ph);
+    view = hangarView();
+    bob = Math.sin(time * 2.2) * 3;
+    cx = pw / 2;
+    cy = ph / 2 + 8 + bob;
+    drawHangarHotspots(pctx, pw, ph, cx, cy - bob);
+    drawShip(pctx, cx, cy, false, hangarLoadout());
+    drawHangarPaintPip(pctx, pw, hangarHover === "skin" || hangarTab === "skin");
+    if (view.preview) {
+      pctx.fillStyle = "#ffd23d";
+      pctx.font = "700 9px ui-sans-serif, system-ui, sans-serif";
+      pctx.textAlign = "left";
+      pctx.fillText("PREVIEW", 8, ph - 8);
+    }
+  }
+  function drawHangarPaintPip(pctx, pw, on) {
+    var x = pw - 22, y = 22;
+    pctx.save();
+    pctx.globalAlpha = on ? 1 : 0.7;
+    pctx.fillStyle = on ? "#7ef9ff" : "#1a2a50";
+    pctx.beginPath();
+    pctx.arc(x, y, 12, 0, Math.PI * 2);
+    pctx.fill();
+    pctx.strokeStyle = "#7ef9ff";
+    pctx.lineWidth = 1.4;
+    pctx.stroke();
+    pctx.fillStyle = on ? "#041018" : "#7ef9ff";
+    pctx.beginPath();
+    pctx.arc(x - 3, y + 2, 5, 0, Math.PI * 2);
+    pctx.fill();
+    pctx.fillStyle = "#ffd23d";
+    pctx.beginPath();
+    pctx.arc(x + 4, y - 3, 3.2, 0, Math.PI * 2);
+    pctx.fill();
+    pctx.restore();
+  }
+  function drawHangarHotspots(pctx, pw, ph, cx, cy) {
+    var marks = [
+      { id: "gun", x: cx, y: cy - 36, lab: "GUN" },
+      { id: "ship", x: cx, y: cy + 2, lab: "SHIP" },
+      { id: "mod", x: cx, y: cy + 40, lab: "MOD" }
+    ];
+    var i, m, on;
+    pctx.save();
+    pctx.font = "700 8px ui-sans-serif, system-ui, sans-serif";
+    pctx.textAlign = "center";
+    for (i = 0; i < marks.length; i++) {
+      m = marks[i];
+      on = hangarHover === m.id || hangarTab === m.id;
+      pctx.globalAlpha = on ? 0.9 : 0.35;
+      pctx.strokeStyle = on ? "#7ef9ff" : "#3a4a80";
+      pctx.lineWidth = on ? 1.6 : 1;
+      pctx.beginPath();
+      pctx.ellipse(m.x, m.y, m.id === "ship" ? 36 : 22, m.id === "ship" ? 16 : 10, 0, 0, Math.PI * 2);
+      pctx.stroke();
+      pctx.fillStyle = on ? "#7ef9ff" : "#9ab8ff";
+      pctx.fillText(m.lab, m.x, m.y + (m.id === "gun" ? -16 : m.id === "mod" ? 18 : 28));
+    }
+    pctx.restore();
+  }
+  function hangarHotspotAt(cssX, cssY) {
+    var size = hangarStageSize();
+    var pw = size.cssW, ph = size.cssH;
+    var dx = cssX - (pw - 22), dy = cssY - 22;
+    var cx = pw / 2, cy = ph / 2 + 8;
+    var lx, ly;
+    if (dx * dx + dy * dy <= 16 * 16) return "skin";
+    lx = cssX - cx;
+    ly = cssY - cy;
+    if (Math.abs(lx) > 56 || Math.abs(ly) > 58) return null;
+    if (ly < -14) return "gun";
+    if (ly > 22) return "mod";
+    return "ship";
+  }
+  function hangarCanvasLocal(e, canvas) {
+    var rect = canvas.getBoundingClientRect();
+    if (!rect.width) return { x: 0, y: 0 };
+    return {
+      x: (e.clientX - rect.left) * (canvas.clientWidth / rect.width),
+      y: (e.clientY - rect.top) * (canvas.clientHeight / rect.height)
+    };
   }
   function drawHubPreview() {
     var c = el("hub-preview");
@@ -3897,6 +4340,7 @@
     var dpr = window.devicePixelRatio || 1;
     var w = Math.max(1, Math.round(pw * dpr));
     var h = Math.max(1, Math.round(ph * dpr));
+    var spec = profileLoadoutSpec();
     if (c.width !== w || c.height !== h) {
       c.width = w; c.height = h;
       c.style.width = pw + "px";
@@ -3906,18 +4350,13 @@
     pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     pctx.fillStyle = "#050510";
     pctx.fillRect(0, 0, pw, ph);
-    var i, p;
-    for (i = 0; i < stars.length; i++) {
-      p = stars[i];
-      pctx.globalAlpha = 0.35 + p.s * 0.35;
-      pctx.fillStyle = "#c8e8ff";
-      pctx.fillRect((p.x / W) * pw, (p.y / H) * ph, p.s, p.s);
-    }
-    pctx.globalAlpha = 1;
+    drawHangarStars(pctx, pw, ph);
     drawShip(pctx, pw / 2, ph / 2 + 10, false, {
-      ship: (profile.equipped && profile.equipped.ship) || "wisp",
-      gun: equippedGun(),
-      shieldHp: 0,
+      ship: spec.ship,
+      gun: spec.gun,
+      mod: spec.mod,
+      skin: spec.skin,
+      shieldHp: spec.mod === "barrier" || spec.mod === "guardian" ? 2 : 0,
       muzzle: 0
     });
   }
@@ -3936,9 +4375,9 @@
       if (node) node.classList.toggle("hidden", ids[i] !== name);
     }
     if (name === "hub") { renderHub(); startHubAnim(); }
+    else if (name === "hangar") { renderHangar(); startHubAnim(); }
     else {
       stopHubAnim();
-      if (name === "hangar") renderHangar();
       if (name === "quests") { setResetConfirm(false); renderQuests(); }
       if (name === "ranks") refreshRanks();
       if (name === "lobby") renderLobby();
@@ -4165,13 +4604,13 @@
   function renderLobbyPlayers(list) {
     var box = el("lobby-players");
     if (!box) return;
-    var html = "", i, spec, ship, who;
+    var html = "", i, spec, who, paint;
     list = list || [];
     for (i = 0; i < list.length; i++) {
       spec = list[i].loadout || list[i];
-      ship = findShip(spec.ship);
+      paint = skinPaint(spec.ship || "wisp", spec.skin || "stock");
       who = i === 0 ? "P1  ·  Host" : "P2  ·  Guest";
-      html += '<div class="lobby-row"><span class="lobby-swatch" style="background:' + ship.color + ";color:" + ship.color + '"></span><div><div class="lobby-row-name">' + who + '</div><div class="lobby-row-load">' + loadoutLabel(spec) + "</div></div></div>";
+      html += '<div class="lobby-row"><span class="lobby-swatch" style="background:' + paint.hull + ";color:" + paint.hull + '"></span><div><div class="lobby-row-name">' + who + '</div><div class="lobby-row-load">' + loadoutLabel(spec) + "</div></div></div>";
     }
     box.innerHTML = html;
   }
@@ -4281,13 +4720,13 @@
       muzzle: p.muzzle || 0, shieldHp: p.shieldHp || 0, weapon: p.weapon || "normal",
       weaponT: p.weaponT || 0, speedT: p.speedT || 0, lives: p.lives, r: p.r,
       slowT: p.slowT || 0, jamT: p.jamT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
-      mod: lo.mod || null, targetX: p.targetX != null ? p.targetX : p.x
+      mod: lo.mod || null, skin: lo.skin || "stock", targetX: p.targetX != null ? p.targetX : p.x
     };
   }
   function applyPlayerSnap(row) {
     var slot = row.slot;
     var p = players[slot];
-    var spec = { ship: row.ship, gun: row.gun, mod: row.mod };
+    var spec = { ship: row.ship, gun: row.gun, mod: row.mod, skin: row.skin || "stock" };
     if (!p) {
       p = makePlayer(slot, spec);
       players[slot] = p;
@@ -5317,14 +5756,22 @@
     if (blink && Math.floor(time * 12) % 2 === 0) return;
     var shipId = loadout.ship || "wisp";
     var gunId = loadout.gun || "pulse";
+    var modId = loadout.mod || null;
+    var skinId = loadout.skin || "stock";
     var shieldHp = loadout.shieldHp != null ? loadout.shieldHp : 0;
     var muzzle = loadout.muzzle != null ? loadout.muzzle : 0;
+    var scale = loadout.scale || 1;
     var def = findShip(shipId);
-    var hull = def.color || "#7ef9ff";
-    var accent = def.accent || "#3df0ff";
+    var paint = skinPaint(shipId, skinId);
+    var hull = paint.hull;
+    var accent = paint.accent;
+    var fx = paint.fx || "solid";
     var pts = SHIP_HULLS[shipId] || SHIP_HULLS.wisp;
+    var fill, i;
     context.save();
     context.translate(x, y);
+    if (scale !== 1) context.scale(scale, scale);
+    drawModFxBack(context, modId, hull, def);
     if (shieldHp > 0) {
       context.globalAlpha = 0.35 + 0.15 * Math.sin(time * 8);
       glow(context, "#6b8cff", 12);
@@ -5336,10 +5783,35 @@
       context.globalAlpha = 1;
       noGlow(context);
     }
-    glow(context, hull, 12);
-    context.fillStyle = hull;
+    glow(context, hull, fx === "hologram" || fx === "novaflux" ? 16 : 12);
+    if (fx === "nebula" || fx === "aurora") {
+      fill = context.createLinearGradient(0, -16, 0, 14);
+      fill.addColorStop(0, hull);
+      fill.addColorStop(0.45 + 0.1 * Math.sin(time * 3), accent);
+      fill.addColorStop(1, hull);
+      context.fillStyle = fill;
+    } else if (fx === "prism") {
+      context.fillStyle = shiftPaint(hull, time * 70, 1.1, 1);
+    } else if (fx === "mythic") {
+      context.fillStyle = Math.sin(time * 8) > 0 ? hull : accent;
+    } else {
+      context.fillStyle = hull;
+    }
+    if (fx === "hologram") context.globalAlpha = 0.7 + 0.25 * Math.sin(time * 9);
     tracePoly(context, pts);
     context.fill();
+    context.globalAlpha = 1;
+    if (fx === "chrome" || fx === "gilded") {
+      context.globalAlpha = 0.32 + 0.12 * Math.sin(time * 5);
+      context.fillStyle = "#ffffff";
+      context.beginPath();
+      context.moveTo(0, -8);
+      context.lineTo(4, 0);
+      context.lineTo(-4, 0);
+      context.closePath();
+      context.fill();
+      context.globalAlpha = 1;
+    }
     context.fillStyle = accent;
     context.beginPath();
     context.moveTo(0, -6);
@@ -5348,9 +5820,183 @@
     context.closePath();
     context.fill();
     drawShipDetail(context, shipId, hull, accent, time);
+    drawSkinFx(context, fx, hull, accent);
     drawGunBarrels(context, gunId, hull);
     if (muzzle > 0.15) drawMuzzle(context, gunId, muzzle);
+    drawModFxFront(context, modId, hull, def);
     noGlow(context);
+    context.restore();
+  }
+  function drawSkinFx(context, fx, hull, accent) {
+    var i, y;
+    if (fx === "solid") return;
+    context.save();
+    if (fx === "ion") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.45 + 0.3 * Math.sin(time * 10);
+      context.lineWidth = 1.2;
+      context.beginPath();
+      context.arc(0, 0, 11 + Math.sin(time * 6) * 1.5, 0.2, Math.PI - 0.2);
+      context.stroke();
+    } else if (fx === "ember" || fx === "solar") {
+      context.globalAlpha = 0.35 + 0.25 * Math.sin(time * 12);
+      context.fillStyle = fx === "solar" ? "#ffe08a" : "#ff7a3d";
+      context.beginPath();
+      context.moveTo(-4, 7);
+      context.lineTo(0, 13 + Math.sin(time * 18) * 2);
+      context.lineTo(4, 7);
+      context.closePath();
+      context.fill();
+    } else if (fx === "void") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.5;
+      context.lineWidth = 1.6;
+      context.beginPath();
+      context.arc(0, 0, 10, 0, Math.PI * 2);
+      context.stroke();
+      context.fillStyle = "#050510";
+      context.globalAlpha = 0.35;
+      context.beginPath();
+      context.arc(0, 1, 3.2, 0, Math.PI * 2);
+      context.fill();
+    } else if (fx === "gilded") {
+      context.strokeStyle = "#ffe08a";
+      context.globalAlpha = 0.55 + 0.25 * Math.sin(time * 4);
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(-8, 2);
+      context.lineTo(8, -4);
+      context.stroke();
+    } else if (fx === "prism") {
+      context.strokeStyle = shiftPaint(accent, time * 90, 1.2, 1.1);
+      context.globalAlpha = 0.7;
+      context.lineWidth = 1.3;
+      tracePoly(context, SHIP_HULLS.wisp);
+      context.stroke();
+    } else if (fx === "novaflux") {
+      context.strokeStyle = "#ffffff";
+      context.globalAlpha = 0.45 + 0.35 * Math.sin(time * 7);
+      context.lineWidth = 1.2;
+      context.beginPath();
+      context.arc(0, 1, 5 + Math.sin(time * 8), 0, Math.PI * 2);
+      context.stroke();
+    } else if (fx === "frost") {
+      context.strokeStyle = "#e8f6ff";
+      context.globalAlpha = 0.55;
+      context.lineWidth = 1.1;
+      context.beginPath();
+      context.moveTo(-6, -2);
+      context.lineTo(-9, -8);
+      context.moveTo(6, -2);
+      context.lineTo(9, -8);
+      context.stroke();
+    } else if (fx === "hologram") {
+      context.strokeStyle = "#ffffff";
+      context.lineWidth = 0.8;
+      for (i = 0; i < 6; i++) {
+        y = -10 + ((time * 22 + i * 4) % 22);
+        context.globalAlpha = 0.18;
+        context.beginPath();
+        context.moveTo(-10, y);
+        context.lineTo(10, y);
+        context.stroke();
+      }
+    } else if (fx === "aurora") {
+      context.globalAlpha = 0.28 + 0.12 * Math.sin(time * 3);
+      context.strokeStyle = accent;
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(-10, 4 + Math.sin(time * 4) * 2);
+      context.quadraticCurveTo(0, -14, 10, 4 + Math.cos(time * 4) * 2);
+      context.stroke();
+    } else if (fx === "chrome") {
+      context.strokeStyle = "#ffffff";
+      context.globalAlpha = 0.4;
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(-5, -5);
+      context.lineTo(6, 4);
+      context.stroke();
+    } else if (fx === "nebula") {
+      context.globalAlpha = 0.3 + 0.15 * Math.sin(time * 2.5);
+      context.fillStyle = accent;
+      context.beginPath();
+      context.arc(-5, 0, 2.2, 0, Math.PI * 2);
+      context.arc(5, 2, 1.6, 0, Math.PI * 2);
+      context.fill();
+    } else if (fx === "mythic") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.45 + 0.25 * Math.sin(time * 6);
+      context.lineWidth = 1.4;
+      context.beginPath();
+      context.arc(0, 0, 12 + Math.sin(time * 5), 0, Math.PI * 2);
+      context.stroke();
+    }
+    context.restore();
+  }
+  function drawModFxBack(context, modId, hull, def) {
+    if (!modId) return;
+    context.save();
+    if (modId === "magnet") {
+      context.strokeStyle = hull;
+      context.globalAlpha = 0.22 + 0.1 * Math.sin(time * 3);
+      context.lineWidth = 1;
+      context.setLineDash([3, 4]);
+      context.beginPath();
+      context.arc(0, 0, 20 + Math.sin(time * 2) * 2, 0, Math.PI * 2);
+      context.stroke();
+      context.setLineDash([]);
+    } else if (modId === "afterburner") {
+      context.globalAlpha = 0.4 + 0.25 * Math.sin(time * 14);
+      context.fillStyle = "#ff9a3d";
+      context.beginPath();
+      context.moveTo(-3.5, 8);
+      context.lineTo(0, 18 + Math.sin(time * 20) * 3);
+      context.lineTo(3.5, 8);
+      context.closePath();
+      context.fill();
+    } else if (modId === "fortune" || modId === "salvage") {
+      context.fillStyle = "#ffd23d";
+      context.globalAlpha = 0.45 + 0.25 * Math.sin(time * 5);
+      context.beginPath();
+      context.arc(-10, -4, 1.4, 0, Math.PI * 2);
+      context.arc(11, 3, 1.2, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.restore();
+  }
+  function drawModFxFront(context, modId, hull, def) {
+    if (!modId) return;
+    context.save();
+    if (modId === "reactor") {
+      context.strokeStyle = "#ffe08a";
+      context.globalAlpha = 0.5 + 0.3 * Math.sin(time * 6);
+      context.lineWidth = 1.3;
+      context.beginPath();
+      context.arc(0, 1, 4.5, 0, Math.PI * 2);
+      context.stroke();
+    } else if (modId === "overdrive") {
+      context.fillStyle = "#7ef9ff";
+      context.globalAlpha = 0.4 + 0.3 * Math.sin(time * 16);
+      context.fillRect(-1, 6, 2, 5);
+    } else if (modId === "berserk") {
+      context.strokeStyle = "#ff4d4d";
+      context.globalAlpha = 0.4 + 0.3 * Math.sin(time * 8);
+      context.lineWidth = 1.4;
+      context.beginPath();
+      context.arc(0, 0, 11 + (def && def.r ? def.r * 0.1 : 1), 0, Math.PI * 2);
+      context.stroke();
+    } else if (modId === "ascension") {
+      context.strokeStyle = "#ffd23d";
+      context.globalAlpha = 0.4 + 0.2 * Math.sin(time * 4);
+      context.lineWidth = 1.1;
+      context.beginPath();
+      context.moveTo(0, -14);
+      context.lineTo(3, -9);
+      context.lineTo(-3, -9);
+      context.closePath();
+      context.stroke();
+    }
     context.restore();
   }
 
@@ -6029,18 +6675,173 @@
     }
   }
   bindLobbyUi();
+  function hangarRowFrom(t) {
+    if (!t || !t.closest) return null;
+    return t.closest(".cat-row");
+  }
+  function hangarItemFrom(t) {
+    var row, cat, id;
+    if (!t || !t.getAttribute) return null;
+    cat = t.getAttribute("data-cat");
+    id = t.getAttribute("data-id");
+    if (cat && id) return { cat: cat, id: id };
+    row = hangarRowFrom(t);
+    if (!row) return null;
+    cat = row.getAttribute("data-cat");
+    id = row.getAttribute("data-id");
+    if (!cat || !id) return null;
+    return { cat: cat, id: id };
+  }
+  function ensureHangarGhost() {
+    if (hangarGhost && hangarGhost.parentNode) return hangarGhost;
+    hangarGhost = document.createElement("div");
+    hangarGhost.className = "hangar-ghost hidden";
+    document.body.appendChild(hangarGhost);
+    return hangarGhost;
+  }
+  function clearHangarDrag() {
+    var row, stage;
+    if (hangarDrag && hangarDrag.row) hangarDrag.row.classList.remove("dragging");
+    hangarDrag = null;
+    if (hangarGhost) hangarGhost.classList.add("hidden");
+    stage = el("hangar-stage");
+    if (stage) {
+      stage.classList.remove("drop-ok");
+      stage.classList.remove("drop-bad");
+    }
+  }
+  function hangarOverStage(clientX, clientY) {
+    var stage = el("hangar-stage");
+    var rect;
+    if (!stage) return false;
+    rect = stage.getBoundingClientRect();
+    return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+  }
   el("hangar-lists").addEventListener("click", function (e) {
     var t = e.target;
+    var act, item;
+    if (hangarDidDrag) {
+      hangarDidDrag = false;
+      e.preventDefault();
+      return;
+    }
     if (!t || !t.getAttribute) return;
-    var act = t.getAttribute("data-act");
-    if (act === "buy") buyItem(t.getAttribute("data-cat"), t.getAttribute("data-id"));
-    if (act === "equip") equipItem(t.getAttribute("data-cat"), t.getAttribute("data-id"));
+    act = t.getAttribute("data-act");
+    if (act === "buy") {
+      e.preventDefault();
+      buyItem(t.getAttribute("data-cat"), t.getAttribute("data-id"));
+      return;
+    }
+    if (act === "equip") {
+      e.preventDefault();
+      equipItem(t.getAttribute("data-cat"), t.getAttribute("data-id"));
+      return;
+    }
+    item = hangarItemFrom(t);
+    if (item) {
+      e.preventDefault();
+      selectHangarItem(item.cat, item.id);
+    }
+  });
+  el("hangar-lists").addEventListener("pointerdown", function (e) {
+    var t = e.target;
+    var item, handle, row;
+    if (!t || e.button) return;
+    handle = t.closest ? t.closest("[data-drag]") : null;
+    if (!handle && e.pointerType === "mouse") {
+      row = hangarRowFrom(t);
+      if (row && !t.getAttribute("data-act")) handle = row;
+    }
+    if (!handle) return;
+    item = hangarItemFrom(handle);
+    if (!item) return;
+    hangarDrag = {
+      cat: item.cat,
+      id: item.id,
+      pointerId: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      moved: false,
+      row: hangarRowFrom(handle)
+    };
+    try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  function onHangarPointerMove(e) {
+    var ghost, dx, dy, over, def, st, stage;
+    if (!hangarDrag || e.pointerId !== hangarDrag.pointerId) return;
+    dx = e.clientX - hangarDrag.x;
+    dy = e.clientY - hangarDrag.y;
+    if (!hangarDrag.moved && dx * dx + dy * dy < 64) return;
+    hangarDrag.moved = true;
+    if (hangarDrag.row) hangarDrag.row.classList.add("dragging");
+    ghost = ensureHangarGhost();
+    def = catalogDef(hangarDrag.cat, hangarDrag.id);
+    ghost.style.background = def ? hangarSwatch(hangarDrag.cat, def) : "#7ef9ff";
+    ghost.classList.remove("hidden");
+    ghost.style.left = e.clientX + "px";
+    ghost.style.top = e.clientY + "px";
+    over = hangarOverStage(e.clientX, e.clientY);
+    stage = el("hangar-stage");
+    if (stage) {
+      st = def ? catalogStatus(hangarDrag.cat, def) : "locked";
+      stage.classList.toggle("drop-ok", over && st !== "locked" && (st !== "buy" || profile.coins >= (def.cost || 0)));
+      stage.classList.toggle("drop-bad", over && (st === "locked" || (st === "buy" && profile.coins < (def.cost || 0))));
+    }
+    if (over) {
+      hangarHover = hangarDrag.cat === "skin" ? "skin" : hangarDrag.cat;
+      drawHangarPreview();
+    }
+  }
+  function onHangarPointerUp(e) {
+    var applied;
+    if (!hangarDrag || e.pointerId !== hangarDrag.pointerId) return;
+    if (hangarDrag.moved && hangarOverStage(e.clientX, e.clientY)) {
+      hangarDidDrag = true;
+      applied = applyHangarItem(hangarDrag.cat, hangarDrag.id);
+      if (!applied) selectHangarItem(hangarDrag.cat, hangarDrag.id);
+    } else if (hangarDrag.moved) {
+      hangarDidDrag = true;
+    }
+    clearHangarDrag();
+    hangarHover = null;
+    drawHangarPreview();
+  }
+  document.addEventListener("pointermove", onHangarPointerMove);
+  document.addEventListener("pointerup", onHangarPointerUp);
+  document.addEventListener("pointercancel", onHangarPointerUp);
+  el("hangar-preview").addEventListener("pointermove", function (e) {
+    var loc, spot;
+    if (hangarDrag) return;
+    loc = hangarCanvasLocal(e, el("hangar-preview"));
+    spot = hangarHotspotAt(loc.x, loc.y);
+    if (spot !== hangarHover) {
+      hangarHover = spot;
+      drawHangarPreview();
+    }
+  });
+  el("hangar-preview").addEventListener("pointerleave", function () {
+    if (hangarHover && !hangarDrag) {
+      hangarHover = null;
+      drawHangarPreview();
+    }
+  });
+  el("hangar-preview").addEventListener("click", function (e) {
+    var loc = hangarCanvasLocal(e, el("hangar-preview"));
+    var spot = hangarHotspotAt(loc.x, loc.y);
+    if (!spot) return;
+    if (hangarPick && spot) {
+      applyHangarItem(hangarPick.cat, hangarPick.id);
+      return;
+    }
+    hangarTab = spot;
+    renderHangar();
+    drawHangarPreview();
   });
   el("hangar-tabs").addEventListener("click", function (e) {
     var t = e.target;
     if (!t || !t.getAttribute) return;
     var tab = t.getAttribute("data-tab");
-    if (tab) { hangarTab = tab; renderHangar(); }
+    if (tab) { hangarTab = tab; renderHangar(); drawHangarPreview(); }
   });
   el("quest-lists").addEventListener("click", function (e) {
     var t = e.target;
@@ -6153,7 +6954,18 @@
       COIN_SPAWN_MUL: COIN_SPAWN_MUL,
       setXp: function (xp) { profile.totalXp = Math.max(0, xp | 0); profile.startWave = clampStartWave(profile.startWave || 1); saveProfile(); if (uiScreen === "hub") renderHub(); else if (uiScreen === "hangar") renderHangar(); else if (uiScreen === "quests") renderQuests(); return xpLevel(profile.totalXp); },
       setCoins: function (c) { profile.coins = Math.max(0, c | 0); saveProfile(); if (uiScreen === "hangar") renderHangar(); else renderHub(); },
-      equip: function (cat, id) { if (!isOwned(cat, id)) ownedList(cat).push(id); equipItem(cat, id); },
+      equip: function (cat, id) {
+        if (cat === "skin") {
+          var ship = hangarView().ship;
+          if (!profile.ownedSkins[ship]) profile.ownedSkins[ship] = ["stock"];
+          if (profile.ownedSkins[ship].indexOf(id) < 0) profile.ownedSkins[ship].push(id);
+          equipItem(cat, id);
+          return;
+        }
+        if (!isOwned(cat, id)) ownedList(cat).push(id);
+        if (cat === "ship") grantLevelSkins();
+        equipItem(cat, id);
+      },
       spawnBoss: function (type, tier) {
         enemies = []; ebul = []; teles = []; pickups = [];
         var idx = 0, i;
@@ -6260,10 +7072,16 @@
       gunDps: gunDps,
       finishRun: function () { finishRun(true); },
       showScreen: showScreen,
-      setHangarTab: function (t) { hangarTab = t; renderHangar(); },
+      setHangarTab: function (t) { hangarTab = t; renderHangar(); drawHangarPreview(); },
+      hangarView: hangarView,
+      applyHangarItem: applyHangarItem,
+      selectHangarItem: selectHangarItem,
+      skinPaint: skinPaint,
       SHIPS: SHIPS,
       GUNS: GUNS,
       MODS: MODS,
+      SKIN_TIERS: SKIN_TIERS,
+      SHIP_COIN_SKINS: SHIP_COIN_SKINS,
       BOSS_DEFS: BOSS_DEFS,
       DAILY_DEFS: DAILY_DEFS,
       LONG_DEFS: LONG_DEFS,
