@@ -8092,7 +8092,42 @@
       isPvpMatch: isPvpMatch,
       pvpFlipped: pvpFlipped,
       pvpSession: function () { return pvpApi() ? pvpApi().snapshot() : null; },
-      pvpPayout: function (winner) { return pvpApi() ? pvpApi().payout(winner) : null; }
+      pvpPayout: function (winner) { return pvpApi() ? pvpApi().payout(winner) : null; },
+      debugPvpReady: function (role) {
+        if (pvpApi()) pvpApi().reset("pvp");
+        netRole = role === "client" ? "client" : "host";
+        localSlot = netRole === "client" ? 1 : 0;
+        lobbyGuest = { loadout: profileLoadoutSpec() };
+        showLobbyPanel("ready");
+        renderLobbyPlayers([{ loadout: profileLoadoutSpec() }, lobbyGuest]);
+        renderLobby();
+        showScreen("lobby");
+        return { role: netRole, slot: localSlot, mode: pvpS() && pvpS().mode };
+      },
+      debugPvpDuel: function (opts) {
+        opts = opts || {};
+        var api = pvpApi();
+        var asGuest = opts.slot === 1;
+        if (api) {
+          api.reset("pvp");
+          api.setMode(opts.mode || "normal");
+          if (opts.boss0) api.setBoss(0, opts.boss0);
+          if (opts.boss1) api.setBoss(1, opts.boss1);
+        }
+        if (asGuest) {
+          netRole = "client";
+          startNewGame({ pvp: true, coopPlayers: [pvpLoadoutFor(0), pvpLoadoutFor(1)], fromNet: true, localSlot: 1 });
+        } else {
+          netRole = null;
+          startNewGame({ pvp: true, coopPlayers: [pvpLoadoutFor(0), pvpLoadoutFor(1)], localSlot: 0 });
+        }
+        return {
+          players: window.__galaga.getPlayers(),
+          flipped: pvpFlipped(),
+          roundHud: el("wave") && el("wave").textContent,
+          waveLabel: el("wave-label") && el("wave-label").textContent
+        };
+      }
     };
   } catch (err) {}
 
