@@ -296,9 +296,91 @@ html, body {
 .q-fill { height: 100%; background: linear-gradient(90deg, #3df0ff, #7ef9ff); }
 .cat-row.ready { border-color: #ffd23d; }
 .cat-row.claimed .q-fill { background: #3a6aaa; }
-.summary-body { font-size: 11px; line-height: 1.7; opacity: 0.9; }
+.summary-body { width: 100%; font-size: 11px; line-height: 1.7; opacity: 0.9; }
 .summary-body div { margin: 2px 0; }
 .summary-body .lvlup { color: #ffd23d; font-weight: 800; letter-spacing: 0.04em; }
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.summary-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 3px;
+  border: 1px solid #2a3a66;
+  border-radius: 5px;
+  background: #101028;
+  color: #7ef9ff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.summary-stats b {
+  color: #d8f6ff;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+.summary-quests {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid #9d7c24;
+  border-radius: 8px;
+  background: rgba(56, 42, 8, 0.42);
+  text-align: left;
+}
+.summary-quest-title {
+  color: #ffd23d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.summary-quest-hint, .summary-quests-empty {
+  font-size: 9px;
+  line-height: 1.35;
+  opacity: 0.72;
+  text-align: center;
+}
+.summary-quest {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(255, 210, 61, 0.55);
+  border-radius: 6px;
+  background: #161328;
+}
+.summary-quest-info { flex: 1; min-width: 0; }
+.summary-claim {
+  width: auto;
+  min-width: 86px;
+  min-height: 38px;
+  padding: 7px 9px;
+  background: #ffd23d;
+  color: #241b05;
+  font-size: 10px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.summary-claim:hover { background: #ffe08a; }
+.summary-claimed {
+  color: #7affc4;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .hub-title { color: #ffd23d; }
 .hangar-equip {
   width: 100%;

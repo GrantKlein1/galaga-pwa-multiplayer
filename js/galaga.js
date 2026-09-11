@@ -237,6 +237,8 @@
   var qSnap = {};
   var longSnap = {};
   var run = emptyRun();
+  var runQuestClaims = [];
+  var summaryRun = null;
   var runFinished = false;
 
   var score = 0;
@@ -3123,18 +3125,18 @@
       if (profile.longTerm[q.id].progress < prog) profile.longTerm[q.id].progress = prog;
     }
   }
-  function newlyCompleteNames() {
+  function completedRunQuests() {
     var out = [], i, q, ids = profile.dailies.ids || [];
     for (i = 0; i < ids.length; i++) {
       q = dailyById(ids[i]);
       if (!q || profile.dailies.claimed[q.id]) continue;
-      if ((qSnap[q.id] || 0) < q.target && (profile.dailies.progress[q.id] || 0) >= q.target) out.push(q.name);
+      if ((qSnap[q.id] || 0) < q.target && (profile.dailies.progress[q.id] || 0) >= q.target) out.push({ q: q, scope: "daily" });
     }
     for (i = 0; i < LONG_DEFS.length; i++) {
       q = LONG_DEFS[i];
       var lt = profile.longTerm[q.id];
       if (!lt || lt.claimed) continue;
-      if ((longSnap[q.id] || 0) < q.target && lt.progress >= q.target) out.push(q.name);
+      if ((longSnap[q.id] || 0) < q.target && lt.progress >= q.target) out.push({ q: q, scope: "long" });
     }
     return out;
   }
@@ -3215,6 +3217,7 @@
     saveProfile();
     renderQuests();
     renderHub();
+    if (uiScreen === "summary") renderRunSummary();
   }
 
   function renderHub() {
@@ -3565,6 +3568,43 @@
     }
     lists.innerHTML = h;
   }
+  function renderSummaryQuests() {
+    var list = el("summary-quests");
+    var i, item, q, claimed, h = "";
+    if (!list) return;
+    if (!runQuestClaims.length) {
+      list.innerHTML = '<div class="summary-quests-empty">No new quest rewards this run. Keep flying to complete the next one.</div>';
+      return;
+    }
+    h += '<div class="summary-quest-title">Quest rewards ready</div><div class="summary-quest-hint">Claim the rewards you completed this run</div>';
+    for (i = 0; i < runQuestClaims.length; i++) {
+      item = runQuestClaims[i];
+      q = item.q;
+      claimed = item.scope === "daily" ? !!profile.dailies.claimed[q.id] : !!(profile.longTerm[q.id] && profile.longTerm[q.id].claimed);
+      h += '<div class="summary-quest"><div class="summary-quest-info"><div class="cat-name">' + q.name + '</div><div class="cat-desc">' + q.desc + '</div><div class="q-reward">' + rewardText(q.reward) + '</div></div>';
+      if (claimed) h += '<span class="summary-claimed">Claimed</span>';
+      else h += '<button type="button" class="btn summary-claim" data-act="claim" data-scope="' + item.scope + '" data-id="' + q.id + '">Claim ' + rewardText(q.reward) + '</button>';
+      h += "</div>";
+    }
+    list.innerHTML = h;
+  }
+  function renderRunSummary() {
+    var body = el("summary-body");
+    var data = summaryRun;
+    var parts;
+    if (!body || !data) return;
+    parts = [
+      '<div class="summary-stats"><div><b>Score</b>' + score + '</div><div><b>Wave</b>' + run.maxWave + '</div><div><b>Enemies</b>' + (run.kills || 0) + '</div><div><b>Hits taken</b>' + (run.hits || 0) + '</div><div><b>Hull losses</b>' + (run.livesLost || 0) + '</div></div>',
+      "+" + data.xpGain + " XP  ·  Lv " + data.newLv + " " + levelTitle(data.newLv),
+      (playerCount() > 1 ? "Team coins " : "Coins ") + run.coins + " + " + data.bonus + " wave bonus  ·  " + profile.coins + "c total"
+    ];
+    if (disconnectNote) parts.unshift(disconnectNote);
+    if (data.newLv > data.oldLv) parts.push('<span class="lvlup">LEVEL UP! ' + data.oldLv + " → " + data.newLv + "  ·  +" + data.lvCoins + "c</span>");
+    if (playerCount() > 1) parts.push("Each player banks the full team coins and XP");
+    if (run.perfectBosses) parts.push("Flawless bosses: " + run.perfectBosses);
+    body.innerHTML = parts.map(function (p) { return "<div>" + p + "</div>"; }).join("");
+    renderSummaryQuests();
+  }
   function stopHubAnim() {
     if (hubRaf) { cancelAnimationFrame(hubRaf); hubRaf = 0; }
   }
@@ -3681,25 +3721,13 @@
     if (score > profile.best) profile.best = score;
     best = profile.best;
     syncQuestProgress();
-    var newly = newlyCompleteNames();
+    runQuestClaims = completedRunQuests();
+    summaryRun = { xpGain: xpGain, oldLv: oldLv, newLv: newLv, lvCoins: lvCoins, bonus: bonus };
     saveProfile();
     updateHud();
     submitLeaderboard();
     if (showSummary) {
-      var body = el("summary-body");
-      if (body) {
-        var parts = [
-          "Score " + score + "  ·  Wave " + run.maxWave,
-          "+" + xpGain + " XP  ·  Lv " + newLv + " " + levelTitle(newLv)
-        ];
-        if (disconnectNote) parts.unshift(disconnectNote);
-        if (newLv > oldLv) parts.push('<span class="lvlup">LEVEL UP! ' + oldLv + " → " + newLv + "  ·  +" + lvCoins + "c</span>");
-        parts.push((playerCount() > 1 ? "Team coins " : "Coins ") + run.coins + " + " + bonus + " wave bonus  ·  " + profile.coins + "c total");
-        if (playerCount() > 1) parts.push("Each player banks the full team coins and XP");
-        if (run.perfectBosses) parts.push("Flawless bosses: " + run.perfectBosses);
-        if (newly.length) parts.push("Quests: " + newly.join(", "));
-        body.innerHTML = parts.map(function (p) { return "<div>" + p + "</div>"; }).join("");
-      }
+      renderRunSummary();
       showScreen("summary");
     } else {
       showScreen("hub");
@@ -3784,6 +3812,8 @@
     shake = 0; flash = 0; time = 0;
     waveHold = 0;
     run = emptyRun();
+    runQuestClaims = [];
+    summaryRun = null;
     ensureDailies();
     snapshotDailies();
     resetInput();
@@ -5724,6 +5754,11 @@
   el("btn-quit").addEventListener("click", function (e) { e.preventDefault(); quitToHub(); });
   el("btn-again").addEventListener("click", function (e) { e.preventDefault(); playAgain(); });
   el("btn-summary-hub").addEventListener("click", function (e) { e.preventDefault(); leaveNet(); showScreen("hub"); });
+  el("summary-quests").addEventListener("click", function (e) {
+    var t = e.target;
+    if (!t || !t.getAttribute) return;
+    if (t.getAttribute("data-act") === "claim") claimQuest(t.getAttribute("data-scope"), t.getAttribute("data-id"));
+  });
   function bindLobbyUi() {
     function tap(id, fn) {
       var node = el(id);
