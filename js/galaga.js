@@ -110,114 +110,120 @@
   ];
 
   var DAILY_DEFS = [
-    { id: "d_tanks", name: "Tank Buster", desc: "Kill 10 tanks", target: 10, kind: "kills", type: "tank", reward: { coins: 30 } },
-    { id: "d_kami", name: "Kami Sweep", desc: "Kill 10 kami", target: 10, kind: "kills", type: "kami", reward: { coins: 30 } },
-    { id: "d_snipers", name: "Sniper Hunt", desc: "Kill 12 snipers", target: 12, kind: "kills", type: "sniper", reward: { coins: 35 } },
-    { id: "d_grunts", name: "Grunt Duty", desc: "Kill 25 grunts", target: 25, kind: "kills", type: "grunt", reward: { coins: 25 } },
-    { id: "d_weavers", name: "Weave Cutter", desc: "Kill 10 weavers", target: 10, kind: "kills", type: "weaver", reward: { coins: 32 } },
-    { id: "d_shields", name: "Breaker", desc: "Kill 6 shield drones", target: 6, kind: "kills", type: "shield", reward: { coins: 35 } },
-    { id: "d_kills40", name: "Body Count", desc: "Destroy 40 foes in one run", target: 40, kind: "killsRun", reward: { coins: 30 } },
-    { id: "d_kills90", name: "Massacre", desc: "Destroy 90 foes in one run", target: 90, kind: "killsRun", reward: { coins: 55 } },
-    { id: "d_wave10", name: "First Push", desc: "Reach wave 10", target: 10, kind: "wave", reward: { coins: 25 } },
-    { id: "d_wave15", name: "Deep Sortie", desc: "Reach wave 15", target: 15, kind: "wave", reward: { coins: 40 } },
-    { id: "d_wave20", name: "Hold the Line", desc: "Reach wave 20", target: 20, kind: "wave", reward: { coins: 55 } },
-    { id: "d_wave25", name: "Long Patrol", desc: "Reach wave 25", target: 25, kind: "wave", reward: { coins: 75 } },
-    { id: "d_wave30", name: "Into the Deep", desc: "Reach wave 30", target: 30, kind: "wave", reward: { coins: 100 } },
+    { id: "d_tanks", name: "Tank Buster", desc: "Kill 14 tanks", target: 14, kind: "kills", type: "tank", reward: { coins: 35 } },
+    { id: "d_kami", name: "Kami Sweep", desc: "Kill 14 kami", target: 14, kind: "kills", type: "kami", reward: { coins: 35 } },
+    { id: "d_snipers", name: "Sniper Hunt", desc: "Kill 16 snipers", target: 16, kind: "kills", type: "sniper", reward: { coins: 40 } },
+    { id: "d_grunts", name: "Grunt Duty", desc: "Kill 32 grunts", target: 32, kind: "kills", type: "grunt", reward: { coins: 30 } },
+    { id: "d_weavers", name: "Weave Cutter", desc: "Kill 14 weavers", target: 14, kind: "kills", type: "weaver", reward: { coins: 38 } },
+    { id: "d_shields", name: "Breaker", desc: "Kill 8 shield drones", target: 8, kind: "kills", type: "shield", reward: { coins: 42 } },
+    { id: "d_kills40", name: "Body Count", desc: "Destroy 50 foes in one run", target: 50, kind: "killsRun", reward: { coins: 38 } },
+    { id: "d_kills90", name: "Massacre", desc: "Destroy 110 foes in one run", target: 110, kind: "killsRun", reward: { coins: 65 } },
+    { id: "d_wave10", name: "First Push", desc: "Reach wave 12", target: 12, kind: "wave", reward: { coins: 30 } },
+    { id: "d_wave15", name: "Deep Sortie", desc: "Reach wave 18", target: 18, kind: "wave", reward: { coins: 48 } },
+    { id: "d_wave20", name: "Hold the Line", desc: "Reach wave 24", target: 24, kind: "wave", reward: { coins: 65 } },
+    { id: "d_wave25", name: "Long Patrol", desc: "Reach wave 30", target: 30, kind: "wave", reward: { coins: 88 } },
+    { id: "d_wave30", name: "Into the Deep", desc: "Reach wave 36", target: 36, kind: "wave", reward: { coins: 115 } },
     { id: "d_boss", name: "Boss Breaker", desc: "Defeat a boss", target: 1, kind: "bossAny", reward: { coins: 40 } },
-    { id: "d_boss2", name: "Double Ace", desc: "Defeat 2 bosses in one run", target: 2, kind: "bossRun", reward: { coins: 60 } },
-    { id: "d_boss3", name: "Triple Crown", desc: "Defeat 3 bosses in one run", target: 3, kind: "bossRun", reward: { coins: 90 } },
-    { id: "d_flawless", name: "Flawless", desc: "Defeat a boss without taking a hit", target: 1, kind: "noHitBoss", reward: { coins: 70 } },
-    { id: "d_score", name: "High Score", desc: "Score 8,000 in one run", target: 8000, kind: "score", reward: { coins: 35 } },
-    { id: "d_score4k", name: "Warm Guns", desc: "Score 4,000 in one run", target: 4000, kind: "score", reward: { coins: 20 } },
-    { id: "d_score12k", name: "Hot Streak", desc: "Score 12,000 in one run", target: 12000, kind: "score", reward: { coins: 50 } },
-    { id: "d_score25k", name: "Blazing", desc: "Score 25,000 in one run", target: 25000, kind: "score", reward: { coins: 90 } },
-    { id: "d_coins", name: "Scavenger", desc: "Collect 20 coins in one run", target: 20, kind: "runCoins", reward: { coins: 25 } },
-    { id: "d_coins40", name: "Payday", desc: "Collect 40 coins in one run", target: 40, kind: "runCoins", reward: { coins: 40 } },
-    { id: "d_coins80", name: "Treasure Run", desc: "Collect 80 coins in one run", target: 80, kind: "runCoins", reward: { coins: 70 } },
-    { id: "d_spread", name: "Fan Favorite", desc: "Collect a spread gem", target: 1, kind: "pickup", type: "spread", reward: { coins: 45 } },
-    { id: "d_double", name: "Twin Catch", desc: "Collect a double gem", target: 1, kind: "pickup", type: "double", reward: { coins: 40 } },
-    { id: "d_heal", name: "Field Medic", desc: "Collect a heal pickup", target: 1, kind: "pickup", type: "heal", reward: { coins: 30 } },
-    { id: "d_shieldgem", name: "Bubble Up", desc: "Collect 2 shield gems in one run", target: 2, kind: "pickup", type: "shield", reward: { coins: 30 } },
-    { id: "d_nohit8", name: "Ghost Pass", desc: "Reach wave 8 without taking a hit", target: 8, kind: "noHitWave", reward: { coins: 50 } },
-    { id: "d_nohit12", name: "Ghost Patrol", desc: "Reach wave 12 without taking a hit", target: 12, kind: "noHitWave", reward: { coins: 80 } },
-    { id: "d_dives", name: "Dive Intercept", desc: "Destroy 8 diving foes", target: 8, kind: "diveKills", reward: { coins: 30 } },
-    { id: "d_dives20", name: "Air Superiority", desc: "Destroy 20 diving foes", target: 20, kind: "diveKills", reward: { coins: 50 } }
+    { id: "d_boss2", name: "Double Ace", desc: "Defeat 3 bosses in one run", target: 3, kind: "bossRun", reward: { coins: 70 } },
+    { id: "d_boss3", name: "Triple Crown", desc: "Defeat 4 bosses in one run", target: 4, kind: "bossRun", reward: { coins: 105 } },
+    { id: "d_flawless", name: "Flawless", desc: "Defeat 2 bosses without taking a hit", target: 2, kind: "noHitBoss", reward: { coins: 82 } },
+    { id: "d_score", name: "High Score", desc: "Score 10,000 in one run", target: 10000, kind: "score", reward: { coins: 42 } },
+    { id: "d_score4k", name: "Warm Guns", desc: "Score 5,000 in one run", target: 5000, kind: "score", reward: { coins: 25 } },
+    { id: "d_score12k", name: "Hot Streak", desc: "Score 15,000 in one run", target: 15000, kind: "score", reward: { coins: 60 } },
+    { id: "d_score25k", name: "Blazing", desc: "Score 30,000 in one run", target: 30000, kind: "score", reward: { coins: 105 } },
+    { id: "d_coins", name: "Scavenger", desc: "Collect 26 coins in one run", target: 26, kind: "runCoins", reward: { coins: 30 } },
+    { id: "d_coins40", name: "Payday", desc: "Collect 52 coins in one run", target: 52, kind: "runCoins", reward: { coins: 48 } },
+    { id: "d_coins80", name: "Treasure Run", desc: "Collect 96 coins in one run", target: 96, kind: "runCoins", reward: { coins: 82 } },
+    { id: "d_spread", name: "Fan Favorite", desc: "Collect 2 spread gems", target: 2, kind: "pickup", type: "spread", reward: { coins: 52 } },
+    { id: "d_double", name: "Twin Catch", desc: "Collect 2 double gems", target: 2, kind: "pickup", type: "double", reward: { coins: 48 } },
+    { id: "d_heal", name: "Field Medic", desc: "Collect 2 heal pickups", target: 2, kind: "pickup", type: "heal", reward: { coins: 38 } },
+    { id: "d_shieldgem", name: "Bubble Up", desc: "Collect 3 shield gems in one run", target: 3, kind: "pickup", type: "shield", reward: { coins: 38 } },
+    { id: "d_nohit8", name: "Ghost Pass", desc: "Reach wave 10 without taking a hit", target: 10, kind: "noHitWave", reward: { coins: 60 } },
+    { id: "d_nohit12", name: "Ghost Patrol", desc: "Reach wave 15 without taking a hit", target: 15, kind: "noHitWave", reward: { coins: 92 } },
+    { id: "d_dives", name: "Dive Intercept", desc: "Destroy 10 diving foes", target: 10, kind: "diveKills", reward: { coins: 36 } },
+    { id: "d_dives20", name: "Air Superiority", desc: "Destroy 25 diving foes", target: 25, kind: "diveKills", reward: { coins: 60 } },
+    { id: "d_enemy_set", name: "Full House", desc: "Destroy a tank, kami, and sniper in one run", target: 1, kind: "enemySet", types: ["tank", "kami", "sniper"], reward: { coins: 55 } },
+    { id: "d_power_pair", name: "Power Pair", desc: "Collect a spread and double gem in one run", target: 1, kind: "pickupSet", types: ["spread", "double"], reward: { coins: 60 } },
+    { id: "d_clean50", name: "Clean Flight", desc: "Destroy 50 foes in a run without taking a hit", target: 50, kind: "cleanKillsRun", reward: { coins: 70 } }
   ];
   var LONG_DEFS = [
-    { id: "lt_wave20", name: "Wave 20", desc: "Reach wave 20", target: 20, kind: "wave", reward: { coins: 60 } },
-    { id: "lt_wave30", name: "Wave 30", desc: "Reach wave 30", target: 30, kind: "wave", reward: { coins: 100, gun: "twin", consolation: 60 } },
-    { id: "lt_wave40", name: "Wave 40", desc: "Reach wave 40", target: 40, kind: "wave", reward: { gun: "lance", consolation: 150 } },
-    { id: "lt_wave50", name: "Wave 50", desc: "Reach wave 50", target: 50, kind: "wave", reward: { gun: "seeker", consolation: 200 } },
-    { id: "lt_wave60", name: "Wave 60", desc: "Reach wave 60", target: 60, kind: "wave", reward: { ship: "phantom", consolation: 250 } },
-    { id: "lt_wave80", name: "Wave 80", desc: "Reach wave 80", target: 80, kind: "wave", reward: { coins: 300, gun: "scatter", consolation: 250 } },
-    { id: "lt_wave100", name: "Century Mark", desc: "Reach wave 100", target: 100, kind: "wave", reward: { coins: 600, ship: "nova", consolation: 500 } },
-    { id: "lt_lv10", name: "Ensign", desc: "Reach level 10", target: 10, kind: "level", reward: { coins: 100 } },
-    { id: "lt_lv25", name: "Lieutenant", desc: "Reach level 25", target: 25, kind: "level", reward: { coins: 250, mod: "magnet", consolation: 150 } },
-    { id: "lt_lv50", name: "Commander", desc: "Reach level 50", target: 50, kind: "level", reward: { coins: 600, gun: "volley", consolation: 500 } },
-    { id: "lt_lv75", name: "Admiral", desc: "Reach level 75", target: 75, kind: "level", reward: { coins: 1200, mod: "guardian", consolation: 800 } },
+    { id: "lt_wave20", name: "Wave 25", desc: "Reach wave 25", target: 25, kind: "wave", reward: { coins: 70 } },
+    { id: "lt_wave30", name: "Wave 40", desc: "Reach wave 40", target: 40, kind: "wave", reward: { coins: 120, gun: "twin", consolation: 70 } },
+    { id: "lt_wave40", name: "Wave 55", desc: "Reach wave 55", target: 55, kind: "wave", reward: { gun: "lance", consolation: 180 } },
+    { id: "lt_wave50", name: "Wave 70", desc: "Reach wave 70", target: 70, kind: "wave", reward: { gun: "seeker", consolation: 240 } },
+    { id: "lt_wave60", name: "Wave 85", desc: "Reach wave 85", target: 85, kind: "wave", reward: { ship: "phantom", consolation: 300 } },
+    { id: "lt_wave80", name: "Wave 110", desc: "Reach wave 110", target: 110, kind: "wave", reward: { coins: 360, gun: "scatter", consolation: 300 } },
+    { id: "lt_wave100", name: "Deep Century", desc: "Reach wave 130", target: 130, kind: "wave", reward: { coins: 700, ship: "nova", consolation: 600 } },
+    { id: "lt_lv10", name: "Ensign", desc: "Reach level 15", target: 15, kind: "level", reward: { coins: 120 } },
+    { id: "lt_lv25", name: "Lieutenant", desc: "Reach level 35", target: 35, kind: "level", reward: { coins: 300, mod: "magnet", consolation: 180 } },
+    { id: "lt_lv50", name: "Commander", desc: "Reach level 60", target: 60, kind: "level", reward: { coins: 700, gun: "volley", consolation: 600 } },
+    { id: "lt_lv75", name: "Admiral", desc: "Reach level 85", target: 85, kind: "level", reward: { coins: 1400, mod: "guardian", consolation: 950 } },
     { id: "lt_lv100", name: "Eternal", desc: "Reach level 100", target: 100, kind: "level", reward: { coins: 2500, ship: "eclipse", consolation: 2000 } },
-    { id: "lt_seraph", name: "Seraph Down", desc: "Defeat Seraph", target: 1, kind: "boss", type: "seraph", reward: { coins: 40 } },
-    { id: "lt_wraith", name: "Wraith Down", desc: "Defeat Wraith", target: 1, kind: "boss", type: "wraith", reward: { coins: 50 } },
-    { id: "lt_hydra", name: "Hydra Down", desc: "Defeat Hydra", target: 1, kind: "boss", type: "hydra", reward: { coins: 60 } },
-    { id: "lt_colossus", name: "Colossus Down", desc: "Defeat Colossus", target: 1, kind: "boss", type: "colossus", reward: { coins: 80 } },
-    { id: "lt_chronos", name: "Chronos Down", desc: "Defeat Chronos", target: 1, kind: "boss", type: "chronos", reward: { coins: 100, mod: "overdrive", consolation: 80 } },
-    { id: "lt_leviathan", name: "Leviathan Down", desc: "Defeat Leviathan", target: 1, kind: "boss", type: "leviathan", reward: { coins: 120 } },
-    { id: "lt_inferno", name: "Inferno Down", desc: "Defeat Inferno", target: 1, kind: "boss", type: "inferno", reward: { coins: 150 } },
-    { id: "lt_nullwarden", name: "Nullwarden Down", desc: "Defeat Nullwarden", target: 1, kind: "boss", type: "nullwarden", reward: { coins: 180, gun: "railgun", consolation: 150 } },
-    { id: "lt_basilisk", name: "Basilisk Down", desc: "Defeat Basilisk", target: 1, kind: "boss", type: "basilisk", reward: { coins: 220 } },
-    { id: "lt_overlord", name: "Overlord Down", desc: "Defeat Overlord", target: 1, kind: "boss", type: "overlord", reward: { coins: 400, ship: "strix", consolation: 300 } },
-    { id: "lt_seraph5", name: "Seraph Hunter", desc: "Defeat Seraph 5 times", target: 5, kind: "bossCount", type: "seraph", reward: { coins: 120 } },
-    { id: "lt_wraith5", name: "Wraith Hunter", desc: "Defeat Wraith 5 times", target: 5, kind: "bossCount", type: "wraith", reward: { coins: 130 } },
-    { id: "lt_hydra5", name: "Hydra Hunter", desc: "Defeat Hydra 5 times", target: 5, kind: "bossCount", type: "hydra", reward: { coins: 150 } },
-    { id: "lt_colossus5", name: "Colossus Hunter", desc: "Defeat Colossus 5 times", target: 5, kind: "bossCount", type: "colossus", reward: { coins: 170 } },
-    { id: "lt_chronos5", name: "Chronos Hunter", desc: "Defeat Chronos 5 times", target: 5, kind: "bossCount", type: "chronos", reward: { coins: 200 } },
-    { id: "lt_leviathan5", name: "Leviathan Hunter", desc: "Defeat Leviathan 5 times", target: 5, kind: "bossCount", type: "leviathan", reward: { coins: 240 } },
-    { id: "lt_inferno5", name: "Inferno Hunter", desc: "Defeat Inferno 5 times", target: 5, kind: "bossCount", type: "inferno", reward: { coins: 280 } },
-    { id: "lt_nullwarden5", name: "Nullwarden Hunter", desc: "Defeat Nullwarden 5 times", target: 5, kind: "bossCount", type: "nullwarden", reward: { coins: 320 } },
-    { id: "lt_basilisk5", name: "Basilisk Hunter", desc: "Defeat Basilisk 5 times", target: 5, kind: "bossCount", type: "basilisk", reward: { coins: 360 } },
-    { id: "lt_overlord5", name: "Overlord Hunter", desc: "Defeat Overlord 5 times", target: 5, kind: "bossCount", type: "overlord", reward: { coins: 500, mod: "berserk", consolation: 400 } },
+    { id: "lt_seraph", name: "Seraph Contract", desc: "Defeat Seraph twice", target: 2, kind: "bossCount", type: "seraph", reward: { coins: 50 } },
+    { id: "lt_wraith", name: "Wraith Contract", desc: "Defeat Wraith twice", target: 2, kind: "bossCount", type: "wraith", reward: { coins: 60 } },
+    { id: "lt_hydra", name: "Hydra Contract", desc: "Defeat Hydra twice", target: 2, kind: "bossCount", type: "hydra", reward: { coins: 72 } },
+    { id: "lt_colossus", name: "Colossus Contract", desc: "Defeat Colossus twice", target: 2, kind: "bossCount", type: "colossus", reward: { coins: 96 } },
+    { id: "lt_chronos", name: "Chronos Contract", desc: "Defeat Chronos twice", target: 2, kind: "bossCount", type: "chronos", reward: { coins: 120, mod: "overdrive", consolation: 100 } },
+    { id: "lt_leviathan", name: "Leviathan Contract", desc: "Defeat Leviathan twice", target: 2, kind: "bossCount", type: "leviathan", reward: { coins: 145 } },
+    { id: "lt_inferno", name: "Inferno Contract", desc: "Defeat Inferno twice", target: 2, kind: "bossCount", type: "inferno", reward: { coins: 180 } },
+    { id: "lt_nullwarden", name: "Nullwarden Contract", desc: "Defeat Nullwarden twice", target: 2, kind: "bossCount", type: "nullwarden", reward: { coins: 215, gun: "railgun", consolation: 180 } },
+    { id: "lt_basilisk", name: "Basilisk Contract", desc: "Defeat Basilisk twice", target: 2, kind: "bossCount", type: "basilisk", reward: { coins: 265 } },
+    { id: "lt_overlord", name: "Overlord Contract", desc: "Defeat Overlord twice", target: 2, kind: "bossCount", type: "overlord", reward: { coins: 480, ship: "strix", consolation: 360 } },
+    { id: "lt_seraph5", name: "Seraph Hunter", desc: "Defeat Seraph 8 times", target: 8, kind: "bossCount", type: "seraph", reward: { coins: 150 } },
+    { id: "lt_wraith5", name: "Wraith Hunter", desc: "Defeat Wraith 8 times", target: 8, kind: "bossCount", type: "wraith", reward: { coins: 165 } },
+    { id: "lt_hydra5", name: "Hydra Hunter", desc: "Defeat Hydra 8 times", target: 8, kind: "bossCount", type: "hydra", reward: { coins: 190 } },
+    { id: "lt_colossus5", name: "Colossus Hunter", desc: "Defeat Colossus 8 times", target: 8, kind: "bossCount", type: "colossus", reward: { coins: 215 } },
+    { id: "lt_chronos5", name: "Chronos Hunter", desc: "Defeat Chronos 8 times", target: 8, kind: "bossCount", type: "chronos", reward: { coins: 250 } },
+    { id: "lt_leviathan5", name: "Leviathan Hunter", desc: "Defeat Leviathan 8 times", target: 8, kind: "bossCount", type: "leviathan", reward: { coins: 300 } },
+    { id: "lt_inferno5", name: "Inferno Hunter", desc: "Defeat Inferno 8 times", target: 8, kind: "bossCount", type: "inferno", reward: { coins: 350 } },
+    { id: "lt_nullwarden5", name: "Nullwarden Hunter", desc: "Defeat Nullwarden 8 times", target: 8, kind: "bossCount", type: "nullwarden", reward: { coins: 400 } },
+    { id: "lt_basilisk5", name: "Basilisk Hunter", desc: "Defeat Basilisk 8 times", target: 8, kind: "bossCount", type: "basilisk", reward: { coins: 450 } },
+    { id: "lt_overlord5", name: "Overlord Hunter", desc: "Defeat Overlord 8 times", target: 8, kind: "bossCount", type: "overlord", reward: { coins: 620, mod: "berserk", consolation: 500 } },
     { id: "lt_seraph_t1", name: "Seraph +1", desc: "Defeat Seraph at tier 1 or higher", target: 1, kind: "bossTier", type: "seraph", tier: 1, reward: { coins: 250 } },
     { id: "lt_colossus_t1", name: "Colossus +1", desc: "Defeat Colossus at tier 1 or higher", target: 1, kind: "bossTier", type: "colossus", tier: 1, reward: { coins: 300 } },
     { id: "lt_inferno_t1", name: "Inferno +1", desc: "Defeat Inferno at tier 1 or higher", target: 1, kind: "bossTier", type: "inferno", tier: 1, reward: { coins: 350, gun: "helix", consolation: 300 } },
     { id: "lt_overlord_t1", name: "Overlord +1", desc: "Defeat Overlord at tier 1 or higher", target: 1, kind: "bossTier", type: "overlord", tier: 1, reward: { coins: 600, mod: "salvage", consolation: 400 } },
     { id: "lt_wraith_t2", name: "Wraith +2", desc: "Defeat Wraith at tier 2 or higher", target: 1, kind: "bossTier", type: "wraith", tier: 2, reward: { coins: 700 } },
     { id: "lt_overlord_t2", name: "Overlord +2", desc: "Defeat Overlord at tier 2 or higher", target: 1, kind: "bossTier", type: "overlord", tier: 2, reward: { coins: 1500, ship: "tempest", consolation: 1000 } },
-    { id: "lt_flawless1", name: "Flawless", desc: "Defeat a boss without taking a hit", target: 1, kind: "perfectLife", reward: { coins: 80 } },
-    { id: "lt_flawless10", name: "Untouchable", desc: "Defeat 10 bosses without taking a hit", target: 10, kind: "perfectLife", reward: { coins: 300, mod: "afterburner", consolation: 200 } },
-    { id: "lt_flawless30", name: "Ghost of the Fleet", desc: "Defeat 30 bosses without taking a hit", target: 30, kind: "perfectLife", reward: { coins: 800, ship: "warden", consolation: 700 } },
-    { id: "lt_tanks50", name: "Armored Graveyard", desc: "Destroy 50 tanks", target: 50, kind: "killsLife", type: "tank", reward: { gun: "rapid", consolation: 80 } },
-    { id: "lt_kami80", name: "Kami Cemetery", desc: "Destroy 80 kami", target: 80, kind: "killsLife", type: "kami", reward: { coins: 100 } },
-    { id: "lt_weaver60", name: "Thread Cut", desc: "Destroy 60 weavers", target: 60, kind: "killsLife", type: "weaver", reward: { coins: 100 } },
-    { id: "lt_shield40", name: "Shield Breaker", desc: "Destroy 40 shield drones", target: 40, kind: "killsLife", type: "shield", reward: { coins: 120 } },
-    { id: "lt_sniper80", name: "No Safe Orbit", desc: "Destroy 80 snipers", target: 80, kind: "killsLife", type: "sniper", reward: { coins: 100 } },
-    { id: "lt_kills1k", name: "Thousand Cuts", desc: "Destroy 1,000 foes", target: 1000, kind: "killsAllLife", reward: { coins: 200 } },
-    { id: "lt_kills5k", name: "Exterminator", desc: "Destroy 5,000 foes", target: 5000, kind: "killsAllLife", reward: { coins: 600, gun: "storm", consolation: 500 } },
-    { id: "lt_nohit15", name: "Untouched 15", desc: "Reach wave 15 without taking a hit", target: 15, kind: "noHitWave", reward: { coins: 100 } },
-    { id: "lt_nohit25", name: "Untouched 25", desc: "Reach wave 25 without taking a hit", target: 25, kind: "noHitWave", reward: { coins: 200 } },
-    { id: "lt_nohit40", name: "Perfect Storm", desc: "Reach wave 40 without taking a hit", target: 40, kind: "noHitWave", reward: { coins: 400, mod: "barrier", consolation: 250 } },
-    { id: "lt_lives30", name: "Iron Hull", desc: "Reach wave 30 without losing a life", target: 30, kind: "livesOkWave", reward: { coins: 180 } },
-    { id: "lt_bosses8", name: "Boss Rush", desc: "Defeat 8 bosses in one run", target: 8, kind: "bossRun", reward: { coins: 250 } },
-    { id: "lt_bosses12", name: "Gauntlet", desc: "Defeat 12 bosses in one run", target: 12, kind: "bossRun", reward: { coins: 500, gun: "novacannon", consolation: 450 } },
-    { id: "lt_bosses20", name: "Thronebreaker", desc: "Defeat 20 bosses across all runs", target: 20, kind: "bossesLife", reward: { coins: 220 } },
-    { id: "lt_bosses100", name: "Regicide", desc: "Defeat 100 bosses across all runs", target: 100, kind: "bossesLife", reward: { coins: 900, ship: "bastion", consolation: 700 } },
-    { id: "lt_score25k", name: "Ace Pilot", desc: "Reach a best score of 25,000", target: 25000, kind: "scoreLife", reward: { coins: 130 } },
-    { id: "lt_score50k", name: "Legend", desc: "Reach a best score of 50,000", target: 50000, kind: "scoreLife", reward: { coins: 280 } },
-    { id: "lt_score80k", name: "Mythic Sortie", desc: "Reach a best score of 80,000", target: 80000, kind: "scoreLife", reward: { coins: 450, mod: "reactor", consolation: 300 } },
-    { id: "lt_score150k", name: "Starbreaker", desc: "Reach a best score of 150,000", target: 150000, kind: "scoreLife", reward: { coins: 1000, gun: "prism", consolation: 900 } },
-    { id: "lt_coins50", name: "Haul", desc: "Collect 50 coins in one run", target: 50, kind: "coinsRun", reward: { coins: 80 } },
-    { id: "lt_coins100", name: "Vault Breaker", desc: "Collect 100 coins in one run", target: 100, kind: "coinsRun", reward: { coins: 160 } },
-    { id: "lt_coins250", name: "Dragon Hoard", desc: "Collect 250 coins in one run", target: 250, kind: "coinsRun", reward: { coins: 400 } },
-    { id: "lt_earned5k", name: "Tycoon", desc: "Earn 5,000 coins across all runs", target: 5000, kind: "coinsLife", reward: { coins: 500 } },
-    { id: "lt_earned20k", name: "Magnate", desc: "Earn 20,000 coins across all runs", target: 20000, kind: "coinsLife", reward: { coins: 1500 } },
-    { id: "lt_ships4", name: "Small Fleet", desc: "Own 4 ships", target: 4, kind: "ownShips", reward: { coins: 200 } },
-    { id: "lt_ships8", name: "Armada", desc: "Own 8 ships", target: 8, kind: "ownShips", reward: { coins: 700 } },
-    { id: "lt_guns4", name: "Arsenal", desc: "Own 4 guns", target: 4, kind: "ownGuns", reward: { coins: 200 } },
-    { id: "lt_guns9", name: "Armory", desc: "Own 9 guns", target: 9, kind: "ownGuns", reward: { coins: 800 } },
-    { id: "lt_spread5", name: "Spread Specialist", desc: "Collect 5 spread gems", target: 5, kind: "pickupLife", type: "spread", reward: { coins: 100, gun: "spread", consolation: 80 } },
-    { id: "lt_double8", name: "Dual Collector", desc: "Collect 8 double gems", target: 8, kind: "pickupLife", type: "double", reward: { coins: 100 } },
-    { id: "lt_heal15", name: "Combat Surgeon", desc: "Collect 15 heal pickups", target: 15, kind: "pickupLife", type: "heal", reward: { coins: 140 } },
-    { id: "lt_dive100", name: "Dive Marshal", desc: "Destroy 100 diving foes", target: 100, kind: "diveKillsLife", reward: { coins: 120 } },
-    { id: "lt_dive500", name: "Sky Warden", desc: "Destroy 500 diving foes", target: 500, kind: "diveKillsLife", reward: { coins: 400, ship: "vulture", consolation: 350 } }
+    { id: "lt_flawless1", name: "Flawless", desc: "Defeat 2 bosses without taking a hit", target: 2, kind: "perfectLife", reward: { coins: 100 } },
+    { id: "lt_flawless10", name: "Untouchable", desc: "Defeat 15 bosses without taking a hit", target: 15, kind: "perfectLife", reward: { coins: 360, mod: "afterburner", consolation: 250 } },
+    { id: "lt_flawless30", name: "Ghost of the Fleet", desc: "Defeat 45 bosses without taking a hit", target: 45, kind: "perfectLife", reward: { coins: 950, ship: "warden", consolation: 800 } },
+    { id: "lt_tanks50", name: "Armored Graveyard", desc: "Destroy 80 tanks", target: 80, kind: "killsLife", type: "tank", reward: { gun: "rapid", consolation: 120 } },
+    { id: "lt_kami80", name: "Kami Cemetery", desc: "Destroy 120 kami", target: 120, kind: "killsLife", type: "kami", reward: { coins: 140 } },
+    { id: "lt_weaver60", name: "Thread Cut", desc: "Destroy 90 weavers", target: 90, kind: "killsLife", type: "weaver", reward: { coins: 140 } },
+    { id: "lt_shield40", name: "Shield Breaker", desc: "Destroy 60 shield drones", target: 60, kind: "killsLife", type: "shield", reward: { coins: 165 } },
+    { id: "lt_sniper80", name: "No Safe Orbit", desc: "Destroy 120 snipers", target: 120, kind: "killsLife", type: "sniper", reward: { coins: 140 } },
+    { id: "lt_kills1k", name: "Two Thousand Cuts", desc: "Destroy 2,000 foes", target: 2000, kind: "killsAllLife", reward: { coins: 280 } },
+    { id: "lt_kills5k", name: "Exterminator", desc: "Destroy 7,500 foes", target: 7500, kind: "killsAllLife", reward: { coins: 750, gun: "storm", consolation: 620 } },
+    { id: "lt_nohit15", name: "Untouched 20", desc: "Reach wave 20 without taking a hit", target: 20, kind: "noHitWave", reward: { coins: 130 } },
+    { id: "lt_nohit25", name: "Untouched 35", desc: "Reach wave 35 without taking a hit", target: 35, kind: "noHitWave", reward: { coins: 260 } },
+    { id: "lt_nohit40", name: "Perfect Storm", desc: "Reach wave 50 without taking a hit", target: 50, kind: "noHitWave", reward: { coins: 500, mod: "barrier", consolation: 320 } },
+    { id: "lt_lives30", name: "Iron Hull", desc: "Reach wave 40 without losing a life", target: 40, kind: "livesOkWave", reward: { coins: 230 } },
+    { id: "lt_bosses8", name: "Boss Rush", desc: "Defeat 10 bosses in one run", target: 10, kind: "bossRun", reward: { coins: 310 } },
+    { id: "lt_bosses12", name: "Gauntlet", desc: "Defeat 15 bosses in one run", target: 15, kind: "bossRun", reward: { coins: 620, gun: "novacannon", consolation: 540 } },
+    { id: "lt_bosses20", name: "Thronebreaker", desc: "Defeat 30 bosses across all runs", target: 30, kind: "bossesLife", reward: { coins: 275 } },
+    { id: "lt_bosses100", name: "Regicide", desc: "Defeat 150 bosses across all runs", target: 150, kind: "bossesLife", reward: { coins: 1100, ship: "bastion", consolation: 850 } },
+    { id: "lt_score25k", name: "Ace Pilot", desc: "Reach a best score of 35,000", target: 35000, kind: "scoreLife", reward: { coins: 165 } },
+    { id: "lt_score50k", name: "Legend", desc: "Reach a best score of 70,000", target: 70000, kind: "scoreLife", reward: { coins: 340 } },
+    { id: "lt_score80k", name: "Mythic Sortie", desc: "Reach a best score of 110,000", target: 110000, kind: "scoreLife", reward: { coins: 550, mod: "reactor", consolation: 380 } },
+    { id: "lt_score150k", name: "Starbreaker", desc: "Reach a best score of 200,000", target: 200000, kind: "scoreLife", reward: { coins: 1200, gun: "prism", consolation: 1050 } },
+    { id: "lt_coins50", name: "Haul", desc: "Collect 75 coins in one run", target: 75, kind: "coinsRun", reward: { coins: 100 } },
+    { id: "lt_coins100", name: "Vault Breaker", desc: "Collect 150 coins in one run", target: 150, kind: "coinsRun", reward: { coins: 200 } },
+    { id: "lt_coins250", name: "Dragon Hoard", desc: "Collect 350 coins in one run", target: 350, kind: "coinsRun", reward: { coins: 500 } },
+    { id: "lt_earned5k", name: "Tycoon", desc: "Earn 7,500 coins across all runs", target: 7500, kind: "coinsLife", reward: { coins: 620 } },
+    { id: "lt_earned20k", name: "Magnate", desc: "Earn 30,000 coins across all runs", target: 30000, kind: "coinsLife", reward: { coins: 1800 } },
+    { id: "lt_ships4", name: "Small Fleet", desc: "Own 5 ships", target: 5, kind: "ownShips", reward: { coins: 250 } },
+    { id: "lt_ships8", name: "Armada", desc: "Own 9 ships", target: 9, kind: "ownShips", reward: { coins: 800 } },
+    { id: "lt_guns4", name: "Arsenal", desc: "Own 5 guns", target: 5, kind: "ownGuns", reward: { coins: 250 } },
+    { id: "lt_guns9", name: "Armory", desc: "Own 11 guns", target: 11, kind: "ownGuns", reward: { coins: 900 } },
+    { id: "lt_spread5", name: "Spread Specialist", desc: "Collect 8 spread gems", target: 8, kind: "pickupLife", type: "spread", reward: { coins: 130, gun: "spread", consolation: 100 } },
+    { id: "lt_double8", name: "Dual Collector", desc: "Collect 12 double gems", target: 12, kind: "pickupLife", type: "double", reward: { coins: 130 } },
+    { id: "lt_heal15", name: "Combat Surgeon", desc: "Collect 20 heal pickups", target: 20, kind: "pickupLife", type: "heal", reward: { coins: 180 } },
+    { id: "lt_dive100", name: "Dive Marshal", desc: "Destroy 150 diving foes", target: 150, kind: "diveKillsLife", reward: { coins: 150 } },
+    { id: "lt_dive500", name: "Sky Warden", desc: "Destroy 750 diving foes", target: 750, kind: "diveKillsLife", reward: { coins: 500, ship: "vulture", consolation: 420 } },
+    { id: "lt_clean100", name: "Silent Running", desc: "Destroy 100 foes in a run without taking a hit", target: 100, kind: "cleanKillsRun", category: "Special Operations", reward: { coins: 450 } },
+    { id: "lt_boss_roster", name: "Fleet Intelligence", desc: "Defeat every boss in the roster", target: 10, kind: "bossRoster", category: "Special Operations", reward: { coins: 800 } },
+    { id: "lt_armada_ready", name: "Ready Room", desc: "Own 6 ships and 10 guns", target: 1, kind: "ownCollection", ships: 6, guns: 10, category: "Special Operations", reward: { coins: 650 } }
   ];
 
   var canvas = document.getElementById("board");
@@ -238,6 +244,7 @@
   var longSnap = {};
   var run = emptyRun();
   var runQuestClaims = [];
+  var questCategoryOpen = { daily: true, campaign: false, bosses: false, mastery: false, collection: false, special: false };
   var summaryRun = null;
   var runFinished = false;
 
@@ -731,7 +738,7 @@
     return {
       killsByType: {}, maxWave: 0, bosses: {}, bossBest: {}, pickups: {},
       diveKills: 0, cleanWave: 0, safeWave: 0, maxBossesRun: 0, maxRunCoins: 0, coinsEarned: 0,
-      perfectBosses: 0, maxKillsRun: 0, runs: 0
+      perfectBosses: 0, maxKillsRun: 0, maxCleanRunKills: 0, runs: 0
     };
   }
   function defaultProfile() {
@@ -806,6 +813,7 @@
       if (raw.stats.bossBest && typeof raw.stats.bossBest === "object") p.stats.bossBest = raw.stats.bossBest;
       if (typeof raw.stats.perfectBosses === "number") p.stats.perfectBosses = raw.stats.perfectBosses | 0;
       if (typeof raw.stats.maxKillsRun === "number") p.stats.maxKillsRun = raw.stats.maxKillsRun | 0;
+      if (typeof raw.stats.maxCleanRunKills === "number") p.stats.maxCleanRunKills = raw.stats.maxCleanRunKills | 0;
       if (typeof raw.stats.runs === "number") p.stats.runs = raw.stats.runs | 0;
     }
     // Profiles saved before the boss roster grew never recorded tiers: assume tier 0 kills.
@@ -3079,6 +3087,9 @@
     if (q.kind === "diveKills") return base + (run.diveKills || 0);
     if (q.kind === "killsRun") return Math.max(base, run.kills || 0);
     if (q.kind === "noHitBoss") return base + (run.perfectBosses || 0);
+    if (q.kind === "enemySet") return q.types.every(function (type) { return (run.killsByType[type] || 0) > 0; }) ? 1 : base;
+    if (q.kind === "pickupSet") return q.types.every(function (type) { return (run.pickups[type] || 0) > 0; }) ? 1 : base;
+    if (q.kind === "cleanKillsRun") return Math.max(base, profile.dailies.progress[q.id] || 0, run.hits ? 0 : (run.kills || 0));
     return base;
   }
   function longProgressValue(q) {
@@ -3102,6 +3113,13 @@
     if (q.kind === "perfectLife") return st.perfectBosses || 0;
     if (q.kind === "ownShips") return profile.ownedShips.length;
     if (q.kind === "ownGuns") return profile.ownedGuns.length;
+    if (q.kind === "cleanKillsRun") return st.maxCleanRunKills || 0;
+    if (q.kind === "bossRoster") {
+      var bossCount = 0, bi;
+      for (bi = 0; bi < BOSS_DEFS.length; bi++) if (st.bosses[BOSS_DEFS[bi].id]) bossCount += 1;
+      return bossCount;
+    }
+    if (q.kind === "ownCollection") return profile.ownedShips.length >= q.ships && profile.ownedGuns.length >= q.guns ? 1 : 0;
     return 0;
   }
   function syncQuestProgress() {
@@ -3114,6 +3132,7 @@
     profile.stats.maxBossesRun = Math.max(profile.stats.maxBossesRun || 0, bossKills(run.bosses));
     profile.stats.maxRunCoins = Math.max(profile.stats.maxRunCoins || 0, run.coins || 0);
     profile.stats.maxKillsRun = Math.max(profile.stats.maxKillsRun || 0, run.kills || 0);
+    if (!run.hits) profile.stats.maxCleanRunKills = Math.max(profile.stats.maxCleanRunKills || 0, run.kills || 0);
     for (i = 0; i < ids.length; i++) {
       q = dailyById(ids[i]);
       if (q) profile.dailies.progress[q.id] = questLive(q);
@@ -3540,31 +3559,50 @@
     return h;
   }
   function questGroup(q) {
-    if (q.kind === "wave" || q.kind === "level") return "Progression";
-    if (q.kind === "boss" || q.kind === "bossCount" || q.kind === "bossTier" || q.kind === "bossRun" || q.kind === "bossesLife" || q.kind === "perfectLife") return "Bosses";
-    return "Mastery";
+    if (q.category) return q.category;
+    if (q.kind === "wave" || q.kind === "level") return "Campaign";
+    if (q.kind === "boss" || q.kind === "bossCount" || q.kind === "bossTier" || q.kind === "bossRun" || q.kind === "bossesLife" || q.kind === "perfectLife") return "Boss Contracts";
+    if (q.kind === "pickupLife" || q.kind === "coinsRun" || q.kind === "coinsLife" || q.kind === "ownShips" || q.kind === "ownGuns") return "Salvage & Collection";
+    return "Combat Mastery";
+  }
+  function questDropdown(id, title, hint, content) {
+    var open = questCategoryOpen[id] ? " open" : "";
+    return '<details class="quest-category" data-category="' + id + '"' + open + '><summary class="quest-category-summary"><span><span class="quest-category-title">' + title + '</span><span class="quest-category-hint">' + hint + '</span></span><span class="quest-category-chevron" aria-hidden="true"></span></summary><div class="quest-category-body">' + content + "</div></details>";
   }
   function renderQuests() {
     ensureDailies();
     syncQuestProgress();
     var lists = el("quest-lists");
     if (!lists) return;
-    var h = '<div class="cat-title">Daily · resets at midnight</div>';
+    var openSections = lists.querySelectorAll(".quest-category"), si, section;
+    for (si = 0; si < openSections.length; si++) {
+      section = openSections[si];
+      questCategoryOpen[section.getAttribute("data-category")] = section.open;
+    }
+    var h = "", dailyRows = "";
     var i, q, g, ids = profile.dailies.ids || [];
-    var groups = ["Progression", "Bosses", "Mastery"], gi;
+    var groups = [
+      { id: "campaign", title: "Campaign", hint: "Waves and rank milestones" },
+      { id: "bosses", title: "Boss Contracts", hint: "Boss and flawless objectives" },
+      { id: "mastery", title: "Combat Mastery", hint: "Kills and survival trials" },
+      { id: "collection", title: "Salvage & Collection", hint: "Coins, pickups, and hangar" },
+      { id: "special", title: "Special Operations", hint: "Unique elite challenges" }
+    ], gi, groupRows;
     for (i = 0; i < ids.length; i++) {
       q = dailyById(ids[i]);
-      if (q) h += questRow(q, profile.dailies.progress[q.id] || 0, !!profile.dailies.claimed[q.id], "daily");
+      if (q) dailyRows += questRow(q, profile.dailies.progress[q.id] || 0, !!profile.dailies.claimed[q.id], "daily");
     }
+    h += questDropdown("daily", "Daily Orders", "3 rotating contracts · resets at midnight", dailyRows);
     for (gi = 0; gi < groups.length; gi++) {
-      g = groups[gi];
-      h += '<div class="cat-title">' + g + "</div>";
+      g = groups[gi].title;
+      groupRows = "";
       for (i = 0; i < LONG_DEFS.length; i++) {
         q = LONG_DEFS[i];
         if (questGroup(q) !== g) continue;
         if (!profile.longTerm[q.id]) profile.longTerm[q.id] = { progress: 0, claimed: false };
-        h += questRow(q, profile.longTerm[q.id].progress || 0, !!profile.longTerm[q.id].claimed, "long");
+        groupRows += questRow(q, profile.longTerm[q.id].progress || 0, !!profile.longTerm[q.id].claimed, "long");
       }
+      h += questDropdown(groups[gi].id, groups[gi].title, groups[gi].hint, groupRows);
     }
     lists.innerHTML = h;
   }
