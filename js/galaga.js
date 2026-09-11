@@ -244,7 +244,6 @@
   var longSnap = {};
   var run = emptyRun();
   var runQuestClaims = [];
-  var questCategoryOpen = { daily: true, campaign: false, bosses: false, mastery: false, collection: false, special: false };
   var summaryRun = null;
   var runFinished = false;
 
@@ -3781,44 +3780,27 @@
     if (q.kind === "pickupLife" || q.kind === "coinsRun" || q.kind === "coinsLife" || q.kind === "ownShips" || q.kind === "ownGuns") return "Salvage & Collection";
     return "Combat Mastery";
   }
-  function questDropdown(id, title, hint, content) {
-    var open = questCategoryOpen[id] ? " open" : "";
-    return '<details class="quest-category" data-category="' + id + '"' + open + '><summary class="quest-category-summary"><span><span class="quest-category-title">' + title + '</span><span class="quest-category-hint">' + hint + '</span></span><span class="quest-category-chevron" aria-hidden="true"></span></summary><div class="quest-category-body">' + content + "</div></details>";
-  }
   function renderQuests() {
     ensureDailies();
     syncQuestProgress();
     var lists = el("quest-lists");
     if (!lists) return;
-    var openSections = lists.querySelectorAll(".quest-category"), si, section;
-    for (si = 0; si < openSections.length; si++) {
-      section = openSections[si];
-      questCategoryOpen[section.getAttribute("data-category")] = section.open;
-    }
-    var h = "", dailyRows = "";
+    var h = '<div class="cat-title">Daily Orders · resets at midnight</div>';
     var i, q, g, ids = profile.dailies.ids || [];
-    var groups = [
-      { id: "campaign", title: "Campaign", hint: "Waves and rank milestones" },
-      { id: "bosses", title: "Boss Contracts", hint: "Boss and flawless objectives" },
-      { id: "mastery", title: "Combat Mastery", hint: "Kills and survival trials" },
-      { id: "collection", title: "Salvage & Collection", hint: "Coins, pickups, and hangar" },
-      { id: "special", title: "Special Operations", hint: "Unique elite challenges" }
-    ], gi, groupRows;
+    var groups = ["Campaign", "Boss Contracts", "Combat Mastery", "Salvage & Collection", "Special Operations"], gi;
     for (i = 0; i < ids.length; i++) {
       q = dailyById(ids[i]);
-      if (q) dailyRows += questRow(q, profile.dailies.progress[q.id] || 0, !!profile.dailies.claimed[q.id], "daily");
+      if (q) h += questRow(q, profile.dailies.progress[q.id] || 0, !!profile.dailies.claimed[q.id], "daily");
     }
-    h += questDropdown("daily", "Daily Orders", "3 rotating contracts · resets at midnight", dailyRows);
     for (gi = 0; gi < groups.length; gi++) {
-      g = groups[gi].title;
-      groupRows = "";
+      g = groups[gi];
+      h += '<div class="cat-title">' + g + "</div>";
       for (i = 0; i < LONG_DEFS.length; i++) {
         q = LONG_DEFS[i];
         if (questGroup(q) !== g) continue;
         if (!profile.longTerm[q.id]) profile.longTerm[q.id] = { progress: 0, claimed: false };
-        groupRows += questRow(q, profile.longTerm[q.id].progress || 0, !!profile.longTerm[q.id].claimed, "long");
+        h += questRow(q, profile.longTerm[q.id].progress || 0, !!profile.longTerm[q.id].claimed, "long");
       }
-      h += questDropdown(groups[gi].id, groups[gi].title, groups[gi].hint, groupRows);
     }
     lists.innerHTML = h;
   }
