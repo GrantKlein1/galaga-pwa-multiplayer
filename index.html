@@ -73,13 +73,17 @@
   <div id="screen-hangar" class="screen hidden">
     <div class="screen-title">Hangar</div>
     <div id="hangar-coins" class="hub-stats">0 coins</div>
+    <div id="hangar-stage" class="hangar-stage">
+      <canvas id="hangar-preview" width="320" height="160"></canvas>
+    </div>
     <div id="hangar-equip" class="hangar-equip"></div>
-    <div id="hangar-tabs" class="tabs">
+    <div id="hangar-tabs" class="tabs tabs-4">
       <button type="button" class="tab active" data-tab="ship">Ships</button>
       <button type="button" class="tab" data-tab="gun">Guns</button>
       <button type="button" class="tab" data-tab="mod">Mods</button>
+      <button type="button" class="tab" data-tab="skin">Paint</button>
     </div>
-    <div id="hangar-lists" class="lists"></div>
+    <div id="hangar-lists" class="lists hangar-lists"></div>
     <button type="button" class="btn btn-ghost" id="btn-hangar-back">Back</button>
   </div>
   <div id="screen-quests" class="screen hidden">
