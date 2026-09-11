@@ -1,9 +1,10 @@
-var CACHE = "galaga-coop-v18";
+var CACHE = "galaga-coop-v19";
 var PRECACHE = [
   "/",
   "/index.html",
   "/css/app.css",
   "/js/galaga.js",
+  "/js/pvp.js",
   "/js/touchpad.js",
   "/js/net.js",
   "/js/netcodec.js",

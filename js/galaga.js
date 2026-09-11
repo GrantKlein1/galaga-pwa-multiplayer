@@ -321,7 +321,7 @@
   var VOL_MUSIC = 0.16;
   var waveKind = "line";
 
-  var input = { left: false, right: false, fire: false, holdL: 0, holdR: 0 };
+  var input = { left: false, right: false, fire: false, ability: false, holdL: 0, holdR: 0 };
   var pointerSteer = { id: 0, aimX: null, fire: false };
   var player = null;
   var players = [];
@@ -353,6 +353,8 @@
   var lobbyErr = "";
   var coopOverSent = false;
   var lastCoopSpecs = null;
+  var lastPvpSpecs = null;
+  var pvpHurtQueue = [];
   var netBound = false;
   var enemies = [];
   var pbul = [];
@@ -1208,8 +1210,24 @@
     if (player) lives = player.lives;
   }
   function spawnXFor(slot, count) {
+    if (isPvp()) return W / 2;
     if ((count || players.length || 1) < 2) return W / 2;
     return slot === 0 ? W / 2 - 30 : W / 2 + 30;
+  }
+  function pvpFacing(p) {
+    if (p && p.facing) return p.facing;
+    return p && p.slot === 1 ? 1 : -1;
+  }
+  function pvpOpponent(who) {
+    var slot = who && who.slot != null ? who.slot : localSlot;
+    var i;
+    for (i = 0; i < players.length; i++) {
+      if (players[i] && players[i].slot !== slot) return players[i];
+    }
+    return null;
+  }
+  function pvpMuzzleY(who) {
+    return who.y + pvpFacing(who) * -12;
   }
   function anyPlayerAlive() {
     var i;
@@ -1241,7 +1259,15 @@
     if (netReplay || netRole !== "host") return;
     netEvents.push([kind, a, b, c, d]);
   }
-  function isCoop() { return players.length > 1 || netRole === "host" || netRole === "client"; }
+  function pvpApi() { return window.__pvp || null; }
+  function pvpS() { return pvpApi() ? pvpApi().session() : null; }
+  function isPvp() { return !!(pvpApi() && pvpApi().isPvp()); }
+  function isPvpMatch() { return !!(pvpApi() && pvpApi().isMatch()); }
+  function pvpFlipped() { return isPvpMatch() && localSlot === 1; }
+  function isCoop() {
+    if (isPvp()) return false;
+    return players.length > 1 || netRole === "host" || netRole === "client";
+  }
   function playerCount() { return Math.max(1, players.length); }
   function extraPlayers() { return Math.max(0, playerCount() - 1); }
   function soloEarly(n) {
@@ -1479,10 +1505,45 @@
     scoreEl.textContent = String(score);
     bestEl.textContent = String(best);
     renderLivesHud();
-    waveEl.textContent = String(wave);
+    if (waveEl) {
+      var waveLab = el("wave-label");
+      var sess = pvpS();
+      if (isPvpMatch() && sess) {
+        if (waveLab) waveLab.textContent = "Duel";
+        waveEl.textContent = "R" + (sess.round || 1) + "  " + (sess.wins[0] || 0) + "–" + (sess.wins[1] || 0);
+      } else {
+        if (waveLab) waveLab.textContent = "Wave";
+        waveEl.textContent = String(wave);
+      }
+    }
     if (coinsEl) coinsEl.textContent = String(started && !gameOver ? run.coins : profile.coins);
     pwrEl.textContent = powerHud();
     if (score > best) { best = score; profile.best = best; saveProfile(); bestEl.textContent = String(best); }
+  }
+  function syncPvpHudChrome() {
+    var app = el("app");
+    var hint = el("pvp-hint");
+    var padAb = el("pad-ability");
+    var sess = pvpS();
+    var kit, localBoss;
+    if (app) {
+      app.classList.toggle("is-pvp", isPvpMatch());
+      app.classList.toggle("is-pvp-insane", !!(isPvpMatch() && sess && sess.mode === "insane"));
+    }
+    localBoss = player && player.boss;
+    kit = localBoss && pvpApi() ? pvpApi().kitFor(localBoss) : null;
+    if (hint) {
+      hint.classList.toggle("hidden", !kit);
+      hint.setAttribute("aria-hidden", kit ? "false" : "true");
+      if (kit) {
+        if (el("pvp-hint-fire")) el("pvp-hint-fire").textContent = kit.fireHint;
+        if (el("pvp-hint-ability")) {
+          var cd = player && player.abilityCd > 0 ? "  " + Math.ceil(player.abilityCd) + "s" : "";
+          el("pvp-hint-ability").textContent = kit.abilityHint + cd;
+        }
+      }
+    }
+    if (padAb) padAb.classList.toggle("hidden", !kit);
   }
 
   function ensureAudio() {
@@ -2021,7 +2082,8 @@
       splitOnResume: !!opt.splitOnResume,
       splitAt: opt.splitAt || 0,
       color: opt.color || "#ffd0e0",
-      glow: opt.glow || "#ff6b9a"
+      glow: opt.glow || "#ff6b9a",
+      owner: opt.owner == null ? -1 : opt.owner
     });
   }
   function addTele(kind, x, y, x2, y2, dur, color) {
@@ -2178,13 +2240,15 @@
       slot: slot,
       loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null, skin: spec.skin || equippedSkinFor(spec.ship || "wisp") },
       x: x, targetX: x, y: H - 34,
+      facing: slot === 1 ? 1 : -1,
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
       weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0,
       r: loadoutR(s, spec.mod), speed: loadoutSpeed(s, spec.mod), invulnDur: s.invuln, regen: s.regen, regenT: 0,
       shotCount: 0,
       lives: loadoutLives(s),
+      hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, dash: null, rewind: null,
       leech: 0,
-      input: { left: false, right: false, fire: false, holdL: 0, holdR: 0, aimX: null },
+      input: { left: false, right: false, fire: false, ability: false, holdL: 0, holdR: 0, aimX: null },
       hostX: x
     };
   }
@@ -2194,14 +2258,23 @@
     syncLocalPlayer();
   }
   // Damage every living enemy (Nova hull passive).
-  function novaBurst(x, y, dmg) {
-    queueNet("nova", x, y);
+  function novaBurst(x, y, dmg, skipSlot) {
+    queueNet("nova", x, y, dmg, skipSlot);
     var i, e;
     if (!netReplay) {
-      for (i = 0; i < enemies.length; i++) {
-        e = enemies[i];
-        if (!e.alive || e.state === "enter") continue;
-        killEnemy(e, false, dmg);
+      if (isPvpMatch()) {
+        for (i = 0; i < players.length; i++) {
+          e = players[i];
+          if (!e || !e.alive) continue;
+          if (skipSlot != null && e.slot === skipSlot) continue;
+          if (dist2(e.x, e.y, x, y) < 70 * 70) pvpHurt(e, dmg || 6);
+        }
+      } else {
+        for (i = 0; i < enemies.length; i++) {
+          e = enemies[i];
+          if (!e.alive || e.state === "enter") continue;
+          killEnemy(e, false, dmg);
+        }
       }
     }
     rings.push({ x: x, y: y, r: 6, vr: 520, life: 0.6, color: "#ffe08a" });
@@ -2315,6 +2388,153 @@
     updateHud();
   }
 
+  function applyPvpLayout(p) {
+    if (!p) return;
+    p.facing = p.slot === 1 ? 1 : -1;
+    p.y = p.slot === 1 ? 34 : H - 34;
+    p.x = W / 2;
+    p.targetX = p.x;
+    p.hostX = p.x;
+    if (p.boss) {
+      var d = bossDef(p.boss) || BOSS_DEFS[0];
+      var api = pvpApi();
+      p.hp = api ? api.PVP_HP : 100;
+      p.maxHp = p.hp;
+      p.lives = 1;
+      p.shieldHp = 0;
+      p.shieldT = 0;
+      p.r = d.r || 18;
+      p.speed = Math.max(150, (d.spd || 40) * 3.2);
+      p.invulnDur = 0.45;
+      p.abilityCd = 0.6;
+    }
+  }
+
+  function pvpHurt(who, dmg) {
+    who = who || player;
+    if (!who || !who.alive) return;
+    if (who.invuln > 0) return;
+    if (pvpS() && pvpS().roundLock) return;
+    dmg = dmg || 1;
+    run.hits = (run.hits || 0) + 1;
+    if (who.shieldHp > 0) {
+      who.shieldHp -= 1;
+      if (who.shieldHp <= 0) who.shieldT = 0;
+      explode(who.x, who.y, "#6b8cff", false);
+      who.invuln = 0.7;
+      sfxArmor();
+      updateHud();
+      return;
+    }
+    if (who.boss && who.maxHp) {
+      who.hp = Math.max(0, (who.hp || 0) - dmg);
+      explode(who.x, who.y, "#ff7a5c", who.hp <= 0);
+      sfxHit();
+      who.invuln = 0.38;
+      updateHud();
+      if (who.hp <= 0) {
+        who.alive = false;
+        who.lives = 0;
+        if (netRole !== "client") pvpRoundOver(who.slot);
+      }
+      return;
+    }
+    playerDie(who);
+  }
+
+  function pvpRoundOver(loserSlot) {
+    var api = pvpApi();
+    var sess = pvpS();
+    var winner, hold;
+    if (!api || !sess || !isPvpMatch() || sess.roundLock || sess.matchOver) return;
+    sess.roundLock = true;
+    winner = loserSlot === 0 ? 1 : 0;
+    api.addWin(winner);
+    banner = {
+      text: winner === localSlot ? "YOU WIN THE ROUND" : "ROUND LOST",
+      life: 1.7
+    };
+    hold = api.ROUND_HOLD || 1.85;
+    sess.roundHold = hold;
+    if (netRole === "host") {
+      netSend({ t: "round", loser: loserSlot, wins: sess.wins.slice(), round: sess.round, hold: hold });
+    }
+    if (api.matchWinner() >= 0) {
+      sess.roundHold = Math.max(sess.roundHold, 1.1);
+      sess.matchOver = true;
+    }
+    updateHud();
+  }
+
+  function pvpBeginRound() {
+    var sess = pvpS();
+    var api = pvpApi();
+    var i, p;
+    if (!sess || !api) return;
+    if (sess.matchOver || api.matchWinner() >= 0) {
+      if (netRole !== "client") pvpFinishMatch(api.matchWinner());
+      return;
+    }
+    if (netRole !== "client") sess.round = (sess.round || 1) + 1;
+    sess.roundLock = false;
+    sess.roundHold = 0;
+    pbul = [];
+    ebul = [];
+    teles = [];
+    particles = [];
+    rings = [];
+    for (i = 0; i < players.length; i++) {
+      p = players[i];
+      if (!p) continue;
+      p.alive = true;
+      applyPvpLayout(p);
+      applyShipPassives(p);
+      if (p.boss) {
+        p.shieldHp = 0;
+        p.shieldT = 0;
+        p.lives = 1;
+      } else {
+        p.lives = loadoutLives(shipDef(p));
+      }
+      p.invuln = 1.15;
+      p.fireCd = 0.25;
+      p.weapon = "normal";
+      p.weaponT = 0;
+      p.speedT = 0;
+      p.slowT = 0;
+      p.jamT = 0;
+      p.abilityCd = 0.4;
+      p.dash = null;
+      p.rewind = null;
+    }
+    syncLocalPlayer();
+    banner = { text: "ROUND " + sess.round, life: 1.1 };
+    if (netRole === "host") {
+      netSend({ t: "pvpnext", round: sess.round, wins: sess.wins.slice() });
+    }
+    updateHud();
+  }
+
+  function pvpFinishMatch(winnerSlot) {
+    var api = pvpApi();
+    var sess = pvpS();
+    var pay;
+    if (!api || !sess || runFinished) return;
+    sess.matchOver = true;
+    sess.started = true;
+    pay = api.payout(winnerSlot);
+    if (netRole === "host") {
+      netSend({
+        t: "matchover",
+        winner: winnerSlot,
+        wins: sess.wins.slice(),
+        forfeit: sess.forfeit,
+        pay: pay
+      });
+    }
+    finishPvpRun(winnerSlot, pay, true);
+  }
+
   function playerDie(who) {
     who = who || player;
     if (!who || !who.alive) return;
@@ -2335,19 +2555,35 @@
     sfxHit();
     who.lives -= 1;
     run.livesLost = (run.livesLost || 0) + 1;
-    ebul.length = 0;
+    if (!isPvpMatch()) ebul.length = 0;
+    else {
+      var bi;
+      for (bi = pbul.length - 1; bi >= 0; bi--) {
+        if (pbul[bi].owner === who.slot) pbul.splice(bi, 1);
+      }
+    }
     who.weapon = "normal"; who.weaponT = 0; who.speedT = 0; who.slowT = 0; who.jamT = 0;
-    if (shipDef(who).passive === "nova") novaBurst(who.x, who.y, 6);
+    if (shipDef(who).passive === "nova") novaBurst(who.x, who.y, 6, who.slot);
     syncLocalPlayer();
     syncQuestProgress();
     updateHud();
     if (who.lives <= 0) {
       who.alive = false;
+      if (isPvpMatch()) {
+        if (netRole !== "client") pvpRoundOver(who.slot);
+        return;
+      }
       if (!anyPlayerAlive()) endGame();
       return;
     }
-    who.x = spawnXFor(who.slot, players.length);
-    who.targetX = who.x;
+    if (isPvpMatch()) {
+      applyPvpLayout(who);
+      who.dash = null;
+      who.rewind = null;
+    } else {
+      who.x = spawnXFor(who.slot, players.length);
+      who.targetX = who.x;
+    }
     who.invuln = (who.invulnDur || INVULN) + (hasMod("guardian", who) ? 0.6 : 0);
     if (hasMod("guardian", who)) { who.shieldHp = Math.max(who.shieldHp, 2); who.shieldT = 0; }
     who.muzzle = 0;
@@ -2432,7 +2668,11 @@
     var gem = (who.weaponT > 0 && who.weapon !== "normal") ? who.weapon : "";
     var shots = gunShots(g, gem);
     var dmg = g.dmg * loadoutDmgMul(shipDef(who), equippedMod(who), who);
-    var i, s, b, y = who.y - 12;
+    var i, s, b, face = pvpFacing(who), y = pvpMuzzleY(who);
+    if (who.boss) {
+      pvpBossPrimary(who);
+      return;
+    }
     who.shotCount = (who.shotCount || 0) + 1;
     var bolt = g.bolt && who.shotCount % g.bolt === 0;
     var cap = MAX_PBUL + extraPlayers() * 22;
@@ -2441,7 +2681,7 @@
       s = shots[i];
       b = {
         id: allocId(),
-        x: who.x + s.dx, y: y, vx: Math.sin(s.ang) * s.spd, vy: -Math.cos(s.ang) * s.spd,
+        x: who.x + s.dx, y: y, vx: Math.sin(s.ang) * s.spd, vy: face * Math.cos(s.ang) * s.spd,
         dmg: dmg, r: g.r || 2, age: 0, life: g.life || 0,
         pierce: g.pierce || 0, hit: g.pierce ? [] : null,
         homing: !!g.homing, homeT: g.homeT || 0,
@@ -2456,7 +2696,7 @@
     if (bolt) {
       pbul.push({
         id: allocId(),
-        x: who.x, y: y, vx: 0, vy: -300, dmg: (g.boltDmg || 2) * loadoutDmgMul(shipDef(who), equippedMod(who), who), r: 3, age: 0, life: 0,
+        x: who.x, y: y, vx: 0, vy: face * 300, dmg: (g.boltDmg || 2) * loadoutDmgMul(shipDef(who), equippedMod(who), who), r: 3, age: 0, life: 0,
         pierce: 0, hit: null, homing: true, homeT: 2.2, splash: null, gun: g.id, bolt: true, owner: who.slot, ghost: ghost
       });
     }
@@ -2468,6 +2708,126 @@
     sfxShoot(who);
   }
 
+  function pvpEbul(x, y, vx, vy, who, opt) {
+    opt = opt || {};
+    opt.owner = who ? who.slot : -1;
+    if (!opt.color && who && who.boss) {
+      opt.color = enemyColor(who.boss);
+      opt.glow = opt.color;
+    }
+    addEbul(x, y, vx, vy, opt);
+  }
+  function pvpAimed(who, spread, spd, extra) {
+    var tgt = pvpOpponent(who);
+    var dx, dy, len, mx, my;
+    if (!tgt) return;
+    mx = who.x;
+    my = pvpMuzzleY(who);
+    dx = tgt.x - mx;
+    dy = tgt.y - my;
+    len = Math.sqrt(dx * dx + dy * dy) || 1;
+    spd = spd || 220;
+    extra = extra || 0;
+    pvpEbul(mx + extra, my, dx / len * spd * (spread || 0.75), dy / len * spd, who);
+  }
+  function pvpFanToward(who, count, spread, spd) {
+    var face = pvpFacing(who), i, ang, mx = who.x, my = pvpMuzzleY(who);
+    spd = spd || 200;
+    for (i = 0; i < count; i++) {
+      ang = -spread / 2 + (count === 1 ? 0 : i * (spread / (count - 1)));
+      pvpEbul(mx, my, Math.sin(ang) * spd, face * Math.cos(ang) * spd, who);
+    }
+  }
+  function pvpRing(who, count, spd) {
+    var i, a;
+    for (i = 0; i < count; i++) {
+      a = (i / count) * Math.PI * 2 + time;
+      pvpEbul(who.x, who.y, Math.cos(a) * spd, Math.sin(a) * spd, who);
+    }
+  }
+  function pvpBossPrimary(who) {
+    var kit = pvpApi() ? pvpApi().kitFor(who.boss) : null;
+    var atk = kit ? kit.fire : "aimed";
+    var col = enemyColor(who.boss);
+    if (who.fireCd > 0) return;
+    if (atk === "spiral") pvpRing(who, 8, 110);
+    else if (atk === "fan" || atk === "flare") pvpFanToward(who, 5, 0.9, 230);
+    else if (atk === "ring") pvpRing(who, 7, 95);
+    else if (atk === "tick") {
+      pvpAimed(who, 0.9, 160, -8);
+      pvpAimed(who, 0.9, 160, 8);
+    } else if (atk === "surge") pvpFanToward(who, 4, 0.55, 210);
+    else if (atk === "well") {
+      pvpAimed(who, 0.7, 140, 0);
+      pvpEbul(who.x, pvpMuzzleY(who), 0, pvpFacing(who) * 70, who, { r: 5, life: 1.4, color: col });
+    } else if (atk === "venom") {
+      pvpAimed(who, 0.55, 190, -10);
+      pvpAimed(who, 0.55, 190, 10);
+    } else if (atk === "barrage") {
+      pvpFanToward(who, 3, 0.42, 250);
+      pvpAimed(who, 0.9, 260, 0);
+    } else {
+      pvpAimed(who, 0.85, 240, -8);
+      pvpAimed(who, 0.85, 240, 0);
+      pvpAimed(who, 0.85, 240, 8);
+    }
+    who.fireCd = 0.34;
+    who.muzzle = 1;
+    sfxShoot(who);
+  }
+  function pvpBossAbility(who) {
+    var kit = pvpApi() ? pvpApi().kitFor(who.boss) : null;
+    var atk = kit ? kit.ability : "ram";
+    var tgt = pvpOpponent(who);
+    var face = pvpFacing(who);
+    var i, x, col = enemyColor(who.boss);
+    if (!who.boss || (who.abilityCd || 0) > 0) return;
+    who.abilityCd = (pvpApi() && pvpApi().ABILITY_CD) || 4;
+    if (atk === "ram" || atk === "charge" || atk === "whip") {
+      who.dash = {
+        t: 0, dur: 0.55,
+        sx: who.x, sy: who.y,
+        ex: tgt ? tgt.x : who.x,
+        ey: clamp(who.y + face * 150, 28, H - 28),
+        back: true
+      };
+      who.invuln = Math.max(who.invuln, 0.35);
+    } else if (atk === "blink") {
+      who.x = clamp(tgt ? tgt.x + (Math.random() < 0.5 ? -28 : 28) : who.x, 20, W - 20);
+      who.targetX = who.x;
+      pvpAimed(who, 0.95, 280, 0);
+      explode(who.x, who.y, col, false);
+    } else if (atk === "beam" || atk === "gaze") {
+      x = clamp(tgt ? tgt.x : who.x, 16, W - 16);
+      for (i = 0; i < 8; i++) pvpEbul(x, who.y + face * (14 + i * 18), 0, face * 260, who, { r: 3.2, color: col });
+    } else if (atk === "rewind") {
+      who.rewind = { x: who.x, y: who.y, t: 0.55 };
+      who.invuln = Math.max(who.invuln, 0.7);
+      pvpRing(who, 8, 120);
+    } else if (atk === "lance2") {
+      x = clamp(tgt ? tgt.x : who.x, 24, W - 24);
+      for (i = 0; i < 7; i++) {
+        pvpEbul(x - 18, who.y + face * (12 + i * 16), 0, face * 280, who, { r: 2.6, color: col });
+        pvpEbul(x + 18, who.y + face * (12 + i * 16), 0, face * 280, who, { r: 2.6, color: col });
+      }
+    } else if (atk === "collapse") {
+      pvpAimed(who, 1, 90, 0);
+      pvpRing(who, 12, 70);
+      if (tgt) {
+        tgt.slowT = Math.max(tgt.slowT || 0, 1.1);
+      }
+    } else if (atk === "decree") {
+      for (i = 0; i < 5; i++) {
+        x = 28 + i * ((W - 56) / 4);
+        if (tgt && Math.abs(x - tgt.x) < 18) continue;
+        pvpEbul(x, who.y + face * 10, 0, face * 240, who, { r: 2.4, color: col });
+      }
+    } else {
+      pvpFanToward(who, 7, 1.15, 240);
+    }
+    sfxTele();
+  }
+
   // Player homing. Seeker uses gun hsp/hturn (a bit above Colossus 153/1.92).
   // Storm bolts keep the old snap (300 / 3.2) when those fields are unset.
   function steerPlayerHoming(b, dt) {
@@ -2476,11 +2836,20 @@
     b.homeT -= dt;
     bestE = null;
     bestD = 1e12;
-    for (j = 0; j < enemies.length; j++) {
-      e = enemies[j];
-      if (!e.alive) continue;
-      dd = dist2(b.x, b.y, e.x, e.y);
-      if (dd < bestD) { bestD = dd; bestE = e; }
+    if (isPvpMatch()) {
+      for (j = 0; j < players.length; j++) {
+        e = players[j];
+        if (!e || !e.alive || e.slot === b.owner) continue;
+        dd = dist2(b.x, b.y, e.x, e.y);
+        if (dd < bestD) { bestD = dd; bestE = e; }
+      }
+    } else {
+      for (j = 0; j < enemies.length; j++) {
+        e = enemies[j];
+        if (!e.alive) continue;
+        dd = dist2(b.x, b.y, e.x, e.y);
+        if (dd < bestD) { bestD = dd; bestE = e; }
+      }
     }
     if (!bestE) return;
     pdx = bestE.x - b.x;
@@ -3831,6 +4200,7 @@
     });
   }
   function submitLeaderboard() {
+    if (isPvp()) return;
     ensurePilot();
     if (!profile.pid || !(profile.best > 0)) return;
     fetch("/api/leaderboard", {
@@ -4156,6 +4526,33 @@
     var data = summaryRun;
     var parts;
     if (!body || !data) return;
+    if (data.pvp) {
+      parts = [
+        '<div class="summary-stats"><div><b>Result</b>' + (data.won ? "WIN" : "LOSS") + '</div><div><b>Rounds</b>' + data.scoreline + '</div><div><b>Mode</b>' + data.mode + '</div></div>'
+      ];
+      if (data.wager) {
+        parts.push(data.won
+          ? ("Pot +" + data.coinsGain + "c  ·  " + profile.coins + "c total")
+          : ("Wager lost  ·  " + profile.coins + "c total"));
+      } else {
+        parts.push("+" + data.xpGain + " XP  ·  +" + data.coinsGain + "c  ·  Lv " + data.newLv + " " + levelTitle(data.newLv));
+        parts.push(profile.coins + "c total");
+      }
+      if (disconnectNote) parts.unshift(disconnectNote);
+      if (data.newLv > data.oldLv) parts.push('<span class="lvlup">LEVEL UP! ' + data.oldLv + " → " + data.newLv + "  ·  +" + data.lvCoins + "c</span>");
+      body.innerHTML = parts.map(function (p) { return "<div>" + p + "</div>"; }).join("");
+      var questBox = el("summary-quests");
+      if (questBox) questBox.innerHTML = "";
+      var again = el("btn-again");
+      if (again) again.classList.add("hidden");
+      var title = document.querySelector("#screen-summary .screen-title");
+      if (title) title.textContent = data.won ? "Duel Won" : "Duel Lost";
+      return;
+    }
+    var againBtn = el("btn-again");
+    if (againBtn) againBtn.classList.remove("hidden");
+    var sumTitle = document.querySelector("#screen-summary .screen-title");
+    if (sumTitle) sumTitle.textContent = "Run Over";
     parts = [
       '<div class="summary-stats"><div><b>Score</b>' + score + '</div><div><b>Wave</b>' + run.maxWave + '</div><div><b>Enemies</b>' + (run.kills || 0) + '</div><div><b>Hits taken</b>' + (run.hits || 0) + '</div><div><b>Hull losses</b>' + (run.livesLost || 0) + '</div></div>',
       "+" + data.xpGain + " XP  ·  Lv " + data.newLv + " " + levelTitle(data.newLv),
@@ -4385,7 +4782,66 @@
   }
   function overlayVisible() { return !overlay.classList.contains("hidden"); }
 
+  function finishPvpRun(winnerSlot, pay, showSummary) {
+    var sess = pvpS();
+    var api = pvpApi();
+    var won, coinsGain, xpGain, oldLv, newLv, lvCoins, l;
+    if (runFinished) return;
+    runFinished = true;
+    gameOver = true;
+    paused = true;
+    started = false;
+    if (sess) {
+      sess.matchOver = true;
+      sess.started = false;
+    }
+    stopMusic();
+    sfxOver();
+    stopLoop();
+    pay = pay || (api ? api.payout(winnerSlot) : {});
+    won = winnerSlot === localSlot;
+    coinsGain = won ? (pay.winnerCoins || 0) : (pay.loserCoins || 0);
+    xpGain = won ? (pay.winnerXp || 0) : (pay.loserXp || 0);
+    oldLv = xpLevel(profile.totalXp);
+    profile.totalXp += xpGain;
+    newLv = xpLevel(profile.totalXp);
+    lvCoins = 0;
+    for (l = oldLv + 1; l <= newLv; l++) lvCoins += levelReward(l);
+    profile.coins += coinsGain + lvCoins;
+    profile.stats.coinsEarned = (profile.stats.coinsEarned || 0) + coinsGain + lvCoins;
+    profile.stats.runs = (profile.stats.runs || 0) + 1;
+    summaryRun = {
+      pvp: true,
+      won: won,
+      wager: !!(pay.wager),
+      scoreline: (sess ? (sess.wins[0] || 0) + "–" + (sess.wins[1] || 0) : "0–0"),
+      mode: sess ? sess.mode : "normal",
+      xpGain: xpGain,
+      coinsGain: coinsGain,
+      oldLv: oldLv,
+      newLv: newLv,
+      lvCoins: lvCoins
+    };
+    saveProfile();
+    updateHud();
+    syncPvpHudChrome();
+    if (showSummary) {
+      renderRunSummary();
+      showScreen("summary");
+    } else {
+      showScreen("hub");
+    }
+    disconnectNote = "";
+    draw();
+  }
   function finishRun(showSummary) {
+    if (isPvpMatch() || (pvpS() && pvpS().matchOver && !runFinished && isPvp())) {
+      var api = pvpApi();
+      var winner = api ? api.matchWinner() : -1;
+      if (winner < 0) winner = localSlot === 0 ? 1 : 0;
+      finishPvpRun(winner, api ? api.payout(winner) : null, showSummary);
+      return;
+    }
     if (runFinished) return;
     runFinished = true;
     gameOver = true;
@@ -4440,12 +4896,12 @@
   function stopLoop() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
   function startLoop() { stopLoop(); lastTs = 0; rafId = requestAnimationFrame(tick); }
   function resetInput() {
-    input.left = false; input.right = false; input.fire = false; input.holdL = 0; input.holdR = 0;
+    input.left = false; input.right = false; input.fire = false; input.ability = false; input.holdL = 0; input.holdR = 0;
     pointerSteer.id = 0; pointerSteer.aimX = null; pointerSteer.fire = false;
     var i;
     for (i = 0; i < players.length; i++) {
       if (!players[i] || players[i].slot !== localSlot) continue;
-      players[i].input.left = false; players[i].input.right = false; players[i].input.fire = false;
+      players[i].input.left = false; players[i].input.right = false; players[i].input.fire = false; players[i].input.ability = false;
       players[i].input.holdL = 0; players[i].input.holdR = 0; players[i].input.aimX = null;
     }
   }
@@ -4490,14 +4946,19 @@
     pickSeq = 0;
     var specs = opts.coopPlayers;
     if (!specs) specs = [profileLoadoutSpec()];
-    lastCoopSpecs = specs.length > 1 ? specs : null;
+    lastCoopSpecs = (!opts.pvp && specs.length > 1) ? specs : null;
+    lastPvpSpecs = opts.pvp ? specs : lastPvpSpecs;
     players = [];
     var i, p, s;
+    var pvpMode = !!(opts.pvp || (isPvp() && opts.pvp !== false && netRole));
+    if (opts.pvp && pvpApi()) pvpApi().markStarted();
     for (i = 0; i < specs.length; i++) {
       p = makePlayer(i, specs[i], specs.length);
       p.x = spawnXFor(i, specs.length);
       p.targetX = p.x;
+      if (pvpMode || isPvpMatch()) applyPvpLayout(p);
       applyShipPassives(p);
+      if (p.boss) { p.shieldHp = 0; p.shieldT = 0; p.lives = 1; }
       players.push(p);
     }
     if (opts.localSlot != null) localSlot = opts.localSlot;
@@ -4510,6 +4971,7 @@
     wave = 1;
     gameOver = false; started = true; paused = false; runFinished = false;
     pbul = []; ebul = []; particles = []; rings = []; pickups = []; teles = [];
+    enemies = [];
     shake = 0; flash = 0; time = 0;
     waveHold = 0;
     run = emptyRun();
@@ -4519,10 +4981,31 @@
     snapshotDailies();
     resetInput();
     makeStars();
+    syncPvpHudChrome();
+    if (pvpApi() && pvpApi().isMatch() && pvpApi().session().wager && !pvpApi().session().deducted) {
+      profile.coins = Math.max(0, profile.coins - (pvpApi().session().stake || 0));
+      pvpApi().markDeducted();
+      saveProfile();
+    }
     var startN = opts.startWave != null ? clampStartWave(opts.startWave, MAX_LEVEL) : preferredStartWave();
-    startN = applySkipState(startN);
-    if (netRole === "host" && specs.length > 1) netSend({ t: "start", players: specs, startWave: startN });
-    if (netRole !== "client") spawnWave(startN);
+    if (pvpApi() && pvpApi().isMatch()) {
+      if (netRole === "host" && specs.length > 1) {
+        netSend({
+          t: "pvpstart",
+          players: specs,
+          mode: pvpS().mode,
+          round: pvpS().round,
+          wins: pvpS().wins.slice(),
+          bosses: pvpS().bosses.slice(),
+          wager: !!pvpS().wager,
+          stake: pvpS().stake || 0
+        });
+      }
+    } else {
+      startN = applySkipState(startN);
+      if (netRole === "host" && specs.length > 1) netSend({ t: "start", players: specs, startWave: startN });
+      if (netRole !== "client") spawnWave(startN);
+    }
     startMusic();
     showScreen("play");
     startLoop();
@@ -4557,6 +5040,8 @@
   function quitToHub() {
     if (started && !runFinished) finishRun(false);
     leaveNet();
+    if (pvpApi()) pvpApi().reset("coop");
+    syncPvpHudChrome();
     showScreen("hub");
   }
 
@@ -4615,14 +5100,212 @@
     box.innerHTML = html;
   }
 
+  function pvpCatalogs() {
+    return { ships: SHIPS, mods: MODS, skins: SKIN_TIERS, guns: GUNS };
+  }
+  function pvpFindItem(cat, id) {
+    if (cat === "ship") return findShip(id);
+    if (cat === "gun") return findGun(id);
+    if (cat === "mod") return findMod(id);
+    if (cat === "skin") return findSkin(id);
+    return null;
+  }
+  function pvpBroadcast() {
+    var api = pvpApi();
+    if (!api || netRole !== "host") return;
+    netSend({ t: "pvp", state: api.snapshot() });
+  }
+  function pvpEnsurePacks() {
+    var api = pvpApi();
+    var sess;
+    if (!api) return;
+    sess = api.session();
+    if (!sess.packs) sess.packs = api.makeDraftPacks(pvpCatalogs(), sess.seed);
+  }
+  function pvpLoadoutFor(slot) {
+    var sess = pvpS();
+    var picks, spec;
+    if (!sess) return profileLoadoutSpec();
+    if (sess.mode === "draft") {
+      picks = sess.picks[slot] || {};
+      return {
+        ship: picks.ship || "wisp",
+        gun: picks.gun || "pulse",
+        mod: picks.mod || null,
+        skin: picks.skin || "stock"
+      };
+    }
+    if (sess.mode === "insane") {
+      spec = profileLoadoutSpec();
+      spec.boss = sess.bosses[slot];
+      return spec;
+    }
+    if (slot === 0) return profileLoadoutSpec();
+    return (lobbyGuest && lobbyGuest.loadout) || profileLoadoutSpec();
+  }
+  function renderPvpDraft() {
+    var api = pvpApi();
+    var sess = pvpS();
+    var box = el("lobby-pvp-draft");
+    var cards = el("lobby-pvp-draft-cards");
+    var lab = el("lobby-pvp-draft-lab");
+    var cat, ids, i, def, html, mine;
+    if (!box || !api || !sess || sess.mode !== "draft") {
+      if (box) box.classList.add("hidden");
+      return;
+    }
+    pvpEnsurePacks();
+    mine = localSlot;
+    if (api.draftDone(mine)) {
+      box.classList.add("hidden");
+      return;
+    }
+    cat = api.draftCat(mine);
+    ids = (sess.packs && sess.packs[cat]) || [];
+    box.classList.remove("hidden");
+    if (lab) lab.textContent = "Pick a " + cat;
+    html = "";
+    for (i = 0; i < ids.length; i++) {
+      def = pvpFindItem(cat, ids[i]) || { name: ids[i], desc: "" };
+      html += '<button type="button" class="pvp-card" data-pvp-draft="' + cat + '" data-id="' + ids[i] + '"><div><div class="pvp-card-name">' + def.name + '</div><div class="pvp-card-desc">' + (def.desc || rarityLabel(def.rarity || "common")) + "</div></div></button>";
+    }
+    if (cards) cards.innerHTML = html;
+  }
+  function renderPvpBosses() {
+    var api = pvpApi();
+    var sess = pvpS();
+    var box = el("lobby-pvp-boss");
+    var cards = el("lobby-pvp-boss-cards");
+    var tut = el("lobby-pvp-tutorial");
+    var html = "", i, id, d, picked, kit;
+    if (!box) return;
+    if (!api || !sess || sess.mode !== "insane") {
+      box.classList.add("hidden");
+      if (tut) tut.classList.add("hidden");
+      return;
+    }
+    picked = sess.bosses[localSlot];
+    if (picked && !sess.tutorials[localSlot]) {
+      box.classList.add("hidden");
+      if (tut) {
+        kit = api.kitFor(picked);
+        d = bossDef(picked);
+        tut.classList.remove("hidden");
+        if (el("pvp-tutorial-name")) el("pvp-tutorial-name").textContent = d ? d.name : picked;
+        if (el("pvp-tutorial-fire")) el("pvp-tutorial-fire").textContent = kit.fireHint;
+        if (el("pvp-tutorial-ability")) el("pvp-tutorial-ability").textContent = kit.abilityHint;
+      }
+      return;
+    }
+    if (tut) tut.classList.add("hidden");
+    if (picked && sess.tutorials[localSlot]) {
+      box.classList.add("hidden");
+      return;
+    }
+    box.classList.remove("hidden");
+    html = "";
+    for (i = 0; i < api.BOSS_IDS.length; i++) {
+      id = api.BOSS_IDS[i];
+      d = bossDef(id);
+      html += '<button type="button" class="pvp-card' + (picked === id ? " picked" : "") + '" data-pvp-boss="' + id + '"><span class="lobby-swatch" style="background:' + (d ? d.color : "#fff") + '"></span><div><div class="pvp-card-name">' + (d ? d.name : id) + '</div><div class="pvp-card-desc">' + (d && d.flavor ? d.flavor : "") + "</div></div></button>";
+    }
+    if (cards) cards.innerHTML = html;
+  }
+  function pvpStatusText() {
+    var api = pvpApi();
+    var sess = pvpS();
+    if (!api || !sess) return "";
+    if (sess.wager && !api.bothBidsLocked()) {
+      if (sess.bids[localSlot] == null) return "Lock your wager bid.";
+      return "Waiting for their bid…";
+    }
+    if (sess.mode === "draft" && !api.bothDraftDone()) {
+      if (!api.draftDone(localSlot)) return "Draft your loadout.";
+      return "Waiting for their draft…";
+    }
+    if (sess.mode === "insane") {
+      if (!sess.bosses[localSlot]) return "Pick your boss.";
+      if (!sess.tutorials[localSlot]) return "Read the ability tips.";
+      if (!api.bothBossesPicked() || !api.bothTutorialsDone()) return "Waiting for them to pick…";
+    }
+    if (netRole !== "host") return "Waiting for host to start…";
+    return "Best of 3. Host starts when ready.";
+  }
+  function syncPvpLobbyUi() {
+    var api = pvpApi();
+    var sess = pvpS();
+    var pvpBox = el("lobby-pvp-box");
+    var waveBox = el("lobby-start-wave-box");
+    var host = netRole === "host";
+    var modes = el("lobby-pvp-modes");
+    var hint = el("lobby-pvp-mode-hint");
+    var wagerLab = el("lobby-pvp-wager-lab");
+    var wagerBox = el("lobby-pvp-wager-box");
+    var wagerChk = el("lobby-pvp-wager");
+    var bidIn = el("lobby-pvp-bid");
+    var stakeEl = el("lobby-pvp-stake");
+    var status = el("lobby-pvp-status");
+    var startBtn = el("btn-lobby-start");
+    var i, btn;
+    if (!pvpBox || !api) return;
+    pvpBox.classList.toggle("hidden", !isPvp());
+    if (waveBox) waveBox.classList.toggle("hidden", isPvp());
+    if (!isPvp() || !sess) return;
+    if (modes) {
+      for (i = 0; i < modes.children.length; i++) {
+        btn = modes.children[i];
+        btn.classList.toggle("active", btn.getAttribute("data-pvp-mode") === sess.mode);
+        btn.disabled = !host;
+      }
+    }
+    if (hint) {
+      hint.textContent = sess.mode === "draft"
+        ? "Same 3 options each. Pick ship, mod, paint, gun."
+        : sess.mode === "insane"
+          ? "Fight as a boss. Same roster, duplicate picks allowed."
+          : "Bring your hangar ship, gun, mod, and paint.";
+    }
+    if (wagerLab) wagerLab.classList.toggle("hidden", !host && !sess.wager);
+    if (wagerChk) {
+      wagerChk.checked = !!sess.wager;
+      wagerChk.disabled = !host;
+    }
+    if (wagerBox) wagerBox.classList.toggle("hidden", !sess.wager);
+    if (sess.wager && bidIn && document.activeElement !== bidIn) {
+      if (sess.bids[localSlot] != null) bidIn.value = String(sess.bids[localSlot]);
+      bidIn.max = String(profile.coins || 0);
+    }
+    if (stakeEl) {
+      if (!sess.wager) stakeEl.textContent = "";
+      else if (!api.bothBidsLocked()) stakeEl.textContent = "You have " + (profile.coins || 0) + "c. Stake is the lower bid.";
+      else stakeEl.textContent = "Wager: " + sess.stake + "c each  ·  pot " + (sess.stake * 2) + "c";
+    }
+    renderPvpDraft();
+    renderPvpBosses();
+    if (status) status.textContent = pvpStatusText();
+    if (startBtn && isPvp()) {
+      startBtn.classList.toggle("hidden", !host);
+      startBtn.disabled = !host || !lobbyGuest || !api.canStart();
+    }
+  }
+
   function renderLobby() {
     var codeEl = el("lobby-code");
     var startBtn = el("btn-lobby-start");
     var waitEl = el("lobby-wait-start");
+    var title = el("lobby-pick-title");
+    var help = el("lobby-pick-help");
+    if (title) title.textContent = isPvp() ? "PvP" : "Co-op";
+    if (help) {
+      help.textContent = isPvp()
+        ? "Mirrored 1v1, best of 3. One of you hosts. The other joins with a code. Same connection as co-op."
+        : "Two ships, same waves. One of you hosts. The other joins with a code. Both devices need internet — they do not have to see each other on the LAN.";
+    }
     if (codeEl) codeEl.textContent = (window.__net && window.__net.code()) || "----";
     if (startBtn) startBtn.classList.toggle("hidden", netRole !== "host");
     if (waitEl) waitEl.classList.toggle("hidden", netRole === "host" || lobbyMode !== "ready");
-    renderStartWavePicker("lobby-start-wave-opts", netRole !== "host");
+    if (!isPvp()) renderStartWavePicker("lobby-start-wave-opts", netRole !== "host");
+    syncPvpLobbyUi();
     setLobbyErr(lobbyErr);
   }
 
@@ -4645,11 +5328,13 @@
     }
   }
 
-  function openLobby() {
+  function openLobby(kind) {
     bindNet();
     leaveNet();
     setLobbyErr("");
+    if (pvpApi()) pvpApi().reset(kind === "pvp" ? "pvp" : "coop");
     showLobbyPanel("pick");
+    renderLobby();
     showScreen("lobby");
   }
 
@@ -4659,6 +5344,7 @@
     netRole = "host";
     localSlot = 0;
     lobbyGuest = null;
+    if (isPvp() && pvpApi()) pvpApi().newSeed();
     showLobbyPanel("host");
     renderLobby();
     window.__net.host(function (code) {
@@ -4681,6 +5367,11 @@
 
   function lobbyStart() {
     if (netRole !== "host" || !lobbyGuest) return;
+    if (isPvp()) {
+      if (!pvpApi() || !pvpApi().canStart()) return;
+      startNewGame({ pvp: true, coopPlayers: [pvpLoadoutFor(0), pvpLoadoutFor(1)] });
+      return;
+    }
     startNewGame({ coopPlayers: [profileLoadoutSpec(), lobbyGuest.loadout] });
   }
 
@@ -4704,7 +5395,8 @@
   function snapEb(b) {
     return {
       id: b.id, x: b.x, y: b.y, vx: b.vx || 0, vy: b.vy || 0, r: b.r || 2.3,
-      color: b.color || "#ffd0e0", glow: b.glow || "#ff6b9a", mine: b.mine ? 1 : 0
+      color: b.color || "#ffd0e0", glow: b.glow || "#ff6b9a", mine: b.mine ? 1 : 0,
+      owner: b.owner == null ? 255 : b.owner
     };
   }
   function snapPk(p) {
@@ -4720,7 +5412,8 @@
       muzzle: p.muzzle || 0, shieldHp: p.shieldHp || 0, weapon: p.weapon || "normal",
       weaponT: p.weaponT || 0, speedT: p.speedT || 0, lives: p.lives, r: p.r,
       slowT: p.slowT || 0, jamT: p.jamT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
-      mod: lo.mod || null, skin: lo.skin || "stock", targetX: p.targetX != null ? p.targetX : p.x
+      mod: lo.mod || null, skin: lo.skin || "stock", targetX: p.targetX != null ? p.targetX : p.x,
+      hp: p.hp || 0, maxHp: p.maxHp || 0, facing: p.facing || -1, boss: p.boss || ""
     };
   }
   function applyPlayerSnap(row) {
@@ -4750,6 +5443,13 @@
     p.r = row.r;
     p.slowT = row.slowT;
     p.jamT = row.jamT || 0;
+    if (row.hp != null) p.hp = row.hp;
+    if (row.maxHp != null) p.maxHp = row.maxHp;
+    if (row.facing) p.facing = row.facing;
+    if (row.boss) {
+      p.boss = row.boss;
+      p.loadout.boss = row.boss;
+    }
   }
   function buildSnap() {
     var i, en = [], pb = [], eb = [], pk = [], te = [], pl = [];
@@ -4897,7 +5597,7 @@
       ev = evs[i];
       if (!ev) continue;
       if (ev[0] === "ex") explode(ev[1], ev[2], ev[3], ev[4]);
-      else if (ev[0] === "nova") novaBurst(ev[1], ev[2], 0);
+      else if (ev[0] === "nova") novaBurst(ev[1], ev[2], ev[3] || 6, ev[4]);
       else if (ev[0] === "sfx") {
         name = ev[1];
         if (name === "shoot") {
@@ -4943,7 +5643,7 @@
     p = players[localSlot];
     inputAcc += dt;
     hz = netTransport() === "mqtt" ? 12 : 60;
-    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX));
+    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (input.ability ? "1" : "0") + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX));
     if (key !== lastInputKey || inputAcc >= 1 / hz) {
       lastInputKey = key;
       inputAcc = 0;
@@ -4951,7 +5651,7 @@
       netSend({
         t: "input", n: inputSeq, slot: localSlot,
         l: !!(p && p.input.left), r: !!(p && p.input.right),
-        f: !!(p && p.input.fire), aimX: p ? p.input.aimX : null,
+        f: !!(p && p.input.fire), a: !!(p && p.input.ability), aimX: p ? p.input.aimX : null,
         x: p ? p.x : null, targetX: p ? p.targetX : null
       });
     }
@@ -4998,7 +5698,7 @@
         b.x += (b.vx || 0) * dt;
       }
       b.y += b.vy * dt;
-      if (b.y < -14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
+      if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
       consumed = false;
       br = (b.r || 2) + 1;
       for (j = 0; j < enemies.length; j++) {
@@ -5047,6 +5747,9 @@
   function onPartnerGone() {
     if (netRole && started && !runFinished) {
       disconnectNote = "Partner disconnected";
+      if (isPvpMatch() && pvpApi()) {
+        pvpApi().setForfeit(localSlot === 0 ? 1 : 0);
+      }
       netRole = null;
       finishRun(true);
       if (window.__net) window.__net.close();
@@ -5075,7 +5778,7 @@
       setLobbyErr("");
       updateLobbyLink(info);
       if (netRole === "client") {
-        n.send({ t: "hello", loadout: profileLoadoutSpec() });
+        n.send({ t: "hello", loadout: profileLoadoutSpec(), pvp: isPvp() ? 1 : 0 });
       }
     });
     n.on("transport", function (info) {
@@ -5083,10 +5786,24 @@
     });
     n.on("hello", function (msg) {
       if (netRole !== "host") return;
+      if (!!msg.pvp !== isPvp()) {
+        n.send({ t: "reject", reason: isPvp() ? "This room is PvP" : "This room is Co-op" });
+        return;
+      }
       lobbyGuest = { loadout: msg.loadout || profileLoadoutSpec() };
       n.send({ t: "lobby", players: [profileLoadoutSpec(), lobbyGuest.loadout] });
+      if (isPvp()) {
+        if (pvpApi() && !pvpApi().session().seed) pvpApi().newSeed();
+        pvpBroadcast();
+      }
       showLobbyPanel("ready");
       renderLobbyPlayers([{ loadout: profileLoadoutSpec() }, lobbyGuest]);
+      renderLobby();
+    });
+    n.on("reject", function (msg) {
+      setLobbyErr((msg && msg.reason) || "Wrong game mode");
+      leaveNet();
+      showLobbyPanel("pick");
       renderLobby();
     });
     n.on("lobby", function (msg) {
@@ -5094,9 +5811,82 @@
       renderLobbyPlayers(msg.players || []);
       renderLobby();
     });
+    n.on("pvp", function (msg) {
+      if (netRole === "host") return;
+      if (pvpApi() && msg && msg.state) pvpApi().applySnapshot(msg.state);
+      renderLobby();
+    });
+    n.on("bid", function (msg) {
+      var api = pvpApi();
+      if (!api || netRole !== "host") return;
+      api.setBid(msg.slot == null ? 1 : msg.slot, msg.amount, 1e9);
+      pvpBroadcast();
+      renderLobby();
+    });
+    n.on("draftpick", function (msg) {
+      var api = pvpApi();
+      if (!api || netRole !== "host") return;
+      api.applyPick(msg.slot == null ? 1 : msg.slot, msg.cat, msg.id);
+      api.advanceDraft(msg.slot == null ? 1 : msg.slot);
+      pvpBroadcast();
+      renderLobby();
+    });
+    n.on("bosspick", function (msg) {
+      var api = pvpApi();
+      if (!api || netRole !== "host") return;
+      api.setBoss(msg.slot == null ? 1 : msg.slot, msg.id);
+      pvpBroadcast();
+      renderLobby();
+    });
+    n.on("tutorial", function (msg) {
+      var api = pvpApi();
+      if (!api || netRole !== "host") return;
+      api.setTutorialDone(msg.slot == null ? 1 : msg.slot, true);
+      pvpBroadcast();
+      renderLobby();
+    });
     n.on("start", function (msg) {
       if (netRole === "host") return;
       startNewGame({ coopPlayers: msg.players, fromNet: true, localSlot: 1, startWave: msg.startWave || 1 });
+    });
+    n.on("pvpstart", function (msg) {
+      if (netRole === "host") return;
+      if (pvpApi()) {
+        pvpApi().setKind("pvp");
+        if (msg.mode) pvpApi().setMode(msg.mode);
+        pvpApi().markStarted();
+        if (msg.wins) pvpApi().session().wins = [msg.wins[0] | 0, msg.wins[1] | 0];
+        if (msg.round) pvpApi().session().round = msg.round | 0;
+        if (msg.bosses) pvpApi().session().bosses = [msg.bosses[0] || null, msg.bosses[1] || null];
+        if (msg.wager != null) pvpApi().session().wager = !!msg.wager;
+        if (msg.stake != null) pvpApi().session().stake = msg.stake | 0;
+      }
+      startNewGame({ pvp: true, coopPlayers: msg.players, fromNet: true, localSlot: 1 });
+    });
+    n.on("round", function (msg) {
+      var api = pvpApi();
+      var sess = pvpS();
+      if (netRole === "host" || !sess || !api) return;
+      sess.wins = msg.wins ? [msg.wins[0] | 0, msg.wins[1] | 0] : sess.wins;
+      sess.round = msg.round || sess.round;
+      sess.roundLock = true;
+      sess.roundHold = msg.hold || api.ROUND_HOLD;
+      if (api.matchWinner() >= 0) sess.matchOver = true;
+      banner = { text: msg.loser === localSlot ? "ROUND LOST" : "YOU WIN THE ROUND", life: 1.7 };
+      updateHud();
+    });
+    n.on("pvpnext", function (msg) {
+      if (netRole === "host") return;
+      if (pvpS()) {
+        pvpS().round = msg.round || pvpS().round;
+        if (msg.wins) pvpS().wins = [msg.wins[0] | 0, msg.wins[1] | 0];
+      }
+      pvpBeginRound();
+    });
+    n.on("matchover", function (msg) {
+      if (runFinished) return;
+      if (pvpApi() && msg.wins) pvpApi().session().wins = [msg.wins[0] | 0, msg.wins[1] | 0];
+      finishPvpRun(msg.winner, msg.pay, true);
     });
     n.on("input", function (msg) {
       var slot = msg.slot;
@@ -5110,6 +5900,7 @@
       p.input.left = !!msg.l;
       p.input.right = !!msg.r;
       p.input.fire = !!msg.f;
+      p.input.ability = !!msg.a;
       p.input.aimX = msg.aimX == null ? null : msg.aimX;
       if (msg.x != null && isFinite(msg.x)) {
         p.x = msg.x;
@@ -5220,11 +6011,20 @@
 
   function copyLocalInput() {
     var p = players[localSlot];
+    var aim;
     if (!p) return;
-    p.input.left = input.left;
-    p.input.right = input.right;
+    if (pvpFlipped()) {
+      p.input.left = input.right;
+      p.input.right = input.left;
+      aim = pointerSteer.aimX;
+      p.input.aimX = aim == null ? null : (W - aim);
+    } else {
+      p.input.left = input.left;
+      p.input.right = input.right;
+      p.input.aimX = pointerSteer.aimX;
+    }
     p.input.fire = input.fire || pointerSteer.fire;
-    p.input.aimX = pointerSteer.aimX;
+    p.input.ability = !!input.ability;
   }
 
   function updateOneShip(p, dt, fire) {
@@ -5242,7 +6042,11 @@
     if (p.jamT > 0) p.jamT = Math.max(0, p.jamT - dt);
     spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1);
     margin = Math.max(10, (p.r || PLAYER_R) + 4);
-    aimX = (p.slot === localSlot && pointerSteer.aimX != null) ? pointerSteer.aimX : inp.aimX;
+    if (p.slot === localSlot && pointerSteer.aimX != null) {
+      aimX = pvpFlipped() ? (W - pointerSteer.aimX) : pointerSteer.aimX;
+    } else {
+      aimX = inp.aimX;
+    }
     if (aimX != null) {
       p.targetX = aimX;
     } else if (!(netRole === "host" && p.slot !== localSlot)) {
@@ -5269,7 +6073,42 @@
     } else if (p.shieldHp >= 1) {
       p.regenT = 0;
     }
-    if (fire && inp.fire) shootPlayer(p);
+    p.abilityCd = Math.max(0, (p.abilityCd || 0) - dt);
+    if (p.rewind) {
+      p.rewind.t -= dt;
+      if (p.rewind.t <= 0) {
+        p.x = p.rewind.x;
+        p.targetX = p.x;
+        p.y = p.rewind.y;
+        p.invuln = Math.max(p.invuln, 0.45);
+        p.rewind = null;
+      }
+    }
+    if (p.dash) {
+      p.dash.t += dt;
+      var u = p.dash.t / p.dash.dur;
+      if (u >= 1) {
+        if (p.dash.back) {
+          p.dash = {
+            t: 0, dur: 0.4,
+            sx: p.x, sy: p.y,
+            ex: p.slot === 1 ? W / 2 : W / 2,
+            ey: p.slot === 1 ? 34 : H - 34,
+            back: false
+          };
+        } else {
+          p.dash = null;
+          applyPvpLayout(p);
+          p.invuln = Math.max(p.invuln, 0.2);
+        }
+      } else {
+        p.x = lerp(p.dash.sx, p.dash.ex, u);
+        p.y = lerp(p.dash.sy, p.dash.ey, u);
+        p.targetX = p.x;
+      }
+    }
+    if (fire && inp.fire && !(pvpS() && pvpS().roundLock)) shootPlayer(p);
+    if (fire && inp.ability && p.boss && !(pvpS() && pvpS().roundLock)) pvpBossAbility(p);
   }
 
   function update(dt) {
@@ -5295,12 +6134,26 @@
 
     copyLocalInput();
     var pi;
-    for (pi = 0; pi < players.length; pi++) updateOneShip(players[pi], dt, true);
+    for (pi = 0; pi < players.length; pi++) updateOneShip(players[pi], dt, !(pvpS() && pvpS().roundLock));
     if (player) pwrEl.textContent = powerHud();
+    if (isPvpMatch()) {
+      var sess = pvpS();
+      if (sess && sess.roundHold > 0) {
+        sess.roundHold -= dt;
+        if (sess.roundHold <= 0) {
+          sess.roundHold = 0;
+          if (netRole !== "client") {
+            if (sess.matchOver || (pvpApi() && pvpApi().matchWinner() >= 0)) pvpFinishMatch(pvpApi().matchWinner());
+            else pvpBeginRound();
+          }
+        }
+      }
+      syncPvpHudChrome();
+    }
 
-    if (enterT > 0) enterT -= dt;
+    if (enterT > 0 && !isPvpMatch()) enterT -= dt;
 
-    if (!isBossWave(wave)) {
+    if (!isPvpMatch() && !isBossWave(wave)) {
       form.ox += form.dir * form.speed * dt;
       if (form.ox + form.minOff < 16) { form.ox = 16 - form.minOff; form.dir = 1; }
       if (form.ox + form.maxOff > W - 16) { form.ox = W - 16 - form.maxOff; form.dir = -1; }
@@ -5437,7 +6290,7 @@
       if (pl) consumePickupAt(i, pl);
     }
 
-    if (aliveCount() === 0 && started && !gameOver) {
+    if (!isPvpMatch() && aliveCount() === 0 && started && !gameOver) {
       if (hasRevivePickup()) {
         /* hold the next wave until the revive gem reaches the ships or is gone */
       } else if (waveHold > 0) {
@@ -5459,7 +6312,7 @@
         b.x += (b.vx || 0) * dt;
       }
       b.y += b.vy * dt;
-      if (b.y < -14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
+      if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
       var consumed = false, br = (b.r || 2) + 1;
       for (j = 0; j < enemies.length; j++) {
         e = enemies[j];
@@ -5486,6 +6339,25 @@
           } else {
             pbul.splice(i, 1);
             consumed = true;
+            break;
+          }
+        }
+      }
+      if (!consumed && isPvpMatch() && !(pvpS() && pvpS().roundLock)) {
+        for (pi = 0; pi < players.length; pi++) {
+          pl = players[pi];
+          if (!pl || !pl.alive || pl.slot === b.owner) continue;
+          if (pl.invuln > 0) continue;
+          pr = pl.r || PLAYER_R;
+          if (dist2(b.x, b.y, pl.x, pl.y) < (pr + br) * (pr + br)) {
+            if (b.splash) pvpHurt(pl, (b.dmg || 1) + (b.splash.dmg || 0));
+            else pvpHurt(pl, b.dmg || 1);
+            if (b.pierce && b.pierce > 0) {
+              b.pierce -= 1;
+            } else {
+              pbul.splice(i, 1);
+              consumed = true;
+            }
             break;
           }
         }
@@ -5566,10 +6438,12 @@
       for (pi = 0; pi < players.length; pi++) {
         pl = players[pi];
         if (!pl || !pl.alive || pl.invuln > 0) continue;
+        if (b.owner != null && b.owner >= 0 && b.owner === pl.slot) continue;
         pr = pl.r || PLAYER_R;
         if (dist2(b.x, b.y, pl.x, pl.y) < (pr + (b.r || 2) - 1.5) * (pr + (b.r || 2) - 1.5)) {
           ebul.splice(i, 1);
-          playerDie(pl);
+          if (isPvpMatch()) pvpHurt(pl, 8);
+          else playerDie(pl);
           hit = true;
           break;
         }
@@ -6253,6 +7127,11 @@
     ctx.translate(sx, sy);
     ctx.fillStyle = "#050510";
     ctx.fillRect(-8, -8, W + 16, H + 16);
+    ctx.save();
+    if (pvpFlipped()) {
+      ctx.translate(W, H);
+      ctx.rotate(Math.PI);
+    }
 
     for (i = 0; i < stars.length; i++) {
       p = stars[i];
@@ -6397,17 +7276,39 @@
     for (i = 0; i < players.length; i++) {
       p = players[i];
       if (!p || !p.alive) continue;
-      drawShip(ctx, p.x, p.y, p.invuln > 0, currentLoadout(p));
-      if (players.length > 1) {
+      ctx.save();
+      if (p.facing > 0) {
+        ctx.translate(p.x, p.y);
+        ctx.scale(1, -1);
+        ctx.translate(-p.x, -p.y);
+      }
+      if (p.boss) {
+        drawEnemy(ctx, {
+          x: p.x, y: p.y, type: p.boss, r: p.r || 18, isBoss: true,
+          hitFlash: p.invuln > 0 ? 0.08 : 0, phaseIdx: 0, healFlash: 0, state: "form", phase: time
+        });
+      } else {
+        drawShip(ctx, p.x, p.y, p.invuln > 0, currentLoadout(p));
+      }
+      ctx.restore();
+      if (p.maxHp) {
+        pct = Math.max(0, p.hp / p.maxHp);
+        ctx.fillStyle = "rgba(8,10,24,0.7)";
+        ctx.fillRect(p.x - 16, p.y + (p.facing > 0 ? 16 : -22), 32, 4);
+        ctx.fillStyle = enemyColor(p.boss);
+        ctx.fillRect(p.x - 16, p.y + (p.facing > 0 ? 16 : -22), 32 * pct, 4);
+      } else if (players.length > 1) {
         ctx.globalAlpha = 0.9;
         ctx.fillStyle = shipDef(p).color || "#e8f6ff";
         ctx.font = "bold 6px ui-sans-serif, system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillText(playerTag(p.slot) + "  " + p.lives, p.x, p.y + 10);
+        ctx.fillText(playerTag(p.slot) + "  " + p.lives, p.x, p.y + (p.facing > 0 ? -16 : 10));
         ctx.globalAlpha = 1;
       }
     }
+
+    ctx.restore();
 
     boss = currentBoss();
     if (!boss) {
@@ -6549,7 +7450,8 @@
     return k === "ArrowLeft" || k === "ArrowRight" || k === "ArrowUp" || k === "ArrowDown" ||
       k === " " || k === "Enter" || k === "Escape" ||
       k === "a" || k === "A" || k === "d" || k === "D" ||
-      k === "p" || k === "P" || k === "m" || k === "M";
+      k === "p" || k === "P" || k === "m" || k === "M" ||
+      k === "e" || k === "E" || k === "Shift";
   }
   function toggleMute() {
     muted = !muted;
@@ -6595,6 +7497,10 @@
     if (k === "ArrowLeft" || k === "a" || k === "A") input.left = true;
     else if (k === "ArrowRight" || k === "d" || k === "D") input.right = true;
     else if (k === " ") { input.fire = true; ensureAudio(); shootPlayer(); }
+    else if (k === "e" || k === "E" || k === "Shift") {
+      input.ability = true;
+      if (player && player.boss) pvpBossAbility(player);
+    }
     else if (k === "p" || k === "P" || k === "Escape") pauseGame();
   }
   function onKeyUp(e) {
@@ -6603,6 +7509,7 @@
     if (k === "ArrowLeft" || k === "a" || k === "A") input.left = false;
     else if (k === "ArrowRight" || k === "d" || k === "D") input.right = false;
     else if (k === " ") input.fire = false;
+    else if (k === "e" || k === "E" || k === "Shift") input.ability = false;
   }
 
   window.addEventListener("keydown", onKeyDown);
@@ -6612,13 +7519,18 @@
     if (started && !paused && !gameOver) pauseGame();
   });
   function playAgain() {
+    if (isPvp()) {
+      showScreen("hub");
+      return;
+    }
     if (netRole === "client") return;
     if (netRole === "host" && lastCoopSpecs) startNewGame({ coopPlayers: lastCoopSpecs });
     else startNewGame();
   }
 
-  el("btn-play").addEventListener("click", function (e) { e.preventDefault(); leaveNet(); startNewGame(); });
-  el("btn-coop").addEventListener("click", function (e) { e.preventDefault(); openLobby(); });
+  el("btn-play").addEventListener("click", function (e) { e.preventDefault(); leaveNet(); if (pvpApi()) pvpApi().reset("coop"); startNewGame(); });
+  el("btn-coop").addEventListener("click", function (e) { e.preventDefault(); openLobby("coop"); });
+  el("btn-pvp").addEventListener("click", function (e) { e.preventDefault(); openLobby("pvp"); });
   el("btn-hangar").addEventListener("click", function (e) { e.preventDefault(); showScreen("hangar"); });
   el("btn-quests").addEventListener("click", function (e) { e.preventDefault(); showScreen("quests"); });
   el("btn-board").addEventListener("click", function (e) { e.preventDefault(); showScreen("ranks"); });
@@ -6658,12 +7570,96 @@
       var inp = el("lobby-code-in");
       if (inp) { inp.value = ""; }
     });
-    tap("btn-lobby-back", function () { leaveNet(); showScreen("hub"); });
+    tap("btn-lobby-back", function () {
+      leaveNet();
+      if (pvpApi()) pvpApi().reset("coop");
+      showScreen("hub");
+    });
     tap("btn-lobby-host-leave", function () { leaveNet(); showLobbyPanel("pick"); renderLobby(); });
     tap("btn-lobby-join-back", function () { leaveNet(); showLobbyPanel("pick"); renderLobby(); });
     tap("btn-lobby-join-go", lobbyJoinGo);
     tap("btn-lobby-start", lobbyStart);
-    tap("btn-lobby-leave", function () { leaveNet(); showLobbyPanel("pick"); renderLobby(); });
+    tap("btn-lobby-leave", function () {
+      leaveNet();
+      showLobbyPanel("pick");
+      renderLobby();
+    });
+    tap("btn-pvp-bid-lock", function () {
+      var api = pvpApi();
+      var bidIn = el("lobby-pvp-bid");
+      if (!api || !isPvp()) return;
+      api.setBid(localSlot, bidIn ? bidIn.value : 0, profile.coins);
+      if (netRole === "host") pvpBroadcast();
+      else netSend({ t: "bid", slot: localSlot, amount: api.session().bids[localSlot] });
+      renderLobby();
+    });
+    tap("btn-pvp-tutorial-ok", function () {
+      var api = pvpApi();
+      if (!api) return;
+      api.setTutorialDone(localSlot, true);
+      if (netRole === "host") pvpBroadcast();
+      else netSend({ t: "tutorial", slot: localSlot });
+      renderLobby();
+    });
+    var modes = el("lobby-pvp-modes");
+    if (modes) {
+      modes.addEventListener("click", function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest("[data-pvp-mode]") : null;
+        var api = pvpApi();
+        if (!btn || netRole !== "host" || !api) return;
+        api.setMode(btn.getAttribute("data-pvp-mode"));
+        if (api.session().mode === "draft") {
+          if (!api.session().seed) api.newSeed();
+          api.setPacks(api.makeDraftPacks(pvpCatalogs(), api.session().seed));
+          api.session().picks = [{}, {}];
+          api.session().draftStep = [0, 0];
+        }
+        if (api.session().mode === "insane") {
+          api.session().bosses = [null, null];
+          api.session().tutorials = [false, false];
+        }
+        pvpBroadcast();
+        renderLobby();
+      });
+    }
+    var wagerChk = el("lobby-pvp-wager");
+    if (wagerChk) {
+      wagerChk.addEventListener("change", function () {
+        var api = pvpApi();
+        if (!api || netRole !== "host") return;
+        api.setWager(wagerChk.checked);
+        pvpBroadcast();
+        renderLobby();
+      });
+    }
+    var draftCards = el("lobby-pvp-draft-cards");
+    if (draftCards) {
+      draftCards.addEventListener("click", function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest("[data-pvp-draft]") : null;
+        var api = pvpApi();
+        var cat, id;
+        if (!btn || !api) return;
+        cat = btn.getAttribute("data-pvp-draft");
+        id = btn.getAttribute("data-id");
+        api.applyPick(localSlot, cat, id);
+        api.advanceDraft(localSlot);
+        if (netRole === "host") pvpBroadcast();
+        else netSend({ t: "draftpick", slot: localSlot, cat: cat, id: id });
+        renderLobby();
+      });
+    }
+    var bossCards = el("lobby-pvp-boss-cards");
+    if (bossCards) {
+      bossCards.addEventListener("click", function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest("[data-pvp-boss]") : null;
+        var api = pvpApi();
+        if (!btn || !api) return;
+        api.setBoss(localSlot, btn.getAttribute("data-pvp-boss"));
+        if (netRole === "host") pvpBroadcast();
+        else netSend({ t: "bosspick", slot: localSlot, id: btn.getAttribute("data-pvp-boss") });
+        renderLobby();
+      });
+    }
     var codeIn = el("lobby-code-in");
     if (codeIn) {
       codeIn.addEventListener("input", function () {
@@ -6925,7 +7921,12 @@
         for (i = 0; i < players.length; i++) {
           p = players[i];
           if (!p) continue;
-          out.push({ slot: p.slot, x: +p.x.toFixed(1), lives: p.lives, alive: p.alive, weapon: p.weapon, weaponT: p.weaponT, jamT: +(p.jamT || 0).toFixed(2) });
+          out.push({
+            slot: p.slot, x: +p.x.toFixed(1), y: +p.y.toFixed(1),
+            lives: p.lives, alive: p.alive, facing: p.facing || -1,
+            hp: p.hp || 0, maxHp: p.maxHp || 0, boss: p.boss || null,
+            weapon: p.weapon, weaponT: p.weaponT, jamT: +(p.jamT || 0).toFixed(2)
+          });
         }
         return out;
       },
@@ -7035,10 +8036,11 @@
         updateHud();
       },
       step: function (dt, n) { var i; for (i = 0; i < (n || 1); i++) update(dt || 1 / 60); draw(); return { ebul: ebul.length, pbul: pbul.length, enemies: aliveCount(), wave: wave, lives: lives, score: score }; },
-      setInput: function (l, r, f) {
+      setInput: function (l, r, f, a) {
         if (l != null) input.left = !!l;
         if (r != null) input.right = !!r;
         if (f != null) input.fire = !!f;
+        if (a != null) input.ability = !!a;
       },
       pauseGame: pauseGame,
       resumeGame: resumeGame,
@@ -7085,7 +8087,12 @@
       BOSS_DEFS: BOSS_DEFS,
       DAILY_DEFS: DAILY_DEFS,
       LONG_DEFS: LONG_DEFS,
-      POWER_WEIGHTS: POWER_WEIGHTS
+      POWER_WEIGHTS: POWER_WEIGHTS,
+      isPvp: isPvp,
+      isPvpMatch: isPvpMatch,
+      pvpFlipped: pvpFlipped,
+      pvpSession: function () { return pvpApi() ? pvpApi().snapshot() : null; },
+      pvpPayout: function (winner) { return pvpApi() ? pvpApi().payout(winner) : null; }
     };
   } catch (err) {}
 

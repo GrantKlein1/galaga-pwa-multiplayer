@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 2;
+  var VER = 3;
   var TYPE_SNAP = 1;
 
   var ENEMY_TYPES = [
@@ -268,6 +268,7 @@
     w.u8w(b.mine ? 1 : 0);
     w.rgb(b.color || "#ffd0e0");
     w.rgb(b.glow || "#ff6b9a");
+    w.u8w(b.owner == null || b.owner < 0 ? 255 : b.owner);
   }
 
   function readEb(r) {
@@ -276,6 +277,8 @@
     b.mine = !!r.u8r();
     b.color = r.rgb();
     b.glow = r.rgb();
+    b.owner = r.u8r();
+    if (b.owner === 255) b.owner = -1;
     return b;
   }
 
@@ -343,9 +346,14 @@
     w.u8w(idxOf(SKIN_IDS, p.skin || "stock"));
     w.coord(p.targetX != null ? p.targetX : p.x);
     w.u8frac(p.jamT, 10);
+    w.u8w(Math.max(0, Math.min(255, Math.round(p.hp || 0))));
+    w.u8w(Math.max(0, Math.min(255, Math.round(p.maxHp || 0))));
+    w.u8w(p.facing && p.facing > 0 ? 1 : 0);
+    w.u8w(p.boss ? idxOf(ENEMY_TYPES, p.boss) : 255);
   }
 
   function readPl(r) {
+    var bi;
     var p = {
       slot: r.u8r(),
       x: r.coord(),
@@ -367,6 +375,11 @@
     };
     p.targetX = r.coord();
     p.jamT = r.u8frac(10);
+    p.hp = r.u8r();
+    p.maxHp = r.u8r();
+    p.facing = r.u8r() ? 1 : -1;
+    bi = r.u8r();
+    p.boss = bi === 255 ? "" : (ENEMY_TYPES[bi] || "");
     if (!p.mod) p.mod = null;
     if (!p.skin) p.skin = "stock";
     return p;

@@ -3,7 +3,7 @@
   var overlay = document.getElementById("overlay");
   var muteBtn = document.getElementById("btn-mute");
   var pauseBtn = document.getElementById("btn-pause");
-  var held = { left: 0, right: 0, fire: 0 };
+  var held = { left: 0, right: 0, fire: 0, ability: 0 };
   var ptr = {};
 
   function isStandalone() {
@@ -19,6 +19,7 @@
 
   function btnFor(dir) {
     if (dir === "fire") return document.getElementById("pad-fire");
+    if (dir === "ability") return document.getElementById("pad-ability");
     if (dir === "left") return document.getElementById("pad-left");
     return document.getElementById("pad-right");
   }
@@ -31,7 +32,7 @@
   function syncInput() {
     var g = game();
     if (!g || !g.setInput) return;
-    g.setInput(held.left > 0, held.right > 0, held.fire > 0);
+    g.setInput(held.left > 0, held.right > 0, held.fire > 0, held.ability > 0);
   }
 
   function dirFromTarget(t) {
@@ -53,6 +54,9 @@
     if (dir === "fire") {
       window.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true }));
     }
+    if (dir === "ability") {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "e", bubbles: true, cancelable: true }));
+    }
     syncInput();
   }
 
@@ -66,6 +70,9 @@
       if (btn) btn.classList.remove("held");
       if (dir === "fire") {
         window.dispatchEvent(new KeyboardEvent("keyup", { key: " ", bubbles: true, cancelable: true }));
+      }
+      if (dir === "ability") {
+        window.dispatchEvent(new KeyboardEvent("keyup", { key: "e", bubbles: true, cancelable: true }));
       }
     }
     syncInput();
