@@ -53,15 +53,16 @@
     { id: "eclipse", name: "Eclipse", unlockLevel: 95, cost: 10000, rarity: "legendary", desc: "+30% damage, +15% fire rate, +1 life. Boss kills restore a life", speed: 290, r: 7, invuln: 3, extraLives: 1, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.3, coinMul: 1, pickMul: 1.2, passive: "eclipse", color: "#e0c8ff", accent: "#ffd23d" }
   ];
   // Guns. shots: list of { dx (muzzle x offset), ang (radians, 0 = straight up), spd }.
-  // dmg per bullet, cd (ms), pierce (extra targets), homing, life (s, 0 = until off-screen),
-  // helix { amp, freq }, splash { r, dmg }, bolt (every nth shot adds a homing bolt of boltDmg).
+  // dmg per bullet, cd (ms), pierce (extra targets), homing, hsp/hturn (homing speed/turn),
+  // life (s, 0 = until off-screen), helix { amp, freq }, splash { r, dmg },
+  // bolt (every nth shot adds a homing bolt of boltDmg).
   var GUNS = [
     { id: "pulse", name: "Pulse", unlockLevel: 1, cost: 0, rarity: "common", desc: "Reliable single shot", dmg: 1, cd: 140, shots: [{ dx: 0, ang: 0, spd: 430 }], r: 2 },
     { id: "twin", name: "Twin", unlockLevel: 3, cost: 250, rarity: "common", desc: "Two parallel shots", dmg: 1, cd: 165, shots: [{ dx: -6, ang: 0, spd: 430 }, { dx: 6, ang: 0, spd: 430 }], r: 2 },
     { id: "rapid", name: "Rapid", unlockLevel: 6, cost: 500, rarity: "common", desc: "Very fast single shot", dmg: 1, cd: 75, shots: [{ dx: 0, ang: 0, spd: 470 }], r: 2 },
     { id: "spread", name: "Spread", unlockLevel: 10, cost: 800, rarity: "common", desc: "Wide 3-way shot", dmg: 1, cd: 190, shots: [{ dx: 0, ang: -0.22, spd: 410 }, { dx: 0, ang: 0, spd: 440 }, { dx: 0, ang: 0.22, spd: 410 }], r: 2 },
     { id: "lance", name: "Lance", unlockLevel: 15, cost: 1200, rarity: "rare", desc: "Heavy bolt that pierces 2 foes", dmg: 2, cd: 210, shots: [{ dx: 0, ang: 0, spd: 480 }], pierce: 2, r: 2.4 },
-    { id: "seeker", name: "Seeker", unlockLevel: 21, cost: 1600, rarity: "rare", desc: "Slow homing missile, never misses", dmg: 1.5, cd: 160, shots: [{ dx: 0, ang: 0, spd: 260 }], homing: true, homeT: 2.4, r: 3 },
+    { id: "seeker", name: "Seeker", unlockLevel: 21, cost: 1600, rarity: "rare", desc: "Slow homing missile, never misses", dmg: 1.5, cd: 160, shots: [{ dx: 0, ang: 0, spd: 260 }], homing: true, homeT: 2.4, hsp: 168, hturn: 2.15, r: 3 },
     { id: "scatter", name: "Scatter", unlockLevel: 28, cost: 2100, rarity: "rare", desc: "5-pellet shotgun; short range, brutal up close", dmg: 1, cd: 300, shots: [{ dx: 0, ang: -0.5, spd: 540 }, { dx: 0, ang: -0.25, spd: 540 }, { dx: 0, ang: 0, spd: 540 }, { dx: 0, ang: 0.25, spd: 540 }, { dx: 0, ang: 0.5, spd: 540 }], life: 0.55, r: 2 },
     { id: "railgun", name: "Railgun", unlockLevel: 36, cost: 2800, rarity: "epic", desc: "Slow 4-damage slug that pierces everything", dmg: 4, cd: 400, shots: [{ dx: 0, ang: 0, spd: 760 }], pierce: 99, r: 2.6 },
     { id: "volley", name: "Volley", unlockLevel: 46, cost: 3600, rarity: "epic", desc: "Tight 3-shot fan, fast", dmg: 1, cd: 150, shots: [{ dx: 0, ang: -0.09, spd: 480 }, { dx: 0, ang: 0, spd: 500 }, { dx: 0, ang: 0.09, spd: 480 }], r: 2 },
@@ -2254,6 +2255,7 @@
         dmg: dmg, r: g.r || 2, age: 0, life: g.life || 0,
         pierce: g.pierce || 0, hit: g.pierce ? [] : null,
         homing: !!g.homing, homeT: g.homeT || 0,
+        hsp: g.hsp || 0, hturn: g.hturn || 0,
         splash: g.splash || null, gun: g.id, owner: who.slot, ghost: ghost
       };
       if (g.helix) {
@@ -2274,6 +2276,30 @@
     who.fireCd = Math.max(0.035, cd / 1000);
     who.muzzle = 1;
     sfxShoot(who);
+  }
+
+  // Player homing. Seeker uses gun hsp/hturn (a bit above Colossus 153/1.92).
+  // Storm bolts keep the old snap (300 / 3.2) when those fields are unset.
+  function steerPlayerHoming(b, dt) {
+    var bestE, bestD, j, e, dd, pdx, pdy, plen, psp, turn;
+    if (!b.homing || b.homeT <= 0) return;
+    b.homeT -= dt;
+    bestE = null;
+    bestD = 1e12;
+    for (j = 0; j < enemies.length; j++) {
+      e = enemies[j];
+      if (!e.alive) continue;
+      dd = dist2(b.x, b.y, e.x, e.y);
+      if (dd < bestD) { bestD = dd; bestE = e; }
+    }
+    if (!bestE) return;
+    pdx = bestE.x - b.x;
+    pdy = bestE.y - b.y;
+    plen = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
+    psp = b.hsp || (b.bolt ? 300 : 220);
+    turn = b.hturn || 3.2;
+    b.vx += (pdx / plen * psp - (b.vx || 0)) * Math.min(1, turn * dt);
+    b.vy += (pdy / plen * psp - b.vy) * Math.min(1, turn * dt);
   }
 
   function aimedShot(e, spread, spd, opt) {
@@ -4523,23 +4549,7 @@
     for (i = pbul.length - 1; i >= 0; i--) {
       b = pbul[i];
       if (!b.ghost) continue;
-      if (b.homing && b.homeT > 0) {
-        b.homeT -= dt;
-        var bestE = null, bestD = 1e12, dd;
-        for (j = 0; j < enemies.length; j++) {
-          e = enemies[j];
-          if (!e.alive) continue;
-          dd = dist2(b.x, b.y, e.x, e.y);
-          if (dd < bestD) { bestD = dd; bestE = e; }
-        }
-        if (bestE) {
-          var pdx = bestE.x - b.x, pdy = bestE.y - b.y;
-          var plen = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
-          var psp = b.bolt ? 300 : 220;
-          b.vx += (pdx / plen * psp - (b.vx || 0)) * Math.min(1, 3.2 * dt);
-          b.vy += (pdy / plen * psp - b.vy) * Math.min(1, 3.2 * dt);
-        }
-      }
+      steerPlayerHoming(b, dt);
       b.age = (b.age || 0) + dt;
       if (b.life && b.age > b.life) { pbul.splice(i, 1); continue; }
       if (b.helix) {
@@ -5000,23 +5010,7 @@
 
     for (i = pbul.length - 1; i >= 0; i--) {
       b = pbul[i];
-      if (b.homing && b.homeT > 0) {
-        b.homeT -= dt;
-        var bestE = null, bestD = 1e12, jj, dd;
-        for (jj = 0; jj < enemies.length; jj++) {
-          e = enemies[jj];
-          if (!e.alive) continue;
-          dd = dist2(b.x, b.y, e.x, e.y);
-          if (dd < bestD) { bestD = dd; bestE = e; }
-        }
-        if (bestE) {
-          var pdx = bestE.x - b.x, pdy = bestE.y - b.y;
-          var plen = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
-          var psp = b.bolt ? 300 : 220;
-          b.vx += (pdx / plen * psp - (b.vx || 0)) * Math.min(1, 3.2 * dt);
-          b.vy += (pdy / plen * psp - b.vy) * Math.min(1, 3.2 * dt);
-        }
-      }
+      steerPlayerHoming(b, dt);
       b.age = (b.age || 0) + dt;
       if (b.life && b.age > b.life) { pbul.splice(i, 1); continue; }
       if (b.helix) {
