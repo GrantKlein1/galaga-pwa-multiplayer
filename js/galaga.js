@@ -90,23 +90,23 @@
     { id: "seraph", name: "SERAPH", color: "#e8f6ff", dark: "#203044", r: 18, hp: 48, spd: 42, amp: 6, freq: 1.2, cd: 1.39, tele: 0.44, pts: 1500,
       base: ["aimed", "fan", "ram"], p2: ["halo", "fan2"], t1: ["feathers"], t2: ["ramfan"], p2Text: "SERAPH ASCENDS", flavor: "Aimed volleys, fans, dive ram" },
     { id: "wraith", name: "WRAITH", color: "#d46bff", dark: "#2a1040", r: 16, hp: 72, spd: 55, amp: 16, freq: 2.4, cd: 1.39, tele: 0.44, pts: 1750,
-      base: ["spiral", "mines", "sweep", "blink"], p2: ["blink2"], t1: ["clones"], t2: ["sweepgap"], p2Text: "WRAITH UNBOUND", flavor: "Spirals, mines, sweeps, blinks" },
+      base: ["spiral", "mines", "sweep", "blink"], p2: ["blink2"], t1: ["clones"], t2: ["riftburst"], p2Text: "WRAITH UNBOUND", flavor: "Spirals, mines, wide sweeps, blinks" },
     { id: "hydra", name: "HYDRA", color: "#3dffb0", dark: "#143322", r: 22, hp: 102, spd: 42, amp: 6, freq: 1.2, cd: 1.45, tele: 0.46, pts: 2000,
       base: ["beam", "rain", "fan", "summon", "lunge"], p2: ["summontank", "lunge2"], t1: ["beam3"], t2: ["regrow"], p2Text: "HYDRA REGROWS", flavor: "Beams, rain, siphoning escorts, lunges" },
     { id: "colossus", name: "COLOSSUS", color: "#ffc14d", dark: "#40280a", r: 24, hp: 154, spd: 28, amp: 5, freq: 1.0, cd: 1.82, tele: 0.48, pts: 2250,
-      base: ["ring", "charge", "homing", "shock"], p2: ["ring2", "shockgap"], t1: ["artillery"], t2: ["charge2"], p2Text: "COLOSSUS OVERHEATS", flavor: "Rings, charges, missiles, shockwaves" },
+      base: ["ring", "charge", "homing", "shock"], p2: ["ring2", "meteor"], t1: ["artillery"], t2: ["charge2"], p2Text: "COLOSSUS OVERHEATS", flavor: "Rings, charges, missiles, shockwaves" },
     { id: "chronos", name: "CHRONOS", color: "#7ef9ff", dark: "#0a3040", r: 20, hp: 162, spd: 36, amp: 10, freq: 0.9, cd: 1.57, tele: 0.48, pts: 2500,
-      base: ["tick", "pendulum", "rewind"], p2: ["ticksplit"], t1: ["slowfield"], t2: ["pendulum2"], p2Text: "TIME FRACTURES", flavor: "Frozen bullets, pendulums, rewinds" },
+      base: ["tick", "pendulum", "rewind"], p2: ["ticksplit"], t1: ["slowfield"], t2: ["clockhands"], p2Text: "TIME FRACTURES", flavor: "Frozen bullets, pendulums, rewinds" },
     { id: "leviathan", name: "LEVIATHAN", color: "#4d88ff", dark: "#081838", r: 24, hp: 192, spd: 48, amp: 14, freq: 1.6, cd: 1.57, tele: 0.48, pts: 2750,
-      base: ["surge", "depth", "whip"], p2: ["surge2"], t1: ["whirlpool"], t2: ["torpedo"], p2Text: "THE DEEP RISES", flavor: "Tidal surges, depth charges, tail whips" },
+      base: ["surge", "depth", "whip"], p2: ["riptide"], t1: ["whirlpool"], t2: ["torpedo"], p2Text: "THE DEEP RISES", flavor: "Tidal surges, depth charges, tail whips" },
     { id: "inferno", name: "INFERNO", color: "#ff7a3d", dark: "#401008", r: 22, hp: 228, spd: 40, amp: 8, freq: 1.4, cd: 1.51, tele: 0.46, pts: 3000,
-      base: ["flare", "embers", "lance2"], p2: ["emberssplit"], t1: ["novaring"], t2: ["lancesweep"], p2Text: "INFERNO IGNITES", flavor: "Flares, ember rain, twin lances" },
+      base: ["flare", "embers", "lance2"], p2: ["emberssplit"], t1: ["novaring"], t2: ["firewheel"], p2Text: "INFERNO IGNITES", flavor: "Flares, ember rain, twin lances" },
     { id: "nullwarden", name: "NULLWARDEN", color: "#b07cff", dark: "#100418", r: 21, hp: 264, spd: 34, amp: 12, freq: 1.1, cd: 1.57, tele: 0.5, pts: 3250,
       base: ["well", "gates", "collapse"], p2: ["voidguard"], t1: ["singularity"], t2: ["gates2"], p2Text: "THE VOID ANSWERS", flavor: "Gravity wells, void gates, collapses" },
     { id: "basilisk", name: "BASILISK", color: "#c8ff3d", dark: "#203008", r: 22, hp: 300, spd: 46, amp: 10, freq: 1.5, cd: 1.51, tele: 0.48, pts: 3500,
       base: ["venom", "gaze", "coil"], p2: ["venompool"], t1: ["gaze2"], t2: ["spitburst"], p2Text: "BASILISK SHEDS", flavor: "Arcing venom, sweeping gaze, coils" },
     { id: "overlord", name: "OVERLORD", color: "#ffd23d", dark: "#3a1a0a", r: 26, hp: 384, spd: 32, amp: 6, freq: 1.0, cd: 1.64, tele: 0.5, pts: 4000,
-      base: ["barrage", "grid", "escorts"], p2: ["core", "corering"], t1: ["orbital"], t2: ["frenzy"], p2Thresh: 0.6, p2Text: "CORE EXPOSED", flavor: "Barrages, laser grids, kami escorts" }
+      base: ["barrage", "decree", "escorts"], p2: ["core", "corering"], t1: ["crownfire"], t2: ["frenzy"], p2Thresh: 0.6, p2Text: "CORE EXPOSED", flavor: "Barrages, edicts, kami escorts" }
   ];
 
   var DAILY_DEFS = [
@@ -332,6 +332,16 @@
     return id;
   }
   function rand(a, b) { return a + Math.random() * (b - a); }
+  function shuffleInPlace(arr) {
+    var i, j, t;
+    for (i = arr.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      t = arr[i];
+      arr[i] = arr[j];
+      arr[j] = t;
+    }
+    return arr;
+  }
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function lerp(a, b, t) { return a + (b - a) * t; }
   function dist2(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; }
@@ -1546,7 +1556,7 @@
   function makeEnemy(offX, offY, type, extra) {
     extra = extra || {};
     var hp = enemyHp(type, extra.tier || 0, wave);
-    return {
+    var e = {
       id: extra.id || allocId(),
       offX: offX, offY: offY, type: type,
       hp: hp, maxHp: hp, alive: true, state: "enter", t: 0, hitFlash: 0,
@@ -1556,11 +1566,16 @@
       shieldHp: type === "shield" ? 2 + Math.floor(wave / 20) + extraPlayers() : 0,
       phase: Math.random() * 6.2,
       isBoss: !!extra.isBoss, tier: extra.tier || 0,
-      atkCd: extra.isBoss ? 2.06 : (type === "archon" ? 1.45 : 0), atk: "", lastAtk: "", tele: null,
+      atkCd: extra.isBoss ? rand(1.65, 2.35) : (type === "archon" ? 1.45 : 0), atk: "", lastAtk: "", tele: null,
       phaseIdx: 0, followups: [], stream: null, afterReturn: "", combo: false, aimX: 0, aimY: 0,
-      r: enemyR(type), patrolDir: 1, archonTurn: 0, archonX: 0, archonY: 0,
+      r: enemyR(type), patrolDir: Math.random() < 0.5 ? -1 : 1,
+      moveStyle: "patrol", moveAmp: 1, moveSpd: 1, moveFreq: 1,
+      homeX: W / 2, hoverT: 0, atkQueue: [], atkQIdx: 0,
+      archonTurn: 0, archonX: 0, archonY: 0,
       leech: !!extra.leech, leechHp: 0, leechAcc: 0, healFlash: 0
     };
+    if (e.isBoss) rollBossFight(e);
+    return e;
   }
 
   function setFormBounds(slots) {
@@ -2401,6 +2416,7 @@
   // ---- Boss kits -------------------------------------------------------------------------
   // Kit entries that are phase hooks (fire once on a phase change) rather than pickable attacks.
   var BOSS_HOOKS = { regrow: true, voidguard: true, core: true };
+  var BOSS_MOVE_STYLES = ["patrol", "sine", "figure8", "hover", "zigzag", "orbit", "drift"];
   function bossKit(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
     var kit = d.base.slice(), i;
@@ -2420,12 +2436,42 @@
     return pool;
   }
   function kitHas(e, id) { return bossKit(e).indexOf(id) >= 0; }
+  function uniqueBossPool(e) {
+    var kit = bossPool(e), out = [], seen = {}, i;
+    for (i = 0; i < kit.length; i++) {
+      if (seen[kit[i]]) continue;
+      seen[kit[i]] = true;
+      out.push(kit[i]);
+    }
+    return out;
+  }
+  function rebuildBossQueue(e, avoid) {
+    var pool = uniqueBossPool(e), first;
+    shuffleInPlace(pool);
+    if (avoid && pool.length > 1 && pool[0] === avoid) {
+      first = pool.shift();
+      pool.push(first);
+    }
+    e.atkQueue = pool;
+    e.atkQIdx = 0;
+  }
+  function rollBossFight(e) {
+    e.patrolDir = Math.random() < 0.5 ? -1 : 1;
+    e.moveStyle = BOSS_MOVE_STYLES[Math.floor(Math.random() * BOSS_MOVE_STYLES.length)];
+    e.moveAmp = 0.72 + Math.random() * 0.7;
+    e.moveSpd = 0.78 + Math.random() * 0.55;
+    e.moveFreq = 0.72 + Math.random() * 0.7;
+    e.homeX = 56 + Math.random() * (W - 112);
+    e.hoverT = rand(0.8, 2.2);
+    e.phase = Math.random() * 6.2;
+    rebuildBossQueue(e);
+  }
   function pickBossAttack(e) {
-    var pool = bossPool(e), atk, tries = 0;
-    do {
-      atk = pool[Math.floor(Math.random() * pool.length)];
-      tries += 1;
-    } while (atk === e.lastAtk && pool.length > 1 && tries < 8);
+    var atk;
+    if (!e.atkQueue || !e.atkQueue.length) rebuildBossQueue(e, e.lastAtk);
+    atk = e.atkQueue[e.atkQIdx] || uniqueBossPool(e)[0] || "aimed";
+    e.atkQIdx += 1;
+    if (e.atkQIdx >= e.atkQueue.length) rebuildBossQueue(e, atk);
     return atk;
   }
   function bossTeleDelay(e) {
@@ -2538,6 +2584,7 @@
     if (kitHas(e, "voidguard") && idx === 1) summonEscorts(e, "shield", 2, 64);
     if (kitHas(e, "core") && idx === 1) summonEscorts(e, "shield", 2, 56);
     if (idx >= 2) sfxWave(true);
+    rebuildBossQueue(e, e.lastAtk);
   }
   function checkBossPhase(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
@@ -2561,10 +2608,10 @@
     e.aimY = aim ? aim.y : H - 34;
     if (atk === "aimed" || atk === "feathers" || atk === "homing" || atk === "torpedo" || atk === "venom" || atk === "venompool" || atk === "spitburst") {
       addTele("line", e.x, e.y + 10, e.aimX, e.aimY, delay + 0.08, atk === "homing" || atk === "torpedo" ? "#ffc14d" : "#7ef9ff");
-    } else if (atk === "clones") {
+    } else if (atk === "clones" || atk === "riftburst") {
       addTele("glow", clamp(e.x - 60, 20, W - 20), e.y, 0, 0, delay + 0.1, col);
       addTele("glow", clamp(e.x + 60, 20, W - 20), e.y, 0, 0, delay + 0.1, col);
-    } else if (atk === "fan" || atk === "fan2" || atk === "flare" || atk === "barrage" || atk === "frenzy" || atk === "mines" || atk === "summon" || atk === "summontank" || atk === "depth" || atk === "escorts" || atk === "tick" || atk === "ticksplit" || atk === "singularity") {
+    } else if (atk === "fan" || atk === "fan2" || atk === "flare" || atk === "barrage" || atk === "frenzy" || atk === "mines" || atk === "summon" || atk === "summontank" || atk === "depth" || atk === "escorts" || atk === "tick" || atk === "ticksplit" || atk === "singularity" || atk === "firewheel") {
       addTele("glow", e.x, e.y + (atk === "mines" || atk === "depth" ? 12 : 0), 0, 0, delay, atk === "mines" || atk === "depth" ? "#ff9a3d" : col);
     } else if (atk === "ram" || atk === "ramfan" || atk === "charge" || atk === "charge2" || atk === "lunge" || atk === "lunge2") {
       addTele("flash", e.x, e.y, e.aimX, e.aimY, delay + 0.1, atk === "lunge" || atk === "lunge2" ? "#3dffb0" : "#ff4d4d");
@@ -2572,12 +2619,12 @@
     } else if (atk === "blink" || atk === "blink2" || atk === "rewind") {
       addTele("flash", e.x, e.y, 0, 0, Math.max(0.26, delay - 0.12), col);
       delay = Math.max(0.26, delay - 0.12);
-    } else if (atk === "spiral" || atk === "ring" || atk === "ring2" || atk === "halo" || atk === "novaring" || atk === "whirlpool" || atk === "coil" || atk === "corering" || atk === "well") {
+    } else if (atk === "spiral" || atk === "ring" || atk === "ring2" || atk === "halo" || atk === "novaring" || atk === "whirlpool" || atk === "coil" || atk === "corering" || atk === "well" || atk === "clockhands" || atk === "crownfire") {
       addTele("ring", e.x, e.y, 0, 0, delay, col);
-    } else if (atk === "sweep" || atk === "sweepgap" || atk === "rain" || atk === "shock" || atk === "shockgap" || atk === "artillery" || atk === "pendulum" || atk === "pendulum2" || atk === "surge" || atk === "surge2" || atk === "whip" || atk === "lancesweep") {
-      addTele("hline", 12, e.y + (atk === "whip" ? 33 : atk === "shock" || atk === "shockgap" ? 28 : 18), W - 12, e.y + (atk === "whip" ? 33 : atk === "shock" || atk === "shockgap" ? 28 : 18), delay + (atk === "lancesweep" || atk === "whip" ? 0.12 : 0), col);
-      if (atk === "shockgap") e.gapIdx = Math.floor(Math.random() * 7);
-      if (atk === "lancesweep" || atk === "whip") { e.sweepDir = e.aimX > W / 2 ? 1 : -1; delay += 0.12; }
+    } else if (atk === "sweep" || atk === "rain" || atk === "shock" || atk === "artillery" || atk === "pendulum" || atk === "surge" || atk === "whip" || atk === "riptide") {
+      addTele("hline", 12, e.y + (atk === "whip" ? 33 : atk === "shock" ? 28 : 18), W - 12, e.y + (atk === "whip" ? 33 : atk === "shock" ? 28 : 18), delay + (atk === "whip" ? 0.12 : 0), col);
+      if (atk === "whip") { e.sweepDir = e.aimX > W / 2 ? 1 : -1; delay += 0.12; }
+      if (atk === "riptide") e.sweepDir = Math.random() < 0.5 ? 1 : -1;
     } else if (atk === "embers" || atk === "emberssplit") {
       addTele("hline", 16, 30, W - 16, 30, delay, col);
     } else if (atk === "beam") {
@@ -2586,15 +2633,22 @@
     } else if (atk === "beam3") {
       px = clamp(e.aimX, 20, W - 20);
       addTele("vline", px, e.y + 8, px, H - 20, delay + 0.14, col);
-      addTele("vline", clamp(px - 52, 12, W - 12), e.y + 8, clamp(px - 52, 12, W - 12), H - 20, delay + 0.14, col);
-      addTele("vline", clamp(px + 52, 12, W - 12), e.y + 8, clamp(px + 52, 12, W - 12), H - 20, delay + 0.14, col);
+      addTele("vline", clamp(px - 64, 12, W - 12), e.y + 8, clamp(px - 64, 12, W - 12), H - 20, delay + 0.14, col);
+      addTele("vline", clamp(px + 64, 12, W - 12), e.y + 8, clamp(px + 64, 12, W - 12), H - 20, delay + 0.14, col);
       delay += 0.14;
     } else if (atk === "lance2") {
-      px = clamp(e.aimX, 30, W - 30);
+      px = clamp(e.aimX, 40, W - 40);
       e.aimX = px;
-      addTele("vline", px - 24, e.y + 8, px - 24, H - 10, delay + 0.2, col);
-      addTele("vline", px + 24, e.y + 8, px + 24, H - 10, delay + 0.2, col);
+      addTele("vline", px - 36, e.y + 8, px - 36, H - 10, delay + 0.2, col);
+      addTele("vline", px + 36, e.y + 8, px + 36, H - 10, delay + 0.2, col);
       delay += 0.2;
+    } else if (atk === "meteor") {
+      e.mets = pickSpreadXs(3, 78, 30);
+      for (i = 0; i < e.mets.length; i++) addZone(e.mets[i], H - 42, 20, 18, delay + 0.18, col);
+      delay += 0.18;
+    } else if (atk === "decree" || atk === "decree2" || atk === "decree3") {
+      addZone(e.aimX, H - 40, 20, 20, delay + 0.14, col);
+      delay += 0.14;
     } else if (atk === "grid") {
       px = clamp(e.aimX, 44, W - 44);
       e.aimX = px;
@@ -2634,6 +2688,38 @@
     e.tele = { t: delay, atk: atk };
   }
 
+  // Bastion (r=13) plus Reactor (+1). Curtain gaps must clear that hull plus bullet
+  // radius plus a few pixels of steering room, otherwise wide ships cannot slip through.
+  var CURTAIN_SHIP_R = 14;
+  var CURTAIN_PAD = 6;
+  function curtainMinSpacing(bulletR) {
+    return 2 * (CURTAIN_SHIP_R + (bulletR || 2.8) + CURTAIN_PAD);
+  }
+  function curtainCount(maxN, bulletR) {
+    var minSp = curtainMinSpacing(bulletR);
+    var n = maxN < 2 ? 2 : maxN;
+    while (n > 3 && (W - 32) / (n - 1) < minSp) n -= 1;
+    return n;
+  }
+  function pickSpreadXs(n, minDist, pad) {
+    var xs = [], i, j, x, tries, ok;
+    pad = pad || 28;
+    minDist = minDist || 70;
+    for (i = 0; i < n; i++) {
+      ok = false;
+      for (tries = 0; tries < 28; tries++) {
+        x = pad + Math.random() * (W - pad * 2);
+        ok = true;
+        for (j = 0; j < xs.length; j++) {
+          if (Math.abs(xs[j] - x) < minDist) { ok = false; break; }
+        }
+        if (ok) break;
+      }
+      xs.push(ok ? x : pad + i * Math.max(minDist, (W - pad * 2) / Math.max(1, n - 1)));
+    }
+    xs.sort(function (a, b) { return a - b; });
+    return xs;
+  }
   function fireColumn(x, y0, n, spd, opt) {
     var i;
     x = clamp(x, 8, W - 8);
@@ -2641,11 +2727,18 @@
   }
   function fireRow(y, n, spd, skipA, skipB, opt) {
     var i, x;
+    if (n < 2) {
+      addEbul(W / 2, y, 0, spd, opt);
+      return;
+    }
     for (i = 0; i < n; i++) {
       if (i === skipA || i === skipB) continue;
-      x = 15 + i * ((W - 30) / (n - 1));
+      x = 16 + i * ((W - 32) / (n - 1));
       addEbul(x, y, 0, spd, opt);
     }
+  }
+  function fireCurtain(y, maxN, spd, opt) {
+    fireRow(y, curtainCount(maxN, (opt && opt.r) || 2.8), spd, -1, -1, opt);
   }
   function blinkTo(e) {
     var blinkTgt = targetPlayer(e.x, e.y);
@@ -2702,12 +2795,20 @@
       fuse = e.phaseIdx >= 1 ? 1.3 : 1.7;
       for (i = -1; i <= 1; i++) addEbul(e.x + i * 18, e.y + 12, i * 12, 28, { mine: true, fuse: fuse, r: 4.5, color: "#ffb060", glow: "#ff9a3d" });
     } else if (atk === "sweep") {
-      for (i = 0; i < 7; i++) addEbul(20 + i * 32, e.y + 16, 0, spd * 0.85, opt);
+      fireCurtain(e.y + 16, 5, spd * 0.85, opt);
     } else if (atk === "sweepgap") {
-      for (i = 0; i < 7; i += 2) addEbul(20 + i * 32, e.y + 16, 0, spd * 0.85, opt);
+      fireCurtain(e.y + 16, 4, spd * 0.85, opt);
       queueFollow(e, 0.42, "sweepodd");
     } else if (atk === "sweepodd") {
-      for (i = 1; i < 7; i += 2) addEbul(20 + i * 32, e.y + 16, 0, spd * 0.85, opt);
+      fireCurtain(e.y + 16, 4, spd * 0.85, opt);
+    } else if (atk === "riftburst") {
+      x0 = 36;
+      explode(x0, e.y + 6, col, false);
+      fanShot(x0, e.y + 8, 3, 0.62, spd, 18, opt);
+      x0 = W - 36;
+      explode(x0, e.y + 6, col, false);
+      fanShot(x0, e.y + 8, 3, 0.62, spd, 18, opt);
+      queueFollow(e, 0.38, "aimed");
     } else if (atk === "blink" || atk === "blink2") {
       blinkTo(e);
       aimedShot(e, 0.9, spd + 10, opt);
@@ -2727,10 +2828,10 @@
     } else if (atk === "beam3") {
       px = clamp(e.aimX, 20, W - 20);
       fireColumn(px, e.y + 14, 6, spd + 40, { r: 3, color: "#b8ffe0", glow: col });
-      fireColumn(clamp(px - 52, 12, W - 12), e.y + 14, 6, spd + 40, { r: 3, color: "#b8ffe0", glow: col });
-      fireColumn(clamp(px + 52, 12, W - 12), e.y + 14, 6, spd + 40, { r: 3, color: "#b8ffe0", glow: col });
+      fireColumn(clamp(px - 64, 12, W - 12), e.y + 14, 6, spd + 40, { r: 3, color: "#b8ffe0", glow: col });
+      fireColumn(clamp(px + 64, 12, W - 12), e.y + 14, 6, spd + 40, { r: 3, color: "#b8ffe0", glow: col });
     } else if (atk === "rain") {
-      for (i = 0; i < 6 + e.tier; i++) addEbul(18 + i * (W - 36) / (5 + e.tier), 58, rand(-10, 10), 90 + i * 6, opt);
+      fireCurtain(58, 5, 96, opt);
     } else if (atk === "summon") {
       summonEscorts(e, "grunt", 2, 70);
     } else if (atk === "summontank") {
@@ -2761,22 +2862,27 @@
       addEbul(e.x - 10, e.y + 8, -18, 80, { homing: true, homeT: 2.05, hsp: 153, hturn: 1.92, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
       addEbul(e.x + 10, e.y + 8, 18, 80, { homing: true, homeT: 2.05, hsp: 153, hturn: 1.92, r: 3.2, color: "#ffe0a0", glow: "#ffc14d" });
     } else if (atk === "shock") {
-      fireRow(e.y + 24, 9, 70, -1, -1, { r: 2.8, color: "#ffe08a", glow: col });
+      fireCurtain(e.y + 24, 5, 70, { r: 2.8, color: "#ffe08a", glow: col });
+    } else if (atk === "meteor") {
+      if (!e.mets || !e.mets.length) e.mets = pickSpreadXs(3, 78, 30);
+      for (i = 0; i < e.mets.length; i++) {
+        addEbul(e.mets[i], e.y + 18, 0, 58, { mine: true, fuse: 1.15, r: 5, pellets: 5, pelletSpd: 96, color: "#ffe08a", glow: col });
+      }
     } else if (atk === "shockgap") {
-      fireRow(e.y + 24, 9, 78, e.gapIdx, e.gapIdx + 1, { r: 2.8, color: "#ffe08a", glow: col });
-      queueFollow(e, 0.55, "shockgap2");
+      fireCurtain(e.y + 24, 5, 78, { r: 2.8, color: "#ffe08a", glow: col });
     } else if (atk === "shockgap2") {
-      k = (e.gapIdx + 4) % 8;
-      fireRow(e.y + 24, 9, 78, k, k + 1, { r: 2.8, color: "#ffe08a", glow: col });
+      fireCurtain(e.y + 24, 5, 78, { r: 2.8, color: "#ffe08a", glow: col });
     } else if (atk === "artillery") {
       for (i = 0; i < 4; i++) addEbul(40 + i * 53, e.y + 20, 0, 60, { mine: true, fuse: 0.9 + i * 0.25, r: 4.5, pellets: 6, pelletSpd: 105, color: "#ffe08a", glow: col });
     } else if (atk === "tick" || atk === "ticksplit") {
       fanShot(e.x, e.y + 10, atk === "ticksplit" ? 3 : 5, 1.4, 150, 30, { color: col, glow: col, r: 3, pauseAt: 170, pauseT: 0.7, resumeSpd: spd + 30, splitOnResume: atk === "ticksplit" });
     } else if (atk === "pendulum" || atk === "pendulum2") {
-      for (i = 0; i < 6; i++) addEbul(30 + i * 36, e.y + 20, 0, 85, { color: col, glow: col, sway: 40, swayF: 3, swayPh: 0 });
+      fireRow(e.y + 20, curtainCount(4, 2.8), 85, -1, -1, { color: col, glow: col, sway: 28, swayF: 2.4, swayPh: 0 });
       if (atk === "pendulum2") queueFollow(e, 0.35, "pendulumB");
     } else if (atk === "pendulumB") {
-      for (i = 0; i < 6; i++) addEbul(30 + i * 36, e.y + 20, 0, 85, { color: col, glow: col, sway: 40, swayF: 3, swayPh: Math.PI });
+      fireRow(e.y + 20, curtainCount(4, 2.8), 85, -1, -1, { color: col, glow: col, sway: 28, swayF: 2.4, swayPh: Math.PI });
+    } else if (atk === "clockhands") {
+      e.stream = { n: 14, dt: 0.1, acc: 0, kind: "hands", ang: rand(-0.55, 0.15), dAng: (Math.random() < 0.5 ? 1 : -1) * 0.16, spd: spd + 18 };
     } else if (atk === "rewind") {
       explode(e.x, e.y, col, false);
       e.x = W / 2; e.y = 72;
@@ -2794,10 +2900,20 @@
       aimedShot(e, 0.7, spd + 10, opt);
       aimedShot({ x: e.x - 12, y: e.y }, 0.7, spd, opt);
     } else if (atk === "surge" || atk === "surge2") {
-      for (i = 0; i < 9; i++) addEbul(16 + i * 26, e.y + 24, 0, 90, { color: col, glow: col, sway: 14, swayF: 4, swayPh: i * 0.7 });
+      fireRow(e.y + 24, curtainCount(5, 2.8), 90, -1, -1, { color: col, glow: col, sway: 18, swayF: 3.2, swayPh: 0 });
       if (atk === "surge2") queueFollow(e, 0.32, "surgeB");
     } else if (atk === "surgeB") {
-      for (i = 0; i < 9; i++) addEbul(16 + i * 26, e.y + 24, 0, 90, { color: col, glow: col, sway: 14, swayF: 4, swayPh: i * 0.7 + Math.PI });
+      fireRow(e.y + 24, curtainCount(5, 2.8), 90, -1, -1, { color: col, glow: col, sway: 18, swayF: 3.2, swayPh: Math.PI });
+    } else if (atk === "riptide") {
+      for (i = 0; i < 4; i++) {
+        addEbul(e.sweepDir > 0 ? 8 : W - 8, 52 + i * 36, (e.sweepDir > 0 ? 1 : -1) * (78 + i * 8), 62 + i * 10, { color: col, glow: col, sway: 16, swayF: 2.6, swayPh: i * 0.9 });
+      }
+      queueFollow(e, 0.42, "riptideB");
+    } else if (atk === "riptideB") {
+      k = e.sweepDir > 0 ? -1 : 1;
+      for (i = 0; i < 4; i++) {
+        addEbul(k > 0 ? 8 : W - 8, 64 + i * 36, k * (78 + i * 8), 62 + i * 10, { color: col, glow: col, sway: 16, swayF: 2.6, swayPh: i * 0.9 + 1.2 });
+      }
     } else if (atk === "depth") {
       for (i = -1; i <= 1; i++) addEbul(e.x + i * 34, e.y + 14, i * 6, 30, { mine: true, fuse: 2.2, pellets: 8, pelletSpd: 120, r: 5, color: "#a0c8ff", glow: col });
     } else if (atk === "whip") {
@@ -2817,13 +2933,18 @@
       for (i = 0; i < 8; i++) addEbul(rand(14, W - 14), 30 + rand(-6, 6), rand(-8, 8), 45 + rand(0, 25), { color: "#ffb060", glow: col, r: 2.8, life: 6, splitAt: atk === "emberssplit" ? 190 : 0 });
     } else if (atk === "lance2") {
       px = e.aimX;
-      fireColumn(px - 24, e.y + 14, 7, spd + 40, { r: 3, color: "#ffd0a0", glow: col });
-      fireColumn(px + 24, e.y + 14, 7, spd + 40, { r: 3, color: "#ffd0a0", glow: col });
+      fireColumn(px - 36, e.y + 14, 7, spd + 40, { r: 3, color: "#ffd0a0", glow: col });
+      fireColumn(px + 36, e.y + 14, 7, spd + 40, { r: 3, color: "#ffd0a0", glow: col });
     } else if (atk === "novaring") {
       ringShot(e.x, e.y, 12, 90, opt);
       ringShot(e.x, e.y, 12, 140, { color: "#ffd0a0", glow: col, r: 2.6 });
+    } else if (atk === "firewheel") {
+      ringShot(e.x, e.y, 7, 96, opt);
+      queueFollow(e, 0.3, "firewheel2");
+    } else if (atk === "firewheel2") {
+      ringShot(e.x, e.y, 7, 128, { color: "#ffd0a0", glow: col, r: 2.6 });
     } else if (atk === "lancesweep") {
-      e.stream = { n: 7, dt: 0.13, acc: 0, kind: "col", x: e.sweepDir > 0 ? 24 : W - 24, dx: 32 * e.sweepDir, spd: spd + 40, count: 5 };
+      e.stream = { n: 5, dt: 0.16, acc: 0, kind: "col", x: e.sweepDir > 0 ? 24 : W - 24, dx: 48 * e.sweepDir, spd: spd + 40, count: 5 };
     } else if (atk === "well") {
       for (i = 0; i < 4; i++) {
         a = -0.9 + i * 0.6;
@@ -2856,7 +2977,7 @@
       queueFollow(e, 0.6, "venom");
     } else if (atk === "gaze" || atk === "gaze2") {
       x0 = e.sweepDir > 0 ? 18 : W - 18;
-      e.stream = { n: atk === "gaze2" ? 4 : 8, dt: 0.12, acc: 0, kind: atk === "gaze2" ? "col2" : "col", x: x0, dx: 30 * e.sweepDir, spd: spd + 30, count: 4 };
+      e.stream = { n: atk === "gaze2" ? 4 : 6, dt: 0.14, acc: 0, kind: atk === "gaze2" ? "col2" : "col", x: x0, dx: 44 * e.sweepDir, spd: spd + 30, count: 4 };
     } else if (atk === "coil") {
       e.state = "coil";
       e.t = 0; e.dur = 1.8;
@@ -2868,19 +2989,32 @@
       aimedShot({ x: e.x + 14, y: e.y }, 0.8, spd + 30, opt);
     } else if (atk === "grid") {
       px = e.aimX;
-      fireColumn(px - 40, e.y + 14, 6, spd + 30, { r: 3, color: "#fff0c0", glow: col });
-      fireColumn(px + 40, e.y + 14, 6, spd + 30, { r: 3, color: "#fff0c0", glow: col });
-      fireRow(e.y + 60, 8, 70, -1, -1, { r: 2.8, color: "#fff0c0", glow: col });
+      fireColumn(px - 48, e.y + 14, 6, spd + 30, { r: 3, color: "#fff0c0", glow: col });
+      fireColumn(px + 48, e.y + 14, 6, spd + 30, { r: 3, color: "#fff0c0", glow: col });
+      fireCurtain(e.y + 60, 5, 70, { r: 2.8, color: "#fff0c0", glow: col });
+    } else if (atk === "decree") {
+      armLaneBomb(e.aimX, H - 40, col);
+      queueFollow(e, 0.4, "decree2");
+    } else if (atk === "decree2") {
+      px = e.aimX >= W / 2 ? clamp(e.aimX - 86, 28, W - 28) : clamp(e.aimX + 86, 28, W - 28);
+      e.aimX = px;
+      armLaneBomb(px, H - 40, col);
+      queueFollow(e, 0.4, "decree3");
+    } else if (atk === "decree3") {
+      px = e.aimX >= W / 2 ? clamp(e.aimX - 86, 28, W - 28) : clamp(e.aimX + 86, 28, W - 28);
+      armLaneBomb(px, H - 40, col);
     } else if (atk === "escorts") {
       summonKami(e, 2 + (e.tier > 0 ? 1 : 0));
     } else if (atk === "corering") {
       ringShot(e.x, e.y, 14, 105, opt);
       addEbul(e.x - 10, e.y + 8, -18, 80, { homing: true, homeT: 2.15, hsp: 102, hturn: 1.28, r: 3.2, color: "#ffe0a0", glow: col });
       addEbul(e.x + 10, e.y + 8, 18, 80, { homing: true, homeT: 2.15, hsp: 102, hturn: 1.28, r: 3.2, color: "#ffe0a0", glow: col });
+    } else if (atk === "crownfire") {
+      e.stream = { n: 10, dt: 0.11, acc: 0, kind: "crown", ang: Math.random() * 6.28, dAng: (Math.random() < 0.5 ? 1 : -1) * 0.48, spd: spd };
     } else if (atk === "orbital") {
-      for (i = 0; i < 5; i++) {
-        if (i === e.gapIdx) continue;
-        fireColumn(24 + i * 48, e.y + 14, 6, spd + 50, { r: 3, color: "#fff0c0", glow: col });
+      for (i = 0; i < 4; i++) {
+        if (i === (e.gapIdx || 0) % 4) continue;
+        fireColumn(32 + i * 58, e.y + 14, 6, spd + 50, { r: 3, color: "#fff0c0", glow: col });
       }
     } else if (atk === "frenzy") {
       fanShot(e.x, e.y + 10, 9, 1.5, spd + 10, 30, opt);
@@ -2890,7 +3024,7 @@
   }
 
   function fireStream(e, s) {
-    var i, col = enemyColor(e.type), x;
+    var i, col = enemyColor(e.type), x, a, vx, vy;
     if (s.kind === "spiral") {
       addEbul(e.x, e.y, Math.cos(s.ang) * s.spd, Math.sin(s.ang) * s.spd, { color: col, glow: col, silent: true });
       addEbul(e.x, e.y, Math.cos(s.ang + Math.PI) * s.spd, Math.sin(s.ang + Math.PI) * s.spd, { color: col, glow: col, silent: true });
@@ -2902,7 +3036,69 @@
         for (i = 0; i < s.count; i++) addEbul(clamp(x, 8, W - 8), e.y + 14 + i * 20, 0, s.spd, { r: 3, color: "#f0ffd0", glow: col, silent: true });
       }
       s.x += s.dx;
+    } else if (s.kind === "hands") {
+      addEbul(e.x, e.y + 8, Math.sin(s.ang) * s.spd, Math.cos(s.ang) * s.spd, { color: col, glow: col, silent: true, r: 3 });
+      addEbul(e.x, e.y + 8, Math.sin(s.ang + 1.15) * s.spd, Math.cos(s.ang + 1.15) * s.spd, { color: col, glow: col, silent: true, r: 3 });
+      s.ang += s.dAng;
+    } else if (s.kind === "crown") {
+      for (i = 0; i < 4; i++) {
+        a = s.ang + i * Math.PI / 2;
+        vx = Math.cos(a) * s.spd * 0.42;
+        vy = Math.sin(a) * s.spd * 0.42 + s.spd * 0.58;
+        addEbul(e.x + Math.cos(a) * 14, e.y + Math.sin(a) * 10, vx, vy, { color: col, glow: col, silent: i > 0, r: 2.8 });
+      }
+      s.ang += s.dAng;
+    } else {
+      s.n = 0;
     }
+  }
+
+  function updateBossFormMove(e, dt, d) {
+    var spd = (d.spd + e.tier * 8) * (1 + e.phaseIdx * 0.15) * (e.moveSpd || 1);
+    var amp = d.amp * (1 + e.phaseIdx * 0.2) * (e.moveAmp || 1);
+    var freq = d.freq * (e.moveFreq || 1);
+    var style = e.moveStyle || "patrol";
+    var t = time + (e.phase || 0);
+    var fy, hx, ang;
+    if (style === "sine") {
+      e.x = W / 2 + Math.sin(t * freq * 0.55) * (68 + amp * 2.4);
+      fy = 68 + Math.sin(t * freq * 1.35) * (amp + 8);
+    } else if (style === "figure8") {
+      ang = t * freq * 0.68;
+      e.x = W / 2 + Math.sin(ang) * 70;
+      fy = 72 + Math.sin(ang * 2) * (16 + amp);
+    } else if (style === "hover") {
+      hx = e.homeX || W / 2;
+      e.x += ((hx + Math.sin(t * 0.85) * 26) - e.x) * Math.min(1, 1.8 * dt);
+      fy = 66 + Math.sin(t * freq) * (amp + 6);
+      e.hoverT = (e.hoverT || 0) - dt;
+      if (e.hoverT <= 0) {
+        e.homeX = 50 + Math.random() * (W - 100);
+        e.hoverT = 1.3 + Math.random() * 1.8;
+      }
+    } else if (style === "zigzag") {
+      e.x += e.patrolDir * spd * 1.32 * dt;
+      if (e.x < 34) { e.x = 34; e.patrolDir = 1; }
+      if (e.x > W - 34) { e.x = W - 34; e.patrolDir = -1; }
+      fy = 60 + Math.abs(Math.sin(t * freq * 2.1)) * (amp + 16);
+    } else if (style === "orbit") {
+      ang = t * freq * 0.82;
+      e.x = W / 2 + Math.cos(ang) * (46 + amp);
+      fy = 76 + Math.sin(ang) * (14 + amp * 0.55);
+    } else if (style === "drift") {
+      e.x += e.patrolDir * spd * 0.58 * dt;
+      if (e.x < 40) e.patrolDir = 1;
+      if (e.x > W - 40) e.patrolDir = -1;
+      if (Math.random() < 0.45 * dt) e.patrolDir *= -1;
+      fy = 70 + Math.sin(t * freq * 0.55) * amp + Math.sin(t * 2.05) * 5;
+    } else {
+      e.x += e.patrolDir * spd * dt;
+      if (e.x < 34) { e.x = 34; e.patrolDir = 1; }
+      if (e.x > W - 34) { e.x = W - 34; e.patrolDir = -1; }
+      fy = 70 + Math.sin(t * freq) * amp;
+    }
+    e.x = clamp(e.x, 34, W - 34);
+    e.y += (fy - e.y) * Math.min(1, 4 * dt);
   }
 
   function updateBoss(e, dt) {
@@ -3011,13 +3207,7 @@
       }
       return;
     }
-    spd = (d.spd + e.tier * 8) * (1 + e.phaseIdx * 0.15);
-    amp = d.amp * (1 + e.phaseIdx * 0.2);
-    e.x += e.patrolDir * spd * dt;
-    if (e.x < 34) { e.x = 34; e.patrolDir = 1; }
-    if (e.x > W - 34) { e.x = W - 34; e.patrolDir = -1; }
-    fy = 70 + Math.sin(time * d.freq + e.phase) * amp;
-    e.y += (fy - e.y) * Math.min(1, 4 * dt);
+    updateBossFormMove(e, dt, d);
     if (e.tele) {
       if (e.type === "colossus" && (e.tele.atk === "charge" || e.tele.atk === "charge2" || e.tele.atk === "homing")) {
         var liveAim = targetPlayer(e.x, e.y);
@@ -6004,7 +6194,7 @@
       getBoss: function () {
         var b = currentBoss();
         if (!b) return null;
-        return { type: b.type, tier: b.tier, hp: b.hp, maxHp: b.maxHp, state: b.state, atk: b.atk, phaseIdx: b.phaseIdx, x: Math.round(b.x), y: Math.round(b.y), tele: !!b.tele, kit: bossKit(b), healFlash: b.healFlash || 0, leech: hydraLeechTotal() };
+        return { type: b.type, tier: b.tier, hp: b.hp, maxHp: b.maxHp, state: b.state, atk: b.atk, phaseIdx: b.phaseIdx, x: Math.round(b.x), y: Math.round(b.y), tele: !!b.tele, kit: bossKit(b), healFlash: b.healFlash || 0, leech: hydraLeechTotal(), moveStyle: b.moveStyle || "patrol", atkQueue: (b.atkQueue || []).slice(), patrolDir: b.patrolDir };
       },
       damageBoss: function (d) { var b = currentBoss(); if (b) killEnemy(b, false, d || 1); return b ? b.hp : 0; },
       bossAtk: function (atk) { var b = currentBoss(); if (b) fireBossAttack(b, atk); return b ? b.atk : ""; },
