@@ -353,7 +353,7 @@
     if (type === "mortar") return "#ff6b3d";
     if (type === "hex") return "#c44dff";
     if (type === "harrier") return "#e8ff6b";
-    if (type === "bulwark") return "#9aa8c8";
+    if (type === "bulwark") return "#7affc4";
     if (type === "archon") return "#ffd6a0";
     var d = bossDef(type);
     return d ? d.color : "#ffffff";
@@ -1847,15 +1847,33 @@
     }
     banner = { text: "JAMMED", life: 0.7 };
   }
-  function auraDamp(e, dmg) {
-    var i, b, r2 = 40 * 40;
-    if (!e || e.type === "archon" || e.type === "bulwark") return dmg;
+  // Bulwarks pulse a random support effect across their nearby allies. A heal restores
+  // one HP (without exceeding max HP); a shield adds one hit of protection.
+  function bulwarkSupport(e) {
+    var heal = Math.random() < 0.5;
+    var i, ally, affected = 0, r2 = 72 * 72;
+    var color = heal ? "#7affc4" : "#9ab8ff";
     for (i = 0; i < enemies.length; i++) {
-      b = enemies[i];
-      if (!b.alive || b.type !== "bulwark" || b === e) continue;
-      if (dist2(e.x, e.y, b.x, b.y) < r2) return dmg * 0.5;
+      ally = enemies[i];
+      if (!ally.alive || ally === e || dist2(e.x, e.y, ally.x, ally.y) >= r2) continue;
+      if (heal && ally.hp < ally.maxHp) {
+        ally.hp = Math.min(ally.maxHp, ally.hp + 1);
+        ally.healFlash = 0.35;
+      } else if (!heal && ally.shieldHp < 1) {
+        ally.shieldHp = 1;
+      } else {
+        continue;
+      }
+      affected += 1;
+      teles.push({ kind: "line", x: e.x, y: e.y, x2: ally.x, y2: ally.y, t: 0.32, max: 0.32, color: color });
+      rings.push({ x: ally.x, y: ally.y, r: ally.r + 2, vr: 56, life: 0.32, color: color });
     }
-    return dmg;
+    if (affected) {
+      teles.push({ kind: "ring", x: e.x, y: e.y, x2: 0, y2: 0, t: 0.38, max: 0.38, color: color });
+      rings.push({ x: e.x, y: e.y, r: 6, vr: 175, life: 0.38, color: color });
+      if (heal) sfxPickup();
+      else sfxArmor();
+    }
   }
   function spawnHarrierDarts(e) {
     var tgt, tx, i, k, side;
@@ -2004,7 +2022,6 @@
       sfxArmor();
       return;
     }
-    dmg = auraDamp(e, dmg);
     e.hp -= dmg;
     e.hitFlash = 0.08;
     if (e.hp > 0) {
@@ -2291,7 +2308,7 @@
       addTele("glow", e.x, e.y, 0, 0, 0.4, "#c44dff");
       e.shotCd = 4.35;
     } else if (e.type === "bulwark") {
-      aimedShot(e, 0.7, 130 + pressureWave() * 5, { color: "#c8d0e8", glow: "#9aa8c8" });
+      bulwarkSupport(e);
       e.shotCd = 3.87;
     }
   }
@@ -5277,11 +5294,9 @@
       context.moveTo(-10, 2); context.lineTo(-7, -8); context.lineTo(7, -8); context.lineTo(10, 2);
       context.lineTo(6, 8); context.lineTo(-6, 8);
       context.closePath(); context.fill();
-      context.strokeStyle = "#d8e0f0";
-      context.lineWidth = 1.6;
-      context.globalAlpha = 0.55 + 0.25 * Math.sin(time * 6 + e.phase);
-      context.beginPath(); context.arc(0, 0, 16 + Math.sin(time * 5) * 1.5, 0, Math.PI * 2); context.stroke();
-      context.globalAlpha = 1;
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#103328";
+      context.fillRect(-1.5, -5, 3, 10);
+      context.fillRect(-5, -1.5, 10, 3);
     } else if (e.type === "archon") {
       context.beginPath();
       context.moveTo(0, 12); context.lineTo(12, -2); context.lineTo(7, -10); context.lineTo(0, -6);
@@ -5289,6 +5304,20 @@
       context.closePath(); context.fill();
       context.fillStyle = e.hitFlash > 0 ? "#fff" : (e.phaseIdx >= 1 ? "#ff5c7a" : "#ff8a5c");
       context.beginPath(); context.arc(0, -1, 3.2, 0, Math.PI * 2); context.fill();
+    }
+    if (!e.isBoss && e.type !== "shield" && e.shieldHp > 0) {
+      context.globalAlpha = 0.55 + 0.2 * Math.sin(time * 8 + e.phase);
+      context.strokeStyle = "#c8d6ff";
+      context.lineWidth = 2;
+      context.beginPath(); context.arc(0, 0, e.r + 4, 0, Math.PI * 2); context.stroke();
+      context.globalAlpha = 1;
+    }
+    if (!e.isBoss && (e.healFlash || 0) > 0) {
+      context.globalAlpha = 0.35 + 0.3 * Math.sin(time * 14);
+      context.strokeStyle = "#7affc4";
+      context.lineWidth = 2;
+      context.beginPath(); context.arc(0, 0, e.r + 7, 0, Math.PI * 2); context.stroke();
+      context.globalAlpha = 1;
     }
     noGlow(context);
     if (e.leech) {
