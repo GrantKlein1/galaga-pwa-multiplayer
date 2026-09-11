@@ -522,7 +522,8 @@
   }
 
   function isMiniWave(n) {
-    return n > 10 && n % BOSS_EVERY === 3 && !isBossWave(n);
+    // Archons punctuate a run, so only promote every other pre-boss wave.
+    return n > 10 && n % (BOSS_EVERY * 2) === 3 && !isBossWave(n);
   }
   function staysInForm(type) {
     return type === "sniper" || type === "shield" || type === "mortar" || type === "hex" || type === "bulwark" || type === "archon";
@@ -1557,7 +1558,7 @@
       isBoss: !!extra.isBoss, tier: extra.tier || 0,
       atkCd: extra.isBoss ? 2.06 : (type === "archon" ? 1.45 : 0), atk: "", lastAtk: "", tele: null,
       phaseIdx: 0, followups: [], stream: null, afterReturn: "", combo: false, aimX: 0, aimY: 0,
-      r: enemyR(type), patrolDir: 1,
+      r: enemyR(type), patrolDir: 1, archonTurn: 0, archonX: 0, archonY: 0,
       leech: !!extra.leech, leechHp: 0, leechAcc: 0, healFlash: 0
     };
   }
@@ -2323,15 +2324,40 @@
     }
   }
   function startArchonCharge(e) {
-    var tgt = targetPlayer(e.x, e.y);
-    e.aimX = tgt ? tgt.x : W / 2;
+    var tgt = targetPlayer(e.x, e.y), margin = e.r + 18;
+    e.aimX = clamp((tgt ? tgt.x : W / 2) + rand(-34, 34), margin, W - margin);
     e.state = "charge";
     e.t = 0;
-    e.dur = 0.9;
+    e.dur = rand(0.72, 1.02);
     e.sx = e.x;
     e.sy = e.y;
     e.ex = e.aimX;
     e.ey = H - 50;
+    e.cx = clamp(e.x + (e.ex - e.x) * 0.5 + rand(-74, 74), margin, W - margin);
+    e.cy = e.y + rand(48, 108);
+  }
+  function steerArchon(e, fx, fy, dt) {
+    var margin = e.r + 18, minX = margin, maxX = W - margin;
+    e.archonTurn -= dt;
+    if (e.archonTurn <= 0) {
+      e.archonTurn = rand(0.18, 0.48);
+      e.archonX = clamp(fx + rand(-46, 46), minX, maxX);
+      e.archonY = clamp(fy + rand(-24, 28), 38, H * 0.52);
+    }
+    e.x += (e.archonX - e.x) * Math.min(1, 6 * dt);
+    e.y += (e.archonY - e.y) * Math.min(1, 6 * dt);
+    e.x = clamp(e.x, minX, maxX);
+    e.y = clamp(e.y, 38, H - margin);
+  }
+  function startArchonReturn(e) {
+    var margin = e.r + 18;
+    e.state = "archon-return";
+    e.t = 0;
+    e.dur = rand(0.56, 0.82);
+    e.sx = e.x;
+    e.sy = e.y;
+    e.cx = clamp(e.x + rand(-64, 64), margin, W - margin);
+    e.cy = Math.max(42, e.y - rand(58, 118));
   }
   function updateArchon(e, dt) {
     var enraged, tgt, count, spread;
@@ -4692,7 +4718,10 @@
           e.x = fx;
           e.y = fy;
           if (enterT <= 0) {
-            if (e.type === "archon") updateArchon(e, dt);
+            if (e.type === "archon") {
+              steerArchon(e, fx, fy, dt);
+              updateArchon(e, dt);
+            }
             else if (e.type === "mortar" || e.type === "hex" || e.type === "bulwark") updateEliteForm(e, dt);
             else if (e.type === "sniper") {
               e.shotCd -= dt;
@@ -4730,12 +4759,18 @@
           e.x = lerp(e.sx, fx, t);
           e.y = lerp(e.sy, fy, t);
           if (e.t >= 1) { e.state = "form"; e.x = fx; e.y = fy; }
+        } else if (e.state === "archon-return") {
+          e.t += dt / e.dur;
+          t = e.t > 1 ? 1 : e.t;
+          e.x = clamp(bezier(t, e.sx, e.cx, fx), e.r + 18, W - e.r - 18);
+          e.y = bezier(t, e.sy, e.cy, fy);
+          if (e.t >= 1) { e.state = "form"; e.x = fx; e.y = fy; }
         } else if (e.state === "charge") {
           e.t += dt / e.dur;
           t = e.t > 1 ? 1 : e.t;
-          e.x = lerp(e.sx, e.ex, t);
+          e.x = clamp(bezier(t, e.sx, e.cx, e.ex), e.r + 18, W - e.r - 18);
           e.y = lerp(e.sy, e.ey, t);
-          if (e.t >= 1) { e.state = "return"; e.t = 0; e.dur = 0.8; e.sx = e.x; e.sy = -18; }
+          if (e.t >= 1) startArchonReturn(e);
         }
       }
 
