@@ -727,6 +727,127 @@ html.is-pwa #touchpad.hidden,
   background: #b8ffff;
   box-shadow: 0 0 16px rgba(126, 249, 255, 0.45);
 }
+.pad-ability {
+  flex: 1.1;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #ffe08a;
+  border-color: #7a6a2a;
+}
+.pad-ability:active, .pad-ability.held {
+  background: #3a2a10;
+  color: #ffe08a;
+}
+.pad-ability { display: none; }
+#app.is-pvp-insane #pad-ability:not(.hidden) {
+  display: flex;
+}
+
+#app.is-pvp #pwr-row { display: none; }
+
+.pvp-hint {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  right: auto;
+  bottom: auto;
+  max-width: 46%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  pointer-events: none;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(232, 246, 255, 0.72);
+  text-shadow: 0 1px 4px #050510;
+  z-index: 3;
+  text-align: left;
+}
+.pvp-hint.hidden { display: none; }
+
+.pvp-wager-lab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #e8f6ff;
+  width: 100%;
+}
+.pvp-wager-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pvp-bid-row {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+.pvp-bid-in {
+  flex: 1;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffd23d;
+  background: #101028;
+  border: 1px solid #2a3a66;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 44px;
+  outline: none;
+}
+.pvp-bid-in:focus { border-color: #ffd23d; }
+.pvp-pick { width: 100%; }
+.pvp-cards {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 28vh;
+  overflow-y: auto;
+}
+.pvp-boss-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-height: 32vh;
+}
+.pvp-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  background: #101028;
+  border: 1px solid #2a3a66;
+  border-radius: 6px;
+  padding: 7px 8px;
+  color: #e8f6ff;
+  cursor: pointer;
+  width: 100%;
+}
+.pvp-card:hover { border-color: #7ef9ff; }
+.pvp-card.picked { border-color: #7ef9ff; background: rgba(126, 249, 255, 0.08); }
+.pvp-card-name { font-size: 11px; font-weight: 700; }
+.pvp-card-desc { font-size: 8px; opacity: 0.65; line-height: 1.35; }
+.pvp-tutorial {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+.pvp-tutorial-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #7ef9ff;
+}
+.pvp-tutorial-line {
+  font-size: 11px;
+  color: #e8f6ff;
+}
 
 @media (min-width: 520px) {
   #touchpad { height: 96px; }

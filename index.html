@@ -23,7 +23,7 @@
       <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
       <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
       <div class="stat" id="stat-lives"><div class="label" id="lives-label">Lives</div><div class="value" id="lives">3</div></div>
-      <div class="stat"><div class="label">Wave</div><div class="value" id="wave">1</div></div>
+      <div class="stat" id="stat-wave"><div class="label" id="wave-label">Wave</div><div class="value" id="wave">1</div></div>
       <div class="stat"><div class="label">Coins</div><div class="value" id="hud-coins">0</div></div>
     </div>
     <div id="hud-actions">
@@ -37,10 +37,15 @@
   </div>
   <div id="board-wrap">
     <canvas id="board" tabindex="0"></canvas>
+    <div id="pvp-hint" class="pvp-hint hidden" aria-hidden="true">
+      <div id="pvp-hint-fire">FIRE — primary</div>
+      <div id="pvp-hint-ability">E / ABILITY — special</div>
+    </div>
   </div>
   <div id="touchpad" aria-label="Game controls">
     <button type="button" class="pad-btn pad-move" id="pad-left" data-dir="left" aria-label="Move left">&#9664;</button>
     <button type="button" class="pad-btn pad-fire" id="pad-fire" data-dir="fire" aria-label="Fire">FIRE</button>
+    <button type="button" class="pad-btn pad-ability hidden" id="pad-ability" data-dir="ability" aria-label="Ability">ABILITY</button>
     <button type="button" class="pad-btn pad-move" id="pad-right" data-dir="right" aria-label="Move right">&#9654;</button>
   </div>
   <div id="hint">Drag / hold field to move &middot; tap / hold to fire &middot; or use the pad</div>
@@ -59,7 +64,10 @@
       <div id="start-wave-hint" class="start-wave-hint">Reach level 10 to skip early waves</div>
     </div>
     <button type="button" class="btn" id="btn-play">Play</button>
-    <button type="button" class="btn btn-ghost" id="btn-coop">Co-op</button>
+    <div class="btn-row-2">
+      <button type="button" class="btn btn-ghost" id="btn-coop">Co-op</button>
+      <button type="button" class="btn btn-ghost" id="btn-pvp">PvP</button>
+    </div>
     <div class="btn-row-2">
       <button type="button" class="btn btn-ghost" id="btn-hangar">Hangar</button>
       <button type="button" class="btn btn-ghost" id="btn-quests">Quests</button>
@@ -111,8 +119,8 @@
   </div>
   <div id="screen-lobby" class="screen hidden">
     <div id="lobby-pick" class="lobby-panel">
-      <div class="screen-title">Co-op</div>
-      <div class="help">Two ships, same waves. One of you hosts. The other joins with a code. Both devices need internet — they do not have to see each other on the LAN.</div>
+      <div class="screen-title" id="lobby-pick-title">Co-op</div>
+      <div class="help" id="lobby-pick-help">Two ships, same waves. One of you hosts. The other joins with a code. Both devices need internet — they do not have to see each other on the LAN.</div>
       <button type="button" class="btn" id="btn-lobby-host">Host a game</button>
       <button type="button" class="btn btn-ghost" id="btn-lobby-join">Join a game</button>
       <button type="button" class="btn btn-ghost" id="btn-lobby-back">Back</button>
@@ -144,6 +152,42 @@
         <div id="lobby-start-wave-opts" class="start-wave-opts"></div>
         <div id="lobby-start-wave-hint" class="start-wave-hint"></div>
       </div>
+      <div id="lobby-pvp-box" class="start-wave-box hidden">
+        <div class="start-wave-lab">Duel mode</div>
+        <div id="lobby-pvp-modes" class="start-wave-opts">
+          <button type="button" class="start-wave-opt active" data-pvp-mode="normal">Normal</button>
+          <button type="button" class="start-wave-opt" data-pvp-mode="draft">Draft</button>
+          <button type="button" class="start-wave-opt" data-pvp-mode="insane">Insane</button>
+        </div>
+        <div id="lobby-pvp-mode-hint" class="start-wave-hint">Bring your hangar loadout. Best of 3.</div>
+        <label class="pvp-wager-lab" id="lobby-pvp-wager-lab">
+          <input type="checkbox" id="lobby-pvp-wager"> Wager match
+        </label>
+        <div id="lobby-pvp-wager-box" class="pvp-wager-box hidden">
+          <label class="lobby-code-lab" for="lobby-pvp-bid">Your bid (coins)</label>
+          <div class="pvp-bid-row">
+            <input id="lobby-pvp-bid" class="pvp-bid-in" type="number" min="0" step="1" inputmode="numeric" value="0">
+            <button type="button" class="btn btn-mini" id="btn-pvp-bid-lock">Lock</button>
+          </div>
+          <div id="lobby-pvp-stake" class="lobby-status">Lock a bid. Stake is the lower of the two.</div>
+        </div>
+        <div id="lobby-pvp-draft" class="pvp-pick hidden">
+          <div class="start-wave-lab" id="lobby-pvp-draft-lab">Pick a ship</div>
+          <div id="lobby-pvp-draft-cards" class="pvp-cards"></div>
+        </div>
+        <div id="lobby-pvp-boss" class="pvp-pick hidden">
+          <div class="start-wave-lab">Pick a boss</div>
+          <div id="lobby-pvp-boss-cards" class="pvp-cards pvp-boss-cards"></div>
+        </div>
+        <div id="lobby-pvp-tutorial" class="pvp-tutorial hidden">
+          <div class="pvp-tutorial-title" id="pvp-tutorial-name">Boss</div>
+          <div class="pvp-tutorial-line" id="pvp-tutorial-fire"></div>
+          <div class="pvp-tutorial-line" id="pvp-tutorial-ability"></div>
+          <div class="help">FIRE is your primary. ABILITY (E / Shift, or the pad) is the special. Hints stay on screen in-fight.</div>
+          <button type="button" class="btn" id="btn-pvp-tutorial-ok">Got it</button>
+        </div>
+        <div id="lobby-pvp-status" class="lobby-status"></div>
+      </div>
       <div id="lobby-link" class="lobby-status hidden"></div>
       <button type="button" class="btn" id="btn-lobby-start">Start</button>
       <div id="lobby-wait-start" class="lobby-status hidden">Waiting for host to start…</div>
@@ -166,6 +210,7 @@
 </div>
 <script src="js/netcodec.js"></script>
 <script src="js/net.js"></script>
+<script src="js/pvp.js"></script>
 <script src="js/galaga.js"></script>
 <script src="js/touchpad.js"></script>
 <script>
