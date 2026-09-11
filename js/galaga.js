@@ -2316,7 +2316,7 @@
     }
   }
   function startArchonCharge(e) {
-    var tgt = targetPlayer(e.x, e.y), margin = e.r + 10;
+    var tgt = targetPlayer(e.x, e.y), margin = e.r + 18;
     e.aimX = clamp((tgt ? tgt.x : W / 2) + rand(-34, 34), margin, W - margin);
     e.state = "charge";
     e.t = 0;
@@ -2329,20 +2329,20 @@
     e.cy = e.y + rand(48, 108);
   }
   function steerArchon(e, fx, fy, dt) {
-    var margin = e.r + 10, minX = margin, maxX = W - margin;
+    var margin = e.r + 18, minX = margin, maxX = W - margin;
     e.archonTurn -= dt;
     if (e.archonTurn <= 0) {
       e.archonTurn = rand(0.18, 0.48);
       e.archonX = clamp(fx + rand(-46, 46), minX, maxX);
-      e.archonY = clamp(fy + rand(-24, 28), 30, H * 0.52);
+      e.archonY = clamp(fy + rand(-24, 28), 38, H * 0.52);
     }
     e.x += (e.archonX - e.x) * Math.min(1, 6 * dt);
     e.y += (e.archonY - e.y) * Math.min(1, 6 * dt);
     e.x = clamp(e.x, minX, maxX);
-    e.y = clamp(e.y, 30, H - margin);
+    e.y = clamp(e.y, 38, H - margin);
   }
   function startArchonReturn(e) {
-    var margin = e.r + 10;
+    var margin = e.r + 18;
     e.state = "archon-return";
     e.t = 0;
     e.dur = rand(0.56, 0.82);
@@ -4724,13 +4724,13 @@
         } else if (e.state === "archon-return") {
           e.t += dt / e.dur;
           t = e.t > 1 ? 1 : e.t;
-          e.x = clamp(bezier(t, e.sx, e.cx, fx), e.r + 10, W - e.r - 10);
+          e.x = clamp(bezier(t, e.sx, e.cx, fx), e.r + 18, W - e.r - 18);
           e.y = bezier(t, e.sy, e.cy, fy);
           if (e.t >= 1) { e.state = "form"; e.x = fx; e.y = fy; }
         } else if (e.state === "charge") {
           e.t += dt / e.dur;
           t = e.t > 1 ? 1 : e.t;
-          e.x = clamp(bezier(t, e.sx, e.cx, e.ex), e.r + 10, W - e.r - 10);
+          e.x = clamp(bezier(t, e.sx, e.cx, e.ex), e.r + 18, W - e.r - 18);
           e.y = lerp(e.sy, e.ey, t);
           if (e.t >= 1) startArchonReturn(e);
         }
