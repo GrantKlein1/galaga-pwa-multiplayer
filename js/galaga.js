@@ -1263,7 +1263,22 @@
   function pvpS() { return pvpApi() ? pvpApi().session() : null; }
   function isPvp() { return !!(pvpApi() && pvpApi().isPvp()); }
   function isPvpMatch() { return !!(pvpApi() && pvpApi().isMatch()); }
-  function pvpFlipped() { return isPvpMatch() && localSlot === 1; }
+  function isPvpRun() { return !!(isPvp() && started && !runFinished); }
+  function pvpFlipped() { return isPvpRun() && localSlot === 1; }
+  function pvpRoundBannerText(winnerSlot) {
+    var api = pvpApi();
+    if (api && api.roundBannerFor) return api.roundBannerFor(winnerSlot, localSlot);
+    return winnerSlot === localSlot ? "YOU WIN THE ROUND" : "ROUND LOST";
+  }
+  function localizePvpSnapBanner(bn) {
+    var api, text;
+    if (!bn || !bn.text) return bn;
+    api = pvpApi();
+    if (!api || !api.localizeHostRoundBanner) return bn;
+    text = api.localizeHostRoundBanner(bn.text, localSlot);
+    if (text === bn.text) return bn;
+    return { text: text, life: bn.life };
+  }
   function isCoop() {
     if (isPvp()) return false;
     return players.length > 1 || netRole === "host" || netRole === "client";
@@ -1508,7 +1523,7 @@
     if (waveEl) {
       var waveLab = el("wave-label");
       var sess = pvpS();
-      if (isPvpMatch() && sess) {
+      if (isPvpRun() && sess) {
         if (waveLab) waveLab.textContent = "Duel";
         waveEl.textContent = "R" + (sess.round || 1) + "  " + (sess.wins[0] || 0) + "–" + (sess.wins[1] || 0);
       } else {
@@ -1527,8 +1542,8 @@
     var sess = pvpS();
     var kit, localBoss;
     if (app) {
-      app.classList.toggle("is-pvp", isPvpMatch());
-      app.classList.toggle("is-pvp-insane", !!(isPvpMatch() && sess && sess.mode === "insane"));
+      app.classList.toggle("is-pvp", isPvpRun());
+      app.classList.toggle("is-pvp-insane", !!(isPvpRun() && sess && sess.mode === "insane"));
     }
     localBoss = player && player.boss;
     kit = localBoss && pvpApi() ? pvpApi().kitFor(localBoss) : null;
@@ -2193,6 +2208,7 @@
   }
 
   function spawnWave(n) {
+    if (isPvpRun()) return;
     wave = n;
     waveHold = 0;
     enemies = [];
@@ -2262,7 +2278,7 @@
     queueNet("nova", x, y, dmg, skipSlot);
     var i, e;
     if (!netReplay) {
-      if (isPvpMatch()) {
+      if (isPvpRun()) {
         for (i = 0; i < players.length; i++) {
           e = players[i];
           if (!e || !e.alive) continue;
@@ -2446,12 +2462,12 @@
     var api = pvpApi();
     var sess = pvpS();
     var winner, hold;
-    if (!api || !sess || !isPvpMatch() || sess.roundLock || sess.matchOver) return;
+    if (!api || !sess || !isPvpRun() || sess.roundLock || sess.matchOver) return;
     sess.roundLock = true;
     winner = loserSlot === 0 ? 1 : 0;
     api.addWin(winner);
     banner = {
-      text: winner === localSlot ? "YOU WIN THE ROUND" : "ROUND LOST",
+      text: pvpRoundBannerText(winner),
       life: 1.7
     };
     hold = api.ROUND_HOLD || 1.85;
@@ -2461,7 +2477,6 @@
     }
     if (api.matchWinner() >= 0) {
       sess.roundHold = Math.max(sess.roundHold, 1.1);
-      sess.matchOver = true;
     }
     updateHud();
   }
@@ -2555,7 +2570,7 @@
     sfxHit();
     who.lives -= 1;
     run.livesLost = (run.livesLost || 0) + 1;
-    if (!isPvpMatch()) ebul.length = 0;
+    if (!isPvpRun()) ebul.length = 0;
     else {
       var bi;
       for (bi = pbul.length - 1; bi >= 0; bi--) {
@@ -2569,14 +2584,14 @@
     updateHud();
     if (who.lives <= 0) {
       who.alive = false;
-      if (isPvpMatch()) {
+      if (isPvpRun()) {
         if (netRole !== "client") pvpRoundOver(who.slot);
         return;
       }
       if (!anyPlayerAlive()) endGame();
       return;
     }
-    if (isPvpMatch()) {
+    if (isPvpRun()) {
       applyPvpLayout(who);
       who.dash = null;
       who.rewind = null;
@@ -2836,7 +2851,7 @@
     b.homeT -= dt;
     bestE = null;
     bestD = 1e12;
-    if (isPvpMatch()) {
+    if (isPvpRun()) {
       for (j = 0; j < players.length; j++) {
         e = players[j];
         if (!e || !e.alive || e.slot === b.owner) continue;
@@ -4988,7 +5003,7 @@
       saveProfile();
     }
     var startN = opts.startWave != null ? clampStartWave(opts.startWave, MAX_LEVEL) : preferredStartWave();
-    if (pvpApi() && pvpApi().isMatch()) {
+    if (opts.pvp || (pvpApi() && pvpApi().isMatch())) {
       if (netRole === "host" && specs.length > 1) {
         netSend({
           t: "pvpstart",
@@ -5557,7 +5572,7 @@
     shake = sa ? lerp(sa.sh, sb.sh, t) : sb.sh;
     flash = sa ? lerp(sa.fl, sb.fl, t) : sb.fl;
     time = sa ? lerp(sa.tm, sb.tm, t) : sb.tm;
-    banner = sb.bn;
+    banner = localizePvpSnapBanner(sb.bn);
     enemies = interpKeyed(sa && sa.en, sb.en, t, 0, -1, false);
     pbul = interpKeyed(sa && sa.pb, sb.pb, t, extra, localSlot, true);
     ebul = interpKeyed(sa && sa.eb, sb.eb, t, extra, -1, false);
@@ -5747,7 +5762,7 @@
   function onPartnerGone() {
     if (netRole && started && !runFinished) {
       disconnectNote = "Partner disconnected";
-      if (isPvpMatch() && pvpApi()) {
+      if (isPvpRun() && pvpApi()) {
         pvpApi().setForfeit(localSlot === 0 ? 1 : 0);
       }
       netRole = null;
@@ -5871,8 +5886,7 @@
       sess.round = msg.round || sess.round;
       sess.roundLock = true;
       sess.roundHold = msg.hold || api.ROUND_HOLD;
-      if (api.matchWinner() >= 0) sess.matchOver = true;
-      banner = { text: msg.loser === localSlot ? "ROUND LOST" : "YOU WIN THE ROUND", life: 1.7 };
+      banner = { text: pvpRoundBannerText(msg.loser === 0 ? 1 : 0), life: 1.7 };
       updateHud();
     });
     n.on("pvpnext", function (msg) {
@@ -6136,7 +6150,7 @@
     var pi;
     for (pi = 0; pi < players.length; pi++) updateOneShip(players[pi], dt, !(pvpS() && pvpS().roundLock));
     if (player) pwrEl.textContent = powerHud();
-    if (isPvpMatch()) {
+    if (isPvpRun()) {
       var sess = pvpS();
       if (sess && sess.roundHold > 0) {
         sess.roundHold -= dt;
@@ -6151,9 +6165,9 @@
       syncPvpHudChrome();
     }
 
-    if (enterT > 0 && !isPvpMatch()) enterT -= dt;
+    if (enterT > 0 && !isPvpRun()) enterT -= dt;
 
-    if (!isPvpMatch() && !isBossWave(wave)) {
+    if (!isPvpRun() && !isBossWave(wave)) {
       form.ox += form.dir * form.speed * dt;
       if (form.ox + form.minOff < 16) { form.ox = 16 - form.minOff; form.dir = 1; }
       if (form.ox + form.maxOff > W - 16) { form.ox = W - 16 - form.maxOff; form.dir = -1; }
@@ -6290,7 +6304,7 @@
       if (pl) consumePickupAt(i, pl);
     }
 
-    if (!isPvpMatch() && aliveCount() === 0 && started && !gameOver) {
+    if (!isPvpRun() && aliveCount() === 0 && started && !gameOver) {
       if (hasRevivePickup()) {
         /* hold the next wave until the revive gem reaches the ships or is gone */
       } else if (waveHold > 0) {
@@ -6343,7 +6357,7 @@
           }
         }
       }
-      if (!consumed && isPvpMatch() && !(pvpS() && pvpS().roundLock)) {
+      if (!consumed && isPvpRun() && !(pvpS() && pvpS().roundLock)) {
         for (pi = 0; pi < players.length; pi++) {
           pl = players[pi];
           if (!pl || !pl.alive || pl.slot === b.owner) continue;
@@ -6442,7 +6456,7 @@
         pr = pl.r || PLAYER_R;
         if (dist2(b.x, b.y, pl.x, pl.y) < (pr + (b.r || 2) - 1.5) * (pr + (b.r || 2) - 1.5)) {
           ebul.splice(i, 1);
-          if (isPvpMatch()) pvpHurt(pl, 8);
+          if (isPvpRun()) pvpHurt(pl, 8);
           else playerDie(pl);
           hit = true;
           break;
@@ -8090,6 +8104,7 @@
       POWER_WEIGHTS: POWER_WEIGHTS,
       isPvp: isPvp,
       isPvpMatch: isPvpMatch,
+      isPvpRun: isPvpRun,
       pvpFlipped: pvpFlipped,
       pvpSession: function () { return pvpApi() ? pvpApi().snapshot() : null; },
       pvpPayout: function (winner) { return pvpApi() ? pvpApi().payout(winner) : null; },
@@ -8126,6 +8141,28 @@
           flipped: pvpFlipped(),
           roundHud: el("wave") && el("wave").textContent,
           waveLabel: el("wave-label") && el("wave-label").textContent
+        };
+      },
+      debugPvpKill: function (slot) {
+        var who = players[slot == null ? 1 : slot];
+        if (!who) return null;
+        who.invuln = 0;
+        who.shieldHp = 0;
+        who.hp = 0;
+        who.lives = 1;
+        playerDie(who);
+        return {
+          banner: banner ? banner.text : null,
+          wave: wave,
+          enemies: enemies.length,
+          match: !!(pvpApi() && pvpApi().isMatch()),
+          run: isPvpRun(),
+          flipped: pvpFlipped(),
+          hud: el("wave") && el("wave").textContent,
+          waveLabel: el("wave-label") && el("wave-label").textContent,
+          wins: pvpS() ? pvpS().wins.slice() : null,
+          matchOver: !!(pvpS() && pvpS().matchOver),
+          players: window.__galaga.getPlayers()
         };
       }
     };
