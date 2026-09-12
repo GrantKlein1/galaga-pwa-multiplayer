@@ -149,9 +149,9 @@
     { id: "inferno", name: "INFERNO", color: "#ff7a3d", dark: "#401008", r: 22, hp: 228, spd: 40, amp: 8, freq: 1.4, cd: 1.51, tele: 0.46, pts: 3000,
       base: ["flare", "embers", "lance2"], p2: ["emberssplit"], t1: ["novaring"], t2: ["firewheel"], p2Text: "INFERNO IGNITES", flavor: "Flares, ember rain, twin lances" },
     { id: "nullwarden", name: "NULLWARDEN", color: "#b07cff", dark: "#100418", r: 21, hp: 264, spd: 34, amp: 12, freq: 1.1, cd: 1.57, tele: 0.5, pts: 3250,
-      base: ["well", "gates", "collapse"], p2: ["voidguard"], t1: ["singularity"], t2: ["gates2"], p2Text: "THE VOID ANSWERS", flavor: "Gravity wells, void gates, collapses" },
+      base: ["well", "gates", "collapse"], p2: ["voidguard", "eclipse", "riftstep"], t1: ["singularity"], t2: ["gates2"], p2Text: "THE VOID ANSWERS", flavor: "Gravity wells, void gates, collapses" },
     { id: "basilisk", name: "BASILISK", color: "#c8ff3d", dark: "#203008", r: 22, hp: 300, spd: 46, amp: 10, freq: 1.5, cd: 1.51, tele: 0.48, pts: 3500,
-      base: ["venom", "gaze", "coil"], p2: ["venompool"], t1: ["gaze2"], t2: ["spitburst"], p2Text: "BASILISK SHEDS", flavor: "Arcing venom, sweeping gaze, coils" },
+      base: ["venom", "gaze", "coil"], p2: ["venompool", "constrict", "petrify"], t1: ["gaze2"], t2: ["spitburst"], p2Text: "BASILISK SHEDS", flavor: "Arcing venom, sweeping gaze, coils" },
     { id: "overlord", name: "OVERLORD", color: "#ffd23d", dark: "#3a1a0a", r: 26, hp: 384, spd: 32, amp: 6, freq: 1.0, cd: 1.64, tele: 0.5, pts: 4000,
       base: ["barrage", "decree", "escorts"], p2: ["core", "corering"], t1: ["crownfire"], t2: ["frenzy"], p2Thresh: 0.6, p2Text: "CORE EXPOSED", flavor: "Barrages, edicts, kami escorts" }
   ];
@@ -3755,8 +3755,9 @@
     } else if (atk === "ram" || atk === "ramfan" || atk === "charge" || atk === "charge2" || atk === "lunge" || atk === "lunge2") {
       addTele("flash", e.x, e.y, e.aimX, e.aimY, delay + 0.1, atk === "lunge" || atk === "lunge2" ? "#3dffb0" : "#ff4d4d");
       addTele("line", e.x, e.y, e.aimX, e.aimY, delay + 0.1, atk === "lunge" || atk === "lunge2" ? "#3dffb0" : "#ff4d4d");
-    } else if (atk === "blink" || atk === "blink2" || atk === "rewind") {
+    } else if (atk === "blink" || atk === "blink2" || atk === "rewind" || atk === "riftstep") {
       addTele("flash", e.x, e.y, 0, 0, Math.max(0.26, delay - 0.12), col);
+      if (atk === "riftstep") addTele("ring", e.x, e.y, 0, 0, Math.max(0.26, delay - 0.12), col);
       delay = Math.max(0.26, delay - 0.12);
     } else if (atk === "spiral" || atk === "ring" || atk === "ring2" || atk === "halo" || atk === "novaring" || atk === "whirlpool" || atk === "coil" || atk === "corering" || atk === "well" || atk === "clockhands" || atk === "crownfire") {
       addTele("ring", e.x, e.y, 0, 0, delay, col);
@@ -3809,6 +3810,15 @@
       addTele("vline", gx, e.y + 8, gx, H - 10, delay + 0.16, col);
       if (atk === "gaze2") addTele("vline", W - gx, e.y + 8, W - gx, H - 10, delay + 0.16, col);
       delay += 0.16;
+    } else if (atk === "constrict") {
+      addTele("vline", 22, e.y + 8, 22, H - 10, delay + 0.18, col);
+      addTele("vline", W - 22, e.y + 8, W - 22, H - 10, delay + 0.18, col);
+      delay += 0.18;
+    } else if (atk === "petrify") {
+      gx = clamp(e.aimX, 16, W - 16);
+      addTele("vline", gx, e.y + 8, gx, H - 10, delay + 0.2, "#ff4d9a");
+      addZone(gx, e.aimY, 26, 32, delay + 0.2, "#ff4d9a");
+      delay += 0.2;
     } else if (atk === "slowfield") {
       addZone(e.aimX, e.aimY - 10, 44, 34, delay + 0.16, col);
       delay += 0.16;
@@ -3817,7 +3827,7 @@
       addZone(W - 44, e.y + 34, 14, 10, delay + 0.16, col);
       if (atk === "gates2") addZone(W / 2, e.y + 34, 14, 10, delay + 0.16, col);
       delay += 0.16;
-    } else if (atk === "collapse") {
+    } else if (atk === "collapse" || atk === "eclipse") {
       addTele("ring", e.aimX, e.aimY, 0, 0, delay + 0.22, col);
       addTele("flash", e.aimX, e.aimY, 0, 0, delay + 0.22, col);
       delay += 0.22;
@@ -3895,9 +3905,23 @@
     if (pool) { o.pauseAt = ty + 2; o.pauseT = 2.2; }
     addEbul(e.x, e.y + 6, dx / T, dy / T - 0.5 * g * T, o);
   }
+  // Frozen ring around the lock-on that hangs, then every shard lunges inward.
+  function eclipseRing(e, rad, hang, spd, opt) {
+    var i, a, x0, y0, n = 8;
+    for (i = 0; i < n; i++) {
+      a = (i / n) * Math.PI * 2 + time;
+      x0 = clamp(e.aimX + Math.cos(a) * rad, 10, W - 10);
+      y0 = clamp(e.aimY + Math.sin(a) * (rad * 0.7), 28, H - 18);
+      addEbul(x0, y0 - 5, 0, 36, {
+        color: opt.color, glow: opt.glow, r: 3.2, life: 5.5,
+        pauseAt: y0, pauseT: hang, resumeSpd: spd
+      });
+    }
+    rings.push({ x: e.aimX, y: e.aimY, r: 6, vr: rad * 3.4, life: 0.48, color: opt.glow || opt.color });
+  }
 
   function fireBossAttack(e, atk) {
-    var i, spd, opt, px, x0, base, fuse, k, a;
+    var i, spd, opt, px, x0, base, fuse, k, a, ox, oy, aim;
     var col = enemyColor(e.type);
     opt = { color: col, glow: col };
     spd = bossShotSpd(e);
@@ -4106,6 +4130,31 @@
       }
     } else if (atk === "singularity") {
       addEbul(e.x, e.y + 10, 0, 50, { mine: true, fuse: 2.6, pellets: 10, pelletSpd: 120, homing: true, homeT: 2.4, hsp: 70, hturn: 0.8, r: 5.5, color: "#c8a0ff", glow: col });
+    } else if (atk === "eclipse") {
+      eclipseRing(e, 92, 0.62, 148, opt);
+      queueFollow(e, 0.58, "eclipse2");
+    } else if (atk === "eclipse2") {
+      aim = targetPlayer(e.x, e.y);
+      e.aimX = aim ? aim.x : W / 2;
+      e.aimY = aim ? aim.y : H - 34;
+      eclipseRing(e, 58, 0.48, 168, { color: "#e0c8ff", glow: col });
+    } else if (atk === "riftstep") {
+      ox = e.x;
+      oy = e.y;
+      explode(ox, oy, col, true);
+      rings.push({ x: ox, y: oy, r: 5, vr: 260, life: 0.55, color: col });
+      for (i = 0; i < 8; i++) {
+        a = (i / 8) * Math.PI * 2;
+        x0 = clamp(ox + Math.cos(a) * 72, -12, W + 12);
+        base = clamp(oy + Math.sin(a) * 72, -12, H + 10);
+        k = Math.atan2(oy - base, ox - x0);
+        addEbul(x0, base, Math.cos(k) * 105, Math.sin(k) * 105, { color: "#c8a0ff", glow: col, r: 2.6, life: 3.6 });
+      }
+      blinkTo(e);
+      for (i = 0; i < 4; i++) {
+        a = -0.9 + i * 0.6;
+        addEbul(e.x, e.y + 8, Math.sin(a) * 40, Math.cos(a) * 40, { homing: true, homeT: 3.2, hsp: 58, hturn: 0.85, accel: 0.22, r: 3.5, life: 6, color: "#e0c8ff", glow: col });
+      }
     } else if (atk === "venom") {
       for (i = -1; i <= 1; i++) venomShot(e, i, false, opt);
     } else if (atk === "venompool") {
@@ -4122,6 +4171,10 @@
       e.t = 0; e.dur = 1.8;
       e.sx = e.x; e.sy = e.y;
       e.coilCd = 0.1;
+    } else if (atk === "constrict") {
+      e.stream = { n: 5, dt: 0.15, acc: 0, kind: "squeeze", x: 22, x2: W - 22, dx: 16, spd: spd + 24, count: 3 };
+    } else if (atk === "petrify") {
+      e.stream = { n: 6, dt: 0.15, acc: 0, kind: "trackcol", x: clamp(e.aimX, 16, W - 16), spd: spd + 26, count: 4 };
     } else if (atk === "barrage") {
       fanShot(e.x, e.y + 10, 5, 1.1, spd, 40, opt);
       aimedShot({ x: e.x - 14, y: e.y }, 0.8, spd + 30, opt);
@@ -4163,7 +4216,7 @@
   }
 
   function fireStream(e, s) {
-    var i, col = enemyColor(e.type), x, a, vx, vy;
+    var i, col = enemyColor(e.type), x, a, vx, vy, tgt;
     if (s.kind === "spiral") {
       addEbul(e.x, e.y, Math.cos(s.ang) * s.spd, Math.sin(s.ang) * s.spd, { color: col, glow: col, silent: true });
       addEbul(e.x, e.y, Math.cos(s.ang + Math.PI) * s.spd, Math.sin(s.ang + Math.PI) * s.spd, { color: col, glow: col, silent: true });
@@ -4187,6 +4240,19 @@
         addEbul(e.x + Math.cos(a) * 14, e.y + Math.sin(a) * 10, vx, vy, { color: col, glow: col, silent: i > 0, r: 2.8 });
       }
       s.ang += s.dAng;
+    } else if (s.kind === "squeeze") {
+      fireColumn(s.x, e.y + 14, s.count, s.spd, { r: 3, color: "#d8ff70", glow: col, silent: true });
+      fireColumn(s.x2, e.y + 14, s.count, s.spd, { r: 3, color: "#d8ff70", glow: col, silent: true });
+      s.x += s.dx;
+      s.x2 -= s.dx;
+    } else if (s.kind === "trackcol") {
+      tgt = targetPlayer(e.x, e.y);
+      if (tgt) s.x += (tgt.x - s.x) * 0.2;
+      fireColumn(s.x, e.y + 14, s.count, s.spd, { r: 3.2, color: "#ff4d9a", glow: col, silent: true });
+      if (tgt && tgt.alive && Math.abs(tgt.x - s.x) < 32) {
+        if ((tgt.slowT || 0) < 0.35) banner = { text: "PETRIFIED", life: 0.65 };
+        tgt.slowT = Math.max(tgt.slowT || 0, 1.2);
+      }
     } else {
       s.n = 0;
     }
