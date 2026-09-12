@@ -2,6 +2,11 @@
   var MAGIC = 0x47;
   var VER = 3;
   var TYPE_SNAP = 1;
+  var TYPE_INPUT = 2;
+  var textEnc = new TextEncoder();
+  var textDec = new TextDecoder();
+  var hexCache = {};
+  var snapWriter = null;
 
   var ENEMY_TYPES = [
     "grunt", "sniper", "tank", "weaver", "kami", "shield",
@@ -47,13 +52,20 @@
   }
 
   function hexToRgb(hex) {
-    var n, v;
+    var n, v, out;
     if (!hex || typeof hex !== "string") return [255, 255, 255];
+    out = hexCache[hex];
+    if (out) return out;
     n = hex.charAt(0) === "#" ? hex.slice(1) : hex;
     if (n.length === 3) n = n.charAt(0) + n.charAt(0) + n.charAt(1) + n.charAt(1) + n.charAt(2) + n.charAt(2);
     v = parseInt(n, 16);
-    if (!isFinite(v)) return [255, 255, 255];
-    return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+    if (!isFinite(v)) {
+      out = [255, 255, 255];
+    } else {
+      out = [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+    }
+    hexCache[hex] = out;
+    return out;
   }
 
   function rgbToHex(r, g, b) {
@@ -127,8 +139,11 @@
     this.u8w(c[1]);
     this.u8w(c[2]);
   };
+  Writer.prototype.reset = function () {
+    this.o = 0;
+  };
   Writer.prototype.out = function () {
-    return this.u8.slice(0, this.o);
+    return this.u8.subarray(0, this.o);
   };
 
   function Reader(u8) {
@@ -177,14 +192,14 @@
   };
 
   function writeStr(w, text) {
-    var b = new TextEncoder().encode(String(text || "").slice(0, 40));
+    var b = textEnc.encode(String(text || "").slice(0, 40));
     w.u8w(b.length);
     w.bytes(b);
   }
 
   function readStr(r) {
     var n = r.u8r();
-    return new TextDecoder().decode(r.bytes(n));
+    return textDec.decode(r.bytes(n));
   }
 
   function writeEn(w, e) {
@@ -327,6 +342,7 @@
   }
 
   function writePl(w, p) {
+    var lo = p.loadout || {};
     w.u8w(p.slot || 0);
     w.coord(p.x);
     w.coord(p.y);
@@ -340,16 +356,16 @@
     w.u8w(p.lives || 0);
     w.u8w(Math.round(p.r || 9));
     w.u8frac(p.slowT, 10);
-    w.u8w(idxOf(SHIP_IDS, p.ship || "wisp"));
-    w.u8w(idxOf(GUN_IDS, p.gun || "pulse"));
-    w.u8w(idxOf(MOD_IDS, p.mod || ""));
-    w.u8w(idxOf(SKIN_IDS, p.skin || "stock"));
+    w.u8w(idxOf(SHIP_IDS, p.ship || lo.ship || "wisp"));
+    w.u8w(idxOf(GUN_IDS, p.gun || lo.gun || "pulse"));
+    w.u8w(idxOf(MOD_IDS, p.mod || lo.mod || ""));
+    w.u8w(idxOf(SKIN_IDS, p.skin || lo.skin || "stock"));
     w.coord(p.targetX != null ? p.targetX : p.x);
     w.u8frac(p.jamT, 10);
     w.u8w(Math.max(0, Math.min(255, Math.round(p.hp || 0))));
     w.u8w(Math.max(0, Math.min(255, Math.round(p.maxHp || 0))));
     w.u8w(p.facing && p.facing > 0 ? 1 : 0);
-    w.u8w(p.boss ? idxOf(ENEMY_TYPES, p.boss) : 255);
+    w.u8w((p.boss || lo.boss) ? idxOf(ENEMY_TYPES, p.boss || lo.boss) : 255);
   }
 
   function readPl(r) {
@@ -385,8 +401,14 @@
     return p;
   }
 
+  function getWriter() {
+    if (!snapWriter) snapWriter = new Writer(4096);
+    snapWriter.reset();
+    return snapWriter;
+  }
+
   function encodeSnap(seq, s) {
-    var w = new Writer(2048);
+    var w = getWriter();
     var i, list;
     w.u8w(MAGIC);
     w.u8w(VER);
@@ -423,6 +445,48 @@
     w.u8w(Math.min(8, list.length));
     for (i = 0; i < list.length && i < 8; i++) writePl(w, list[i]);
     return w.out();
+  }
+
+  function encodeInput(msg) {
+    var w = getWriter();
+    var flags;
+    msg = msg || {};
+    flags = (msg.l ? 1 : 0) | (msg.r ? 2 : 0) | (msg.f ? 4 : 0) | (msg.a ? 8 : 0) | (msg.aimX == null ? 0 : 16);
+    w.u8w(MAGIC);
+    w.u8w(VER);
+    w.u8w(TYPE_INPUT);
+    w.u16(msg.n || 0);
+    w.u8w(msg.slot || 0);
+    w.u8w(flags);
+    if (flags & 16) w.coord(msg.aimX);
+    w.coord(msg.x);
+    w.coord(msg.targetX);
+    return w.out();
+  }
+
+  function decodeInputBody(r, seq) {
+    var flags, msg;
+    msg = {
+      t: "input",
+      n: seq,
+      slot: r.u8r(),
+      l: false,
+      r: false,
+      f: false,
+      a: false,
+      aimX: null,
+      x: 0,
+      targetX: 0
+    };
+    flags = r.u8r();
+    msg.l = !!(flags & 1);
+    msg.r = !!(flags & 2);
+    msg.f = !!(flags & 4);
+    msg.a = !!(flags & 8);
+    if (flags & 16) msg.aimX = r.coord();
+    msg.x = r.coord();
+    msg.targetX = r.coord();
+    return msg;
   }
 
   function decodeSnapBody(r) {
@@ -477,6 +541,10 @@
       seq = r.u16();
       return { t: "snap", n: seq, s: decodeSnapBody(r) };
     }
+    if (type === TYPE_INPUT) {
+      seq = r.u16();
+      return decodeInputBody(r, seq);
+    }
     return null;
   }
 
@@ -517,11 +585,15 @@
     if (!out || out.t !== "snap" || out.n !== 4) return false;
     e = out.s.en[0];
     p = out.s.pl[0];
-    return out.s.sc === 99 && e.type === "grunt" && e.id === 7 && p.ship === "wisp" && out.s.bn.text === "WAVE 2";
+    if (!(out.s.sc === 99 && e.type === "grunt" && e.id === 7 && p.ship === "wisp" && out.s.bn.text === "WAVE 2")) return false;
+    buf = encodeInput({ t: "input", n: 11, slot: 1, l: 1, r: 0, f: 1, a: 0, aimX: 80.4, x: 120.5, targetX: 118 });
+    out = decode(buf);
+    return !!(out && out.t === "input" && out.n === 11 && out.slot === 1 && out.l && out.f && !out.a && out.aimX === 80.4 && out.x === 120.5);
   }
 
   window.__netcodec = {
     encodeSnap: encodeSnap,
+    encodeInput: encodeInput,
     decode: decode,
     isBinaryFrame: isBinaryFrame,
     selfCheck: selfCheck

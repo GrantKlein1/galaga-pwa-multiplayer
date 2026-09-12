@@ -219,10 +219,11 @@
     return new Uint8Array([0xc0, 0]);
   }
 
-  function readRemain(buf, i) {
+  function readRemain(buf, i, end) {
     var n = 0, mul = 1, c;
+    if (end == null) end = buf.length;
     do {
-      if (i >= buf.length) return null;
+      if (i >= end) return null;
       c = buf[i];
       i += 1;
       n += (c & 127) * mul;
@@ -232,19 +233,29 @@
   }
 
   function parseMqttFrames(sock, raw) {
-    var incoming = new Uint8Array(raw);
-    var buf = new Uint8Array(sock.buf.length + incoming.length);
-    buf.set(sock.buf, 0);
-    buf.set(incoming, sock.buf.length);
-    sock.buf = buf;
-    while (sock.buf.length >= 2) {
-      var remaining = readRemain(sock.buf, 1);
+    var incoming = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
+    var needCap, next, remaining, need, pkt, off;
+    needCap = sock.bufLen + incoming.length;
+    if (needCap > sock.buf.length) {
+      next = new Uint8Array(Math.max(needCap, sock.buf.length ? sock.buf.length * 2 : 256));
+      if (sock.bufLen) next.set(sock.buf.subarray(0, sock.bufLen));
+      sock.buf = next;
+    }
+    sock.buf.set(incoming, sock.bufLen);
+    sock.bufLen = needCap;
+    off = 0;
+    while (sock.bufLen - off >= 2) {
+      remaining = readRemain(sock.buf, off + 1, sock.bufLen);
       if (!remaining) break;
-      var need = remaining.i + remaining.n;
-      if (sock.buf.length < need) break;
-      var pkt = sock.buf.slice(0, need);
-      sock.buf = sock.buf.slice(need);
-      handleMqttPacket(sock, pkt, remaining.i, remaining.n);
+      need = remaining.i + remaining.n;
+      if (sock.bufLen < need) break;
+      pkt = sock.buf.subarray(off, need);
+      handleMqttPacket(sock, pkt, remaining.i - off, remaining.n);
+      off = need;
+    }
+    if (off) {
+      if (off < sock.bufLen) sock.buf.copyWithin(0, off, sock.bufLen);
+      sock.bufLen -= off;
     }
   }
 
@@ -278,7 +289,7 @@
       i += 2;
       i += tlen;
       if (qos > 0) i += 2;
-      payload = pkt.slice(i, hdrEnd + len);
+      payload = pkt.subarray(i, hdrEnd + len);
       msg = decodePayload(payload);
       if (msg) onMqttMsg(sock, msg);
     }
@@ -293,7 +304,8 @@
     var sock = {
       url: url,
       ws: null,
-      buf: new Uint8Array(0),
+      buf: new Uint8Array(256),
+      bufLen: 0,
       connected: false,
       subReady: false,
       dead: false,
@@ -838,8 +850,12 @@
   }
 
   function encodeOutgoing(msg) {
-    if (msg && msg.t === "snap" && window.__netcodec) {
-      try { return window.__netcodec.encodeSnap(msg.n, msg.s); } catch (err) { return msg; }
+    if (!msg || !window.__netcodec) return msg;
+    try {
+      if (msg.t === "snap") return window.__netcodec.encodeSnap(msg.n, msg.s);
+      if (msg.t === "input" && window.__netcodec.encodeInput) return window.__netcodec.encodeInput(msg);
+    } catch (err) {
+      return msg;
     }
     return msg;
   }
@@ -847,8 +863,7 @@
   function sendDc(dc, payload) {
     if (!dc || dc.readyState !== "open") return false;
     try {
-      if (payload instanceof Uint8Array) dc.send(payload.buffer.slice(payload.byteOffset, payload.byteOffset + payload.byteLength));
-      else if (payload instanceof ArrayBuffer) dc.send(payload);
+      if (payload instanceof Uint8Array || payload instanceof ArrayBuffer) dc.send(payload);
       else dc.send(JSON.stringify(payload));
       return true;
     } catch (err) {
