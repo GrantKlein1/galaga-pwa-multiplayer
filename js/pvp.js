@@ -6,7 +6,10 @@
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord"
   ];
   var DRAFT_STEPS = ["ship", "mod", "skin", "gun"];
-  var PVP_HP = 100;
+  // Insane duel only (not co-op / PvE bosses).
+  var PVP_HP = 7;
+  var PVP_HIT_INVULN = 0.16;
+  var PVP_FIRE_CD = 2.4;
   var ABILITY_CD = 4;
   var ROUND_HOLD = 1.85;
   var ROUND_WIN_TEXT = "YOU WIN THE ROUND";
@@ -388,6 +391,8 @@
     BOSS_KITS: BOSS_KITS,
     DRAFT_STEPS: DRAFT_STEPS,
     PVP_HP: PVP_HP,
+    PVP_HIT_INVULN: PVP_HIT_INVULN,
+    PVP_FIRE_CD: PVP_FIRE_CD,
     ABILITY_CD: ABILITY_CD,
     ROUND_HOLD: ROUND_HOLD,
     ROUND_WIN_TEXT: ROUND_WIN_TEXT,

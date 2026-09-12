@@ -2414,14 +2414,14 @@
     if (p.boss) {
       var d = bossDef(p.boss) || BOSS_DEFS[0];
       var api = pvpApi();
-      p.hp = api ? api.PVP_HP : 100;
+      p.hp = api ? api.PVP_HP : 7;
       p.maxHp = p.hp;
       p.lives = 1;
       p.shieldHp = 0;
       p.shieldT = 0;
       p.r = d.r || 18;
       p.speed = Math.max(150, (d.spd || 40) * 3.2);
-      p.invulnDur = 0.45;
+      p.invulnDur = (api && api.PVP_HIT_INVULN) || 0.16;
       p.abilityCd = 0.6;
     }
   }
@@ -2446,7 +2446,7 @@
       who.hp = Math.max(0, (who.hp || 0) - dmg);
       explode(who.x, who.y, "#ff7a5c", who.hp <= 0);
       sfxHit();
-      who.invuln = 0.38;
+      who.invuln = (pvpApi() && pvpApi().PVP_HIT_INVULN) || 0.16;
       updateHud();
       if (who.hp <= 0) {
         who.alive = false;
@@ -2786,7 +2786,7 @@
       pvpAimed(who, 0.85, 240, 0);
       pvpAimed(who, 0.85, 240, 8);
     }
-    who.fireCd = 0.34;
+    who.fireCd = (pvpApi() && pvpApi().PVP_FIRE_CD) || 2.4;
     who.muzzle = 1;
     sfxShoot(who);
   }
