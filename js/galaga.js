@@ -91,37 +91,37 @@
     { id: "void", name: "Void", unlockLevel: 17, cost: 0, rarity: "rare", fx: "void", hue: 78, sat: 0.82, lit: 0.62, desc: "Hollow dark-matter core, orbiting debris" },
     { id: "gilded", name: "Gilded", unlockLevel: 22, cost: 0, rarity: "rare", fx: "gilded", hue: -18, sat: 1.22, lit: 1.14, desc: "Engraved gold plates and a traveling shine" },
     { id: "prism", name: "Prism", unlockLevel: 27, cost: 0, rarity: "rare", fx: "prism", hue: 48, sat: 1.24, lit: 1.1, desc: "Chromatic split hull, rainbow edge" },
-    { id: "novaflux", name: "Novaflux", unlockLevel: 32, cost: 0, rarity: "epic", fx: "novaflux", hue: 8, sat: 0.5, lit: 1.32, desc: "White-hot core with radiating spokes" },
-    { id: "frost", name: "Frost", unlockLevel: 37, cost: 0, rarity: "epic", fx: "frost", hue: 28, sat: 0.62, lit: 1.24, desc: "Crystalline overgrowth and ice-shard wings" },
-    { id: "solar", name: "Solar", unlockLevel: 42, cost: 0, rarity: "epic", fx: "solar", hue: -55, sat: 1.32, lit: 1.16, desc: "Photosphere core and corona prominences" },
-    { id: "nebula", name: "Nebula", unlockLevel: 47, cost: 0, rarity: "legendary", fx: "nebula", hue: 112, sat: 1.2, lit: 0.94, desc: "Living gas-cloud body with embedded stars" },
-    { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.24, lit: 1.08, desc: "Ceremonial wings and a gold-violet afterimage" }
+    { id: "novaflux", name: "Novaflux", unlockLevel: 32, cost: 0, rarity: "epic", fx: "novaflux", hue: 8, sat: 0.5, lit: 1.32, desc: "White-hot core with radiating spokes", perk: "BURST", perkText: "16% of volleys fire an exploding shot" },
+    { id: "frost", name: "Frost", unlockLevel: 37, cost: 0, rarity: "epic", fx: "frost", hue: 28, sat: 0.62, lit: 1.24, desc: "Crystalline overgrowth and ice-shard wings", perk: "FREEZE", perkText: "Hits freeze fodder 1s, bosses 0.4s" },
+    { id: "solar", name: "Solar", unlockLevel: 42, cost: 0, rarity: "epic", fx: "solar", hue: -55, sat: 1.32, lit: 1.16, desc: "Photosphere core and corona prominences", perk: "IGNITE", perkText: "Hits ignite: +1 damage after 0.65s" },
+    { id: "nebula", name: "Nebula", unlockLevel: 47, cost: 0, rarity: "legendary", fx: "nebula", hue: 112, sat: 1.2, lit: 0.94, desc: "Living gas-cloud body with embedded stars", perk: "CLOUD", perkText: "Every 7.5s a 1.1s cloud deletes nearby bullets" },
+    { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.24, lit: 1.08, desc: "Ceremonial wings and a gold-violet afterimage", perk: "ECHO", perkText: "28% of volleys ghost-fire 0.16s later at 70% damage" }
   ];
   var SHIP_COIN_SKINS = [
-    { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 2500, rarity: "epic", fx: "aurora", hull: "#3dffc8", accent: "#ff9ad6", desc: "Northern-light ribbon wings" },
-    { id: "wisp-ghostlight", ship: "wisp", name: "Ghostlight", cost: 7000, rarity: "legendary", fx: "ghostlight", hull: "#c8f8ff", accent: "#ffffff", desc: "Scanline hologram with a ghost clone" },
-    { id: "needle-hotstreak", ship: "needle", name: "Hotstreak", cost: 2500, rarity: "epic", fx: "hotstreak", hull: "#ff6b4d", accent: "#ffe08a", desc: "Racing chevrons and speed lines" },
-    { id: "needle-pinkvoid", ship: "needle", name: "Pinkvoid", cost: 7000, rarity: "legendary", fx: "pinkvoid", hull: "#1a0614", accent: "#ff4d9a", desc: "Ultra-thin dark blade, magenta plasma edge" },
-    { id: "aegis-chrome", ship: "aegis", name: "Chrome", cost: 2500, rarity: "epic", fx: "chrome", hull: "#d0dcec", accent: "#ffffff", desc: "Mirror plates with a traveling specular" },
-    { id: "aegis-ward", ship: "aegis", name: "Ward", cost: 7000, rarity: "legendary", fx: "ward", hull: "#2ae8a8", accent: "#e8fff4", desc: "Hexagonal aegis wings" },
-    { id: "broadwing-goldwing", ship: "broadwing", name: "Goldwing", cost: 2500, rarity: "epic", fx: "goldwing", hull: "#ffd23d", accent: "#fff4c0", desc: "Extra gilt feathers on the span" },
-    { id: "broadwing-sunburst", ship: "broadwing", name: "Sunburst", cost: 7000, rarity: "legendary", fx: "sunburst", hull: "#ff9a3d", accent: "#fff0a0", desc: "Sun-ray wing spread" },
-    { id: "phantom-spectral", ship: "phantom", name: "Spectral", cost: 2500, rarity: "epic", fx: "spectral", hull: "#c8a0ff", accent: "#f0e8ff", desc: "Translucent double-outline shimmer" },
-    { id: "phantom-rift", ship: "phantom", name: "Rift", cost: 7000, rarity: "legendary", fx: "rift", hull: "#14061e", accent: "#d46bff", desc: "Split hull with a void crack" },
-    { id: "vulture-acid", ship: "vulture", name: "Acid", cost: 2500, rarity: "epic", fx: "acid", hull: "#b6ff4d", accent: "#5cff8a", desc: "Dripping venom trails" },
-    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 7000, rarity: "legendary", fx: "carrion", hull: "#6a8a20", accent: "#ff7a5c", desc: "Bone-rib raptor silhouette" },
-    { id: "bastion-fortress", ship: "bastion", name: "Fortress", cost: 2500, rarity: "epic", fx: "fortress", hull: "#8aa0d8", accent: "#e0e8ff", desc: "Siege battlements on the prow" },
-    { id: "bastion-obsidian", ship: "bastion", name: "Obsidian", cost: 7000, rarity: "legendary", fx: "obsidian", hull: "#101018", accent: "#6b8cff", desc: "Jagged black-glass bunker" },
-    { id: "strix-bloodglass", ship: "strix", name: "Bloodglass", cost: 2500, rarity: "epic", fx: "bloodglass", hull: "#ff3355", accent: "#ffd0d8", desc: "Cracked ruby canopy" },
-    { id: "strix-inferno", ship: "strix", name: "Inferno", cost: 7000, rarity: "legendary", fx: "inferno", hull: "#ff7a3d", accent: "#ffe08a", desc: "Flame-winged raptor" },
-    { id: "nova-supernova", ship: "nova", name: "Supernova", cost: 2500, rarity: "epic", fx: "supernova", hull: "#ffe08a", accent: "#ffffff", desc: "Expanding star core going critical" },
-    { id: "nova-starburst", ship: "nova", name: "Starburst", cost: 7000, rarity: "legendary", fx: "starburst", hull: "#ffb060", accent: "#fff4d0", desc: "Eight-point detonation hull" },
-    { id: "tempest-cyclone", ship: "tempest", name: "Cyclone", cost: 2500, rarity: "epic", fx: "cyclone", hull: "#3df0ff", accent: "#ffffff", desc: "Spiral storm-cell body" },
-    { id: "tempest-lightning", ship: "tempest", name: "Lightning", cost: 7000, rarity: "legendary", fx: "lightning", hull: "#7ef9ff", accent: "#ffe08a", desc: "Jagged bolt silhouette" },
-    { id: "warden-jade", ship: "warden", name: "Jade", cost: 2500, rarity: "epic", fx: "jade", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple-green lattice plates" },
-    { id: "warden-sentinel", ship: "warden", name: "Sentinel", cost: 7000, rarity: "legendary", fx: "sentinel", hull: "#a8ffe0", accent: "#ffffff", desc: "Honor-guard wings and halo" },
-    { id: "eclipse-umbra", ship: "eclipse", name: "Umbra", cost: 2500, rarity: "epic", fx: "umbra", hull: "#120c1c", accent: "#ffd23d", desc: "Black disk with a gold ring" },
-    { id: "eclipse-corona", ship: "eclipse", name: "Corona", cost: 7000, rarity: "legendary", fx: "corona", hull: "#e0c8ff", accent: "#ffd23d", desc: "Full eclipse with fire prominences" }
+    { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 2500, rarity: "epic", fx: "aurora", hull: "#3dffc8", accent: "#ff9ad6", desc: "Northern-light ribbon wings", perk: "WEAVE", perkText: "Shots weave ±7px (Helix gains extra sweep)" },
+    { id: "wisp-ghostlight", ship: "wisp", name: "Ghostlight", cost: 7000, rarity: "legendary", fx: "ghostlight", hull: "#c8f8ff", accent: "#ffffff", desc: "Scanline hologram with a ghost clone", perk: "DECOY", perkText: "After a hit, a 1.6s decoy draws enemy aim" },
+    { id: "needle-hotstreak", ship: "needle", name: "Hotstreak", cost: 2500, rarity: "epic", fx: "hotstreak", hull: "#ff6b4d", accent: "#ffe08a", desc: "Racing chevrons and speed lines", perk: "STREAK", perkText: "Kills within 1.8s stack +5% ROF, max 4" },
+    { id: "needle-pinkvoid", ship: "needle", name: "Pinkvoid", cost: 7000, rarity: "legendary", fx: "pinkvoid", hull: "#1a0614", accent: "#ff4d9a", desc: "Ultra-thin dark blade, magenta plasma edge", perk: "RIFTSHOT", perkText: "12% of shots gain +1 pierce and +25% damage" },
+    { id: "aegis-chrome", ship: "aegis", name: "Chrome", cost: 2500, rarity: "epic", fx: "chrome", hull: "#d0dcec", accent: "#ffffff", desc: "Mirror plates with a traveling specular", perk: "SHATTER", perkText: "22% chance incoming bullets shatter" },
+    { id: "aegis-ward", ship: "aegis", name: "Ward", cost: 7000, rarity: "legendary", fx: "ward", hull: "#2ae8a8", accent: "#e8fff4", desc: "Hexagonal aegis wings", perk: "REFLECT", perkText: "32% chance to reflect a bullet as a 1.5-damage shot" },
+    { id: "broadwing-goldwing", ship: "broadwing", name: "Goldwing", cost: 2500, rarity: "epic", fx: "goldwing", hull: "#ffd23d", accent: "#fff4c0", desc: "Extra gilt feathers on the span", perk: "RALLY", perkText: "After a hit: 2.4s of +12% ROF and +10% speed" },
+    { id: "broadwing-sunburst", ship: "broadwing", name: "Sunburst", cost: 7000, rarity: "legendary", fx: "sunburst", hull: "#ff9a3d", accent: "#fff0a0", desc: "Sun-ray wing spread", perk: "FLARE", perkText: "After a hit: 3.2s +18% ROF +16% speed and a 4-ray burst" },
+    { id: "phantom-spectral", ship: "phantom", name: "Spectral", cost: 2500, rarity: "epic", fx: "spectral", hull: "#c8a0ff", accent: "#f0e8ff", desc: "Translucent double-outline shimmer", perk: "PHASE", perkText: "20% chance to phase through a ram or dive" },
+    { id: "phantom-rift", ship: "phantom", name: "Rift", cost: 7000, rarity: "legendary", fx: "rift", hull: "#14061e", accent: "#d46bff", desc: "Split hull with a void crack", perk: "BLINK", perkText: "On hull loss, blink toward center and freeze nearby foes 0.8s" },
+    { id: "vulture-acid", ship: "vulture", name: "Acid", cost: 2500, rarity: "epic", fx: "acid", hull: "#b6ff4d", accent: "#5cff8a", desc: "Dripping venom trails", perk: "CORRODE", perkText: "Hits strip an extra shield plate" },
+    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 7000, rarity: "legendary", fx: "carrion", hull: "#6a8a20", accent: "#ff7a5c", desc: "Bone-rib raptor silhouette", perk: "FEAST", perkText: "Dive/kami kills grant 0.55s invuln and +1 damage on the next shot" },
+    { id: "bastion-fortress", ship: "bastion", name: "Fortress", cost: 2500, rarity: "epic", fx: "fortress", hull: "#8aa0d8", accent: "#e0e8ff", desc: "Siege battlements on the prow", perk: "HOLD", perkText: "The first hit each wave is ignored" },
+    { id: "bastion-obsidian", ship: "bastion", name: "Obsidian", cost: 7000, rarity: "legendary", fx: "obsidian", hull: "#101018", accent: "#6b8cff", desc: "Jagged black-glass bunker", perk: "BULWARK", perkText: "The first two hits each wave are ignored" },
+    { id: "strix-bloodglass", ship: "strix", name: "Bloodglass", cost: 2500, rarity: "epic", fx: "bloodglass", hull: "#ff3355", accent: "#ffd0d8", desc: "Cracked ruby canopy", perk: "VENDETTA", perkText: "After a hull hit, the next 5 shots deal double damage" },
+    { id: "strix-inferno", ship: "strix", name: "Inferno", cost: 7000, rarity: "legendary", fx: "inferno", hull: "#ff7a3d", accent: "#ffe08a", desc: "Flame-winged raptor", perk: "WILDFIRE", perkText: "Hits ignite twice; a burn kill splashes nearby foes" },
+    { id: "nova-supernova", ship: "nova", name: "Supernova", cost: 2500, rarity: "epic", fx: "supernova", hull: "#ffe08a", accent: "#ffffff", desc: "Expanding star core going critical", perk: "KILLBURST", perkText: "Kills explode for 2 damage in a small radius" },
+    { id: "nova-starburst", ship: "nova", name: "Starburst", cost: 7000, rarity: "legendary", fx: "starburst", hull: "#ffb060", accent: "#fff4d0", desc: "Eight-point detonation hull", perk: "SPARKS", perkText: "Every 7th shot adds two 0.7-damage sparks" },
+    { id: "tempest-cyclone", ship: "tempest", name: "Cyclone", cost: 2500, rarity: "epic", fx: "cyclone", hull: "#3df0ff", accent: "#ffffff", desc: "Spiral storm-cell body", perk: "SHEAR", perkText: "Nearby enemy bullets are nudged aside" },
+    { id: "tempest-lightning", ship: "tempest", name: "Lightning", cost: 7000, rarity: "legendary", fx: "lightning", hull: "#7ef9ff", accent: "#ffe08a", desc: "Jagged bolt silhouette", perk: "CHAIN", perkText: "20% of hits chain 1.2 damage to the nearest other foe" },
+    { id: "warden-jade", ship: "warden", name: "Jade", cost: 2500, rarity: "epic", fx: "jade", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple-green lattice plates", perk: "GEMWARD", perkText: "Collecting a non-coin gem grants 0.4s invulnerability" },
+    { id: "warden-sentinel", ship: "warden", name: "Sentinel", cost: 7000, rarity: "legendary", fx: "sentinel", hull: "#a8ffe0", accent: "#ffffff", desc: "Honor-guard wings and halo", perk: "HALO", perkText: "Halo eats 1 nearby bullet every 5s" },
+    { id: "eclipse-umbra", ship: "eclipse", name: "Umbra", cost: 2500, rarity: "epic", fx: "umbra", hull: "#120c1c", accent: "#ffd23d", desc: "Black disk with a gold ring", perk: "UMBRA", perkText: "While invulnerable after a hit, shots deal +25% damage" },
+    { id: "eclipse-corona", ship: "eclipse", name: "Corona", cost: 7000, rarity: "legendary", fx: "corona", hull: "#e0c8ff", accent: "#ffd23d", desc: "Full eclipse with fire prominences", perk: "AURA", perkText: "While invulnerable, a 22px aura deals 1 damage every 0.55s" }
   ];
 
   // Boss roster. Debut wave = (index + 1) * BOSS_EVERY. Kits: base (always), p2 (added below the
@@ -366,6 +366,7 @@
   var particles = [];
   var rings = [];
   var stars = [];
+  var skinDecoys = [];
   var form = { ox: 0, oy: 46, dir: 1, speed: 28, minOff: 0, maxOff: 0 };
 
   function el(id) { return document.getElementById(id); }
@@ -1050,6 +1051,320 @@
     }
     return out;
   }
+  function skinIdOf(p) {
+    if (!p) return "stock";
+    if (p.loadout && p.loadout.skin) return p.loadout.skin;
+    return "stock";
+  }
+  function skinDefOf(p) { return findSkin(skinIdOf(p)); }
+  function pbulCap() { return MAX_PBUL + extraPlayers() * 22; }
+  function refreshSkinMuls(p) {
+    var id, fire = 1, spd = 1;
+    if (!p) return;
+    id = skinIdOf(p);
+    if ((p.skinBoostT || 0) > 0) {
+      if (id === "broadwing-goldwing") { fire *= 1.12; spd *= 1.10; }
+      if (id === "broadwing-sunburst") { fire *= 1.18; spd *= 1.16; }
+    }
+    if (id === "needle-hotstreak" && (p.skinHotStacks || 0) > 0) fire *= 1 + 0.05 * p.skinHotStacks;
+    p.skinFireMul = fire;
+    p.skinSpdMul = spd;
+  }
+  function resetSkinWave(p) {
+    var id;
+    if (!p) return;
+    id = skinIdOf(p);
+    p.skinWard = id === "bastion-fortress" ? 1 : id === "bastion-obsidian" ? 2 : 0;
+    p.skinNebulaCd = id === "nebula" ? 0.4 : (p.skinNebulaCd || 0);
+    refreshSkinMuls(p);
+  }
+  function pushPbul(b) {
+    if (pbul.length >= pbulCap()) return false;
+    pbul.push(b);
+    return true;
+  }
+  function skinSplash(x, y, r, dmg, ownerSlot, fromPerk) {
+    var i, e, col = "#ffe08a";
+    rings.push({ x: x, y: y, r: 4, vr: 150, life: 0.28, color: col });
+    if (isPvpRun()) {
+      for (i = 0; i < players.length; i++) {
+        e = players[i];
+        if (!e || !e.alive || e.slot === ownerSlot) continue;
+        if (dist2(e.x, e.y, x, y) < (r + (e.r || PLAYER_R)) * (r + (e.r || PLAYER_R))) pvpHurt(e, dmg);
+      }
+      return;
+    }
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive) continue;
+      if (dist2(e.x, e.y, x, y) < (r + e.r) * (r + e.r)) killEnemy(e, false, dmg, ownerSlot, fromPerk || "splash");
+    }
+  }
+  function freezeAround(x, y, r, fodderT, bossT) {
+    var i, e;
+    if (isPvpRun()) {
+      for (i = 0; i < players.length; i++) {
+        e = players[i];
+        if (!e || !e.alive) continue;
+        if (dist2(e.x, e.y, x, y) < r * r) e.slowT = Math.max(e.slowT || 0, fodderT || 0.8);
+      }
+      rings.push({ x: x, y: y, r: 6, vr: 140, life: 0.35, color: "#b8f0ff" });
+      return;
+    }
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive) continue;
+      if (dist2(e.x, e.y, x, y) < (r + e.r) * (r + e.r)) {
+        e.freezeT = Math.max(e.freezeT || 0, e.isBoss ? (bossT || 0.4) : (fodderT || 1));
+      }
+    }
+    rings.push({ x: x, y: y, r: 6, vr: 140, life: 0.35, color: "#b8f0ff" });
+  }
+  function igniteEnemy(e, ticks, ownerSlot) {
+    if (!e || !e.alive) return;
+    e.burnTicks = Math.max(e.burnTicks || 0, ticks || 1);
+    e.burnAcc = 0;
+    e.burnDmg = 1;
+    e.burnOwner = ownerSlot;
+    e.burnT = 0.65 * (e.burnTicks || 1) + 0.05;
+  }
+  function skinChain(from, owner) {
+    var i, e, best = null, bestD = 72 * 72, d;
+    if (!from || !owner || isPvpRun()) return;
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive || e === from) continue;
+      d = dist2(from.x, from.y, e.x, e.y);
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    if (!best) return;
+    rings.push({ x: from.x, y: from.y, r: 3, vr: 90, life: 0.18, color: "#ffe08a" });
+    rings.push({ x: best.x, y: best.y, r: 3, vr: 90, life: 0.18, color: "#7ef9ff" });
+    killEnemy(best, false, 1.2, owner.slot, "chain");
+  }
+  function skinOnBulletHit(owner, e, b) {
+    var id;
+    if (!owner || !e || !e.alive || isPvpRun()) return;
+    id = skinIdOf(owner);
+    if (id === "vulture-acid" && e.shieldHp > 0) e.shieldHp -= 1;
+    if (id === "frost") e.freezeT = Math.max(e.freezeT || 0, e.isBoss ? 0.4 : 1);
+    if (id === "solar") igniteEnemy(e, 1, owner.slot);
+    if (id === "strix-inferno") igniteEnemy(e, 2, owner.slot);
+    if (id === "tempest-lightning" && Math.random() < 0.2) skinChain(e, owner);
+  }
+  function spawnSkinDecoy(who) {
+    if (!who) return;
+    skinDecoys.push({ x: who.x, y: who.y, t: 1.6, slot: who.slot });
+    rings.push({ x: who.x, y: who.y, r: 5, vr: 90, life: 0.4, color: "#c8f8ff" });
+  }
+  function fireSunburstRays(who) {
+    var i, ang, face, y, spd = 300;
+    if (!who) return;
+    face = pvpFacing(who);
+    y = pvpMuzzleY(who);
+    for (i = 0; i < 4; i++) {
+      ang = i * Math.PI / 2;
+      pushPbul({
+        id: allocId(),
+        x: who.x, y: y,
+        vx: Math.sin(ang) * spd,
+        vy: face * Math.cos(ang) * spd,
+        dmg: 1, r: 2, age: 0, life: 0.45,
+        pierce: 0, hit: null, homing: false, homeT: 0, splash: null,
+        gun: "pulse", owner: who.slot, ghost: netRole === "client", skinRay: true
+      });
+    }
+  }
+  function fireSkinEcho(who) {
+    var echo, i, src, b, y, ghost;
+    if (!who || !who.skinEcho) return;
+    echo = who.skinEcho;
+    who.skinEcho = null;
+    y = pvpMuzzleY(who);
+    ghost = netRole === "client";
+    for (i = 0; i < echo.items.length; i++) {
+      src = echo.items[i];
+      b = {
+        id: allocId(),
+        x: who.x + (src.dx || 0), y: y,
+        vx: src.vx, vy: src.vy,
+        dmg: src.dmg, r: src.r || 2, age: 0, life: src.life || 0,
+        pierce: src.pierce || 0, hit: src.pierce ? [] : null,
+        homing: !!src.homing, homeT: src.homeT || 0, hsp: src.hsp || 0, hturn: src.hturn || 0,
+        splash: src.splash || null, gun: src.gun || "pulse", owner: who.slot, ghost: ghost, skinEcho: true
+      };
+      if (src.helix) {
+        b.helix = true; b.bx = b.x; b.ha = src.ha; b.hf = src.hf; b.hp0 = src.hp0 || 0;
+      }
+      pushPbul(b);
+    }
+  }
+  function applySkinVolley(who, startIdx, g) {
+    var id, i, b, burst, echoItems;
+    if (!who || who.skinEchoing) return;
+    id = skinIdOf(who);
+    if (id === "novaflux" && Math.random() < 0.16) {
+      burst = pbul[startIdx];
+      if (burst && !burst.splash) burst.splash = { r: 26, dmg: 1.5 };
+    }
+    if (id === "wisp-aurora") {
+      for (i = startIdx; i < pbul.length; i++) {
+        b = pbul[i];
+        if (b.helix) b.ha = (b.ha || 12) + 4;
+        else {
+          b.helix = true; b.bx = b.x; b.ha = 7; b.hf = 11; b.hp0 = (i - startIdx) * 1.57;
+        }
+      }
+    }
+    if (id === "mythic" && Math.random() < 0.28) {
+      echoItems = [];
+      for (i = startIdx; i < pbul.length; i++) {
+        b = pbul[i];
+        echoItems.push({
+          dx: b.x - who.x, vx: b.vx, vy: b.vy, dmg: (b.dmg || 1) * 0.7, r: b.r, life: b.life,
+          pierce: b.pierce || 0, homing: b.homing, homeT: b.homeT, hsp: b.hsp, hturn: b.hturn,
+          splash: b.splash, gun: b.gun, helix: b.helix, ha: b.ha, hf: b.hf, hp0: b.hp0
+        });
+      }
+      who.skinEcho = { t: 0.16, items: echoItems };
+    }
+    if (id === "nova-starburst" && who.shotCount % 7 === 0) {
+      var face = pvpFacing(who), y = pvpMuzzleY(who), dmg = 0.7 * loadoutDmgMul(shipDef(who), equippedMod(who), who);
+      pushPbul({
+        id: allocId(), x: who.x, y: y, vx: Math.sin(-0.28) * 460, vy: face * Math.cos(-0.28) * 460,
+        dmg: dmg, r: 2, age: 0, life: 0.7, pierce: 0, hit: null, homing: false, splash: null,
+        gun: g ? g.id : "pulse", owner: who.slot, ghost: netRole === "client", skinSpark: true
+      });
+      pushPbul({
+        id: allocId(), x: who.x, y: y, vx: Math.sin(0.28) * 460, vy: face * Math.cos(0.28) * 460,
+        dmg: dmg, r: 2, age: 0, life: 0.7, pierce: 0, hit: null, homing: false, splash: null,
+        gun: g ? g.id : "pulse", owner: who.slot, ghost: netRole === "client", skinSpark: true
+      });
+    }
+  }
+  function skinAfterHit(who, kind) {
+    var id, margin;
+    if (!who) return;
+    id = skinIdOf(who);
+    if (id === "broadwing-goldwing") { who.skinBoostT = 2.4; refreshSkinMuls(who); }
+    if (id === "broadwing-sunburst") {
+      who.skinBoostT = 3.2;
+      refreshSkinMuls(who);
+      fireSunburstRays(who);
+    }
+    if (id === "wisp-ghostlight") spawnSkinDecoy(who);
+    if (id === "strix-bloodglass" && kind === "hull") who.skinBlood = 5;
+    if (id === "eclipse-umbra") {
+      who.skinUmbraT = Math.max(who.skinUmbraT || 0, who.invuln || (who.invulnDur || INVULN) || 0.85);
+    }
+    if (id === "phantom-rift" && kind === "hull" && (who.lives || 0) > 0) {
+      var ox = who.x, oy = who.y;
+      margin = Math.max(10, (who.r || PLAYER_R) + 4);
+      who.x = clamp(who.x + (W / 2 - who.x) * 0.55, margin, W - margin);
+      who.targetX = who.x;
+      who.skinKeepX = true;
+      freezeAround(ox, oy, 40, 0.8, 0.8);
+    }
+  }
+  function consumeSkinWard(who) {
+    if (!who || (who.skinWard || 0) <= 0) return false;
+    who.skinWard -= 1;
+    run.hits = (run.hits || 0) + 1;
+    if (currentBoss()) run.bossHits = (run.bossHits || 0) + 1;
+    explode(who.x, who.y, "#c8d6ff", false);
+    who.invuln = Math.max(who.invuln || 0, 0.35);
+    sfxArmor();
+    skinAfterHit(who, "ward");
+    syncQuestProgress();
+    updateHud();
+    return true;
+  }
+  function cycloneNudge(pl, b, dt) {
+    var dx, dy, d, nx, ny, px, py, side;
+    if (!pl || !b || skinIdOf(pl) !== "tempest-cyclone") return;
+    dx = b.x - pl.x; dy = b.y - pl.y;
+    d = Math.sqrt(dx * dx + dy * dy);
+    if (d >= 50 || d < 1) return;
+    nx = -(b.vy || 0); ny = b.vx || 0;
+    side = Math.sqrt(nx * nx + ny * ny) || 1;
+    nx /= side; ny /= side;
+    px = pl.x - b.x; py = pl.y - b.y;
+    if (nx * px + ny * py > 0) { nx = -nx; ny = -ny; }
+    b.x += nx * 78 * dt;
+    b.y += ny * 78 * dt;
+  }
+  function skinDefendShot(pl, b) {
+    var id, d2, hitR, pr;
+    if (!pl || !pl.alive || !b) return "none";
+    id = skinIdOf(pl);
+    d2 = dist2(b.x, b.y, pl.x, pl.y);
+    if (id === "nebula" && (pl.skinNebulaT || 0) > 0 && d2 < 42 * 42) return "eat";
+    if (id === "warden-sentinel" && (pl.skinSentinelCd || 0) <= 0 && d2 < 40 * 40) {
+      pl.skinSentinelCd = 5;
+      rings.push({ x: b.x, y: b.y, r: 3, vr: 80, life: 0.2, color: "#a8ffe0" });
+      return "eat";
+    }
+    if (pl.invuln > 0) return "none";
+    pr = pl.r || PLAYER_R;
+    hitR = pr + (b.r || 2) - 1.5;
+    if (d2 >= hitR * hitR) return "none";
+    if (id === "aegis-chrome" && Math.random() < 0.22) {
+      rings.push({ x: b.x, y: b.y, r: 2, vr: 70, life: 0.16, color: "#ffffff" });
+      return "eat";
+    }
+    if (id === "aegis-ward" && Math.random() < 0.32) return "reflect";
+    return "hit";
+  }
+  function reflectAsPlayerShot(b, who) {
+    var tgt, dx, dy, len, face, spd = 420;
+    face = pvpFacing(who);
+    tgt = isPvpRun() ? pvpOpponent(who) : null;
+    if (tgt && tgt.alive) {
+      dx = tgt.x - b.x; dy = tgt.y - b.y;
+      len = Math.sqrt(dx * dx + dy * dy) || 1;
+      pushPbul({
+        id: allocId(), x: b.x, y: b.y, vx: dx / len * spd, vy: dy / len * spd,
+        dmg: 1.5, r: 2.2, age: 0, life: 0, pierce: 0, hit: null, homing: false, splash: null,
+        gun: "pulse", owner: who.slot, ghost: netRole === "client", skinReflect: true
+      });
+    } else {
+      pushPbul({
+        id: allocId(), x: b.x, y: b.y, vx: 0, vy: face * spd,
+        dmg: 1.5, r: 2.2, age: 0, life: 0, pierce: 0, hit: null, homing: false, splash: null,
+        gun: "pulse", owner: who.slot, ghost: netRole === "client", skinReflect: true
+      });
+    }
+  }
+  function tickSkinEnemy(e, dt) {
+    if (!e) return;
+    if ((e.freezeT || 0) > 0) e.freezeT = Math.max(0, e.freezeT - dt);
+    if ((e.burnTicks || 0) > 0 && e.alive) {
+      e.burnAcc = (e.burnAcc || 0) + dt;
+      while (e.alive && e.burnTicks > 0 && e.burnAcc >= 0.65) {
+        e.burnAcc -= 0.65;
+        e.burnTicks -= 1;
+        killEnemy(e, false, e.burnDmg || 1, e.burnOwner, "burn");
+      }
+      if (e.burnTicks <= 0) e.burnT = 0;
+    }
+  }
+  function tickSkinAura(p, dt) {
+    var i, e;
+    if (!p || !p.alive || skinIdOf(p) !== "eclipse-corona" || (p.invuln || 0) <= 0) return;
+    p.skinCoronaAcc = (p.skinCoronaAcc || 0) - dt;
+    if (p.skinCoronaAcc > 0) return;
+    p.skinCoronaAcc = 0.55;
+    if (isPvpRun()) {
+      e = pvpOpponent(p);
+      if (e && e.alive && dist2(p.x, p.y, e.x, e.y) < (22 + (e.r || PLAYER_R)) * (22 + (e.r || PLAYER_R))) pvpHurt(e, 1);
+      return;
+    }
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive) continue;
+      if (dist2(p.x, p.y, e.x, e.y) < (22 + e.r) * (22 + e.r)) killEnemy(e, false, 1, p.slot, "aura");
+    }
+  }
   function clamp01(n) { return n < 0 ? 0 : n > 1 ? 1 : n; }
   function hexToRgbArr(hex) {
     var n, v;
@@ -1242,7 +1557,7 @@
     return out;
   }
   function targetPlayer(ex, ey) {
-    var i, pl, best = null, bestD = 1e12, d, n = 0, only = null;
+    var i, pl, best = null, bestD = 1e12, d, n = 0, only = null, dec, decoyBest = null, decoyD = 1e12;
     ex = ex || 0; ey = ey || 0;
     for (i = 0; i < players.length; i++) {
       pl = players[i];
@@ -1252,6 +1567,13 @@
       d = dist2(ex, ey, pl.x, pl.y);
       if (d < bestD) { bestD = d; best = pl; }
     }
+    for (i = 0; i < skinDecoys.length; i++) {
+      dec = skinDecoys[i];
+      if (!dec) continue;
+      d = dist2(ex, ey, dec.x, dec.y);
+      if (d < decoyD) { decoyD = d; decoyBest = dec; }
+    }
+    if (decoyBest && Math.random() < 0.7) return { x: decoyBest.x, y: decoyBest.y, alive: true, decoy: true };
     if (!n) return player || null;
     if (n === 1) return only;
     return best;
@@ -1486,6 +1808,10 @@
     if (player.shieldHp > 0) bits.push("SHIELD x" + player.shieldHp);
     if (player.speedT > 0) bits.push("SPD " + Math.ceil(player.speedT) + "s");
     if ((player.jamT || 0) > 0) bits.push("JAM " + Math.ceil(player.jamT) + "s");
+    if ((player.skinBoostT || 0) > 0) bits.push("PERK " + Math.ceil(player.skinBoostT) + "s");
+    if ((player.skinHotStacks || 0) > 0) bits.push("STREAK x" + player.skinHotStacks);
+    if ((player.skinWard || 0) > 0) bits.push("HOLD x" + player.skinWard);
+    if ((player.skinNebulaT || 0) > 0) bits.push("CLOUD");
     return bits.length ? bits.join("  ·  ") : "None";
   }
   function playerTag(slot) {
@@ -1992,6 +2318,9 @@
     if (kind === "life") sfxLife();
     else if (kind === "revive") sfxLife();
     else sfxPickup();
+    if (kind !== "coin" && kind !== "life" && kind !== "revive" && skinIdOf(who) === "warden-jade") {
+      who.invuln = Math.max(who.invuln || 0, 0.4);
+    }
     if (kind === "revive") {
       reviveDownedFrom(who);
     } else if (kind === "life") {
@@ -2270,6 +2599,7 @@
     var pi;
     for (pi = 0; pi < players.length; pi++) {
       if (players[pi] && players[pi].alive) players[pi].invuln = Math.max(players[pi].invuln, 1.15);
+      resetSkinWave(players[pi]);
     }
     run.maxWave = Math.max(run.maxWave, n);
     if (!run.hits) run.cleanWave = Math.max(run.cleanWave || 0, n);
@@ -2295,6 +2625,9 @@
       lives: loadoutLives(s),
       hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, dash: null, rewind: null,
       leech: 0,
+      skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
+      skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
+      skinSentinelCd: 0, skinUmbraT: 0, skinCarrion: 0, skinCoronaAcc: 0, skinKeepX: false,
       input: { left: false, right: false, fire: false, ability: false, holdL: 0, holdR: 0, aimX: null },
       hostX: x
     };
@@ -2348,9 +2681,11 @@
     sfxBoom(big);
   }
 
-  function killEnemy(e, diving, dmg) {
+  function killEnemy(e, diving, dmg, ownerSlot, fromPerk) {
     if (!e.alive) return;
     dmg = dmg || 1;
+    var owner = ownerSlot != null ? players[ownerSlot] : null;
+    var burning = (e.burnTicks || 0) > 0 || (e.burnT || 0) > 0;
     if (e.shieldHp > 0) {
       e.shieldHp -= 1;
       e.hitFlash = 0.1;
@@ -2378,6 +2713,21 @@
     run.kills = (run.kills || 0) + 1;
     run.killsByType[e.type] = (run.killsByType[e.type] || 0) + 1;
     profile.stats.killsByType[e.type] = (profile.stats.killsByType[e.type] || 0) + 1;
+    if (owner && owner.alive) {
+      var sid = skinIdOf(owner);
+      if (sid === "needle-hotstreak") {
+        if ((owner.skinHotT || 0) > 0) owner.skinHotStacks = Math.min(4, (owner.skinHotStacks || 0) + 1);
+        else owner.skinHotStacks = 1;
+        owner.skinHotT = 1.8;
+        refreshSkinMuls(owner);
+      }
+      if (sid === "vulture-carrion" && (diving || e.type === "kami" || e.state === "kami" || e.state === "dive")) {
+        owner.invuln = Math.max(owner.invuln || 0, 0.55);
+        owner.skinCarrion = 1;
+      }
+      if (sid === "nova-supernova" && fromPerk !== "splash") skinSplash(e.x, e.y, 30, 2, owner.slot, "splash");
+      if (sid === "strix-inferno" && burning && fromPerk !== "splash") skinSplash(e.x, e.y, 22, 1.5, owner.slot, "splash");
+    }
     if (e.isBoss) {
       run.bosses[e.type] = (run.bosses[e.type] || 0) + 1;
       profile.stats.bosses[e.type] = (profile.stats.bosses[e.type] || 0) + 1;
@@ -2462,6 +2812,7 @@
     if (!who || !who.alive) return;
     if (who.invuln > 0) return;
     if (pvpS() && pvpS().roundLock) return;
+    if (consumeSkinWard(who)) return;
     dmg = dmg || 1;
     run.hits = (run.hits || 0) + 1;
     if (who.shieldHp > 0) {
@@ -2470,6 +2821,7 @@
       explode(who.x, who.y, "#6b8cff", false);
       who.invuln = 0.7;
       sfxArmor();
+      skinAfterHit(who, "shield");
       updateHud();
       return;
     }
@@ -2478,6 +2830,7 @@
       explode(who.x, who.y, "#ff7a5c", who.hp <= 0);
       sfxHit();
       who.invuln = (pvpApi() && pvpApi().PVP_HIT_INVULN) || 0.16;
+      skinAfterHit(who, "hull");
       updateHud();
       if (who.hp <= 0) {
         who.alive = false;
@@ -2552,6 +2905,7 @@
       p.abilityCd = 0.4;
       p.dash = null;
       p.rewind = null;
+      resetSkinWave(p);
     }
     syncLocalPlayer();
     banner = { text: "ROUND " + sess.round, life: 1.1 };
@@ -2585,6 +2939,7 @@
     who = who || player;
     if (!who || !who.alive) return;
     if (who.invuln > 0) return;
+    if (consumeSkinWard(who)) return;
     run.hits = (run.hits || 0) + 1;
     if (currentBoss()) run.bossHits = (run.bossHits || 0) + 1;
     if (who.shieldHp > 0) {
@@ -2593,6 +2948,7 @@
       explode(who.x, who.y, "#6b8cff", false);
       who.invuln = 0.85;
       ebul.length = 0;
+      skinAfterHit(who, "shield");
       syncQuestProgress();
       updateHud();
       return;
@@ -2610,6 +2966,8 @@
     }
     who.weapon = "normal"; who.weaponT = 0; who.speedT = 0; who.slowT = 0; who.jamT = 0;
     if (shipDef(who).passive === "nova") novaBurst(who.x, who.y, 6, who.slot);
+    who.skinKeepX = false;
+    skinAfterHit(who, "hull");
     syncLocalPlayer();
     syncQuestProgress();
     updateHud();
@@ -2626,11 +2984,13 @@
       applyPvpLayout(who);
       who.dash = null;
       who.rewind = null;
-    } else {
+    } else if (!who.skinKeepX) {
       who.x = spawnXFor(who.slot, players.length);
       who.targetX = who.x;
     }
+    who.skinKeepX = false;
     who.invuln = (who.invulnDur || INVULN) + (hasMod("guardian", who) ? 0.6 : 0);
+    if (skinIdOf(who) === "eclipse-umbra") who.skinUmbraT = Math.max(who.skinUmbraT || 0, who.invuln);
     if (hasMod("guardian", who)) { who.shieldHp = Math.max(who.shieldHp, 2); who.shieldT = 0; }
     who.muzzle = 0;
     who.fireCd = 0.2;
@@ -2721,8 +3081,11 @@
     }
     who.shotCount = (who.shotCount || 0) + 1;
     var bolt = g.bolt && who.shotCount % g.bolt === 0;
-    var cap = MAX_PBUL + extraPlayers() * 22;
+    var cap = pbulCap();
     if (pbul.length + shots.length + (bolt ? 1 : 0) > cap) return;
+    var startIdx = pbul.length;
+    var sid = skinIdOf(who);
+    var umbra = sid === "eclipse-umbra" && (who.skinUmbraT || 0) > 0;
     for (i = 0; i < shots.length; i++) {
       s = shots[i];
       b = {
@@ -2734,6 +3097,14 @@
         hsp: g.hsp || 0, hturn: g.hturn || 0,
         splash: g.splash || null, gun: g.id, owner: who.slot, ghost: ghost
       };
+      if (umbra) b.dmg *= 1.25;
+      if ((who.skinBlood || 0) > 0) { b.dmg *= 2; who.skinBlood -= 1; }
+      if ((who.skinCarrion || 0) > 0) { b.dmg += 1; who.skinCarrion -= 1; }
+      if (sid === "needle-pinkvoid" && Math.random() < 0.12) {
+        b.pierce = (b.pierce || 0) + 1;
+        if (!b.hit) b.hit = [];
+        b.dmg *= 1.25;
+      }
       if (g.helix) {
         b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
       }
@@ -2742,13 +3113,14 @@
     if (bolt) {
       pbul.push({
         id: allocId(),
-        x: who.x, y: y, vx: 0, vy: face * 300, dmg: (g.boltDmg || 2) * loadoutDmgMul(shipDef(who), equippedMod(who), who), r: 3, age: 0, life: 0,
+        x: who.x, y: y, vx: 0, vy: face * 300, dmg: (g.boltDmg || 2) * loadoutDmgMul(shipDef(who), equippedMod(who), who) * (umbra ? 1.25 : 1), r: 3, age: 0, life: 0,
         pierce: 0, hit: null, homing: true, homeT: 2.2, splash: null, gun: g.id, bolt: true, owner: who.slot, ghost: ghost
       });
     }
+    applySkinVolley(who, startIdx, g);
     var cd = gunInterval(g);
     if (gem === "rapid") cd *= 0.6;
-    cd /= loadoutFireMul(shipDef(who), equippedMod(who));
+    cd /= loadoutFireMul(shipDef(who), equippedMod(who)) * (who.skinFireMul || 1);
     who.fireCd = Math.max(0.035, cd / 1000);
     who.muzzle = 1;
     sfxShoot(who);
@@ -4341,6 +4713,7 @@
   function skinChips(d) {
     var h = "";
     h += chip("FX", (d.fx || "solid").toUpperCase(), 0, "special");
+    if (d.perk) h += chip("PERK", d.perk, 0, "special");
     if (d.cost > 0) h += chip("PRICE", d.cost + "c", 0);
     else if (d.unlockLevel > 1) h += chip("LV", String(d.unlockLevel), 0);
     return h;
@@ -4387,7 +4760,7 @@
     var h = '<div class="cat-row ' + st + (preview ? " preview" : "") + " r-" + (d.rarity || "common") + '" data-cat="' + cat + '" data-id="' + d.id + '">';
     h += '<div class="cat-swatch" data-drag="1" data-cat="' + cat + '" data-id="' + d.id + '" style="background:' + hangarSwatch(cat, d) + ";color:" + hangarSwatch(cat, d) + '"></div>';
     h += '<div class="cat-info"><div class="cat-name">' + d.name + ' <span class="badge b-' + (d.rarity || "common") + '">' + rarityLabel(d.rarity) + "</span></div>";
-    h += '<div class="cat-desc">' + d.desc + "</div>";
+    h += '<div class="cat-desc">' + d.desc + (d.perkText ? " · " + d.perkText : "") + "</div>";
     h += '<div class="chips">' + chips + "</div>";
     if (st === "locked") h += '<div class="lock-reason">Locked · ' + lockReason(d) + "</div>";
     else if (st === "buy" && !canAfford) h += '<div class="lock-reason">Need ' + (d.cost - profile.coins) + "c more</div>";
@@ -4962,6 +5335,7 @@
       p.shieldHp = Math.max(p.shieldHp, 2);
       p.shieldT = 0;
     }
+    resetSkinWave(p);
   }
 
   function startNewGame(opts) {
@@ -5018,6 +5392,7 @@
     gameOver = false; started = true; paused = false; runFinished = false;
     pbul = []; ebul = []; particles = []; rings = []; pickups = []; teles = [];
     enemies = [];
+    skinDecoys = [];
     shake = 0; flash = 0; time = 0;
     waveHold = 0;
     run = emptyRun();
@@ -6111,7 +6486,7 @@
     inp = p.input || input;
     if (p.slowT > 0) p.slowT = Math.max(0, p.slowT - dt);
     if (p.jamT > 0) p.jamT = Math.max(0, p.jamT - dt);
-    spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1);
+    spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1) * (p.skinSpdMul || 1);
     margin = Math.max(10, (p.r || PLAYER_R) + 4);
     if (p.slot === localSlot && pointerSteer.aimX != null) {
       aimX = pvpFlipped() ? (W - pointerSteer.aimX) : pointerSteer.aimX;
@@ -6131,6 +6506,32 @@
     p.muzzle = Math.max(0, p.muzzle - dt * 6);
     if (p.weaponT > 0) { p.weaponT -= dt; if (p.weaponT <= 0) p.weapon = "normal"; }
     if (p.speedT > 0) p.speedT = Math.max(0, p.speedT - dt);
+    if ((p.skinBoostT || 0) > 0) {
+      p.skinBoostT = Math.max(0, p.skinBoostT - dt);
+      if (p.skinBoostT <= 0) refreshSkinMuls(p);
+    }
+    if ((p.skinHotT || 0) > 0) {
+      p.skinHotT = Math.max(0, p.skinHotT - dt);
+      if (p.skinHotT <= 0) { p.skinHotStacks = 0; refreshSkinMuls(p); }
+    }
+    if ((p.skinUmbraT || 0) > 0) p.skinUmbraT = Math.max(0, p.skinUmbraT - dt);
+    if ((p.skinSentinelCd || 0) > 0) p.skinSentinelCd = Math.max(0, p.skinSentinelCd - dt);
+    if (p.skinEcho) {
+      p.skinEcho.t -= dt;
+      if (p.skinEcho.t <= 0) fireSkinEcho(p);
+    }
+    if (skinIdOf(p) === "nebula") {
+      if ((p.skinNebulaT || 0) > 0) p.skinNebulaT = Math.max(0, p.skinNebulaT - dt);
+      else {
+        p.skinNebulaCd = (p.skinNebulaCd || 0) - dt;
+        if (p.skinNebulaCd <= 0) {
+          p.skinNebulaT = 1.1;
+          p.skinNebulaCd = 7.5;
+          rings.push({ x: p.x, y: p.y, r: 8, vr: 80, life: 0.4, color: "#d46bff" });
+        }
+      }
+    }
+    tickSkinAura(p, dt);
     if (p.shieldT > 0) {
       p.shieldT -= dt;
       if (p.shieldT <= 0) { p.shieldT = 0; p.shieldHp = 0; }
@@ -6189,6 +6590,10 @@
     if (shake < 0.05) shake = 0;
     flash *= Math.exp(-dt * 8);
     if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
+    for (i = skinDecoys.length - 1; i >= 0; i--) {
+      skinDecoys[i].t -= dt;
+      if (skinDecoys[i].t <= 0) skinDecoys.splice(i, 1);
+    }
 
     for (i = teles.length - 1; i >= 0; i--) {
       teles[i].t -= dt;
@@ -6247,6 +6652,9 @@
       if (!e.alive) continue;
       e.hitFlash = Math.max(0, e.hitFlash - dt);
       e.healFlash = Math.max(0, (e.healFlash || 0) - dt);
+      tickSkinEnemy(e, dt);
+      if (!e.alive) continue;
+      if (!(e.freezeT > 0)) {
       if (e.isBoss) {
         updateBoss(e, dt);
       } else {
@@ -6318,6 +6726,7 @@
           if (e.t >= 1) startArchonReturn(e);
         }
       }
+      }
 
       for (pi = 0; pi < players.length; pi++) {
         pl = players[pi];
@@ -6325,7 +6734,12 @@
         if (e.state === "form" || e.state === "enter") continue;
         pr = pl.r || PLAYER_R;
         if (dist2(pl.x, pl.y, e.x, e.y) < (pr + e.r * 0.65) * (pr + e.r * 0.65)) {
-          if (e.type === "kami") { killEnemy(e, true); }
+          if (skinIdOf(pl) === "phantom-spectral" && Math.random() < 0.2) {
+            pl.invuln = Math.max(pl.invuln || 0, 0.22);
+            continue;
+          }
+          if (e.type === "kami") { killEnemy(e, true, 1, pl.slot); }
+          if (consumeSkinWard(pl)) break;
           playerDie(pl);
           break;
         }
@@ -6390,15 +6804,16 @@
         if (!e.alive) continue;
         if (b.hit && b.hit.indexOf(e) >= 0) continue;
         if (dist2(b.x, b.y, e.x, e.y) < (e.r + br) * (e.r + br)) {
-          killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", b.dmg || 1);
+          var own = players[b.owner] || player;
+          skinOnBulletHit(own, e, b);
+          killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", b.dmg || 1, b.owner);
           if (b.splash) {
             var sj, se;
             for (sj = 0; sj < enemies.length; sj++) {
               se = enemies[sj];
               if (!se.alive || se === e) continue;
               if (dist2(b.x, b.y, se.x, se.y) < (b.splash.r + se.r) * (b.splash.r + se.r)) {
-                var own = players[b.owner] || player;
-                killEnemy(se, false, b.splash.dmg * loadoutDmgMul(shipDef(own), equippedMod(own), own));
+                killEnemy(se, false, b.splash.dmg * loadoutDmgMul(shipDef(own), equippedMod(own), own), b.owner, "splash");
               }
             }
             rings.push({ x: b.x, y: b.y, r: 4, vr: 160, life: 0.3, color: "#ffe08a" });
@@ -6418,9 +6833,24 @@
         for (pi = 0; pi < players.length; pi++) {
           pl = players[pi];
           if (!pl || !pl.alive || pl.slot === b.owner) continue;
+          cycloneNudge(pl, b, dt);
+          var def = skinDefendShot(pl, b);
+          if (def === "eat") {
+            pbul.splice(i, 1);
+            consumed = true;
+            break;
+          }
+          if (def === "reflect") {
+            reflectAsPlayerShot(b, pl);
+            pbul.splice(i, 1);
+            consumed = true;
+            break;
+          }
           if (pl.invuln > 0) continue;
           pr = pl.r || PLAYER_R;
           if (dist2(b.x, b.y, pl.x, pl.y) < (pr + br) * (pr + br)) {
+            var shooter = players[b.owner];
+            if (shooter && skinIdOf(shooter) === "frost") pl.slowT = Math.max(pl.slowT || 0, 0.7);
             if (b.splash) pvpHurt(pl, (b.dmg || 1) + (b.splash.dmg || 0));
             else pvpHurt(pl, b.dmg || 1);
             if (b.pierce && b.pierce > 0) {
@@ -6505,11 +6935,25 @@
         }
       }
       if (b.y > H + 14 || b.x < -16 || b.x > W + 16 || b.y < -20) { ebul.splice(i, 1); continue; }
-      var hit = false;
+      var hit = false, gone = false;
       for (pi = 0; pi < players.length; pi++) {
         pl = players[pi];
-        if (!pl || !pl.alive || pl.invuln > 0) continue;
+        if (!pl || !pl.alive) continue;
         if (b.owner != null && b.owner >= 0 && b.owner === pl.slot) continue;
+        cycloneNudge(pl, b, dt);
+        var edef = skinDefendShot(pl, b);
+        if (edef === "eat") {
+          ebul.splice(i, 1);
+          gone = true;
+          break;
+        }
+        if (edef === "reflect") {
+          reflectAsPlayerShot(b, pl);
+          ebul.splice(i, 1);
+          gone = true;
+          break;
+        }
+        if (pl.invuln > 0) continue;
         pr = pl.r || PLAYER_R;
         if (dist2(b.x, b.y, pl.x, pl.y) < (pr + (b.r || 2) - 1.5) * (pr + (b.r || 2) - 1.5)) {
           ebul.splice(i, 1);
@@ -6519,6 +6963,7 @@
           break;
         }
       }
+      if (gone) continue;
       if (hit) break;
     }
 
@@ -7825,6 +8270,18 @@
       context.beginPath(); context.arc(0, 0, e.r + 4 + Math.sin(time * 10) * 1.2, 0, Math.PI * 2); context.stroke();
       context.globalAlpha = 1;
     }
+    if ((e.freezeT || 0) > 0) {
+      context.globalAlpha = 0.42;
+      context.fillStyle = "#c8f4ff";
+      context.beginPath(); context.arc(0, 0, e.r + 1, 0, Math.PI * 2); context.fill();
+      context.globalAlpha = 1;
+    }
+    if ((e.burnTicks || 0) > 0) {
+      context.globalAlpha = 0.32 + 0.12 * Math.sin(time * 14);
+      context.fillStyle = "#ff7a3d";
+      context.beginPath(); context.arc(0, 0, e.r * 0.78, 0, Math.PI * 2); context.fill();
+      context.globalAlpha = 1;
+    }
     context.restore();
   }
 
@@ -7982,9 +8439,36 @@
     }
     ctx.globalAlpha = 1;
 
+    for (i = 0; i < skinDecoys.length; i++) {
+      p = skinDecoys[i];
+      ctx.save();
+      ctx.globalAlpha = 0.28 + 0.12 * Math.sin(time * 8);
+      glow(ctx, "#c8f8ff", 14);
+      ctx.strokeStyle = "#e8ffff";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y - 8);
+      ctx.lineTo(p.x + 6, p.y + 6);
+      ctx.lineTo(p.x - 6, p.y + 6);
+      ctx.closePath();
+      ctx.stroke();
+      noGlow(ctx);
+      ctx.restore();
+    }
+
     for (i = 0; i < players.length; i++) {
       p = players[i];
       if (!p || !p.alive) continue;
+      if ((p.skinNebulaT || 0) > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.18 + 0.08 * Math.sin(time * 6);
+        ctx.strokeStyle = "#d46bff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 42, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
       ctx.save();
       if (p.facing > 0) {
         ctx.translate(p.x, p.y);
