@@ -439,7 +439,7 @@
   }
   // Regular enemies gain a little HP deep into a run so upgraded guns stay relevant.
   // Solo also +1s everything except grunt/kami, which stay 1-shot for Pulse (dmg 1).
-  function enemyHp(type, tier, n) {
+  function enemyHp(type, tier, n, asGuest) {
     n = n || wave || 1;
     var hp;
     if (isBossType(type)) hp = bossHp(type, tier);
@@ -450,7 +450,10 @@
     else if (type === "hex" || type === "harrier") hp = 2;
     else hp = 1 + Math.floor(n / 25);
     if (!isCoop() && type !== "grunt" && type !== "kami") hp += 1;
-    return scaleHp(hp);
+    hp = scaleHp(hp);
+    // Mixed-wave guests after the wave-30 boss are 25% thinner; every-5 fights stay full.
+    if (asGuest && isBossType(type) && n >= 31) hp = Math.max(1, Math.round(hp * 0.75));
+    return hp;
   }
   function enemyR(type) {
     var d = bossDef(type);
@@ -545,8 +548,34 @@
   }
   // Some mid/late non-boss waves mix in a roster boss plus a thin escort.
   // Hash the wave so co-op skip credit and the live spawn stay in sync.
+  function guestUnlockedCount(n) {
+    return Math.min(BOSS_DEFS.length, Math.max(3, Math.floor(n / BOSS_EVERY)));
+  }
+  function pickGuestBossIds(rng, n, count, avoid) {
+    var pool = [], i, j, id, idx, skip, out = [];
+    count = count || 1;
+    for (i = 0; i < guestUnlockedCount(n); i++) {
+      id = BOSS_DEFS[i].id;
+      skip = false;
+      if (avoid) {
+        for (j = 0; j < avoid.length; j++) if (avoid[j] === id) { skip = true; break; }
+      }
+      if (!skip) pool.push(id);
+    }
+    if (pool.length < count) {
+      pool = [];
+      for (i = 0; i < guestUnlockedCount(n); i++) pool.push(BOSS_DEFS[i].id);
+    }
+    count = Math.min(count, pool.length);
+    for (i = 0; i < count; i++) {
+      idx = Math.floor(rng() * pool.length);
+      out.push(pool[idx]);
+      pool.splice(idx, 1);
+    }
+    return out;
+  }
   function guestBossPlan(n) {
-    var rng, roll, late, bosses, tier, a, b, maxIdx, idx;
+    var rng, roll, late, bosses, tier, dual, last;
     if (n < 16 || isBossWave(n) || isMiniWave(n)) return null;
     rng = seededRand(0xC0FFEE ^ Math.imul(n, 2246822519));
     roll = rng();
@@ -554,18 +583,17 @@
     if (roll > (late ? 0.42 : 0.28)) return null;
     bosses = [];
     tier = 0;
-    if (!late) {
+    if (n < 31) {
       bosses.push(BOSS_DEFS[Math.floor(rng() * 3)].id);
-    } else if (rng() < 0.45) {
-      a = Math.floor(rng() * 3);
-      b = (a + 1 + Math.floor(rng() * 2)) % 3;
-      bosses.push(BOSS_DEFS[a].id, BOSS_DEFS[b].id);
-      if (n >= 56) tier = 1;
     } else {
-      maxIdx = Math.min(BOSS_DEFS.length - 1, 3 + Math.floor((n - 36) / 8));
-      idx = 3 + Math.floor(rng() * Math.max(1, maxIdx - 2));
-      bosses.push(BOSS_DEFS[idx].id);
-      if (n >= 60) tier = 1;
+      // After wave 30, pick from every debuted boss instead of locking onto
+      // Colossus. Skip the last scheduled fight so mixed waves keep changing.
+      // Duals stay on the existing left/right seats (still on-screen).
+      dual = late && rng() < 0.45;
+      last = Math.floor(n / BOSS_EVERY) * BOSS_EVERY;
+      bosses = pickGuestBossIds(rng, n, dual ? 2 : 1, last >= BOSS_EVERY && last < n ? [bossMeta(last).type] : null);
+      if (late && bosses.length > 1 && n >= 56) tier = 1;
+      else if (late && bosses.length === 1 && n >= 60) tier = 1;
     }
     return { bosses: bosses, tier: tier };
   }
@@ -2306,7 +2334,7 @@
 
   function makeEnemy(offX, offY, type, extra) {
     extra = extra || {};
-    var hp = enemyHp(type, extra.tier || 0, wave);
+    var hp = enemyHp(type, extra.tier || 0, wave, extra.guest);
     var e = {
       id: extra.id || allocId(),
       offX: offX, offY: offY, type: type,
@@ -2736,7 +2764,7 @@
         run.bossHits = 0;
         for (i = 0; i < plan.bosses.length; i++) {
           bx = plan.bosses.length === 1 ? 0 : (i === 0 ? -56 : 56);
-          guest = makeEnemy(bx, 10, plan.bosses[i], { isBoss: true, tier: plan.tier || 0 });
+          guest = makeEnemy(bx, 10, plan.bosses[i], { isBoss: true, tier: plan.tier || 0, guest: true });
           guest.homeX = plan.bosses.length === 1 ? W / 2 : (i === 0 ? 70 : W - 70);
           enemies.push(guest);
         }
