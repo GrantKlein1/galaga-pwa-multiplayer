@@ -23,6 +23,12 @@
   var PROFILE_VER = 3;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
+  // Playfield is 240x360 with 16px side margins (208px of travel). Formations
+  // used to span ±108 (216px), which is wider than the lane, so ships clipped
+  // off the sides. Keep the swarm inside the screen with room to patrol.
+  var FORM_OX_LIMIT = 92;
+  var FORM_OY_MIN = -16;
+  var FORM_OY_MAX = 110;
   // Run score used to convert 1:1 into XP. 0.15x (25% below the old 0.2x) makes a ~10k run ~1.5k XP.
   var XP_SCORE_MUL = 0.15;
   var PICKUP_PAD = 16;
@@ -497,6 +503,7 @@
 
   function mixType(n, i, role) {
     if (n <= 1) return "grunt";
+    if (n >= 16) return mixTypeLate(n, i, role);
     if (role === "back") {
       if (n >= 8 && i % 3 === 0) return "shield";
       if (n >= 4 && i % 2 === 0) return "tank";
@@ -511,6 +518,61 @@
     if (n >= 6 && i % 3 === 0) return "kami";
     if (n >= 3 && i % 2 === 1) return "weaver";
     return "grunt";
+  }
+  // Later waves trade grunt spam for tanks, snipers, kami, and weavers so a
+  // smaller on-screen swarm still ramps difficulty.
+  function mixTypeLate(n, i, role) {
+    var hard = n >= 31;
+    if (role === "back") {
+      if (i % 3 === 0) return "shield";
+      if (i % 2 === 0) return "tank";
+      return "sniper";
+    }
+    if (role === "mid") {
+      if (i % 2 === 0) return "weaver";
+      if (i % 3 === 0) return "sniper";
+      return hard ? "tank" : "weaver";
+    }
+    if (i % 2 === 0) return "kami";
+    if (i % 3 === 1) return "weaver";
+    return hard ? "tank" : "grunt";
+  }
+  // Some mid/late non-boss waves mix in a roster boss plus a thin escort.
+  // Hash the wave so co-op skip credit and the live spawn stay in sync.
+  function guestBossPlan(n) {
+    var rng, roll, late, bosses, tier, a, b, maxIdx, idx;
+    if (n < 16 || isBossWave(n) || isMiniWave(n)) return null;
+    rng = seededRand(0xC0FFEE ^ Math.imul(n, 2246822519));
+    roll = rng();
+    late = n >= 36;
+    if (roll > (late ? 0.42 : 0.28)) return null;
+    bosses = [];
+    tier = 0;
+    if (!late) {
+      bosses.push(BOSS_DEFS[Math.floor(rng() * 3)].id);
+    } else if (rng() < 0.45) {
+      a = Math.floor(rng() * 3);
+      b = (a + 1 + Math.floor(rng() * 2)) % 3;
+      bosses.push(BOSS_DEFS[a].id, BOSS_DEFS[b].id);
+      if (n >= 56) tier = 1;
+    } else {
+      maxIdx = Math.min(BOSS_DEFS.length - 1, 3 + Math.floor((n - 36) / 8));
+      idx = 3 + Math.floor(rng() * Math.max(1, maxIdx - 2));
+      bosses.push(BOSS_DEFS[idx].id);
+      if (n >= 60) tier = 1;
+    }
+    return { bosses: bosses, tier: tier };
+  }
+  function lateFormationCap(n) {
+    var cap, plan;
+    if (n <= 20) cap = 11;
+    else if (n <= 30) cap = 9;
+    else if (n <= 45) cap = 8;
+    else cap = 7;
+    plan = guestBossPlan(n);
+    if (plan) cap = Math.min(cap, plan.bosses.length > 1 ? 4 : 6);
+    cap += extraPlayers() * 2;
+    return cap;
   }
 
   function addSlot(slots, ox, oy, type) { slots.push({ ox: ox, oy: oy, type: type }); }
@@ -572,6 +634,7 @@
     injectElites(slots, n);
     thinArchonEscorts(slots);
     relaxSlots(slots);
+    fitSlotsToScreen(slots, n);
     return slots;
   }
 
@@ -605,7 +668,7 @@
     return best;
   }
   function dropCrowdedEscorts(slots, count) {
-    var i, best, bestD, escortN, d;
+    var i, best, bestD, escortN, d, dropped = 0;
     while (count > 0) {
       escortN = 0;
       best = -1;
@@ -619,7 +682,9 @@
       if (best < 0 || escortN <= 1) break;
       slots.splice(best, 1);
       count -= 1;
+      dropped += 1;
     }
+    return dropped;
   }
   function thinEarlyWave(slots, n) {
     if (n < 1 || n > 10 || isBossWave(n) || slots.length <= 1) return slots;
@@ -663,10 +728,41 @@
         }
       }
     }
+    clampSlotX(slots);
+    return slots;
+  }
+  function clampSlotX(slots) {
+    var i;
     for (i = 0; i < slots.length; i++) {
-      if (slots[i].ox > 108) slots[i].ox = 108;
-      if (slots[i].ox < -108) slots[i].ox = -108;
+      if (slots[i].ox > FORM_OX_LIMIT) slots[i].ox = FORM_OX_LIMIT;
+      if (slots[i].ox < -FORM_OX_LIMIT) slots[i].ox = -FORM_OX_LIMIT;
     }
+  }
+  function clampSlotRange(slots) {
+    var i;
+    clampSlotX(slots);
+    for (i = 0; i < slots.length; i++) {
+      if (slots[i].oy > FORM_OY_MAX) slots[i].oy = FORM_OY_MAX;
+      if (slots[i].oy < FORM_OY_MIN) slots[i].oy = FORM_OY_MIN;
+    }
+  }
+  function fitSlotsToScreen(slots, n) {
+    var cap, i, type;
+    if (!slots.length || isBossWave(n) || n <= 10) return slots;
+    cap = lateFormationCap(n);
+    while (slots.length > cap) {
+      if (!dropCrowdedEscorts(slots, 1)) {
+        for (i = slots.length - 1; i >= 0 && slots.length > cap; i--) {
+          type = slots[i].type;
+          if (type === "archon" || type === "mortar" || type === "hex" || type === "harrier" || type === "bulwark") continue;
+          slots.splice(i, 1);
+        }
+        break;
+      }
+    }
+    clampSlotRange(slots);
+    relaxSlots(slots);
+    clampSlotRange(slots);
     return slots;
   }
   function injectElites(slots, n) {
@@ -677,10 +773,10 @@
       slots[archonIdx].type = "archon";
     }
     types = ["mortar", "hex", "harrier", "bulwark"];
-    cap = n >= 21 ? 4 : n >= 11 ? 3 : 2;
-    chance = n >= 21 ? 18 : n >= 11 ? 14 : 9;
+    cap = n >= 31 ? 5 : n >= 21 ? 4 : n >= 11 ? 3 : 2;
+    chance = n >= 31 ? 28 : n >= 21 ? 22 : n >= 11 ? 14 : 9;
     perType = n >= 11 ? 2 : 1;
-    minElites = n >= 21 ? 3 : n >= 11 ? 2 : 0;
+    minElites = n >= 31 ? 4 : n >= 21 ? 3 : n >= 11 ? 2 : 0;
     function takeElite(idx) {
       ti = (n + idx) % types.length;
       type = null;
@@ -717,22 +813,23 @@
 
   // Co-op keeps the solo shape, then adds ships so the count is 4/3 of solo
   // (wave 2 is 15 solo → 20 co-op). Extra ranks sit behind with room to breathe.
-  // Solo 1–10 used to pad +4/+3, which made the opening denser than wave 11+.
-  // Early now pads +2; later waves fill up to a rising floor so they stay fuller.
+  // Solo 1–10 pads +2. Later waves cap the swarm so it stays on-screen; extra
+  // slots fill downward instead of stacking off the top.
   function padFormation(slots, n) {
     var extra = extraPlayers();
     var i, add, src, row, ox, oy, base, target;
     if (extra >= 1 && slots.length) {
       base = slots.length;
       target = Math.max(base + extra, Math.round(base * (1 + extra * (COOP_SPAWN_RATIO - 1))));
+      if (n > 10 && !isBossWave(n)) target = Math.min(target, lateFormationCap(n));
       add = target - base;
       for (i = 0; i < add; i++) {
         src = slots[i % slots.length];
         row = 1 + Math.floor(i / slots.length);
         ox = src.ox + ((i % 2) ? 22 : -22);
-        if (ox > 108) ox = 108;
-        if (ox < -108) ox = -108;
-        oy = src.oy - 34 * row;
+        if (ox > FORM_OX_LIMIT) ox = FORM_OX_LIMIT;
+        if (ox < -FORM_OX_LIMIT) ox = -FORM_OX_LIMIT;
+        oy = n > 10 ? src.oy + 34 * row : src.oy - 34 * row;
         addSlot(slots, ox, oy, mixType(n, slots.length + i, "back"));
       }
     }
@@ -742,21 +839,21 @@
         src = slots[i % slots.length];
         row = 1 + Math.floor(i / slots.length);
         ox = src.ox + ((i % 2) ? 22 : -22);
-        if (ox > 108) ox = 108;
-        if (ox < -108) ox = -108;
+        if (ox > FORM_OX_LIMIT) ox = FORM_OX_LIMIT;
+        if (ox < -FORM_OX_LIMIT) ox = -FORM_OX_LIMIT;
         oy = src.oy - 34 * row;
         addSlot(slots, ox, oy, mixType(typeWave(n), slots.length + i, "back"));
       }
     } else if (!isCoop() && n > 10 && !isBossWave(n) && slots.length) {
-      target = 13 + Math.min(3, Math.floor((n - 11) / 8));
+      target = lateFormationCap(n);
       add = Math.max(0, target - slots.length);
       for (i = 0; i < add; i++) {
         src = slots[i % slots.length];
         row = 1 + Math.floor(i / slots.length);
         ox = src.ox + ((i % 2) ? 22 : -22);
-        if (ox > 108) ox = 108;
-        if (ox < -108) ox = -108;
-        oy = src.oy - 34 * row;
+        if (ox > FORM_OX_LIMIT) ox = FORM_OX_LIMIT;
+        if (ox < -FORM_OX_LIMIT) ox = -FORM_OX_LIMIT;
+        oy = src.oy + 34 * row;
         addSlot(slots, ox, oy, mixType(n, slots.length + i, "back"));
       }
     }
@@ -873,7 +970,6 @@
     p.ownedSkins = cloneSkinMap(raw.ownedSkins);
     p.equippedSkins = cloneSkinEquip(raw.equippedSkins);
     grantLevelSkins(p);
-    if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp));
     if (raw.dailies && typeof raw.dailies === "object") {
       p.dailies.date = typeof raw.dailies.date === "string" ? raw.dailies.date : "";
       p.dailies.ids = cloneArr(raw.dailies.ids, []);
@@ -898,6 +994,7 @@
       if (typeof raw.stats.maxCleanRunKills === "number") p.stats.maxCleanRunKills = raw.stats.maxCleanRunKills | 0;
       if (typeof raw.stats.runs === "number") p.stats.runs = raw.stats.runs | 0;
     }
+    if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp), p.stats.maxWave);
     // Profiles saved before the boss roster grew never recorded tiers: assume tier 0 kills.
     var k;
     for (k in p.stats.bosses) {
@@ -922,6 +1019,8 @@
     return lo;
   }
   // Lv 10 → start wave 5, lv 15 → 10, then +5 wave every +5 levels.
+  // Level only *shows* later start buttons. Starting there also requires
+  // having reached that wave in a previous run (profile.stats.maxWave).
   function maxStartWave(lv) {
     lv = lv == null ? xpLevel(profile.totalXp) : (lv | 0);
     if (lv < 10) return 1;
@@ -932,10 +1031,21 @@
     for (n = 5; n <= max; n += 5) out.push(n);
     return out;
   }
-  function clampStartWave(n, lv) {
+  function reachedStartWave(reached) {
+    if (reached != null) return reached | 0;
+    return (profile && profile.stats && profile.stats.maxWave) || 0;
+  }
+  function startWaveUnlocked(n, reached) {
+    n = n | 0;
+    if (n <= 1) return true;
+    return reachedStartWave(reached) >= n;
+  }
+  function clampStartWave(n, lv, reached) {
     var opts = startWaveOptions(lv), i, best = 1;
     n = n | 0;
-    for (i = 0; i < opts.length; i++) if (opts[i] <= n) best = opts[i];
+    for (i = 0; i < opts.length; i++) {
+      if (opts[i] <= n && startWaveUnlocked(opts[i], reached)) best = opts[i];
+    }
     return best;
   }
   function preferredStartWave() {
@@ -946,7 +1056,7 @@
     saveProfile();
   }
   function skipCredit(startN) {
-    var n, slots, i, pts = 0, meta, d;
+    var n, slots, i, pts = 0, meta, d, plan;
     startN = Math.max(1, startN | 0);
     for (n = 1; n < startN; n++) {
       if (isBossWave(n)) {
@@ -956,13 +1066,20 @@
       } else {
         slots = buildSlots(formationKind(n), n);
         for (i = 0; i < slots.length; i++) pts += enemyPts(slots[i].type, false);
+        plan = guestBossPlan(n);
+        if (plan) {
+          for (i = 0; i < plan.bosses.length; i++) {
+            d = bossDef(plan.bosses[i]);
+            pts += (d ? d.pts : 1500) + 800 * (plan.tier || 0);
+          }
+        }
       }
     }
     return { score: pts };
   }
-  function applySkipState(startN) {
+  function applySkipState(startN, reached) {
     var credit;
-    startN = clampStartWave(startN, MAX_LEVEL);
+    startN = clampStartWave(startN, MAX_LEVEL, reached);
     if (startN <= 1) return 1;
     credit = skipCredit(startN);
     score += credit.score;
@@ -1859,7 +1976,7 @@
       hp: hp, maxHp: hp, alive: true, state: "enter", t: 0, hitFlash: 0,
       x: W / 2 + offX * 0.2, y: -28 - Math.random() * 18,
       sx: 0, sy: 0, cx: 0, cy: 0, ex: 0, ey: 0, dur: 1,
-      shotsLeft: 0, shotAt: 0, shotCd: soloEarly() ? rand(0.48, 1.64) : rand(0.85, 2.42),
+      shotsLeft: 0, shotAt: 0, shotCd: type === "sniper" ? rand(1.45, 2.85) : (soloEarly() ? rand(0.48, 1.64) : rand(0.85, 2.42)),
       shieldHp: type === "shield" ? 2 + Math.floor(wave / 20) + extraPlayers() : 0,
       phase: Math.random() * 6.2,
       isBoss: !!extra.isBoss, tier: extra.tier || 0,
@@ -2238,6 +2355,15 @@
     else if (roll < 0.14 * pc) spawnPickup(e.x, e.y - 8, pickWeightedPowerup());
   }
 
+  function guestBossBanner(plan) {
+    var names = [], i, d;
+    for (i = 0; i < plan.bosses.length; i++) {
+      d = bossDef(plan.bosses[i]);
+      names.push(d ? d.name : "BOSS");
+    }
+    return names.join(" + ") + (plan.tier ? " +" + plan.tier : "");
+  }
+
   function spawnWave(n) {
     if (isPvpRun()) return;
     wave = n;
@@ -2251,7 +2377,8 @@
     enterT = isBossWave(n) ? 1.15 : 0.75;
     diveCd = isBossWave(n) ? 99 : 1.2;
     waveKind = isBossWave(n) ? "boss" : formationKind(n);
-    sfxWave(isBossWave(n));
+    var plan = isBossWave(n) ? null : guestBossPlan(n);
+    sfxWave(isBossWave(n) || !!(plan && plan.bosses.length));
     if (isBossWave(n)) {
       var meta = bossMeta(n);
       var label = bossName(meta.type) + (meta.tier ? " +" + meta.tier : "");
@@ -2263,8 +2390,18 @@
       banner = { text: isMiniWave(n) ? "ARCHON" : ("WAVE " + n), life: isMiniWave(n) ? 1.4 : 1.1 };
       var slots = buildSlots(waveKind, n);
       setFormBounds(slots);
-      var i;
+      var i, guest, bx;
       for (i = 0; i < slots.length; i++) enemies.push(makeEnemy(slots[i].ox, slots[i].oy, slots[i].type));
+      if (plan && plan.bosses.length) {
+        run.bossHits = 0;
+        for (i = 0; i < plan.bosses.length; i++) {
+          bx = plan.bosses.length === 1 ? 0 : (i === 0 ? -56 : 56);
+          guest = makeEnemy(bx, 10, plan.bosses[i], { isBoss: true, tier: plan.tier || 0 });
+          guest.homeX = plan.bosses.length === 1 ? W / 2 : (i === 0 ? 70 : W - 70);
+          enemies.push(guest);
+        }
+        banner = { text: guestBossBanner(plan), life: 1.4 };
+      }
     }
     if (player && player.alive) player.invuln = Math.max(player.invuln, 1.15);
     var pi;
@@ -4139,7 +4276,7 @@
     var lv = xpLevel(profile.totalXp);
     var opts = startWaveOptions(lv);
     var chosen = preferredStartWave();
-    var html = "", i, n, label;
+    var html = "", i, n, label, locked, hasLocked = false;
     if (!box) return;
     if (readOnly) {
       box.innerHTML = "";
@@ -4148,16 +4285,19 @@
     }
     for (i = 0; i < opts.length; i++) {
       n = opts[i];
+      locked = !startWaveUnlocked(n);
+      if (locked) hasLocked = true;
       label = n === 1 ? "Wave 1" : ("Wave " + n);
-      html += '<button type="button" class="start-wave-opt' + (n === chosen ? " active" : "") + '" data-wave="' + n + '"' + (readOnly ? " disabled" : "") + ">" + label + "</button>";
+      html += '<button type="button" class="start-wave-opt' + (n === chosen ? " active" : "") + (locked ? " locked" : "") + '" data-wave="' + n + '"' + (locked ? ' disabled title="Beat this wave first to unlock starting at it."' : "") + ">" + label + "</button>";
     }
     box.innerHTML = html;
     if (!readOnly) {
       box.onclick = function (ev) {
         var btn = ev.target && ev.target.closest ? ev.target.closest(".start-wave-opt") : null;
         var w;
-        if (!btn) return;
+        if (!btn || btn.disabled) return;
         w = btn.getAttribute("data-wave") | 0;
+        if (!startWaveUnlocked(w)) return;
         setPreferredStartWave(w);
         // Already-selected Wave 1 would otherwise be a no-op; start on any tap.
         if (id === "start-wave-opts") {
@@ -4174,9 +4314,9 @@
       };
     }
     if (hint) {
-      hint.textContent = lv < 10
-        ? "Reach level 10 to skip early waves"
-        : ("Unlocked through wave " + maxStartWave(lv));
+      if (lv < 10) hint.textContent = "Reach level 10 to skip early waves";
+      else if (hasLocked) hint.textContent = "Beat this wave first to unlock starting at it.";
+      else hint.textContent = "Unlocked through wave " + maxStartWave(lv);
     }
   }
 
@@ -5033,7 +5173,8 @@
       pvpApi().markDeducted();
       saveProfile();
     }
-    var startN = opts.startWave != null ? clampStartWave(opts.startWave, MAX_LEVEL) : preferredStartWave();
+    var skipReached = opts.fromNet ? 9999 : undefined;
+    var startN = opts.startWave != null ? clampStartWave(opts.startWave, MAX_LEVEL, skipReached) : preferredStartWave();
     if (opts.pvp || (pvpApi() && pvpApi().isMatch())) {
       if (netRole === "host" && specs.length > 1) {
         netSend({
@@ -5048,7 +5189,7 @@
         });
       }
     } else {
-      startN = applySkipState(startN);
+      startN = applySkipState(startN, skipReached);
       if (netRole === "host" && specs.length > 1) netSend({ t: "start", players: specs, startWave: startN });
       if (netRole !== "client") spawnWave(startN);
     }
@@ -6272,7 +6413,7 @@
               e.shotCd -= dt;
               if (e.shotCd <= 0) {
                 aimedShot(e, 0.92, 150 + pressureWave() * 6, { color: "#ffd0e8", glow: "#ff4d9a" });
-                e.shotCd = Math.max(0.85, (2.78 - pressureWave() * 0.08) / (1 + extraPlayers() * 0.35));
+                e.shotCd = Math.max(1.65, (3.4 - pressureWave() * 0.04) / (1 + extraPlayers() * 0.25));
               }
             }
           }
@@ -8766,9 +8907,12 @@
       FIRE_MS: FIRE_MS,
       maxStartWave: maxStartWave,
       startWaveOptions: startWaveOptions,
+      startWaveUnlocked: startWaveUnlocked,
       skipCredit: skipCredit,
       preferredStartWave: preferredStartWave,
       setPreferredStartWave: setPreferredStartWave,
+      guestBossPlan: guestBossPlan,
+      buildSlots: buildSlots,
       XP_SCORE_MUL: XP_SCORE_MUL,
       soloEarly: soloEarly,
       pressureWave: pressureWave,

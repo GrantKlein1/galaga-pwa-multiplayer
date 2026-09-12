@@ -167,6 +167,12 @@ html, body {
 .start-wave-opt.active { background: #7ef9ff; color: #041018; border-color: #7ef9ff; }
 .start-wave-opt:hover:not(.active):not(:disabled) { background: rgba(126, 249, 255, 0.12); }
 .start-wave-opt:disabled { opacity: 0.7; cursor: default; }
+.start-wave-opt.locked {
+  opacity: 0.38;
+  cursor: not-allowed;
+  color: #6a7aa8;
+}
+.start-wave-opt.locked.active { background: transparent; color: #6a7aa8; border-color: #2a3a66; }
 .start-wave-hint {
   font-size: 8px;
   line-height: 1.4;
