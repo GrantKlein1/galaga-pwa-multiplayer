@@ -88,40 +88,40 @@
     { id: "stock", name: "Stock", unlockLevel: 1, cost: 0, rarity: "common", fx: "solid", hue: 0, sat: 1, lit: 1, desc: "Factory paint" },
     { id: "ion", name: "Ion", unlockLevel: 7, cost: 0, rarity: "common", fx: "ion", hue: 22, sat: 1.12, lit: 1.06, desc: "Charged cyan arc" },
     { id: "ember", name: "Ember", unlockLevel: 12, cost: 0, rarity: "common", fx: "ember", hue: -42, sat: 1.22, lit: 1.02, desc: "Furnace glow along the hull" },
-    { id: "void", name: "Void", unlockLevel: 17, cost: 0, rarity: "rare", fx: "void", hue: 78, sat: 0.82, lit: 0.7, desc: "Dark-matter rim light" },
-    { id: "gilded", name: "Gilded", unlockLevel: 22, cost: 0, rarity: "rare", fx: "gilded", hue: -18, sat: 1.18, lit: 1.12, desc: "Gold-leaf shimmer" },
-    { id: "prism", name: "Prism", unlockLevel: 27, cost: 0, rarity: "rare", fx: "prism", hue: 48, sat: 1.2, lit: 1.08, desc: "Refracted outline" },
-    { id: "novaflux", name: "Novaflux", unlockLevel: 32, cost: 0, rarity: "epic", fx: "novaflux", hue: 8, sat: 0.55, lit: 1.28, desc: "White-hot core" },
-    { id: "frost", name: "Frost", unlockLevel: 37, cost: 0, rarity: "epic", fx: "frost", hue: 28, sat: 0.68, lit: 1.22, desc: "Ice-rimmed hull" },
-    { id: "solar", name: "Solar", unlockLevel: 42, cost: 0, rarity: "epic", fx: "solar", hue: -55, sat: 1.28, lit: 1.14, desc: "Corona flare" },
-    { id: "nebula", name: "Nebula", unlockLevel: 47, cost: 0, rarity: "legendary", fx: "nebula", hue: 112, sat: 1.16, lit: 0.96, desc: "Gas-cloud wash" },
-    { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.22, lit: 1.06, desc: "Dual-tone flash" }
+    { id: "void", name: "Void", unlockLevel: 17, cost: 0, rarity: "rare", fx: "void", hue: 78, sat: 0.82, lit: 0.62, desc: "Hollow dark-matter core, orbiting debris" },
+    { id: "gilded", name: "Gilded", unlockLevel: 22, cost: 0, rarity: "rare", fx: "gilded", hue: -18, sat: 1.22, lit: 1.14, desc: "Engraved gold plates and a traveling shine" },
+    { id: "prism", name: "Prism", unlockLevel: 27, cost: 0, rarity: "rare", fx: "prism", hue: 48, sat: 1.24, lit: 1.1, desc: "Chromatic split hull, rainbow edge" },
+    { id: "novaflux", name: "Novaflux", unlockLevel: 32, cost: 0, rarity: "epic", fx: "novaflux", hue: 8, sat: 0.5, lit: 1.32, desc: "White-hot core with radiating spokes" },
+    { id: "frost", name: "Frost", unlockLevel: 37, cost: 0, rarity: "epic", fx: "frost", hue: 28, sat: 0.62, lit: 1.24, desc: "Crystalline overgrowth and ice-shard wings" },
+    { id: "solar", name: "Solar", unlockLevel: 42, cost: 0, rarity: "epic", fx: "solar", hue: -55, sat: 1.32, lit: 1.16, desc: "Photosphere core and corona prominences" },
+    { id: "nebula", name: "Nebula", unlockLevel: 47, cost: 0, rarity: "legendary", fx: "nebula", hue: 112, sat: 1.2, lit: 0.94, desc: "Living gas-cloud body with embedded stars" },
+    { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.24, lit: 1.08, desc: "Ceremonial wings and a gold-violet afterimage" }
   ];
   var SHIP_COIN_SKINS = [
-    { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 2500, rarity: "epic", fx: "aurora", hull: "#5cffc4", accent: "#ff9ad6", desc: "Northern-light wash" },
-    { id: "wisp-ghostlight", ship: "wisp", name: "Ghostlight", cost: 7000, rarity: "legendary", fx: "hologram", hull: "#d8fbff", accent: "#ffffff", desc: "Hologram scan, barely there" },
-    { id: "needle-hotstreak", ship: "needle", name: "Hotstreak", cost: 2500, rarity: "epic", fx: "ember", hull: "#ff6b4d", accent: "#ffe08a", desc: "Racing ember stripe" },
-    { id: "needle-pinkvoid", ship: "needle", name: "Pinkvoid", cost: 7000, rarity: "legendary", fx: "void", hull: "#2a0820", accent: "#ff4d9a", desc: "Needle in the dark" },
-    { id: "aegis-chrome", ship: "aegis", name: "Chrome", cost: 2500, rarity: "epic", fx: "chrome", hull: "#c8d8f0", accent: "#ffffff", desc: "Polished plate" },
-    { id: "aegis-ward", ship: "aegis", name: "Ward", cost: 7000, rarity: "legendary", fx: "ion", hull: "#3dffb0", accent: "#e8fff4", desc: "Guardian ion lattice" },
-    { id: "broadwing-goldwing", ship: "broadwing", name: "Goldwing", cost: 2500, rarity: "epic", fx: "gilded", hull: "#ffd23d", accent: "#fff4c0", desc: "Treasury gilt" },
-    { id: "broadwing-sunburst", ship: "broadwing", name: "Sunburst", cost: 7000, rarity: "legendary", fx: "solar", hull: "#ff9a3d", accent: "#fff0a0", desc: "Dawn corona" },
-    { id: "phantom-spectral", ship: "phantom", name: "Spectral", cost: 2500, rarity: "epic", fx: "hologram", hull: "#c8a0ff", accent: "#f0e8ff", desc: "Half-here shimmer" },
-    { id: "phantom-rift", ship: "phantom", name: "Rift", cost: 7000, rarity: "legendary", fx: "void", hull: "#1a0828", accent: "#d46bff", desc: "Tear in the dark" },
-    { id: "vulture-acid", ship: "vulture", name: "Acid", cost: 2500, rarity: "epic", fx: "ember", hull: "#b6ff4d", accent: "#5cff8a", desc: "Venom wash" },
-    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 7000, rarity: "legendary", fx: "mythic", hull: "#6a8a20", accent: "#ff7a5c", desc: "Feast colors" },
-    { id: "bastion-fortress", ship: "bastion", name: "Fortress", cost: 2500, rarity: "epic", fx: "chrome", hull: "#8aa0d8", accent: "#e0e8ff", desc: "Siege plate" },
-    { id: "bastion-obsidian", ship: "bastion", name: "Obsidian", cost: 7000, rarity: "legendary", fx: "void", hull: "#141428", accent: "#6b8cff", desc: "Black-glass bunker" },
-    { id: "strix-bloodglass", ship: "strix", name: "Bloodglass", cost: 2500, rarity: "epic", fx: "ember", hull: "#ff3355", accent: "#ffd0d8", desc: "Crimson canopy" },
-    { id: "strix-inferno", ship: "strix", name: "Inferno", cost: 7000, rarity: "legendary", fx: "solar", hull: "#ff7a3d", accent: "#ffe08a", desc: "Glass cannon fire" },
-    { id: "nova-supernova", ship: "nova", name: "Supernova", cost: 2500, rarity: "epic", fx: "novaflux", hull: "#ffe08a", accent: "#ffffff", desc: "Core going critical" },
-    { id: "nova-starburst", ship: "nova", name: "Starburst", cost: 7000, rarity: "legendary", fx: "solar", hull: "#ffb060", accent: "#fff4d0", desc: "Detonation gold" },
-    { id: "tempest-cyclone", ship: "tempest", name: "Cyclone", cost: 2500, rarity: "epic", fx: "ion", hull: "#3df0ff", accent: "#ffffff", desc: "Storm-cell glow" },
-    { id: "tempest-lightning", ship: "tempest", name: "Lightning", cost: 7000, rarity: "legendary", fx: "prism", hull: "#7ef9ff", accent: "#ffe08a", desc: "Bolt-struck hull" },
-    { id: "warden-jade", ship: "warden", name: "Jade", cost: 2500, rarity: "epic", fx: "aurora", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple green" },
-    { id: "warden-sentinel", ship: "warden", name: "Sentinel", cost: 7000, rarity: "legendary", fx: "chrome", hull: "#a8ffe0", accent: "#ffffff", desc: "Honor plate" },
-    { id: "eclipse-umbra", ship: "eclipse", name: "Umbra", cost: 2500, rarity: "epic", fx: "void", hull: "#1a1028", accent: "#ffd23d", desc: "Shadow disk" },
-    { id: "eclipse-corona", ship: "eclipse", name: "Corona", cost: 7000, rarity: "legendary", fx: "solar", hull: "#e0c8ff", accent: "#ffd23d", desc: "Ring of fire" }
+    { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 2500, rarity: "epic", fx: "aurora", hull: "#3dffc8", accent: "#ff9ad6", desc: "Northern-light ribbon wings" },
+    { id: "wisp-ghostlight", ship: "wisp", name: "Ghostlight", cost: 7000, rarity: "legendary", fx: "ghostlight", hull: "#c8f8ff", accent: "#ffffff", desc: "Scanline hologram with a ghost clone" },
+    { id: "needle-hotstreak", ship: "needle", name: "Hotstreak", cost: 2500, rarity: "epic", fx: "hotstreak", hull: "#ff6b4d", accent: "#ffe08a", desc: "Racing chevrons and speed lines" },
+    { id: "needle-pinkvoid", ship: "needle", name: "Pinkvoid", cost: 7000, rarity: "legendary", fx: "pinkvoid", hull: "#1a0614", accent: "#ff4d9a", desc: "Ultra-thin dark blade, magenta plasma edge" },
+    { id: "aegis-chrome", ship: "aegis", name: "Chrome", cost: 2500, rarity: "epic", fx: "chrome", hull: "#d0dcec", accent: "#ffffff", desc: "Mirror plates with a traveling specular" },
+    { id: "aegis-ward", ship: "aegis", name: "Ward", cost: 7000, rarity: "legendary", fx: "ward", hull: "#2ae8a8", accent: "#e8fff4", desc: "Hexagonal aegis wings" },
+    { id: "broadwing-goldwing", ship: "broadwing", name: "Goldwing", cost: 2500, rarity: "epic", fx: "goldwing", hull: "#ffd23d", accent: "#fff4c0", desc: "Extra gilt feathers on the span" },
+    { id: "broadwing-sunburst", ship: "broadwing", name: "Sunburst", cost: 7000, rarity: "legendary", fx: "sunburst", hull: "#ff9a3d", accent: "#fff0a0", desc: "Sun-ray wing spread" },
+    { id: "phantom-spectral", ship: "phantom", name: "Spectral", cost: 2500, rarity: "epic", fx: "spectral", hull: "#c8a0ff", accent: "#f0e8ff", desc: "Translucent double-outline shimmer" },
+    { id: "phantom-rift", ship: "phantom", name: "Rift", cost: 7000, rarity: "legendary", fx: "rift", hull: "#14061e", accent: "#d46bff", desc: "Split hull with a void crack" },
+    { id: "vulture-acid", ship: "vulture", name: "Acid", cost: 2500, rarity: "epic", fx: "acid", hull: "#b6ff4d", accent: "#5cff8a", desc: "Dripping venom trails" },
+    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 7000, rarity: "legendary", fx: "carrion", hull: "#6a8a20", accent: "#ff7a5c", desc: "Bone-rib raptor silhouette" },
+    { id: "bastion-fortress", ship: "bastion", name: "Fortress", cost: 2500, rarity: "epic", fx: "fortress", hull: "#8aa0d8", accent: "#e0e8ff", desc: "Siege battlements on the prow" },
+    { id: "bastion-obsidian", ship: "bastion", name: "Obsidian", cost: 7000, rarity: "legendary", fx: "obsidian", hull: "#101018", accent: "#6b8cff", desc: "Jagged black-glass bunker" },
+    { id: "strix-bloodglass", ship: "strix", name: "Bloodglass", cost: 2500, rarity: "epic", fx: "bloodglass", hull: "#ff3355", accent: "#ffd0d8", desc: "Cracked ruby canopy" },
+    { id: "strix-inferno", ship: "strix", name: "Inferno", cost: 7000, rarity: "legendary", fx: "inferno", hull: "#ff7a3d", accent: "#ffe08a", desc: "Flame-winged raptor" },
+    { id: "nova-supernova", ship: "nova", name: "Supernova", cost: 2500, rarity: "epic", fx: "supernova", hull: "#ffe08a", accent: "#ffffff", desc: "Expanding star core going critical" },
+    { id: "nova-starburst", ship: "nova", name: "Starburst", cost: 7000, rarity: "legendary", fx: "starburst", hull: "#ffb060", accent: "#fff4d0", desc: "Eight-point detonation hull" },
+    { id: "tempest-cyclone", ship: "tempest", name: "Cyclone", cost: 2500, rarity: "epic", fx: "cyclone", hull: "#3df0ff", accent: "#ffffff", desc: "Spiral storm-cell body" },
+    { id: "tempest-lightning", ship: "tempest", name: "Lightning", cost: 7000, rarity: "legendary", fx: "lightning", hull: "#7ef9ff", accent: "#ffe08a", desc: "Jagged bolt silhouette" },
+    { id: "warden-jade", ship: "warden", name: "Jade", cost: 2500, rarity: "epic", fx: "jade", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple-green lattice plates" },
+    { id: "warden-sentinel", ship: "warden", name: "Sentinel", cost: 7000, rarity: "legendary", fx: "sentinel", hull: "#a8ffe0", accent: "#ffffff", desc: "Honor-guard wings and halo" },
+    { id: "eclipse-umbra", ship: "eclipse", name: "Umbra", cost: 2500, rarity: "epic", fx: "umbra", hull: "#120c1c", accent: "#ffd23d", desc: "Black disk with a gold ring" },
+    { id: "eclipse-corona", ship: "eclipse", name: "Corona", cost: 7000, rarity: "legendary", fx: "corona", hull: "#e0c8ff", accent: "#ffd23d", desc: "Full eclipse with fire prominences" }
   ];
 
   // Boss roster. Debut wave = (index + 1) * BOSS_EVERY. Kits: base (always), p2 (added below the
@@ -6587,6 +6587,41 @@
     for (i = 1; i < pts.length; i++) context.lineTo(pts[i][0], pts[i][1]);
     context.closePath();
   }
+  function fillPoly(context, pts) {
+    tracePoly(context, pts);
+    context.fill();
+  }
+  function strokePoly(context, pts) {
+    tracePoly(context, pts);
+    context.stroke();
+  }
+  function scalePoly(pts, sx, sy) {
+    var out = [], i;
+    sy = sy == null ? sx : sy;
+    for (i = 0; i < pts.length; i++) out.push([pts[i][0] * sx, pts[i][1] * sy]);
+    return out;
+  }
+  function offsetPoly(pts, dx, dy) {
+    var out = [], i;
+    for (i = 0; i < pts.length; i++) out.push([pts[i][0] + dx, pts[i][1] + dy]);
+    return out;
+  }
+  function hullSpan(pts) {
+    var i, p, minX = 0, maxX = 0, minY = 0, maxY = 0, left, right, nose, tail;
+    left = right = nose = tail = pts[0];
+    for (i = 0; i < pts.length; i++) {
+      p = pts[i];
+      if (p[0] < minX) { minX = p[0]; left = p; }
+      if (p[0] > maxX) { maxX = p[0]; right = p; }
+      if (p[1] < minY) { minY = p[1]; nose = p; }
+      if (p[1] > maxY) { maxY = p[1]; tail = p; }
+    }
+    return {
+      minX: minX, maxX: maxX, minY: minY, maxY: maxY,
+      left: left, right: right, nose: nose, tail: tail,
+      w: Math.max(8, maxX - minX), h: Math.max(10, maxY - minY)
+    };
+  }
   // Hull silhouettes, one per ship. Drawn with the ship colour; the accent canopy sits on top.
   var SHIP_HULLS = {
     wisp: [[0, -12], [8, 8], [3, 5], [0, 9], [-3, 5], [-8, 8]],
@@ -6602,6 +6637,100 @@
     warden: [[0, -11], [8, -8], [12, 0], [12, 8], [6, 6], [0, 10], [-6, 6], [-12, 8], [-12, 0], [-8, -8]],
     eclipse: [[0, -15], [3, -9], [10, -4], [12, 4], [6, 4], [4, 10], [0, 7], [-4, 10], [-6, 4], [-12, 4], [-10, -4], [-3, -9]]
   };
+  // Legendary coin skins (and a few shared forms) may replace the visual hull only.
+  // Collision still uses SHIPS[].r — never these polygons.
+  var SKIN_HULLS = {
+    "wisp-ghostlight": [[0, -14], [6, 2], [9, 10], [2, 6], [0, 11], [-2, 6], [-9, 10], [-6, 2]],
+    "needle-pinkvoid": [[0, -20], [1.5, 3], [2.2, 11], [0, 6], [-2.2, 11], [-1.5, 3]],
+    "aegis-ward": [[0, -11], [6, -8], [14, -1], [12, 8], [4, 7], [0, 9], [-4, 7], [-12, 8], [-14, -1], [-6, -8]],
+    "broadwing-sunburst": [[0, -11], [8, -2], [18, 1], [16, 10], [6, 5], [0, 10], [-6, 5], [-16, 10], [-18, 1], [-8, -2]],
+    "phantom-rift": [[0, -14], [1.5, -1], [0, 12], [-1.5, -1]],
+    "vulture-carrion": [[0, -13], [3, -6], [14, -12], [13, 2], [8, 8], [3, 5], [0, 10], [-3, 5], [-8, 8], [-13, 2], [-14, -12], [-3, -6]],
+    "bastion-obsidian": [[0, -11], [5, -12], [9, -6], [16, -2], [14, 6], [16, 12], [6, 9], [0, 13], [-6, 9], [-16, 12], [-14, 6], [-16, -2], [-9, -6], [-5, -12]],
+    "strix-inferno": [[0, -17], [4, -8], [12, 0], [10, 8], [4, 7], [0, 12], [-4, 7], [-10, 8], [-12, 0], [-4, -8]],
+    "nova-starburst": [[0, -16], [3, -5], [12, -8], [5, 0], [12, 8], [3, 5], [0, 14], [-3, 5], [-12, 8], [-5, 0], [-12, -8], [-3, -5]],
+    "tempest-lightning": [[0, -16], [5, -10], [2, -6], [11, 0], [4, 2], [8, 10], [1, 6], [0, 12], [-2, 6], [-6, 4], [-3, 0], [-9, -4], [-2, -8]],
+    "warden-sentinel": [[0, -13], [7, -10], [16, -2], [14, 8], [7, 6], [0, 11], [-7, 6], [-14, 8], [-16, -2], [-7, -10]],
+    "eclipse-corona": [[0, -16], [5, -10], [13, -6], [15, 2], [10, 6], [6, 12], [0, 8], [-6, 12], [-10, 6], [-15, 2], [-13, -6], [-5, -10]]
+  };
+  var DARK_SKIN_FX = {
+    void: 1, umbra: 1, pinkvoid: 1, obsidian: 1, rift: 1, hologram: 1, ghostlight: 1, spectral: 1
+  };
+  function visualHull(shipId, skinDef) {
+    var base = SHIP_HULLS[shipId] || SHIP_HULLS.wisp;
+    var fx = (skinDef && skinDef.fx) || "solid";
+    if (skinDef && SKIN_HULLS[skinDef.id]) return SKIN_HULLS[skinDef.id];
+    if (fx === "nebula") return scalePoly(base, 1.14, 1.1);
+    if (fx === "frost") return scalePoly(base, 1.08, 1.05);
+    if (fx === "mythic") return scalePoly(base, 1.1, 1.06);
+    if (fx === "solar") return scalePoly(base, 1.05, 1.04);
+    if (fx === "novaflux") return scalePoly(base, 1.05, 1.05);
+    if (fx === "void") return scalePoly(base, 1.03, 1.03);
+    return base;
+  }
+  function skinGlowAmt(fx) {
+    if (fx === "novaflux" || fx === "supernova" || fx === "starburst" || fx === "solar" || fx === "corona" || fx === "inferno") return 18;
+    if (fx === "ghostlight" || fx === "hologram" || fx === "spectral" || fx === "prism" || fx === "lightning") return 16;
+    if (fx === "mythic" || fx === "nebula" || fx === "aurora" || fx === "ward") return 15;
+    return 12;
+  }
+  function skinGlowColor(fx, hull, accent) {
+    if (DARK_SKIN_FX[fx]) return accent;
+    if (fx === "novaflux" || fx === "supernova" || fx === "starburst") return "#ffffff";
+    return hull;
+  }
+  function applySkinFill(context, fx, hull, accent) {
+    var fill, g;
+    if (fx === "nebula" || fx === "aurora" || fx === "cyclone") {
+      fill = context.createLinearGradient(0, -18, 0, 14);
+      fill.addColorStop(0, hull);
+      fill.addColorStop(0.4 + 0.12 * Math.sin(time * 3), accent);
+      fill.addColorStop(1, hull);
+      context.fillStyle = fill;
+    } else if (fx === "prism") {
+      context.fillStyle = shiftPaint(hull, time * 70, 1.1, 1);
+    } else if (fx === "void" || fx === "umbra" || fx === "pinkvoid" || fx === "obsidian" || fx === "rift") {
+      context.fillStyle = "#0a0814";
+    } else if (fx === "novaflux" || fx === "supernova" || fx === "starburst") {
+      g = context.createRadialGradient(0, 0, 1.2, 0, 0, 14);
+      g.addColorStop(0, "#ffffff");
+      g.addColorStop(0.38, accent);
+      g.addColorStop(1, hull);
+      context.fillStyle = g;
+    } else if (fx === "solar" || fx === "corona" || fx === "sunburst" || fx === "inferno") {
+      g = context.createRadialGradient(0, 1, 1, 0, 1, 13);
+      g.addColorStop(0, "#fff4c8");
+      g.addColorStop(0.45, accent);
+      g.addColorStop(1, hull);
+      context.fillStyle = g;
+    } else if (fx === "ghostlight" || fx === "spectral" || fx === "hologram") {
+      context.fillStyle = hull;
+      context.globalAlpha = 0.52 + 0.32 * Math.sin(time * 8);
+    } else if (fx === "chrome") {
+      fill = context.createLinearGradient(-10, -12, 10, 12);
+      fill.addColorStop(0, "#ffffff");
+      fill.addColorStop(0.35, hull);
+      fill.addColorStop(0.7, accent);
+      fill.addColorStop(1, hull);
+      context.fillStyle = fill;
+    } else {
+      context.fillStyle = hull;
+    }
+  }
+  function drawCanopy(context, fx, accent) {
+    var a = 1;
+    if (fx === "void" || fx === "umbra" || fx === "obsidian" || fx === "pinkvoid" || fx === "rift") a = 0.9;
+    if (fx === "ghostlight" || fx === "spectral" || fx === "hologram") a = 0.5 + 0.28 * Math.sin(time * 9);
+    context.globalAlpha = a;
+    context.fillStyle = accent;
+    context.beginPath();
+    context.moveTo(0, -6);
+    context.lineTo(2.6, 2);
+    context.lineTo(-2.6, 2);
+    context.closePath();
+    context.fill();
+    context.globalAlpha = 1;
+  }
   function drawShipDetail(context, shipId, hull, accent, flash) {
     if (shipId === "vulture") {
       context.strokeStyle = accent; context.lineWidth = 1.2;
@@ -6711,8 +6840,9 @@
     var hull = paint.hull;
     var accent = paint.accent;
     var fx = paint.fx || "solid";
-    var pts = SHIP_HULLS[shipId] || SHIP_HULLS.wisp;
-    var fill, i;
+    var skinDef = paint.def;
+    var pts = visualHull(shipId, skinDef);
+    var altHull = !!(skinDef && SKIN_HULLS[skinDef.id]);
     context.save();
     context.translate(x, y);
     if (scale !== 1) context.scale(scale, scale);
@@ -6728,53 +6858,245 @@
       context.globalAlpha = 1;
       noGlow(context);
     }
-    glow(context, hull, fx === "hologram" || fx === "novaflux" ? 16 : 12);
-    if (fx === "nebula" || fx === "aurora") {
-      fill = context.createLinearGradient(0, -16, 0, 14);
-      fill.addColorStop(0, hull);
-      fill.addColorStop(0.45 + 0.1 * Math.sin(time * 3), accent);
-      fill.addColorStop(1, hull);
-      context.fillStyle = fill;
-    } else if (fx === "prism") {
-      context.fillStyle = shiftPaint(hull, time * 70, 1.1, 1);
-    } else if (fx === "mythic") {
-      context.fillStyle = Math.sin(time * 8) > 0 ? hull : accent;
-    } else {
-      context.fillStyle = hull;
-    }
-    if (fx === "hologram") context.globalAlpha = 0.7 + 0.25 * Math.sin(time * 9);
+    glow(context, skinGlowColor(fx, hull, accent), skinGlowAmt(fx));
+    drawSkinBack(context, fx, hull, accent, pts);
+    applySkinFill(context, fx, hull, accent);
     tracePoly(context, pts);
     context.fill();
     context.globalAlpha = 1;
-    if (fx === "chrome" || fx === "gilded") {
-      context.globalAlpha = 0.32 + 0.12 * Math.sin(time * 5);
-      context.fillStyle = "#ffffff";
-      context.beginPath();
-      context.moveTo(0, -8);
-      context.lineTo(4, 0);
-      context.lineTo(-4, 0);
-      context.closePath();
-      context.fill();
-      context.globalAlpha = 1;
-    }
-    context.fillStyle = accent;
-    context.beginPath();
-    context.moveTo(0, -6);
-    context.lineTo(2.6, 2);
-    context.lineTo(-2.6, 2);
-    context.closePath();
-    context.fill();
-    drawShipDetail(context, shipId, hull, accent, time);
-    drawSkinFx(context, fx, hull, accent);
+    drawSkinExtras(context, fx, hull, accent, pts);
+    drawCanopy(context, fx, accent);
+    if (!altHull) drawShipDetail(context, shipId, hull, accent, time);
+    drawSkinFx(context, fx, hull, accent, pts);
     drawGunBarrels(context, gunId, hull);
     if (muzzle > 0.15) drawMuzzle(context, gunId, muzzle);
     drawModFxFront(context, modId, hull, def);
     noGlow(context);
     context.restore();
   }
-  function drawSkinFx(context, fx, hull, accent) {
-    var i, y;
+  function drawSkinBack(context, fx, hull, accent, pts) {
+    var span, i, a, r, ox, oy, clone;
+    span = hullSpan(pts);
+    context.save();
+    if (fx === "prism") {
+      context.globalAlpha = 0.38;
+      context.fillStyle = "#ff3355";
+      fillPoly(context, offsetPoly(pts, -2.2, 0.6));
+      context.fillStyle = "#3df0ff";
+      fillPoly(context, offsetPoly(pts, 2.2, -0.6));
+    } else if (fx === "mythic") {
+      context.globalAlpha = 0.28 + 0.1 * Math.sin(time * 5);
+      context.fillStyle = accent;
+      fillPoly(context, offsetPoly(scalePoly(pts, 1.16, 1.1), Math.sin(time * 3) * 1.6, -1.2));
+    } else if (fx === "ghostlight" || fx === "hologram" || fx === "spectral") {
+      context.globalAlpha = 0.22 + 0.1 * Math.sin(time * 7);
+      context.fillStyle = accent;
+      clone = offsetPoly(pts, Math.sin(time * 6) * 3.5, -1.5);
+      fillPoly(context, clone);
+    } else if (fx === "nebula") {
+      context.globalAlpha = 0.22 + 0.1 * Math.sin(time * 2.2);
+      context.fillStyle = accent;
+      for (i = 0; i < 5; i++) {
+        a = time * 0.7 + i * 1.256;
+        context.beginPath();
+        context.arc(Math.cos(a) * span.w * 0.28, Math.sin(a * 1.3) * span.h * 0.2, 3.2 + (i % 3), 0, Math.PI * 2);
+        context.fill();
+      }
+    } else if (fx === "solar" || fx === "corona" || fx === "sunburst") {
+      context.globalAlpha = 0.22 + 0.12 * Math.sin(time * 4);
+      context.strokeStyle = accent;
+      context.lineWidth = 2.4;
+      context.beginPath();
+      context.arc(0, 1, span.w * 0.55 + Math.sin(time * 3) * 1.4, 0, Math.PI * 2);
+      context.stroke();
+    } else if (fx === "cyclone") {
+      context.strokeStyle = accent;
+      context.lineWidth = 1.3;
+      context.globalAlpha = 0.35;
+      context.beginPath();
+      for (i = 0; i < 18; i++) {
+        a = time * 3 + i * 0.45;
+        r = 2 + i * 0.7;
+        ox = Math.cos(a) * r;
+        oy = Math.sin(a) * r * 0.72 + i * 0.15;
+        if (i === 0) context.moveTo(ox, oy);
+        else context.lineTo(ox, oy);
+      }
+      context.stroke();
+    } else if (fx === "ward") {
+      context.globalAlpha = 0.2 + 0.1 * Math.sin(time * 4);
+      context.strokeStyle = accent;
+      context.lineWidth = 1.4;
+      for (i = 0; i < 2; i++) {
+        r = 9 + i * 4 + Math.sin(time * 5 + i) * 0.8;
+        context.beginPath();
+        context.arc(0, 0, r, 0, Math.PI * 2);
+        context.stroke();
+      }
+    }
+    context.restore();
+  }
+  function drawSkinExtras(context, fx, hull, accent, pts) {
+    var span, flap, i, a, lx, ly, rx, ry;
+    span = hullSpan(pts);
+    lx = span.left[0];
+    ly = span.left[1];
+    rx = span.right[0];
+    ry = span.right[1];
+    context.save();
+    if (fx === "frost") {
+      flap = 1 + 0.12 * Math.sin(time * 5);
+      context.fillStyle = "#e8f6ff";
+      context.globalAlpha = 0.78;
+      context.beginPath();
+      context.moveTo(lx, ly);
+      context.lineTo(lx - 6.5 * flap, ly - 5);
+      context.lineTo(lx - 1.5, ly + 6);
+      context.closePath();
+      context.fill();
+      context.beginPath();
+      context.moveTo(rx, ry);
+      context.lineTo(rx + 6.5 * flap, ry - 5);
+      context.lineTo(rx + 1.5, ry + 6);
+      context.closePath();
+      context.fill();
+      context.beginPath();
+      context.moveTo(0, span.minY);
+      context.lineTo(2.4, span.minY - 5 * flap);
+      context.lineTo(-2.4, span.minY - 5 * flap);
+      context.closePath();
+      context.fill();
+    } else if (fx === "gilded" || fx === "goldwing") {
+      flap = Math.sin(time * 4) * 1.2;
+      context.fillStyle = "#fff4c0";
+      context.globalAlpha = 0.75;
+      for (i = 0; i < 3; i++) {
+        context.beginPath();
+        context.moveTo(lx + 2, ly + i * 3);
+        context.lineTo(lx - 5 - i, ly + 2 + i * 3 + flap);
+        context.lineTo(lx + 1, ly + 5 + i * 3);
+        context.closePath();
+        context.fill();
+        context.beginPath();
+        context.moveTo(rx - 2, ry + i * 3);
+        context.lineTo(rx + 5 + i, ry + 2 + i * 3 + flap);
+        context.lineTo(rx - 1, ry + 5 + i * 3);
+        context.closePath();
+        context.fill();
+      }
+    } else if (fx === "mythic" || fx === "sentinel") {
+      flap = Math.sin(time * 3.5) * 2;
+      context.globalAlpha = 0.55;
+      context.fillStyle = accent;
+      context.beginPath();
+      context.moveTo(span.minX * 0.35, -3);
+      context.lineTo(span.minX - 7, flap - 6);
+      context.lineTo(span.minX * 0.55, 9);
+      context.closePath();
+      context.fill();
+      context.beginPath();
+      context.moveTo(span.maxX * 0.35, -3);
+      context.lineTo(span.maxX + 7, flap - 6);
+      context.lineTo(span.maxX * 0.55, 9);
+      context.closePath();
+      context.fill();
+    } else if (fx === "aurora") {
+      context.lineWidth = 2.2;
+      context.globalAlpha = 0.55 + 0.2 * Math.sin(time * 3);
+      context.strokeStyle = accent;
+      context.beginPath();
+      context.moveTo(lx - 2, 6 + Math.sin(time * 4) * 2);
+      context.quadraticCurveTo(-4, -16, 0, -6);
+      context.stroke();
+      context.strokeStyle = hull;
+      context.beginPath();
+      context.moveTo(rx + 2, 6 + Math.cos(time * 4) * 2);
+      context.quadraticCurveTo(4, -16, 0, -6);
+      context.stroke();
+    } else if (fx === "ward") {
+      context.fillStyle = accent;
+      context.globalAlpha = 0.45;
+      context.beginPath();
+      context.moveTo(-8, -1);
+      context.lineTo(-15, -4);
+      context.lineTo(-13, 6);
+      context.lineTo(-6, 5);
+      context.closePath();
+      context.fill();
+      context.beginPath();
+      context.moveTo(8, -1);
+      context.lineTo(15, -4);
+      context.lineTo(13, 6);
+      context.lineTo(6, 5);
+      context.closePath();
+      context.fill();
+    } else if (fx === "sunburst") {
+      context.strokeStyle = accent;
+      context.lineWidth = 1.3;
+      context.globalAlpha = 0.55 + 0.2 * Math.sin(time * 6);
+      for (i = 0; i < 8; i++) {
+        a = -Math.PI / 2 + i * 0.4 - 1.4;
+        context.beginPath();
+        context.moveTo(Math.cos(a) * 4, Math.sin(a) * 3);
+        context.lineTo(Math.cos(a) * 18, Math.sin(a) * 8 + 2);
+        context.stroke();
+      }
+    } else if (fx === "rift") {
+      context.fillStyle = hull;
+      context.globalAlpha = 0.95;
+      fillPoly(context, [[-1.2, -13], [-7.5, -1], [-1.2, 11], [-2.8, -1]]);
+      fillPoly(context, [[1.2, -13], [2.8, -1], [1.2, 11], [7.5, -1]]);
+    } else if (fx === "fortress") {
+      context.fillStyle = accent;
+      context.globalAlpha = 0.85;
+      context.fillRect(-10, -12, 3, 5);
+      context.fillRect(-4, -13, 3, 6);
+      context.fillRect(1, -13, 3, 6);
+      context.fillRect(7, -12, 3, 5);
+    } else if (fx === "obsidian") {
+      context.fillStyle = accent;
+      context.globalAlpha = 0.35;
+      fillPoly(context, [[-14, -4], [-18, 2], [-12, 8], [-10, 2]]);
+      fillPoly(context, [[14, -4], [18, 2], [12, 8], [10, 2]]);
+    } else if (fx === "inferno") {
+      flap = 2 + Math.sin(time * 14) * 2;
+      context.fillStyle = "#ff4d2a";
+      context.globalAlpha = 0.7;
+      context.beginPath();
+      context.moveTo(-5, 2);
+      context.lineTo(-14, 1);
+      context.lineTo(-8, 10 + flap);
+      context.closePath();
+      context.fill();
+      context.beginPath();
+      context.moveTo(5, 2);
+      context.lineTo(14, 1);
+      context.lineTo(8, 10 + flap);
+      context.closePath();
+      context.fill();
+    } else if (fx === "carrion") {
+      context.strokeStyle = accent;
+      context.lineWidth = 1.3;
+      context.globalAlpha = 0.8;
+      context.beginPath();
+      context.moveTo(-8, -6);
+      context.lineTo(-3, 2);
+      context.lineTo(-7, 8);
+      context.moveTo(8, -6);
+      context.lineTo(3, 2);
+      context.lineTo(7, 8);
+      context.moveTo(-11, -2);
+      context.lineTo(-5, 1);
+      context.moveTo(11, -2);
+      context.lineTo(5, 1);
+      context.stroke();
+    }
+    context.restore();
+  }
+  function drawSkinFx(context, fx, hull, accent, pts) {
+    var i, y, a, r, span, shine, n;
     if (fx === "solid") return;
+    span = hullSpan(pts);
     context.save();
     if (fx === "ion") {
       context.strokeStyle = accent;
@@ -6783,71 +7105,154 @@
       context.beginPath();
       context.arc(0, 0, 11 + Math.sin(time * 6) * 1.5, 0.2, Math.PI - 0.2);
       context.stroke();
-    } else if (fx === "ember" || fx === "solar") {
+    } else if (fx === "ember") {
       context.globalAlpha = 0.35 + 0.25 * Math.sin(time * 12);
-      context.fillStyle = fx === "solar" ? "#ffe08a" : "#ff7a3d";
+      context.fillStyle = "#ff7a3d";
       context.beginPath();
       context.moveTo(-4, 7);
       context.lineTo(0, 13 + Math.sin(time * 18) * 2);
       context.lineTo(4, 7);
       context.closePath();
       context.fill();
-    } else if (fx === "void") {
+    } else if (fx === "void" || fx === "umbra") {
       context.strokeStyle = accent;
-      context.globalAlpha = 0.5;
+      context.globalAlpha = 0.7;
       context.lineWidth = 1.6;
-      context.beginPath();
-      context.arc(0, 0, 10, 0, Math.PI * 2);
-      context.stroke();
+      strokePoly(context, pts);
       context.fillStyle = "#050510";
-      context.globalAlpha = 0.35;
+      context.globalAlpha = 0.55;
       context.beginPath();
-      context.arc(0, 1, 3.2, 0, Math.PI * 2);
+      context.arc(0, 1, 3.6 + (fx === "umbra" ? 1.2 : 0), 0, Math.PI * 2);
       context.fill();
+      context.fillStyle = accent;
+      for (i = 0; i < 5; i++) {
+        a = time * 1.4 + i * 1.256;
+        r = 4.5 + (i % 2) * 2.2;
+        context.globalAlpha = 0.45 + 0.4 * Math.sin(time * 6 + i);
+        context.beginPath();
+        context.arc(Math.cos(a) * r, Math.sin(a) * r * 0.65, 0.9, 0, Math.PI * 2);
+        context.fill();
+      }
+      if (fx === "umbra") {
+        context.strokeStyle = accent;
+        context.globalAlpha = 0.7 + 0.2 * Math.sin(time * 4);
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.arc(0, 0, 8.5, 0, Math.PI * 2);
+        context.stroke();
+      }
     } else if (fx === "gilded") {
       context.strokeStyle = "#ffe08a";
-      context.globalAlpha = 0.55 + 0.25 * Math.sin(time * 4);
-      context.lineWidth = 1;
-      context.beginPath();
-      context.moveTo(-8, 2);
-      context.lineTo(8, -4);
-      context.stroke();
+      context.globalAlpha = 0.7;
+      context.lineWidth = 1.1;
+      strokePoly(context, pts);
+      context.save();
+      tracePoly(context, pts);
+      context.clip();
+      shine = ((time * 26) % 40) - 20;
+      context.globalAlpha = 0.38 + 0.12 * Math.sin(time * 5);
+      context.fillStyle = "#ffffff";
+      context.fillRect(shine, span.minY - 2, 3.5, span.h + 6);
+      context.restore();
     } else if (fx === "prism") {
       context.strokeStyle = shiftPaint(accent, time * 90, 1.2, 1.1);
-      context.globalAlpha = 0.7;
-      context.lineWidth = 1.3;
-      tracePoly(context, SHIP_HULLS.wisp);
-      context.stroke();
-    } else if (fx === "novaflux") {
+      context.globalAlpha = 0.85;
+      context.lineWidth = 1.4;
+      strokePoly(context, pts);
+    } else if (fx === "novaflux" || fx === "supernova") {
       context.strokeStyle = "#ffffff";
-      context.globalAlpha = 0.45 + 0.35 * Math.sin(time * 7);
+      context.globalAlpha = 0.5 + 0.35 * Math.sin(time * 7);
       context.lineWidth = 1.2;
+      n = fx === "supernova" ? 10 : 8;
+      for (i = 0; i < n; i++) {
+        a = time * 0.8 + i * (Math.PI * 2 / n);
+        context.beginPath();
+        context.moveTo(Math.cos(a) * 3, Math.sin(a) * 3);
+        context.lineTo(Math.cos(a) * (9 + Math.sin(time * 8 + i)), Math.sin(a) * (8 + Math.sin(time * 8 + i)));
+        context.stroke();
+      }
       context.beginPath();
-      context.arc(0, 1, 5 + Math.sin(time * 8), 0, Math.PI * 2);
+      context.arc(0, 1, 4.5 + Math.sin(time * 8), 0, Math.PI * 2);
       context.stroke();
+      if (fx === "supernova") {
+        context.globalAlpha = 0.28 + 0.18 * Math.sin(time * 5);
+        context.beginPath();
+        context.arc(0, 0, 11 + (time * 7 % 6), 0, Math.PI * 2);
+        context.stroke();
+      }
     } else if (fx === "frost") {
       context.strokeStyle = "#e8f6ff";
       context.globalAlpha = 0.55;
-      context.lineWidth = 1.1;
-      context.beginPath();
-      context.moveTo(-6, -2);
-      context.lineTo(-9, -8);
-      context.moveTo(6, -2);
-      context.lineTo(9, -8);
-      context.stroke();
-    } else if (fx === "hologram") {
-      context.strokeStyle = "#ffffff";
-      context.lineWidth = 0.8;
+      context.lineWidth = 1;
       for (i = 0; i < 6; i++) {
-        y = -10 + ((time * 22 + i * 4) % 22);
-        context.globalAlpha = 0.18;
+        a = i * Math.PI / 3;
         context.beginPath();
-        context.moveTo(-10, y);
-        context.lineTo(10, y);
+        context.moveTo(Math.cos(a) * 3, Math.sin(a) * 3);
+        context.lineTo(Math.cos(a) * 7, Math.sin(a) * 7);
         context.stroke();
       }
+      context.globalAlpha = 0.28;
+      context.beginPath();
+      context.ellipse(0, 8, 5, 2.4 + Math.sin(time * 4), 0, 0, Math.PI * 2);
+      context.fillStyle = "#c8e8ff";
+      context.fill();
+    } else if (fx === "solar" || fx === "corona") {
+      context.globalAlpha = 0.45 + 0.25 * Math.sin(time * 8);
+      context.fillStyle = "#ffe08a";
+      context.beginPath();
+      context.moveTo(-3.5, 7);
+      context.lineTo(0, 15 + Math.sin(time * 14) * 2.5);
+      context.lineTo(3.5, 7);
+      context.closePath();
+      context.fill();
+      context.strokeStyle = accent;
+      context.lineWidth = 1.3;
+      context.globalAlpha = 0.55;
+      for (i = 0; i < 4; i++) {
+        a = Math.sin(time * 3 + i) * 2.2;
+        context.beginPath();
+        context.moveTo(span.left[0] * 0.4, 0);
+        context.quadraticCurveTo(span.left[0] - 4 + a, -8 + i * 3, span.left[0] - 2, -2 + Math.sin(time * 6 + i) * 3);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(span.right[0] * 0.4, 0);
+        context.quadraticCurveTo(span.right[0] + 4 - a, -8 + i * 3, span.right[0] + 2, -2 + Math.cos(time * 6 + i) * 3);
+        context.stroke();
+      }
+      if (fx === "corona") {
+        context.strokeStyle = "#ffd23d";
+        context.globalAlpha = 0.7;
+        context.lineWidth = 1.6;
+        context.beginPath();
+        context.arc(0, 0, 9 + Math.sin(time * 5) * 1.2, 0, Math.PI * 2);
+        context.stroke();
+        context.fillStyle = "#050510";
+        context.globalAlpha = 0.85;
+        context.beginPath();
+        context.arc(0, 0, 4.2, 0, Math.PI * 2);
+        context.fill();
+      }
+    } else if (fx === "hologram" || fx === "ghostlight" || fx === "spectral") {
+      context.strokeStyle = "#ffffff";
+      context.lineWidth = 0.8;
+      for (i = 0; i < 7; i++) {
+        y = span.minY + ((time * 22 + i * 4) % (span.h + 6));
+        context.globalAlpha = 0.16 + (fx === "spectral" ? 0.08 : 0);
+        context.beginPath();
+        context.moveTo(span.minX - 2, y);
+        context.lineTo(span.maxX + 2, y);
+        context.stroke();
+      }
+      context.globalAlpha = 0.55;
+      context.lineWidth = 1.1;
+      context.strokeStyle = accent;
+      strokePoly(context, pts);
+      if (fx === "spectral") {
+        context.globalAlpha = 0.35;
+        strokePoly(context, scalePoly(pts, 1.18, 1.14));
+      }
     } else if (fx === "aurora") {
-      context.globalAlpha = 0.28 + 0.12 * Math.sin(time * 3);
+      context.globalAlpha = 0.3 + 0.14 * Math.sin(time * 3);
       context.strokeStyle = accent;
       context.lineWidth = 2;
       context.beginPath();
@@ -6855,27 +7260,260 @@
       context.quadraticCurveTo(0, -14, 10, 4 + Math.cos(time * 4) * 2);
       context.stroke();
     } else if (fx === "chrome") {
+      context.save();
+      tracePoly(context, pts);
+      context.clip();
+      shine = ((time * 22) % 36) - 18;
+      context.globalAlpha = 0.45;
+      context.fillStyle = "#ffffff";
+      context.fillRect(shine, span.minY - 2, 4, span.h + 8);
+      context.restore();
+      context.strokeStyle = "#ffffff";
+      context.globalAlpha = 0.45;
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(-6, -6);
+      context.lineTo(7, 5);
+      context.stroke();
+    } else if (fx === "nebula") {
+      context.fillStyle = "#ffffff";
+      for (i = 0; i < 7; i++) {
+        a = i * 0.9 + time * 0.4;
+        context.globalAlpha = 0.35 + 0.4 * Math.sin(time * 3 + i);
+        context.beginPath();
+        context.arc(Math.cos(a) * span.w * 0.22, Math.sin(a * 1.4) * span.h * 0.18, 0.8, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.35 + 0.15 * Math.sin(time * 2.5);
+      context.lineWidth = 1.6;
+      context.beginPath();
+      context.moveTo(-2, span.maxY - 1);
+      context.quadraticCurveTo(-8, span.maxY + 8 + Math.sin(time * 3) * 2, -4, span.maxY + 12);
+      context.moveTo(2, span.maxY - 1);
+      context.quadraticCurveTo(7, span.maxY + 7 + Math.cos(time * 3) * 2, 3, span.maxY + 11);
+      context.stroke();
+    } else if (fx === "mythic") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.5 + 0.25 * Math.sin(time * 6);
+      context.lineWidth = 1.5;
+      context.beginPath();
+      context.arc(0, 0, span.w * 0.55 + Math.sin(time * 5), 0, Math.PI * 2);
+      context.stroke();
+      context.strokeStyle = hull;
+      context.globalAlpha = 0.4;
+      strokePoly(context, pts);
+    } else if (fx === "hotstreak") {
+      context.strokeStyle = accent;
+      context.lineWidth = 1.4;
+      context.globalAlpha = 0.8;
+      for (i = 0; i < 3; i++) {
+        y = -8 + i * 5;
+        context.beginPath();
+        context.moveTo(-3.2 + i * 0.4, y);
+        context.lineTo(0, y - 3);
+        context.lineTo(3.2 - i * 0.4, y);
+        context.stroke();
+      }
+      context.strokeStyle = hull;
+      context.globalAlpha = 0.35 + 0.2 * Math.sin(time * 16);
+      context.lineWidth = 1;
+      for (i = 0; i < 4; i++) {
+        context.beginPath();
+        context.moveTo(-2 - i, 8 + i * 2.2);
+        context.lineTo(-5 - i, 14 + i * 2.2 + Math.sin(time * 20 + i) * 1.5);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(2 + i, 8 + i * 2.2);
+        context.lineTo(5 + i, 14 + i * 2.2 + Math.cos(time * 20 + i) * 1.5);
+        context.stroke();
+      }
+    } else if (fx === "pinkvoid") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.85;
+      context.lineWidth = 1.7;
+      strokePoly(context, pts);
+      context.globalAlpha = 0.45 + 0.25 * Math.sin(time * 10);
+      context.strokeStyle = "#ff9ad6";
+      context.lineWidth = 2.4;
+      strokePoly(context, scalePoly(pts, 1.12, 1.04));
+      context.fillStyle = accent;
+      context.globalAlpha = 0.55;
+      for (i = 0; i < 3; i++) {
+        context.beginPath();
+        context.arc((i - 1) * 1.4, 8 + i * 2 + Math.sin(time * 8 + i), 1.1, 0, Math.PI * 2);
+        context.fill();
+      }
+    } else if (fx === "acid") {
+      context.fillStyle = accent;
+      for (i = 0; i < 4; i++) {
+        y = 6 + ((time * 10 + i * 5) % 12);
+        context.globalAlpha = 0.7 - y * 0.04;
+        context.beginPath();
+        context.arc(span.left[0] + 2, y + 2, 1.3, 0, Math.PI * 2);
+        context.arc(span.right[0] - 2, y + 1, 1.1, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.strokeStyle = hull;
+      context.globalAlpha = 0.5;
+      context.lineWidth = 1.2;
+      context.beginPath();
+      context.moveTo(span.left[0], span.left[1]);
+      context.lineTo(span.left[0] - 1, span.maxY + 6 + Math.sin(time * 6) * 2);
+      context.moveTo(span.right[0], span.right[1]);
+      context.lineTo(span.right[0] + 1, span.maxY + 6 + Math.cos(time * 6) * 2);
+      context.stroke();
+    } else if (fx === "bloodglass") {
+      context.strokeStyle = "#ffe0e8";
+      context.globalAlpha = 0.75;
+      context.lineWidth = 0.9;
+      context.beginPath();
+      context.moveTo(-2, -6);
+      context.lineTo(1, 1);
+      context.lineTo(-1.5, 4);
+      context.moveTo(2, -4);
+      context.lineTo(0.5, 2);
+      context.stroke();
+      context.save();
+      tracePoly(context, pts);
+      context.clip();
+      shine = ((time * 18) % 30) - 15;
+      context.globalAlpha = 0.28;
+      context.fillStyle = "#ffffff";
+      context.fillRect(shine, span.minY, 2.4, span.h);
+      context.restore();
+    } else if (fx === "starburst") {
+      context.strokeStyle = "#ffffff";
+      context.globalAlpha = 0.55 + 0.3 * Math.sin(time * 7);
+      context.lineWidth = 1.1;
+      for (i = 0; i < 8; i++) {
+        a = i * Math.PI / 4 + time * 0.4;
+        context.beginPath();
+        context.moveTo(0, 0);
+        context.lineTo(Math.cos(a) * 13, Math.sin(a) * 13);
+        context.stroke();
+      }
+      context.fillStyle = "#ffffff";
+      context.globalAlpha = 0.7;
+      context.beginPath();
+      context.arc(0, 0, 2.2 + Math.sin(time * 9) * 0.6, 0, Math.PI * 2);
+      context.fill();
+    } else if (fx === "cyclone") {
+      context.strokeStyle = "#ffffff";
+      context.globalAlpha = 0.4 + 0.2 * Math.sin(time * 8);
+      context.lineWidth = 1.2;
+      context.beginPath();
+      context.arc(0, 0, 8 + Math.sin(time * 5), time, time + 4);
+      context.stroke();
+    } else if (fx === "lightning") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.55 + 0.4 * Math.max(0, Math.sin(time * 18));
+      context.lineWidth = 1.4;
+      context.beginPath();
+      context.moveTo(-2, -14);
+      context.lineTo(3, -6);
+      context.lineTo(-3, -1);
+      context.lineTo(4, 6);
+      context.lineTo(-1, 12);
+      context.stroke();
+      context.strokeStyle = "#ffffff";
+      context.globalAlpha = 0.35;
+      strokePoly(context, pts);
+    } else if (fx === "jade") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.7;
+      context.lineWidth = 1.1;
+      context.strokeRect(-5, -5, 10, 10);
+      context.beginPath();
+      context.moveTo(0, -5);
+      context.lineTo(5, 0);
+      context.lineTo(0, 5);
+      context.lineTo(-5, 0);
+      context.closePath();
+      context.stroke();
+    } else if (fx === "sentinel") {
+      context.strokeStyle = "#ffffff";
+      context.globalAlpha = 0.6 + 0.25 * Math.sin(time * 4);
+      context.lineWidth = 1.5;
+      context.beginPath();
+      context.arc(0, -2, 11, Math.PI * 1.15, Math.PI * 1.85);
+      context.stroke();
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.5;
+      strokePoly(context, pts);
+    } else if (fx === "inferno") {
+      context.fillStyle = "#ffe08a";
+      context.globalAlpha = 0.45 + 0.3 * Math.sin(time * 16);
+      for (i = 0; i < 5; i++) {
+        context.beginPath();
+        context.arc((i - 2) * 3.2, 8 + Math.sin(time * 14 + i) * 2, 1.2, 0, Math.PI * 2);
+        context.fill();
+      }
+    } else if (fx === "sunburst") {
+      context.fillStyle = "#fff4c0";
+      context.globalAlpha = 0.5 + 0.3 * Math.sin(time * 8);
+      context.beginPath();
+      context.arc(0, 0, 2.8, 0, Math.PI * 2);
+      context.fill();
+    } else if (fx === "obsidian") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.55;
+      context.lineWidth = 1.2;
+      strokePoly(context, pts);
+      context.strokeStyle = "#ffffff";
+      context.globalAlpha = 0.25;
+      context.beginPath();
+      context.moveTo(-6, -8);
+      context.lineTo(2, 2);
+      context.stroke();
+    } else if (fx === "carrion") {
+      context.fillStyle = "#ffe08a";
+      context.globalAlpha = 0.4;
+      context.beginPath();
+      context.arc(-6, -8, 1.4, 0, Math.PI * 2);
+      context.arc(6, -8, 1.4, 0, Math.PI * 2);
+      context.fill();
+    } else if (fx === "fortress") {
       context.strokeStyle = "#ffffff";
       context.globalAlpha = 0.4;
       context.lineWidth = 1;
       context.beginPath();
-      context.moveTo(-5, -5);
-      context.lineTo(6, 4);
+      context.moveTo(-8, -4);
+      context.lineTo(8, 6);
       context.stroke();
-    } else if (fx === "nebula") {
-      context.globalAlpha = 0.3 + 0.15 * Math.sin(time * 2.5);
-      context.fillStyle = accent;
-      context.beginPath();
-      context.arc(-5, 0, 2.2, 0, Math.PI * 2);
-      context.arc(5, 2, 1.6, 0, Math.PI * 2);
-      context.fill();
-    } else if (fx === "mythic") {
+    } else if (fx === "goldwing") {
+      context.strokeStyle = "#fff4c0";
+      context.globalAlpha = 0.55 + 0.2 * Math.sin(time * 4);
+      context.lineWidth = 1.1;
+      strokePoly(context, pts);
+    } else if (fx === "ward") {
       context.strokeStyle = accent;
-      context.globalAlpha = 0.45 + 0.25 * Math.sin(time * 6);
-      context.lineWidth = 1.4;
+      context.globalAlpha = 0.6;
+      context.lineWidth = 1.1;
       context.beginPath();
-      context.arc(0, 0, 12 + Math.sin(time * 5), 0, Math.PI * 2);
+      context.moveTo(-6, -4);
+      context.lineTo(0, -9);
+      context.lineTo(6, -4);
+      context.lineTo(6, 4);
+      context.lineTo(0, 8);
+      context.lineTo(-6, 4);
+      context.closePath();
       context.stroke();
+    } else if (fx === "rift") {
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.85;
+      context.lineWidth = 1.5;
+      context.beginPath();
+      context.moveTo(0, span.minY - 1);
+      context.lineTo(-1.2, 0);
+      context.lineTo(1.2, 4);
+      context.lineTo(0, span.maxY + 1);
+      context.stroke();
+      context.fillStyle = "#050510";
+      context.globalAlpha = 0.7;
+      context.beginPath();
+      context.arc(0, 1, 2.2, 0, Math.PI * 2);
+      context.fill();
     }
     context.restore();
   }
