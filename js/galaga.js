@@ -332,6 +332,8 @@
   var snapBuf = [];
   var snapAcc = 0;
   var snapSeq = 0;
+  var snapLists = { en: [], pb: [], eb: [], pk: [], te: [], pl: [] };
+  var viewPb = [];
   var lastSnapN = 0;
   var clientClock = 0;
   var hostOffset = 0;
@@ -1240,15 +1242,18 @@
     return out;
   }
   function targetPlayer(ex, ey) {
-    var list = alivePlayers();
-    var i, best = list[0] || player, bestD = 1e12, d;
-    if (!list.length) return best || null;
-    if (list.length === 1) return list[0];
+    var i, pl, best = null, bestD = 1e12, d, n = 0, only = null;
     ex = ex || 0; ey = ey || 0;
-    for (i = 0; i < list.length; i++) {
-      d = dist2(ex, ey, list[i].x, list[i].y);
-      if (d < bestD) { bestD = d; best = list[i]; }
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
+      n += 1;
+      only = pl;
+      d = dist2(ex, ey, pl.x, pl.y);
+      if (d < bestD) { bestD = d; best = pl; }
     }
+    if (!n) return player || null;
+    if (n === 1) return only;
     return best;
   }
   function netSend(msg) {
@@ -1487,20 +1492,27 @@
     if (slot === localSlot) return "You";
     return "P" + ((slot || 0) + 1);
   }
+  function setText(node, value) {
+    if (!node) return;
+    value = String(value);
+    if (node.textContent !== value) node.textContent = value;
+  }
   function renderLivesHud() {
     var label = document.getElementById("lives-label");
-    var i, p, slot, tag, col, html, mine;
+    var i, p, slot, tag, col, html, mine, hud;
     if (!livesEl) return;
     if (!players.length || players.length === 1) {
       livesEl.classList.remove("lives-coop");
-      livesEl.textContent = players.length ? String(players[0].lives) : String(lives);
-      if (label) label.textContent = "Lives";
-      if (document.getElementById("hud")) document.getElementById("hud").classList.remove("coop-lives");
+      setText(livesEl, players.length ? players[0].lives : lives);
+      if (label) setText(label, "Lives");
+      hud = document.getElementById("hud");
+      if (hud) hud.classList.remove("coop-lives");
       return;
     }
     livesEl.classList.add("lives-coop");
-    if (label) label.textContent = "Lives";
-    if (document.getElementById("hud")) document.getElementById("hud").classList.toggle("coop-lives", true);
+    if (label) setText(label, "Lives");
+    hud = document.getElementById("hud");
+    if (hud) hud.classList.toggle("coop-lives", true);
     html = "";
     function addRow(pl, idx) {
       slot = pl && pl.slot != null ? pl.slot : idx;
@@ -1514,48 +1526,67 @@
       if (i === localSlot) continue;
       addRow(players[i], i);
     }
-    livesEl.innerHTML = html;
+    if (livesEl.innerHTML !== html) livesEl.innerHTML = html;
   }
+  var lastHudKey = "";
   function updateHud() {
-    scoreEl.textContent = String(score);
-    bestEl.textContent = String(best);
+    var pwr, coins, sess, wavePart, livesPart, i, key;
+    pwr = powerHud();
+    coins = started && !gameOver ? run.coins : profile.coins;
+    sess = pvpS();
+    wavePart = isPvpRun() && sess
+      ? ("R" + (sess.round || 1) + ":" + (sess.wins[0] || 0) + ":" + (sess.wins[1] || 0))
+      : String(wave);
+    livesPart = "";
+    if (!players.length) livesPart = String(lives);
+    else {
+      for (i = 0; i < players.length; i++) livesPart += (players[i] ? players[i].lives : "x") + ",";
+    }
+    key = score + "|" + best + "|" + livesPart + "|" + wavePart + "|" + coins + "|" + pwr;
+    if (key === lastHudKey) return;
+    lastHudKey = key;
+    setText(scoreEl, score);
+    setText(bestEl, best);
     renderLivesHud();
     if (waveEl) {
       var waveLab = el("wave-label");
-      var sess = pvpS();
       if (isPvpRun() && sess) {
-        if (waveLab) waveLab.textContent = "Duel";
-        waveEl.textContent = "R" + (sess.round || 1) + "  " + (sess.wins[0] || 0) + "–" + (sess.wins[1] || 0);
+        if (waveLab) setText(waveLab, "Duel");
+        setText(waveEl, "R" + (sess.round || 1) + "  " + (sess.wins[0] || 0) + "–" + (sess.wins[1] || 0));
       } else {
-        if (waveLab) waveLab.textContent = "Wave";
-        waveEl.textContent = String(wave);
+        if (waveLab) setText(waveLab, "Wave");
+        setText(waveEl, wave);
       }
     }
-    if (coinsEl) coinsEl.textContent = String(started && !gameOver ? run.coins : profile.coins);
-    pwrEl.textContent = powerHud();
-    if (score > best) { best = score; profile.best = best; saveProfile(); bestEl.textContent = String(best); }
+    if (coinsEl) setText(coinsEl, coins);
+    setText(pwrEl, pwr);
+    if (score > best) { best = score; profile.best = best; saveProfile(); setText(bestEl, best); }
   }
+  var lastPvpChrome = "";
   function syncPvpHudChrome() {
     var app = el("app");
     var hint = el("pvp-hint");
     var padAb = el("pad-ability");
     var sess = pvpS();
-    var kit, localBoss;
+    var kit, localBoss, cd, key, fireEl, abEl;
+    localBoss = player && player.boss;
+    kit = localBoss && pvpApi() ? pvpApi().kitFor(localBoss) : null;
+    cd = kit && player && player.abilityCd > 0 ? "  " + Math.ceil(player.abilityCd) + "s" : "";
+    key = (isPvpRun() ? "1" : "0") + "|" + ((sess && sess.mode) || "") + "|" + (localBoss || "") + "|" + (kit ? kit.fireHint : "") + "|" + (kit ? kit.abilityHint : "") + "|" + cd;
+    if (key === lastPvpChrome) return;
+    lastPvpChrome = key;
     if (app) {
       app.classList.toggle("is-pvp", isPvpRun());
       app.classList.toggle("is-pvp-insane", !!(isPvpRun() && sess && sess.mode === "insane"));
     }
-    localBoss = player && player.boss;
-    kit = localBoss && pvpApi() ? pvpApi().kitFor(localBoss) : null;
     if (hint) {
       hint.classList.toggle("hidden", !kit);
       hint.setAttribute("aria-hidden", kit ? "false" : "true");
       if (kit) {
-        if (el("pvp-hint-fire")) el("pvp-hint-fire").textContent = kit.fireHint;
-        if (el("pvp-hint-ability")) {
-          var cd = player && player.abilityCd > 0 ? "  " + Math.ceil(player.abilityCd) + "s" : "";
-          el("pvp-hint-ability").textContent = kit.abilityHint + cd;
-        }
+        fireEl = el("pvp-hint-fire");
+        abEl = el("pvp-hint-ability");
+        if (fireEl) setText(fireEl, kit.fireHint);
+        if (abEl) setText(abEl, kit.abilityHint + cd);
       }
     }
     if (padAb) padAb.classList.toggle("hidden", !kit);
@@ -5466,18 +5497,35 @@
       p.loadout.boss = row.boss;
     }
   }
+  function fillLive(dest, src, keep) {
+    var i, n = 0;
+    src = src || [];
+    for (i = 0; i < src.length; i++) {
+      if (keep && !keep(src[i])) continue;
+      dest[n] = src[i];
+      n += 1;
+    }
+    dest.length = n;
+    return dest;
+  }
+  function adoptList(dest, src) {
+    var i;
+    dest = dest || [];
+    src = src || [];
+    for (i = 0; i < src.length; i++) dest[i] = src[i];
+    dest.length = src.length;
+    return dest;
+  }
   function buildSnap() {
-    var i, en = [], pb = [], eb = [], pk = [], te = [], pl = [];
-    for (i = 0; i < enemies.length; i++) if (enemies[i].alive) en.push(snapEn(enemies[i]));
-    for (i = 0; i < pbul.length; i++) if (!pbul[i].ghost) pb.push(snapPb(pbul[i]));
-    for (i = 0; i < ebul.length; i++) eb.push(snapEb(ebul[i]));
-    for (i = 0; i < pickups.length; i++) pk.push(snapPk(pickups[i]));
-    for (i = 0; i < teles.length; i++) te.push(snapTe(teles[i]));
-    for (i = 0; i < players.length; i++) pl.push(snapPl(players[i]));
     return {
-      sc: score, rc: run.coins, w: wave, sh: +(shake.toFixed(2)), fl: +(flash.toFixed(2)), tm: +time.toFixed(3),
-      bn: banner ? { text: banner.text, life: +banner.life.toFixed(2) } : null,
-      en: en, pb: pb, eb: eb, pk: pk, te: te, pl: pl
+      sc: score, rc: run.coins, w: wave, sh: shake, fl: flash, tm: time,
+      bn: banner,
+      en: fillLive(snapLists.en, enemies, function (e) { return e.alive; }),
+      pb: fillLive(snapLists.pb, pbul, function (b) { return !b.ghost; }),
+      eb: fillLive(snapLists.eb, ebul, null),
+      pk: fillLive(snapLists.pk, pickups, null),
+      te: fillLive(snapLists.te, teles, null),
+      pl: fillLive(snapLists.pl, players, null)
     };
   }
   function indexById(list) {
@@ -5489,20 +5537,25 @@
     }
     return m;
   }
-  function copyEnt(src) {
-    var o = {}, k;
+  function copyEntInto(o, src) {
+    var k;
+    for (k in o) {
+      if (!Object.prototype.hasOwnProperty.call(src, k)) delete o[k];
+    }
     for (k in src) o[k] = src[k];
     return o;
   }
-  function interpKeyed(aList, bList, t, extra, skipOwner, isPb) {
+  function interpKeyed(dest, aList, bList, t, extra, skipOwner, isPb) {
     var am = indexById(aList || []);
-    var out = [], i, b, a, o;
+    var i, b, a, o, n = 0;
+    dest = dest || [];
     bList = bList || [];
     for (i = 0; i < bList.length; i++) {
       b = bList[i];
       if (isPb && skipOwner >= 0 && b.owner === skipOwner) continue;
       a = b.id != null ? am[b.id] : null;
-      o = copyEnt(b);
+      o = dest[n] || {};
+      copyEntInto(o, b);
       if (a) {
         o.x = a.x + (b.x - a.x) * t;
         o.y = a.y + (b.y - a.y) * t;
@@ -5511,10 +5564,12 @@
         o.x += (b.vx || 0) * extra;
         o.y += (b.vy || 0) * extra;
       }
-      if (o.splash) o.splash = { r: 34, dmg: 2 };
-      out.push(o);
+      if (o.splash && typeof o.splash !== "object") o.splash = { r: 34, dmg: 2 };
+      dest[n] = o;
+      n += 1;
     }
-    return out;
+    dest.length = n;
+    return dest;
   }
   function snapHz() {
     return netTransport() === "mqtt" ? 12 : 30;
@@ -5573,11 +5628,11 @@
     flash = sa ? lerp(sa.fl, sb.fl, t) : sb.fl;
     time = sa ? lerp(sa.tm, sb.tm, t) : sb.tm;
     banner = localizePvpSnapBanner(sb.bn);
-    enemies = interpKeyed(sa && sa.en, sb.en, t, 0, -1, false);
-    pbul = interpKeyed(sa && sa.pb, sb.pb, t, extra, localSlot, true);
-    ebul = interpKeyed(sa && sa.eb, sb.eb, t, extra, -1, false);
-    pickups = interpKeyed(sa && sa.pk, sb.pk, t, 0, -1, false);
-    teles = (sb.te || []).slice();
+    enemies = interpKeyed(enemies, sa && sa.en, sb.en, t, 0, -1, false);
+    pbul = interpKeyed(viewPb, sa && sa.pb, sb.pb, t, extra, localSlot, true);
+    ebul = interpKeyed(ebul, sa && sa.eb, sb.eb, t, extra, -1, false);
+    pickups = interpKeyed(pickups, sa && sa.pk, sb.pk, t, 0, -1, false);
+    teles = adoptList(teles, sb.te || []);
     for (i = 0; i < (sb.pl || []).length; i++) applyPlayerSnap(sb.pl[i]);
     syncLocalPlayer();
     if (netRole === "client") hideClaimedPickups();
@@ -5636,8 +5691,10 @@
     return window.__net && window.__net.transport ? window.__net.transport() : null;
   }
   function sendSnap(dt) {
-    var hz;
+    var hz, n;
     if (netRole !== "host") return;
+    n = window.__net;
+    if (!n || !n.isConnected()) return;
     hz = snapHz();
     snapAcc += dt;
     if (snapAcc < 1 / hz) return;
@@ -6149,7 +6206,7 @@
     copyLocalInput();
     var pi;
     for (pi = 0; pi < players.length; pi++) updateOneShip(players[pi], dt, !(pvpS() && pvpS().roundLock));
-    if (player) pwrEl.textContent = powerHud();
+    if (player) setText(pwrEl, powerHud());
     if (isPvpRun()) {
       var sess = pvpS();
       if (sess && sess.roundHold > 0) {
