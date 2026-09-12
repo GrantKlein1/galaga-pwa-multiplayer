@@ -1,4 +1,4 @@
-var CACHE = "galaga-coop-v20";
+var CACHE = "galaga-coop-v21";
 var PRECACHE = [
   "/",
   "/index.html",
