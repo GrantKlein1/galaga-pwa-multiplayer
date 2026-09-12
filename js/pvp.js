@@ -3,7 +3,8 @@
   var RARITY_RANK = { common: 0, rare: 1, epic: 2, legendary: 3 };
   var BOSS_IDS = [
     "seraph", "wraith", "hydra", "colossus", "chronos",
-    "leviathan", "inferno", "nullwarden", "basilisk", "overlord"
+    "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
+    "mandala", "myrmidon", "kaleido", "harrow", "nexus"
   ];
   var DRAFT_STEPS = ["ship", "mod", "skin", "gun"];
   // Insane duel only (not co-op / PvE bosses).
@@ -69,6 +70,31 @@
       fire: "barrage", ability: "decree",
       fireHint: "Hold FIRE — edict barrage",
       abilityHint: "ABILITY — laser grid"
+    },
+    mandala: {
+      fire: "seal", ability: "stamp",
+      fireHint: "Hold FIRE — petal ring",
+      abilityHint: "ABILITY — glyph stamp"
+    },
+    myrmidon: {
+      fire: "column", ability: "order",
+      fireHint: "Hold FIRE — drone column",
+      abilityHint: "ABILITY — lane order"
+    },
+    kaleido: {
+      fire: "shatter", ability: "pane",
+      fireHint: "Hold FIRE — splitting shards",
+      abilityHint: "ABILITY — glass pane"
+    },
+    harrow: {
+      fire: "sweep", ability: "hook",
+      fireHint: "Hold FIRE — scythe sweep",
+      abilityHint: "ABILITY — hook yank"
+    },
+    nexus: {
+      fire: "node", ability: "surge",
+      fireHint: "Hold FIRE — node pings",
+      abilityHint: "ABILITY — rail surge"
     }
   };
 

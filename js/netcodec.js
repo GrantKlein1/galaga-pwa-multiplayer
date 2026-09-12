@@ -12,7 +12,8 @@
     "grunt", "sniper", "tank", "weaver", "kami", "shield",
     "mortar", "hex", "harrier", "bulwark", "archon",
     "seraph", "wraith", "hydra", "colossus", "chronos",
-    "leviathan", "inferno", "nullwarden", "basilisk", "overlord"
+    "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
+    "mandala", "myrmidon", "kaleido", "harrow", "nexus"
   ];
   var ENEMY_STATES = ["", "enter", "form", "dive", "kami", "return", "charge"];
   var GUN_IDS = [

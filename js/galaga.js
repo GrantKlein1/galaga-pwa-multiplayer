@@ -131,8 +131,9 @@
   ];
 
   // Boss roster. Debut wave = (index + 1) * BOSS_EVERY. Kits: base (always), p2 (added below the
-  // first HP threshold), t1 (tier 1+), t2 (tier 2+). Tier 1+ fights get a third phase; tier 2+
-  // fights chain attacks into combos.
+  // first HP threshold), p3 (the five post-Overlord bosses, always 3 phases), t1 (tier 1+), t2
+  // (tier 2+). Seraph–Overlord stay 2-phase on the first cycle; tier 1+ still get a third phase
+  // and tier 2+ still chain attacks into combos.
   var BOSS_DEFS = [
     { id: "seraph", name: "SERAPH", color: "#e8f6ff", dark: "#203044", r: 18, hp: 48, spd: 42, amp: 6, freq: 1.2, cd: 1.39, tele: 0.44, pts: 1500,
       base: ["aimed", "fan", "ram"], p2: ["halo", "fan2"], t1: ["feathers"], t2: ["ramfan"], p2Text: "SERAPH ASCENDS", flavor: "Aimed volleys, fans, dive ram" },
@@ -153,8 +154,24 @@
     { id: "basilisk", name: "BASILISK", color: "#c8ff3d", dark: "#203008", r: 22, hp: 300, spd: 46, amp: 10, freq: 1.5, cd: 1.51, tele: 0.48, pts: 3500,
       base: ["venom", "gaze", "coil"], p2: ["venompool", "constrict", "petrify"], t1: ["gaze2"], t2: ["spitburst"], p2Text: "BASILISK SHEDS", flavor: "Arcing venom, sweeping gaze, coils" },
     { id: "overlord", name: "OVERLORD", color: "#ffd23d", dark: "#3a1a0a", r: 26, hp: 384, spd: 32, amp: 6, freq: 1.0, cd: 1.64, tele: 0.5, pts: 4000,
-      base: ["barrage", "decree", "escorts"], p2: ["core", "corering"], t1: ["crownfire"], t2: ["frenzy"], p2Thresh: 0.6, p2Text: "CORE EXPOSED", flavor: "Barrages, edicts, kami escorts" }
+      base: ["barrage", "decree", "escorts"], p2: ["core", "corering"], t1: ["crownfire"], t2: ["frenzy"], p2Thresh: 0.6, p2Text: "CORE EXPOSED", flavor: "Barrages, edicts, kami escorts" },
+    { id: "mandala", name: "MANDALA", color: "#f0a070", dark: "#3a1420", r: 20, hp: 420, spd: 38, amp: 10, freq: 1.1, cd: 1.52, tele: 0.48, pts: 4300,
+      base: ["seal", "stamp"], p2: ["orbit", "bloom"], p3: ["wheel"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "SEALS ALIGN", p3Text: "SINGULARITY WHEEL", flavor: "Petal rings, glyph stamps, a spinning wheel" },
+    { id: "myrmidon", name: "MYRMIDON", color: "#e8a020", dark: "#2a1a04", r: 21, hp: 468, spd: 40, amp: 8, freq: 1.3, cd: 1.55, tele: 0.48, pts: 4600,
+      base: ["column", "order"], p2: ["sacrifice", "pincer"], p3: ["throne"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "HIVE ORDERS", p3Text: "THE THRONE", flavor: "Marching columns, lane orders, hive grenades" },
+    { id: "kaleido", name: "KALEIDO", color: "#a8f0ff", dark: "#102838", r: 19, hp: 516, spd: 44, amp: 12, freq: 1.4, cd: 1.5, tele: 0.46, pts: 4950,
+      base: ["shatter", "pane"], p2: ["twin", "catch"], p3: ["fracture"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "MIRROR FIELD", p3Text: "FRACTURE", flavor: "Splitting shards, glass panes, mirror strips" },
+    { id: "harrow", name: "HARROW", color: "#b8b0a4", dark: "#1c1814", r: 22, hp: 564, spd: 36, amp: 8, freq: 1.0, cd: 1.58, tele: 0.5, pts: 5350,
+      base: ["sweep", "sow"], p2: ["reap", "hook"], p3: ["harvest"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "REAPING", p3Text: "HARVEST MOON", flavor: "Scythe arcs, seeds, a pulling crescent" },
+    { id: "nexus", name: "NEXUS", color: "#40ffc4", dark: "#041c18", r: 21, hp: 612, spd: 34, amp: 6, freq: 0.9, cd: 1.6, tele: 0.5, pts: 5800,
+      base: ["rail", "node"], p2: ["gridlock", "surge"], p3: ["blackout"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "GRIDLOCK", p3Text: "BLACKOUT", flavor: "Lit rails, corner nodes, a plus-grid surge" }
   ];
+  var GUEST_BOSS_POOL = 10;
 
   var DAILY_DEFS = [
     { id: "d_tanks", name: "Tank Buster", desc: "Kill 14 tanks", target: 14, kind: "kills", type: "tank", reward: { coins: 35 } },
@@ -216,6 +233,11 @@
     { id: "lt_nullwarden", name: "Nullwarden Contract", desc: "Defeat Nullwarden twice", target: 2, kind: "bossCount", type: "nullwarden", reward: { coins: 215, gun: "railgun", consolation: 180 } },
     { id: "lt_basilisk", name: "Basilisk Contract", desc: "Defeat Basilisk twice", target: 2, kind: "bossCount", type: "basilisk", reward: { coins: 265 } },
     { id: "lt_overlord", name: "Overlord Contract", desc: "Defeat Overlord twice", target: 2, kind: "bossCount", type: "overlord", reward: { coins: 480, ship: "strix", consolation: 360 } },
+    { id: "lt_mandala", name: "Mandala Contract", desc: "Defeat Mandala twice", target: 2, kind: "bossCount", type: "mandala", reward: { coins: 520, consolation: 380 } },
+    { id: "lt_myrmidon", name: "Myrmidon Contract", desc: "Defeat Myrmidon twice", target: 2, kind: "bossCount", type: "myrmidon", reward: { coins: 560, consolation: 400 } },
+    { id: "lt_kaleido", name: "Kaleido Contract", desc: "Defeat Kaleido twice", target: 2, kind: "bossCount", type: "kaleido", reward: { coins: 600, consolation: 430 } },
+    { id: "lt_harrow", name: "Harrow Contract", desc: "Defeat Harrow twice", target: 2, kind: "bossCount", type: "harrow", reward: { coins: 650, consolation: 460 } },
+    { id: "lt_nexus", name: "Nexus Contract", desc: "Defeat Nexus twice", target: 2, kind: "bossCount", type: "nexus", reward: { coins: 720, consolation: 500 } },
     { id: "lt_seraph5", name: "Seraph Hunter", desc: "Defeat Seraph 8 times", target: 8, kind: "bossCount", type: "seraph", reward: { coins: 150 } },
     { id: "lt_wraith5", name: "Wraith Hunter", desc: "Defeat Wraith 8 times", target: 8, kind: "bossCount", type: "wraith", reward: { coins: 165 } },
     { id: "lt_hydra5", name: "Hydra Hunter", desc: "Defeat Hydra 8 times", target: 8, kind: "bossCount", type: "hydra", reward: { coins: 190 } },
@@ -369,6 +391,7 @@
   var ebul = [];
   var pickups = [];
   var teles = [];
+  var bossFx = [];
   var particles = [];
   var rings = [];
   var stars = [];
@@ -562,7 +585,7 @@
       bosses.push(BOSS_DEFS[a].id, BOSS_DEFS[b].id);
       if (n >= 56) tier = 1;
     } else {
-      maxIdx = Math.min(BOSS_DEFS.length - 1, 3 + Math.floor((n - 36) / 8));
+      maxIdx = Math.min(GUEST_BOSS_POOL - 1, 3 + Math.floor((n - 36) / 8));
       idx = 3 + Math.floor(rng() * Math.max(1, maxIdx - 2));
       bosses.push(BOSS_DEFS[idx].id);
       if (n >= 60) tier = 1;
@@ -2584,10 +2607,24 @@
       resumeSpd: opt.resumeSpd || 0,
       splitOnResume: !!opt.splitOnResume,
       splitAt: opt.splitAt || 0,
+      splitT: opt.splitT || 0,
+      seed: !!opt.seed,
+      noTwin: !!opt.noTwin,
       color: opt.color || "#ffd0e0",
       glow: opt.glow || "#ff6b9a",
       owner: opt.owner == null ? -1 : opt.owner
     });
+    if (!opt.noTwin && fxHas("twin")) {
+      addEbul(W - x, y, -vx, vy, {
+        r: opt.r, homing: opt.homing, homeT: opt.homeT, hsp: opt.hsp, hturn: opt.hturn,
+        mine: opt.mine, fuse: opt.fuse, pellets: opt.pellets, pelletSpd: opt.pelletSpd,
+        life: opt.life, grav: opt.grav, accel: opt.accel, sway: opt.sway, swayF: opt.swayF,
+        swayPh: opt.swayPh, pauseAt: opt.pauseAt, pauseT: opt.pauseT, resumeSpd: opt.resumeSpd,
+        splitOnResume: opt.splitOnResume, splitAt: opt.splitAt, splitT: opt.splitT,
+        seed: opt.seed, color: opt.color, glow: opt.glow, owner: opt.owner,
+        silent: true, noTwin: true
+      });
+    }
   }
   function addTele(kind, x, y, x2, y2, dur, color) {
     teles.push({ kind: kind, x: x, y: y, x2: x2, y2: y2, t: dur, max: dur, color: color || "#ff6b9a" });
@@ -2710,6 +2747,7 @@
     enemies = [];
     ebul = [];
     teles = [];
+    bossFx = [];
     form.oy = 46;
     form.dir = 1;
     form.speed = (24 + Math.min(22, (pressureWave(n) - 1) * 3.2)) * (1 + extraPlayers() * 0.12);
@@ -3315,14 +3353,14 @@
     var atk = kit ? kit.fire : "aimed";
     var col = enemyColor(who.boss);
     if (who.fireCd > 0) return;
-    if (atk === "spiral") pvpRing(who, 8, 110);
-    else if (atk === "fan" || atk === "flare") pvpFanToward(who, 5, 0.9, 230);
+    if (atk === "spiral" || atk === "seal") pvpRing(who, 8, 110);
+    else if (atk === "fan" || atk === "flare" || atk === "sweep") pvpFanToward(who, 5, 0.9, 230);
     else if (atk === "ring") pvpRing(who, 7, 95);
-    else if (atk === "tick") {
+    else if (atk === "tick" || atk === "shatter") {
       pvpAimed(who, 0.9, 160, -8);
       pvpAimed(who, 0.9, 160, 8);
-    } else if (atk === "surge") pvpFanToward(who, 4, 0.55, 210);
-    else if (atk === "well") {
+    } else if (atk === "surge" || atk === "column") pvpFanToward(who, 4, 0.55, 210);
+    else if (atk === "well" || atk === "node") {
       pvpAimed(who, 0.7, 140, 0);
       pvpEbul(who.x, pvpMuzzleY(who), 0, pvpFacing(who) * 70, who, { r: 5, life: 1.4, color: col });
     } else if (atk === "venom") {
@@ -3381,11 +3419,22 @@
       if (tgt) {
         tgt.slowT = Math.max(tgt.slowT || 0, 1.1);
       }
-    } else if (atk === "decree") {
+    } else if (atk === "decree" || atk === "pane") {
       for (i = 0; i < 5; i++) {
         x = 28 + i * ((W - 56) / 4);
         if (tgt && Math.abs(x - tgt.x) < 18) continue;
         pvpEbul(x, who.y + face * 10, 0, face * 240, who, { r: 2.4, color: col });
+      }
+    } else if (atk === "stamp") {
+      pvpRing(who, 10, 95);
+    } else if (atk === "order" || atk === "surge") {
+      x = clamp(tgt ? tgt.x : who.x, 16, W - 16);
+      for (i = 0; i < 8; i++) pvpEbul(x, who.y + face * (14 + i * 18), 0, face * 260, who, { r: 3.4, color: col });
+    } else if (atk === "hook") {
+      pvpFanToward(who, 6, 1.05, 210);
+      if (tgt) {
+        tgt.x = clamp(tgt.x + (who.x - tgt.x) * 0.32, 16, W - 16);
+        tgt.targetX = tgt.x;
       }
     } else {
       pvpFanToward(who, 7, 1.15, 240);
@@ -3570,6 +3619,7 @@
     var d = bossDef(e.type) || BOSS_DEFS[0];
     var kit = d.base.slice(), i;
     if (e.phaseIdx >= 1) for (i = 0; i < d.p2.length; i++) kit.push(d.p2[i]);
+    if (e.phaseIdx >= 2 && d.p3) for (i = 0; i < d.p3.length; i++) kit.push(d.p3[i]);
     if (e.tier >= 1) for (i = 0; i < d.t1.length; i++) kit.push(d.t1[i]);
     if (e.tier >= 2) for (i = 0; i < d.t2.length; i++) kit.push(d.t2[i]);
     return kit;
@@ -3718,11 +3768,12 @@
   }
   function onBossPhase(e, idx) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
-    banner = { text: idx === 1 ? (d.p2Text || "ENRAGED") : d.name + " FRENZY", life: 1.3 };
+    banner = { text: idx === 1 ? (d.p2Text || "ENRAGED") : (d.p3Text || (d.name + " FRENZY")), life: 1.3 };
     explode(e.x, e.y, d.color, true);
     rings.push({ x: e.x, y: e.y, r: 4, vr: 400, life: 0.7, color: d.color });
     ebul.length = 0;
     teles.length = 0;
+    bossFx.length = 0;
     e.tele = null;
     e.followups = [];
     e.stream = null;
@@ -3732,12 +3783,15 @@
     if (kitHas(e, "regrow")) { e.shieldHp = Math.max(e.shieldHp, 2 + e.tier); }
     if (kitHas(e, "voidguard") && idx === 1) summonEscorts(e, "shield", 2, 64);
     if (kitHas(e, "core") && idx === 1) summonEscorts(e, "shield", 2, 56);
+    if (e.type === "myrmidon" && idx >= 2) e.throne = true;
     if (idx >= 2) sfxWave(true);
     rebuildBossQueue(e, e.lastAtk);
   }
   function checkBossPhase(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
-    var th = e.tier >= 1 ? [Math.max(0.6, d.p2Thresh || 0.5), 0.25] : [d.p2Thresh || 0.5];
+    var th;
+    if (d.p3 && d.p3.length) th = [d.p2Thresh || 2 / 3, d.p3Thresh || 1 / 3];
+    else th = e.tier >= 1 ? [Math.max(0.6, d.p2Thresh || 0.5), 0.25] : [d.p2Thresh || 0.5];
     while (e.phaseIdx < th.length && e.hp <= e.maxHp * th[e.phaseIdx]) {
       e.phaseIdx += 1;
       onBossPhase(e, e.phaseIdx);
@@ -3841,6 +3895,66 @@
       addTele("ring", e.aimX, e.aimY, 0, 0, delay + 0.22, col);
       addTele("flash", e.aimX, e.aimY, 0, 0, delay + 0.22, col);
       delay += 0.22;
+    } else if (atk === "seal" || atk === "orbit" || atk === "wheel") {
+      addTele("ring", e.x, e.y, 0, 0, delay, col);
+    } else if (atk === "stamp") {
+      e.stampX = clamp(e.aimX + rand(-36, 36), 28, W - 28);
+      e.stampY = clamp(e.aimY - 48, 88, H - 70);
+      addZone(e.stampX, e.stampY, 16, 16, delay + 0.1, col);
+      delay += 0.1;
+    } else if (atk === "bloom") {
+      addTele("vline", e.aimX, e.y + 8, e.aimX, H - 10, delay + 0.16, col);
+      delay += 0.16;
+    } else if (atk === "column" || atk === "pincer" || atk === "throne") {
+      addTele("hline", 12, e.y + 22, W - 12, e.y + 22, delay, col);
+    } else if (atk === "order") {
+      addZone(e.aimX, H - 40, 18, 22, delay + 0.14, col);
+      delay += 0.14;
+    } else if (atk === "sacrifice" || atk === "shatter") {
+      addTele("line", e.x, e.y + 10, e.aimX, e.aimY, delay + 0.08, col);
+    } else if (atk === "pane") {
+      e.paneLeft = e.aimX < W / 2;
+      addZone(e.paneLeft ? W * 0.25 : W * 0.75, H / 2, W * 0.25, H / 2 - 8, delay + 0.12, col);
+      delay += 0.12;
+    } else if (atk === "twin") {
+      addTele("vline", W / 2, 8, W / 2, H - 8, delay + 0.1, col);
+      delay += 0.1;
+    } else if (atk === "fracture") {
+      addTele("vline", 50, 8, 50, H - 8, delay + 0.12, col);
+      addTele("vline", W / 2, 8, W / 2, H - 8, delay + 0.12, col);
+      addTele("vline", W - 50, 8, W - 50, H - 8, delay + 0.12, col);
+      delay += 0.12;
+    } else if (atk === "sweep") {
+      addTele("hline", 12, 72, W - 12, 72, delay + 0.1, col);
+    } else if (atk === "sow") {
+      e.seedXs = pickSpreadXs(3, 56, 28);
+      for (i = 0; i < e.seedXs.length; i++) addZone(e.seedXs[i], 118, 10, 10, delay + 0.12, col);
+      delay += 0.12;
+    } else if (atk === "hook" || atk === "harvest") {
+      addTele("ring", e.aimX, e.aimY, 0, 0, delay + 0.16, col);
+      delay += 0.16;
+    } else if (atk === "rail") {
+      e.railH = Math.random() < 0.5;
+      if (e.railH) {
+        e.railPos = clamp(e.aimY, 90, H - 50);
+        addTele("hline", 16, e.railPos, W - 16, e.railPos, delay + 0.12, col);
+      } else {
+        e.railPos = clamp(e.aimX, 24, W - 24);
+        addTele("vline", e.railPos, 40, e.railPos, H - 20, delay + 0.12, col);
+      }
+      delay += 0.12;
+    } else if (atk === "node") {
+      addZone(28, 48, 10, 10, delay, col);
+      addZone(W - 28, 48, 10, 10, delay, col);
+      addZone(28, H - 48, 10, 10, delay, col);
+      addZone(W - 28, H - 48, 10, 10, delay, col);
+    } else if (atk === "gridlock" || atk === "blackout") {
+      addTele("vline", W / 2, 20, W / 2, H - 16, delay + 0.14, col);
+      addTele("hline", 12, H * 0.55, W - 12, H * 0.55, delay + 0.14, col);
+      delay += 0.14;
+    } else if (atk === "surge") {
+      addTele("vline", clamp(e.aimX, 20, W - 20), e.y + 8, clamp(e.aimX, 20, W - 20), H - 10, delay + 0.16, col);
+      delay += 0.16;
     } else {
       addTele("glow", e.x, e.y, 0, 0, delay, col);
     }
@@ -3929,9 +4043,228 @@
     }
     rings.push({ x: e.aimX, y: e.aimY, r: 6, vr: rad * 3.4, life: 0.48, color: opt.glow || opt.color });
   }
+  function fxHas(kind) {
+    var i;
+    for (i = 0; i < bossFx.length; i++) {
+      if (bossFx[i].kind === kind && (bossFx[i].life == null || bossFx[i].life > 0)) return bossFx[i];
+    }
+    return null;
+  }
+  function fireGappedRing(x, y, count, spd, skip, skipN, opt) {
+    var i, a;
+    skip = ((skip % count) + count) % count;
+    skipN = skipN || 2;
+    for (i = 0; i < count; i++) {
+      if ((i - skip + count) % count < skipN) continue;
+      a = (i / count) * Math.PI * 2;
+      addEbul(x, y, Math.cos(a) * spd, Math.sin(a) * spd, opt);
+    }
+  }
+  function fireSpoke(x, y, ang, n, spd, opt) {
+    var i, px, py;
+    for (i = 1; i <= n; i++) {
+      px = x + Math.cos(ang) * i * 18;
+      py = y + Math.sin(ang) * i * 18;
+      addEbul(px, py, Math.cos(ang) * spd, Math.sin(ang) * spd, opt);
+    }
+  }
+  function tryHitPlayersAt(x, y, r) {
+    var i, pl, pr;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive || pl.invuln > 0) continue;
+      pr = pl.r || PLAYER_R;
+      if (dist2(pl.x, pl.y, x, y) < (pr + r) * (pr + r)) {
+        if (isPvpRun()) pvpHurt(pl, 8);
+        else playerDie(pl);
+      }
+    }
+  }
+  function tryHitPlayersRect(cx, cy, hw, hh) {
+    var i, pl, pr;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive || pl.invuln > 0) continue;
+      pr = pl.r || PLAYER_R;
+      if (Math.abs(pl.x - cx) < hw + pr && Math.abs(pl.y - cy) < hh + pr) {
+        if (isPvpRun()) pvpHurt(pl, 8);
+        else playerDie(pl);
+      }
+    }
+  }
+  function yankPlayers(tx, amt) {
+    var i, pl;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
+      pl.x = clamp(pl.x + (tx - pl.x) * amt, 16, W - 16);
+      pl.targetX = pl.x;
+    }
+  }
+  function playerOnRail(pl, f) {
+    if (!pl || !pl.alive) return false;
+    if (f.axis === "h") return Math.abs(pl.y - f.pos) < 12 && pl.x >= f.a - 8 && pl.x <= f.b + 8;
+    return Math.abs(pl.x - f.pos) < 12 && pl.y >= f.a - 8 && pl.y <= f.b + 8;
+  }
+  function sparkRail(f, col) {
+    if (f.axis === "h") addEbul(f.a + 8, f.pos, 160, 0, { color: col, glow: col, r: 3.2, life: 2.2 });
+    else addEbul(f.pos, f.a + 8, 0, 160, { color: col, glow: col, r: 3.2, life: 2.2 });
+  }
+  function myrmidonGrunts() {
+    var out = [], i, e;
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (e.alive && !e.isBoss && e.type === "grunt") out.push(e);
+    }
+    return out;
+  }
+  function seedEbulList() {
+    var out = [], i, b;
+    for (i = 0; i < ebul.length; i++) {
+      b = ebul[i];
+      if (b.seed && b.paused) out.push(b);
+    }
+    return out;
+  }
+  function plantSeed(x, y, col, sprout) {
+    addEbul(x, y - 4, 0, 28, {
+      color: col, glow: col, r: 5.2, seed: true, life: sprout ? sprout + 4 : 7.5,
+      pauseAt: y, pauseT: sprout ? sprout + 4 : 6.5
+    });
+  }
+  function addRailFx(axis, pos, a, b, life, col, lit) {
+    var f = {
+      kind: "rail", axis: axis, pos: pos, a: a, b: b, life: life || 2.6,
+      lit: lit !== false, sparkCd: 0.35, color: col, sit: false
+    };
+    bossFx.push(f);
+    if (lit !== false) {
+      if (axis === "h") addTele("hline", a, pos, b, pos, f.life, col);
+      else addTele("vline", pos, a, pos, b, f.life, col);
+    }
+    return f;
+  }
+  function applyBossHazardsToPbul(b, i) {
+    var pane = fxHas("pane"), catcher = fxHas("catch"), ei, eb, boss;
+    if (pane && Math.abs(b.x - pane.x) < pane.hw) {
+      addEbul(b.x, b.y, pane.left ? -95 : 95, 18, { color: "#c8f0ff", glow: "#a8f0ff", r: 1.8, silent: true, life: 1.6, noTwin: true });
+      addEbul(b.x, b.y, pane.left ? -46 : 46, 72, { color: "#e8ffff", glow: "#a8f0ff", r: 1.6, silent: true, life: 1.4, noTwin: true });
+      pbul.splice(i, 1);
+      return true;
+    }
+    if (catcher && !catcher.fired) {
+      boss = currentBoss();
+      if (boss && dist2(b.x, b.y, boss.x, boss.y) < 52 * 52) {
+        catcher.shots.push({ x: boss.x, y: boss.y + 10, vx: rand(-48, 48), vy: 128 });
+        if (catcher.shots.length > 6) catcher.shots.shift();
+        pbul.splice(i, 1);
+        return true;
+      }
+    }
+    for (ei = ebul.length - 1; ei >= 0; ei--) {
+      eb = ebul[ei];
+      if (!eb.seed) continue;
+      if (dist2(b.x, b.y, eb.x, eb.y) < ((eb.r || 5) + 3) * ((eb.r || 5) + 3)) {
+        explode(eb.x, eb.y, eb.glow || "#c8c4bc", false);
+        ebul.splice(ei, 1);
+        pbul.splice(i, 1);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function updateBossFx(dt) {
+    var i, f, pi, pl, moving, j, b, ang, col, nx, litHit;
+    for (i = bossFx.length - 1; i >= 0; i--) {
+      f = bossFx[i];
+      f.life -= dt;
+      col = f.color || "#f0a070";
+      if (f.kind === "glyph") {
+        if (f.life <= 0) {
+          ringShot(f.x, f.y, 8, 108, { color: col, glow: col, r: 3 });
+          explode(f.x, f.y, col, false);
+          bossFx.splice(i, 1);
+        }
+      } else if (f.kind === "pane") {
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "twin") {
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "catch") {
+        f.hold -= dt;
+        if (f.hold <= 0 && !f.fired) {
+          f.fired = true;
+          for (j = 0; j < (f.shots || []).length; j++) {
+            b = f.shots[j];
+            addEbul(b.x, b.y, b.vx, b.vy, { color: "#a8f0ff", glow: "#7ef9ff", r: 2.8, silent: j > 0 });
+          }
+        }
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "fracture") {
+        f.x += f.vx * dt;
+        if (f.x < 22 || f.x > W - 22) f.vx *= -1;
+        f.x = clamp(f.x, 22, W - 22);
+        for (pi = 0; pi < players.length; pi++) {
+          pl = players[pi];
+          if (!pl || !pl.alive) continue;
+          moving = !!(pl.input && (pl.input.left || pl.input.right));
+          if (Math.abs(pl.x - f.x) < 10) {
+            if (!moving && pl.invuln <= 0) {
+              if (isPvpRun()) pvpHurt(pl, 8);
+              else playerDie(pl);
+            } else if (!f.crossed) {
+              f.crossed = true;
+              for (j = 0; j < ebul.length; j++) {
+                b = ebul[j];
+                if (Math.abs(b.x - f.x) < 36) {
+                  ang = Math.atan2(pl.y - b.y, pl.x - b.x);
+                  b.vx = Math.cos(ang) * 140;
+                  b.vy = Math.sin(ang) * 140;
+                }
+              }
+            }
+          } else {
+            f.crossed = false;
+          }
+        }
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "rail") {
+        if (f.lit) {
+          f.sparkCd -= dt;
+          for (pi = 0; pi < players.length; pi++) {
+            pl = players[pi];
+            if (playerOnRail(pl, f)) {
+              if (f.sparkCd <= 0) {
+                sparkRail(f, col);
+                f.sparkCd = 0.55;
+              }
+            }
+          }
+        }
+        if (f.kind === "rail" && f.relight && f.life < f.relight && !f.didLight) {
+          f.didLight = true;
+          f.lit = true;
+          addTele(f.axis === "h" ? "hline" : "vline", f.axis === "h" ? f.a : f.pos, f.axis === "h" ? f.pos : f.a, f.axis === "h" ? f.b : f.pos, f.axis === "h" ? f.pos : f.b, 1.2, col);
+          litHit = false;
+          for (pi = 0; pi < players.length; pi++) {
+            pl = players[pi];
+            if (playerOnRail(pl, f) && pl.invuln <= 0) {
+              litHit = true;
+              if (isPvpRun()) pvpHurt(pl, 8);
+              else playerDie(pl);
+            }
+          }
+          if (litHit) banner = { text: "SHOCK", life: 0.55 };
+        }
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.life <= 0) {
+        bossFx.splice(i, 1);
+      }
+    }
+  }
 
   function fireBossAttack(e, atk) {
-    var i, spd, opt, px, x0, base, fuse, k, a, ox, oy, aim;
+    var i, spd, opt, px, x0, base, fuse, k, a, ox, oy, aim, drones, f, nx;
     var col = enemyColor(e.type);
     opt = { color: col, glow: col };
     spd = bossShotSpd(e);
@@ -4222,6 +4555,136 @@
       fanShot(e.x, e.y + 10, 9, 1.5, spd + 10, 30, opt);
       queueFollow(e, 0.3, "fan9b");
       queueFollow(e, 0.6, "aimed");
+    } else if (atk === "seal") {
+      fireGappedRing(e.x, e.y, 12, 92, Math.floor(Math.random() * 12), 2, opt);
+      e.stream = { n: 6, dt: 0.16, acc: 0, kind: "petal", ang: Math.random() * 6.28, dAng: 0.42, spd: 88, count: 12, skipN: 2 };
+    } else if (atk === "stamp") {
+      bossFx.push({ kind: "glyph", x: e.stampX || e.aimX, y: e.stampY || e.aimY - 40, life: 0.72, color: col });
+      addZone(e.stampX || e.aimX, e.stampY || e.aimY - 40, 14, 14, 0.7, col);
+    } else if (atk === "orbit") {
+      fireGappedRing(e.x, e.y, 12, 78, 0, 2, opt);
+      fireGappedRing(e.x, e.y, 10, 118, 5, 2, { color: "#ffd0b0", glow: col, r: 2.6 });
+      e.stream = { n: 5, dt: 0.22, acc: 0, kind: "orbit", ang: 0.4, dAng: 0.55, spd: 78 };
+    } else if (atk === "bloom") {
+      ringShot(e.x, e.y, 8, 54, { color: col, glow: col, r: 2.6 });
+      queueFollow(e, 0.42, "bloomshut");
+    } else if (atk === "bloomshut") {
+      fireColumn(e.aimX, e.y + 12, 8, spd + 36, { r: 3.2, color: "#ffd0b0", glow: col });
+      fanShot(e.x, e.y + 8, 4, 0.7, spd + 10, 20, opt);
+    } else if (atk === "wheel") {
+      e.stream = { n: 8, dt: 0.14, acc: 0, kind: "spoke", ang: Math.random() * 6.28, dAng: Math.PI / 2, spd: spd, gap: Math.random() * 6.28 };
+    } else if (atk === "column") {
+      e.colX = 40 + Math.floor(Math.random() * 3) * 80;
+      fireColumn(e.colX, e.y + 12, 6, 78, { r: 2.8, color: "#ffe08a", glow: col });
+      if (aliveCount() < escortCap()) {
+        summonEscorts(e, "grunt", 2, 64);
+      }
+    } else if (atk === "order") {
+      px = clamp(e.aimX, 24, W - 24);
+      fireColumn(px, e.y + 12, 7, spd + 20, { r: 3, color: "#ffe08a", glow: col });
+      var drones = myrmidonGrunts();
+      for (i = 0; i < drones.length; i++) {
+        if (Math.abs(drones[i].x - px) < 48 && drones[i].state === "form") startDive(drones[i]);
+      }
+    } else if (atk === "sacrifice") {
+      drones = myrmidonGrunts();
+      if (drones.length) {
+        killEnemy(drones[0], false, 99);
+        explode(e.x, e.y, col, false);
+      }
+      aimedShot(e, 0.95, spd + 70, { color: "#fff0c0", glow: col, r: 4.6 });
+      aimedShot({ x: e.x - 6, y: e.y }, 0.95, spd + 50, { color: "#ffe08a", glow: col, r: 3.4 });
+    } else if (atk === "pincer") {
+      e.stream = { n: 5, dt: 0.15, acc: 0, kind: "squeeze", x: 22, x2: W - 22, dx: 16, spd: spd + 18, count: 3 };
+    } else if (atk === "throne") {
+      fireColumn(W * 0.28, e.y + 10, 5, 86, { r: 2.8, color: "#ffe08a", glow: col });
+      fireColumn(W * 0.72, e.y + 10, 5, 86, { r: 2.8, color: "#ffe08a", glow: col });
+      for (i = -1; i <= 1; i++) {
+        a = 0.55 + i * 0.28;
+        addEbul(e.x, e.y + 8, Math.sin(a) * 70 + i * 28, 40, { color: col, glow: col, r: 3.4, grav: 150, life: 5 });
+      }
+    } else if (atk === "shatter") {
+      aimedShot(e, 0.8, spd + 8, { color: col, glow: col, r: 3.6, splitT: 0.38 });
+      aimedShot({ x: e.x - 10, y: e.y }, 0.7, spd, { color: col, glow: col, r: 3.2, splitT: 0.46 });
+    } else if (atk === "pane") {
+      bossFx.push({
+        kind: "pane", life: 2.4, color: col,
+        left: e.paneLeft !== false,
+        x: (e.paneLeft !== false) ? W * 0.25 : W * 0.75,
+        hw: W * 0.25
+      });
+      addZone((e.paneLeft !== false) ? W * 0.25 : W * 0.75, H / 2, W * 0.25, H / 2 - 10, 2.35, col);
+    } else if (atk === "twin") {
+      bossFx.push({ kind: "twin", life: 2.8, color: col });
+      addTele("vline", W / 2, 8, W / 2, H - 8, 2.7, col);
+      fanShot(e.x, e.y + 8, 4, 0.9, spd, 24, opt);
+    } else if (atk === "catch") {
+      bossFx.push({ kind: "catch", life: 1.6, hold: 0.85, shots: [], color: col, x: e.x, y: e.y });
+      addTele("glow", e.x, e.y, 0, 0, 0.85, col);
+    } else if (atk === "fracture") {
+      for (i = 0; i < 3; i++) {
+        bossFx.push({
+          kind: "fracture", x: 46 + i * 74, vx: (i === 1 ? -1 : 1) * (38 + i * 6),
+          life: 3.2, color: col, crossed: false
+        });
+        addTele("vline", 46 + i * 74, 8, 46 + i * 74, H - 8, 1.1, col);
+      }
+    } else if (atk === "sweep") {
+      e.stream = { n: 7, dt: 0.07, acc: 0, kind: "scythe", x: 16, dx: 34, y: 68, spd: spd + 8 };
+    } else if (atk === "sow") {
+      if (!e.seedXs || !e.seedXs.length) e.seedXs = pickSpreadXs(3, 56, 28);
+      for (i = 0; i < e.seedXs.length; i++) plantSeed(e.seedXs[i], 118 + i * 8, col, 1.25);
+      queueFollow(e, 1.35, "sowcut");
+    } else if (atk === "sowcut") {
+      drones = seedEbulList();
+      for (i = 0; i < drones.length; i++) fireColumn(drones[i].x, drones[i].y, 5, 62, { r: 2.6, color: "#d8d0c4", glow: col });
+    } else if (atk === "reap") {
+      drones = seedEbulList();
+      if (!drones.length && e.seedXs) {
+        for (i = 0; i < e.seedXs.length; i++) fireColumn(e.seedXs[i], 20, 10, spd + 20, { r: 3, color: "#d8d0c4", glow: col });
+      } else {
+        for (i = 0; i < drones.length; i++) fireColumn(drones[i].x, 16, 11, spd + 24, { r: 3.1, color: "#e8e0d4", glow: col });
+      }
+    } else if (atk === "hook") {
+      for (i = 0; i < 7; i++) {
+        a = -0.9 + i * 0.3;
+        addEbul(e.x, e.y + 8, Math.sin(a) * 90, Math.cos(a) * 90 + 20, { color: col, glow: col, r: 2.8, life: 3.2 });
+      }
+      yankPlayers(e.aimX, 0.34);
+      banner = { text: "HOOKED", life: 0.55 };
+    } else if (atk === "harvest") {
+      fireSpoke(16, 24, 0.85, 6, 110, opt);
+      fireSpoke(W - 16, 24, Math.PI - 0.85, 6, 110, opt);
+      queueFollow(e, 0.45, "harvestring");
+    } else if (atk === "harvestring") {
+      aim = targetPlayer(e.x, e.y);
+      px = aim ? aim.x : W / 2;
+      base = aim ? aim.y : H - 40;
+      for (i = 0; i < 8; i++) {
+        a = (i / 8) * Math.PI * 2;
+        plantSeed(clamp(px + Math.cos(a) * 42, 18, W - 18), clamp(base + Math.sin(a) * 28, 70, H - 24), col, 3.4);
+      }
+    } else if (atk === "rail") {
+      if (e.railH) addRailFx("h", e.railPos || clamp(e.aimY, 90, H - 50), 16, W - 16, 2.6, col, true);
+      else addRailFx("v", e.railPos || clamp(e.aimX, 24, W - 24), 40, H - 18, 2.6, col, true);
+    } else if (atk === "node") {
+      addEbul(28, 48, 70, 0, { color: col, glow: col, r: 3, life: 5 });
+      addEbul(W - 28, 48, -70, 0, { color: col, glow: col, r: 3, life: 5, silent: true });
+      addEbul(28, H - 48, 0, -70, { color: col, glow: col, r: 3, life: 5, silent: true });
+      addEbul(W - 28, H - 48, 0, -70, { color: col, glow: col, r: 3, life: 5, silent: true });
+    } else if (atk === "gridlock") {
+      addRailFx("v", W / 2, 28, H - 16, 2.8, col, true);
+      addRailFx("h", H * 0.55, 12, W - 12, 2.8, col, true);
+    } else if (atk === "surge") {
+      px = clamp(e.aimX, 20, W - 20);
+      fireColumn(px, e.y + 10, 9, spd + 50, { r: 4.2, color: "#b8ffe8", glow: col });
+    } else if (atk === "blackout") {
+      nx = 50 + Math.random() * (W - 100);
+      base = 90 + Math.random() * 80;
+      f = addRailFx("v", nx, 24, H - 16, 2.5, col, false);
+      f.relight = 1.45;
+      f = addRailFx("h", base, 12, W - 12, 2.5, col, false);
+      f.relight = 1.45;
     }
   }
 
@@ -4263,6 +4726,21 @@
         if ((tgt.slowT || 0) < 0.35) banner = { text: "PETRIFIED", life: 0.65 };
         tgt.slowT = Math.max(tgt.slowT || 0, 1.2);
       }
+    } else if (s.kind === "petal") {
+      fireGappedRing(e.x, e.y, s.count || 12, s.spd, Math.round(s.ang), s.skipN || 2, { color: col, glow: col, silent: true, r: 2.6 });
+      s.ang += s.dAng;
+    } else if (s.kind === "orbit") {
+      fireGappedRing(e.x, e.y, 12, s.spd, Math.round(s.ang), 2, { color: col, glow: col, silent: true, r: 2.5 });
+      fireGappedRing(e.x, e.y, 10, s.spd + 36, Math.round(s.ang + 5), 2, { color: "#ffd0b0", glow: col, silent: true, r: 2.4 });
+      s.ang += s.dAng;
+    } else if (s.kind === "spoke") {
+      a = s.ang;
+      if (Math.abs(Math.sin((a - (s.gap || 0)) * 0.5)) > 0.28) fireSpoke(e.x, e.y, a, 5, s.spd * 0.55, { color: col, glow: col, silent: true, r: 2.8 });
+      s.ang += s.dAng;
+    } else if (s.kind === "scythe") {
+      addEbul(s.x, s.y, 8, s.spd * 0.35, { color: col, glow: col, silent: true, r: 3.4, grav: 40 });
+      addEbul(s.x, s.y + 10, -6, s.spd * 0.28, { color: col, glow: col, silent: true, r: 2.6, grav: 50 });
+      s.x += s.dx;
     } else {
       s.n = 0;
     }
@@ -4275,6 +4753,13 @@
     var style = e.moveStyle || "patrol";
     var t = time + (e.phase || 0);
     var fy, hx, ang;
+    if (e.throne) {
+      e.x += (W / 2 - e.x) * Math.min(1, 3.2 * dt);
+      fy = 64 + Math.sin(t * 1.4) * 3;
+      e.x = clamp(e.x, 34, W - 34);
+      e.y += (fy - e.y) * Math.min(1, 4 * dt);
+      return;
+    }
     if (style === "sine") {
       e.x = W / 2 + Math.sin(t * freq * 0.55) * (68 + amp * 2.4);
       fy = 68 + Math.sin(t * freq * 1.35) * (amp + 8);
@@ -6819,6 +7304,7 @@
         teles.splice(i, 1);
       }
     }
+    updateBossFx(dt);
 
     for (i = 0; i < stars.length; i++) {
       stars[i].y += stars[i].v * dt;
@@ -7008,6 +7494,7 @@
       }
       b.y += b.vy * dt;
       if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
+      if (applyBossHazardsToPbul(b, i)) continue;
       var consumed = false, br = (b.r || 2) + 1;
       for (j = 0; j < enemies.length; j++) {
         e = enemies[j];
@@ -7131,6 +7618,15 @@
         ebul.splice(i, 1);
         continue;
       }
+      if (b.splitT && b.age >= b.splitT) {
+        b.splitT = 0;
+        ang = Math.atan2(b.vy, b.vx);
+        addEbul(b.x, b.y, Math.cos(ang - 0.46) * 150, Math.sin(ang - 0.46) * 150, { color: b.color, glow: b.glow, r: 2.6, silent: true, life: 4, noTwin: true });
+        addEbul(b.x, b.y, Math.cos(ang + 0.46) * 150, Math.sin(ang + 0.46) * 150, { color: b.color, glow: b.glow, r: 2.6, silent: true, life: 4, noTwin: true });
+        explode(b.x, b.y, b.glow, false);
+        ebul.splice(i, 1);
+        continue;
+      }
       if (b.mine) {
         b.fuse -= dt;
         if (b.fuse <= 0) {
@@ -7210,6 +7706,41 @@
   function glow(context, color, blur) { context.shadowColor = color; context.shadowBlur = blur; }
   function noGlow(context) { context.shadowBlur = 0; }
 
+  function drawBossFx(context) {
+    var i, f, alpha;
+    for (i = 0; i < bossFx.length; i++) {
+      f = bossFx[i];
+      alpha = Math.max(0.18, Math.min(0.7, (f.life || 1) * 0.35));
+      context.save();
+      context.globalAlpha = alpha;
+      context.strokeStyle = f.color || "#a8f0ff";
+      context.fillStyle = f.color || "#a8f0ff";
+      context.lineWidth = 1.6;
+      if (f.kind === "fracture") {
+        context.globalAlpha = 0.35 + 0.2 * Math.sin(time * 14);
+        context.beginPath(); context.moveTo(f.x, 8); context.lineTo(f.x, H - 8); context.stroke();
+      } else if (f.kind === "pane") {
+        context.globalAlpha = 0.12 + 0.08 * Math.sin(time * 9);
+        context.fillRect(f.x - f.hw, 8, f.hw * 2, H - 16);
+        context.globalAlpha = 0.4;
+        context.strokeRect(f.x - f.hw, 8, f.hw * 2, H - 16);
+      } else if (f.kind === "twin") {
+        context.beginPath(); context.moveTo(W / 2, 8); context.lineTo(W / 2, H - 8); context.stroke();
+      } else if (f.kind === "catch") {
+        context.beginPath(); context.arc(f.x || W / 2, f.y || 72, 22 + Math.sin(time * 10) * 3, 0, Math.PI * 2); context.stroke();
+      } else if (f.kind === "rail") {
+        context.globalAlpha = f.lit ? 0.55 : 0.16;
+        context.lineWidth = f.lit ? 2.2 : 1.2;
+        context.beginPath();
+        if (f.axis === "h") { context.moveTo(f.a, f.pos); context.lineTo(f.b, f.pos); }
+        else { context.moveTo(f.pos, f.a); context.lineTo(f.pos, f.b); }
+        context.stroke();
+      } else if (f.kind === "glyph") {
+        context.beginPath(); context.arc(f.x, f.y, 10, 0, Math.PI * 2); context.stroke();
+      }
+      context.restore();
+    }
+  }
   function drawHydraLeech(context) {
     var boss = currentBoss();
     var i, e, pulse, midX, midY;
@@ -8376,6 +8907,62 @@
       context.beginPath(); context.arc(0, 1, 4.5 + (e.phaseIdx >= 1 ? Math.sin(t * 10) * 1.2 : 0), 0, Math.PI * 2); context.fill();
       context.fillStyle = col;
       context.fillRect(-12, -18, 6, 5); context.fillRect(6, -18, 6, 5);
+    } else if (e.type === "mandala") {
+      for (i = 0; i < 6; i++) {
+        a = (i / 6) * Math.PI * 2 + t * 0.6;
+        context.beginPath();
+        context.ellipse(Math.cos(a) * 8, Math.sin(a) * 8, 7, 3.4, a, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.fillStyle = dark;
+      context.beginPath(); context.arc(0, 0, 6, 0, Math.PI * 2); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#ffd23d";
+      context.beginPath(); context.arc(0, 0, 2.4 + (e.phaseIdx >= 2 ? Math.sin(t * 12) * 0.8 : 0), 0, Math.PI * 2); context.fill();
+    } else if (e.type === "myrmidon") {
+      context.beginPath();
+      for (i = 0; i < 6; i++) {
+        a = i * Math.PI / 3 - Math.PI / 6;
+        if (i === 0) context.moveTo(Math.cos(a) * 16, Math.sin(a) * 16);
+        else context.lineTo(Math.cos(a) * 16, Math.sin(a) * 16);
+      }
+      context.closePath(); context.fill();
+      context.fillStyle = dark;
+      context.fillRect(-4, -6, 8, 7);
+      context.fillStyle = col;
+      context.fillRect(-2, -14, 1.6, 8); context.fillRect(0.4, -14, 1.6, 8);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#fff0c0";
+      context.beginPath(); context.arc(-4, -2, 1.6, 0, Math.PI * 2); context.arc(4, -2, 1.6, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "kaleido") {
+      context.beginPath();
+      context.moveTo(0, -16); context.lineTo(12, 0); context.lineTo(0, 16); context.lineTo(-12, 0);
+      context.closePath(); context.fill();
+      context.fillStyle = dark;
+      context.beginPath();
+      context.moveTo(0, -8); context.lineTo(6, 0); context.lineTo(0, 8); context.lineTo(-6, 0);
+      context.closePath(); context.fill();
+      context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#e8ffff";
+      context.lineWidth = 1.2;
+      context.beginPath(); context.moveTo(-10, -4); context.lineTo(10, 4); context.moveTo(-8, 8); context.lineTo(8, -8); context.stroke();
+    } else if (e.type === "harrow") {
+      context.beginPath();
+      context.moveTo(-4, -6); context.quadraticCurveTo(18, -16, 20, 2); context.quadraticCurveTo(10, 8, -2, 6);
+      context.closePath(); context.fill();
+      context.beginPath();
+      context.moveTo(4, -6); context.quadraticCurveTo(-18, -16, -20, 2); context.quadraticCurveTo(-10, 8, 2, 6);
+      context.closePath(); context.fill();
+      context.fillStyle = dark;
+      context.fillRect(-3, -2, 6, 16);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#e8e0d0";
+      context.fillRect(-5, 12, 10, 3);
+    } else if (e.type === "nexus") {
+      context.fillRect(-14, -14, 28, 28);
+      context.fillStyle = dark;
+      context.fillRect(-9, -9, 18, 18);
+      context.strokeStyle = col; context.lineWidth = 1.4;
+      context.beginPath(); context.moveTo(-14, 0); context.lineTo(14, 0); context.moveTo(0, -14); context.lineTo(0, 14); context.stroke();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : (e.phaseIdx >= 2 ? "#ff4d4d" : "#7effd0");
+      context.beginPath(); context.arc(-12, -12, 2.2, 0, Math.PI * 2); context.arc(12, -12, 2.2, 0, Math.PI * 2);
+      context.arc(-12, 12, 2.2, 0, Math.PI * 2); context.arc(12, 12, 2.2, 0, Math.PI * 2); context.fill();
     } else {
       context.beginPath(); context.arc(0, 0, e.r, 0, Math.PI * 2); context.fill();
     }
@@ -8539,6 +9126,7 @@
       ctx.globalAlpha = 1;
     }
 
+    drawBossFx(ctx);
     drawHydraLeech(ctx);
     for (i = 0; i < enemies.length; i++) if (enemies[i].alive) drawEnemy(ctx, enemies[i]);
 
@@ -9371,7 +9959,7 @@
         equipItem(cat, id);
       },
       spawnBoss: function (type, tier) {
-        enemies = []; ebul = []; teles = []; pickups = [];
+        enemies = []; ebul = []; teles = []; bossFx = []; pickups = [];
         var idx = 0, i;
         for (i = 0; i < BOSS_DEFS.length; i++) if (BOSS_DEFS[i].id === type) idx = i;
         wave = (idx + 1) * BOSS_EVERY + (tier || 0) * BOSS_DEFS.length * BOSS_EVERY;
