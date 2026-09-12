@@ -521,21 +521,26 @@
     return "grunt";
   }
   // Later waves trade grunt spam for tanks, snipers, kami, and weavers so a
-  // smaller on-screen swarm still ramps difficulty.
+  // compact on-screen swarm still ramps. After the wave-30 boss, leftover
+  // weavers/grunts keep promoting into tanks, snipers, and kami.
   function mixTypeLate(n, i, role) {
     var hard = n >= 31;
+    var denser = n >= 41;
+    var savage = n >= 51;
     if (role === "back") {
       if (i % 3 === 0) return "shield";
       if (i % 2 === 0) return "tank";
-      return "sniper";
+      return savage ? "tank" : "sniper";
     }
     if (role === "mid") {
-      if (i % 2 === 0) return "weaver";
+      if (denser && i % 4 === 0) return "tank";
+      if (i % 2 === 0) return savage ? "sniper" : "weaver";
       if (i % 3 === 0) return "sniper";
       return hard ? "tank" : "weaver";
     }
     if (i % 2 === 0) return "kami";
-    if (i % 3 === 1) return "weaver";
+    if (denser && i % 5 === 0) return "kami";
+    if (i % 3 === 1) return savage ? "sniper" : "weaver";
     return hard ? "tank" : "grunt";
   }
   // Some mid/late non-boss waves mix in a roster boss plus a thin escort.
@@ -565,11 +570,16 @@
     return { bosses: bosses, tier: tier };
   }
   function lateFormationCap(n) {
-    var cap, plan;
+    var cap, plan, late;
     if (n <= 20) cap = 11;
     else if (n <= 30) cap = 9;
-    else if (n <= 45) cap = 8;
-    else cap = 7;
+    else {
+      // After the wave-30 boss, grow by 1 every 6 waves. 13 still fits the
+      // ±92 / -16..110 box with patrol room; guest-boss escorts stay thin.
+      late = n - 30;
+      cap = 9 + Math.ceil(late / 6);
+      if (cap > 13) cap = 13;
+    }
     plan = guestBossPlan(n);
     if (plan) cap = Math.min(cap, plan.bosses.length > 1 ? 4 : 6);
     cap += extraPlayers() * 2;
@@ -774,10 +784,10 @@
       slots[archonIdx].type = "archon";
     }
     types = ["mortar", "hex", "harrier", "bulwark"];
-    cap = n >= 31 ? 5 : n >= 21 ? 4 : n >= 11 ? 3 : 2;
-    chance = n >= 31 ? 28 : n >= 21 ? 22 : n >= 11 ? 14 : 9;
+    cap = n >= 51 ? 6 : n >= 31 ? 5 : n >= 21 ? 4 : n >= 11 ? 3 : 2;
+    chance = n >= 51 ? 36 : n >= 41 ? 32 : n >= 31 ? 28 : n >= 21 ? 22 : n >= 11 ? 14 : 9;
     perType = n >= 11 ? 2 : 1;
-    minElites = n >= 31 ? 4 : n >= 21 ? 3 : n >= 11 ? 2 : 0;
+    minElites = n >= 41 ? 5 : n >= 31 ? 4 : n >= 21 ? 3 : n >= 11 ? 2 : 0;
     function takeElite(idx) {
       ti = (n + idx) % types.length;
       type = null;
@@ -815,7 +825,8 @@
   // Co-op keeps the solo shape, then adds ships so the count is 4/3 of solo
   // (wave 2 is 15 solo → 20 co-op). Extra ranks sit behind with room to breathe.
   // Solo 1–10 pads +2. Later waves cap the swarm so it stays on-screen; extra
-  // slots fill downward instead of stacking off the top.
+  // slots fill downward instead of stacking off the top. After wave 30 the cap
+  // climbs slowly (still inside the formation box) instead of shrinking.
   function padFormation(slots, n) {
     var extra = extraPlayers();
     var i, add, src, row, ox, oy, base, target;
