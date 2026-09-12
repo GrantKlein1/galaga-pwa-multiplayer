@@ -1032,7 +1032,9 @@
   }
   // Lv 10 → start wave 5, lv 15 → 10, then +5 wave every +5 levels.
   // Level only *shows* later start buttons. Starting there also requires
-  // having reached that wave in a previous run (profile.stats.maxWave).
+  // having *cleared* that wave. stats.maxWave is the highest wave entered,
+  // so clearing N means the next spawn set maxWave to N+1 (maxWave > N).
+  // Reaching N and dying leaves maxWave === N and keeps the button locked.
   function maxStartWave(lv) {
     lv = lv == null ? xpLevel(profile.totalXp) : (lv | 0);
     if (lv < 10) return 1;
@@ -1050,7 +1052,7 @@
   function startWaveUnlocked(n, reached) {
     n = n | 0;
     if (n <= 1) return true;
-    return reachedStartWave(reached) >= n;
+    return reachedStartWave(reached) > n;
   }
   function clampStartWave(n, lv, reached) {
     var opts = startWaveOptions(lv), i, best = 1;
