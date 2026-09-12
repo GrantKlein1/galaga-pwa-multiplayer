@@ -2676,7 +2676,6 @@
       k.ex = clamp(tx + side * 16, 16, W - 16);
       k.ey = H + 40;
       k.shotsLeft = 0;
-      k.expendable = true;
       enemies.push(k);
     }
     sfxDive();
@@ -6913,13 +6912,6 @@
             e.shotAt += 0.22;
           }
           if (e.t >= 1) {
-            // Formation kami used to vanish at the bottom of the dive. Only
-            // expendable spawns (harrier darts) should die off-screen.
-            if (e.state === "kami" && e.expendable) {
-              if (e.leech) stripLeechHeal(e);
-              e.alive = false;
-              continue;
-            }
             e.state = "return"; e.t = 0; e.dur = 0.95;
             e.sx = rand(20, W - 20); e.sy = -22; e.x = e.sx; e.y = e.sy;
           }
