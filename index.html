@@ -111,6 +111,14 @@
       <button type="button" class="btn btn-danger" id="btn-reset-confirm">Yes, Reset Everything</button>
       <button type="button" class="btn btn-ghost" id="btn-reset-cancel">Cancel</button>
     </div>
+    <div id="admin-passcode" class="hub-sheet hidden">
+      <div class="hub-sheet-title">Enter passcode</div>
+      <label class="lobby-code-lab" for="admin-passcode-in">Passcode</label>
+      <input id="admin-passcode-in" class="board-name-in" type="password" maxlength="8" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
+      <div id="admin-passcode-err" class="lobby-err hidden"></div>
+      <button type="button" class="btn" id="btn-admin-passcode-go">Unlock</button>
+      <button type="button" class="btn btn-ghost" id="btn-admin-passcode-cancel">Cancel</button>
+    </div>
   </div>
   <div id="screen-ranks" class="screen hidden">
     <div class="screen-title">Leaderboard</div>
