@@ -68,7 +68,7 @@ assert(js.indexOf("function submitLeaderboard") >= 0, "submit still exists");
 assert(js.indexOf("if (profileAdmin())") >= 0, "admin gates submit and ranks");
 assert(js.indexOf('profileAdmin() ? null : (data && data.you)') >= 0, "paint drops you while admin");
 assert(js.indexOf("grantAllUnlocks") >= 0, "hangar grant unchanged");
-assert(sw.indexOf("galaga-coop-v37") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v38") >= 0, "cache bump");
 assert(readme.toLowerCase().indexOf("passcode") < 0, "readme has no passcode");
 assert(readme.indexOf("1234") < 0, "readme has no code");
 assert(readme.toLowerCase().indexOf("admin") < 0, "readme has no admin");

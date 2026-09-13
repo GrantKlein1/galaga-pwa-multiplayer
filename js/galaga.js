@@ -990,7 +990,7 @@
     return {
       coins: 0, killsByType: {}, bosses: {}, maxWave: 1, kills: 0,
       hits: 0, livesLost: 0, cleanWave: 1, safeWave: 1, pickups: {}, diveKills: 0,
-      bossHits: 0, perfectBosses: 0, leech: 0
+      bossHits: 0, perfectBosses: 0, leech: 0, clearedWave: 0
     };
   }
   function emptyStats() {
@@ -1360,6 +1360,19 @@
   function setPreferredStartWave(n) {
     profile.startWave = clampStartWave(n);
     saveProfile();
+  }
+  // Hub/lobby ‹ Wave N › default: last *cleared* wave this run, snapped down to
+  // an unlocked stepper option (1, then 5, 10, 15, …). Never a locked step.
+  // Dying on 33 → beaten 32 → Wave 30. Never cleared → stay on 1.
+  function lastBeatenStartWave(cleared, lv, reached) {
+    cleared = cleared | 0;
+    if (cleared < 1) return 1;
+    return clampStartWave(cleared, lv, reached);
+  }
+  function rememberLastBeatenStartWave() {
+    var beaten = run && (run.clearedWave | 0);
+    if (beaten < 1) return;
+    profile.startWave = lastBeatenStartWave(beaten);
   }
   function unlockedStartWaves(lv, reached) {
     var opts = startWaveOptions(lv), out = [], i;
@@ -3794,6 +3807,7 @@
 
   function spawnWave(n) {
     if (isPvpRun()) return;
+    if (wave && n === wave + 1) run.clearedWave = Math.max(run.clearedWave || 0, wave);
     wave = n;
     waveHold = 0;
     enemies = [];
@@ -7582,6 +7596,7 @@
         t: "over",
         score: score,
         maxWave: run.maxWave,
+        clearedWave: run.clearedWave || 0,
         coins: run.coins,
         hits: run.hits,
         kills: run.kills,
@@ -7603,6 +7618,7 @@
     profile.stats.runs = (profile.stats.runs || 0) + 1;
     if (score > profile.best) profile.best = score;
     best = profile.best;
+    rememberLastBeatenStartWave();
     syncQuestProgress();
     runQuestClaims = completedRunQuests();
     summaryRun = { xpGain: xpGain, oldLv: oldLv, newLv: newLv, lvCoins: lvCoins, bonus: bonus };
@@ -8323,6 +8339,7 @@
     sb = b.s;
     score = sb.sc;
     if (sb.rc != null) run.coins = sb.rc;
+    if (sb.w === wave + 1) run.clearedWave = Math.max(run.clearedWave || 0, wave);
     wave = sb.w;
     shake = sa ? lerp(sa.sh, sb.sh, t) : sb.sh;
     flash = sa ? lerp(sa.fl, sb.fl, t) : sb.fl;
@@ -8525,6 +8542,8 @@
   function applyOverMsg(msg) {
     score = msg.score || 0;
     run.maxWave = msg.maxWave || run.maxWave;
+    if (msg.clearedWave != null) run.clearedWave = Math.max(run.clearedWave || 0, msg.clearedWave | 0);
+    else if ((run.maxWave | 0) > 1) run.clearedWave = Math.max(run.clearedWave || 0, (run.maxWave | 0) - 1);
     run.coins = msg.coins || 0;
     run.hits = msg.hits || 0;
     run.kills = msg.kills || 0;
@@ -11915,6 +11934,7 @@
       skipCredit: skipCredit,
       preferredStartWave: preferredStartWave,
       setPreferredStartWave: setPreferredStartWave,
+      lastBeatenStartWave: lastBeatenStartWave,
       unlockedStartWaves: unlockedStartWaves,
       adjacentUnlockedStartWave: adjacentUnlockedStartWave,
       guestBossPlan: guestBossPlan,
