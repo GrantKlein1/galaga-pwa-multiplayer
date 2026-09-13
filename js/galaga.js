@@ -1912,6 +1912,10 @@
     if (isPvp() && (slot | 0) === 1) return 34;
     return H - 34;
   }
+  // Nose into the field: PvP top seat faces down; everyone else (solo/co-op) faces up.
+  function facingForSlot(slot) {
+    return spawnYFor(slot) < H / 2 ? 1 : -1;
+  }
   function shipYBand(p, margin) {
     var mid = H / 2;
     if (isPvpRun() && p && p.slot === 1) return { lo: margin, hi: mid - margin };
@@ -1919,7 +1923,7 @@
   }
   function pvpFacing(p) {
     if (p && p.facing) return p.facing;
-    return p && p.slot === 1 ? 1 : -1;
+    return facingForSlot(p && p.slot);
   }
   function pvpOpponent(who) {
     var slot = who && who.slot != null ? who.slot : localSlot;
@@ -3232,7 +3236,7 @@
       slot: slot,
       loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null, skin: spec.skin || equippedSkinFor(spec.ship || "wisp") },
       x: x, targetX: x, y: y, targetY: y,
-      facing: slot === 1 ? 1 : -1,
+      facing: facingForSlot(slot),
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
       weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0,
       r: loadoutR(s, spec.mod), speed: loadoutSpeed(s, spec.mod), invulnDur: s.invuln, regen: s.regen, regenT: 0,
@@ -6974,6 +6978,7 @@
       p.y = spawnYFor(i);
       p.targetY = p.y;
       p.hostY = p.y;
+      p.facing = facingForSlot(i);
       if (pvpMode || isPvpMatch()) applyPvpLayout(p);
       applyShipPassives(p);
       if (p.boss) { p.shieldHp = 0; p.shieldT = 0; p.lives = 1; }
@@ -7478,6 +7483,7 @@
     if (row.hp != null) p.hp = row.hp;
     if (row.maxHp != null) p.maxHp = row.maxHp;
     if (row.facing) p.facing = row.facing;
+    if (!isPvp()) p.facing = -1;
     if (row.boss) {
       p.boss = row.boss;
       p.loadout.boss = row.boss;
