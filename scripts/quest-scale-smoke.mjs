@@ -27,6 +27,7 @@ var raw = {
 
 var p = sanitizeProfile(raw);
 assert(p.v === 4, "profile version 4");
+assert(p.admin === false, "guest admin off");
 assert(p.coins === 1200, "coins kept");
 assert(p.dailies.tier.d_tanks === 2, "frozen daily tier kept");
 assert(p.dailies.target.d_tanks === 22, "frozen daily target kept");
@@ -34,4 +35,6 @@ assert(p.dailyTracks.d_tanks === 4, "daily track kept");
 assert(p.longTerm.lt_wave20.tier === 3, "long tier kept");
 assert(p.longTerm.lt_wave20.mark === 55, "long mark kept");
 assert(p.longTerm.lt_wave20.claimed === false, "claimed flag kept");
+raw.admin = true;
+assert(sanitizeProfile(raw).admin === true, "admin flag kept");
 console.log("quest-scale-smoke: ok");
