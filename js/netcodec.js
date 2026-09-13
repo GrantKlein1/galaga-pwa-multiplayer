@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 3;
+  var VER = 4;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -362,6 +362,7 @@
     w.u8w(idxOf(MOD_IDS, p.mod || lo.mod || ""));
     w.u8w(idxOf(SKIN_IDS, p.skin || lo.skin || "stock"));
     w.coord(p.targetX != null ? p.targetX : p.x);
+    w.coord(p.targetY != null ? p.targetY : p.y);
     w.u8frac(p.jamT, 10);
     w.u8w(Math.max(0, Math.min(255, Math.round(p.hp || 0))));
     w.u8w(Math.max(0, Math.min(255, Math.round(p.maxHp || 0))));
@@ -391,6 +392,7 @@
       skin: SKIN_IDS[r.u8r()] || "stock"
     };
     p.targetX = r.coord();
+    p.targetY = r.coord();
     p.jamT = r.u8frac(10);
     p.hp = r.u8r();
     p.maxHp = r.u8r();
@@ -450,46 +452,62 @@
 
   function encodeInput(msg) {
     var w = getWriter();
-    var flags;
+    var flags, flags2;
     msg = msg || {};
-        flags = (msg.l ? 1 : 0) | (msg.r ? 2 : 0) | (msg.f ? 4 : 0) | (msg.a ? 8 : 0) | (msg.aimX == null ? 0 : 16) | ((msg.a ? ((msg.ab | 0) & 7) : 0) << 5);
+    flags = (msg.l ? 1 : 0) | (msg.r ? 2 : 0) | (msg.f ? 4 : 0) | (msg.a ? 8 : 0) | (msg.aimX == null ? 0 : 16) | ((msg.a ? ((msg.ab | 0) & 7) : 0) << 5);
+    flags2 = (msg.u ? 1 : 0) | (msg.d ? 2 : 0) | (msg.aimY == null ? 0 : 4);
     w.u8w(MAGIC);
     w.u8w(VER);
     w.u8w(TYPE_INPUT);
     w.u16(msg.n || 0);
     w.u8w(msg.slot || 0);
     w.u8w(flags);
+    w.u8w(flags2);
     if (flags & 16) w.coord(msg.aimX);
+    if (flags2 & 4) w.coord(msg.aimY);
     w.coord(msg.x);
     w.coord(msg.targetX);
+    w.coord(msg.y);
+    w.coord(msg.targetY);
     return w.out();
   }
 
   function decodeInputBody(r, seq) {
-    var flags, msg;
+    var flags, flags2, msg;
     msg = {
       t: "input",
       n: seq,
       slot: r.u8r(),
       l: false,
       r: false,
+      u: false,
+      d: false,
       f: false,
       a: false,
       ab: 0,
       aimX: null,
+      aimY: null,
       x: 0,
-      targetX: 0
+      targetX: 0,
+      y: 0,
+      targetY: 0
     };
     flags = r.u8r();
+    flags2 = r.u8r();
     msg.l = !!(flags & 1);
     msg.r = !!(flags & 2);
     msg.f = !!(flags & 4);
     msg.a = !!(flags & 8);
     msg.ab = (flags >> 5) & 7;
     if (msg.a && !msg.ab) msg.ab = 1;
+    msg.u = !!(flags2 & 1);
+    msg.d = !!(flags2 & 2);
     if (flags & 16) msg.aimX = r.coord();
+    if (flags2 & 4) msg.aimY = r.coord();
     msg.x = r.coord();
     msg.targetX = r.coord();
+    msg.y = r.coord();
+    msg.targetY = r.coord();
     return msg;
   }
 
@@ -581,7 +599,7 @@
       pl: [{
         slot: 0, x: 120, y: 326, alive: 1, invuln: 0, muzzle: 0, shieldHp: 0,
         weapon: "normal", weaponT: 0, speedT: 0, lives: 3, r: 9, slowT: 0,
-        ship: "wisp", gun: "pulse", mod: null, skin: "stock", targetX: 120, jamT: 0
+        ship: "wisp", gun: "pulse", mod: null, skin: "stock", targetX: 120, targetY: 326, jamT: 0
       }]
     };
     buf = encodeSnap(4, s);
@@ -590,12 +608,13 @@
     e = out.s.en[0];
     p = out.s.pl[0];
     if (!(out.s.sc === 99 && e.type === "grunt" && e.id === 7 && p.ship === "wisp" && out.s.bn.text === "WAVE 2")) return false;
-    buf = encodeInput({ t: "input", n: 11, slot: 1, l: 1, r: 0, f: 1, a: 0, aimX: 80.4, x: 120.5, targetX: 118 });
+    if (p.targetY !== 326) return false;
+    buf = encodeInput({ t: "input", n: 11, slot: 1, l: 1, r: 0, u: 1, d: 0, f: 1, a: 0, aimX: 80.4, aimY: 200.5, x: 120.5, targetX: 118, y: 300, targetY: 290 });
     out = decode(buf);
-    if (!(out && out.t === "input" && out.n === 11 && out.slot === 1 && out.l && out.f && !out.a && out.aimX === 80.4 && out.x === 120.5)) return false;
-    buf = encodeInput({ t: "input", n: 12, slot: 0, l: 0, r: 0, f: 0, a: 1, ab: 3, x: 10, targetX: 10 });
+    if (!(out && out.t === "input" && out.n === 11 && out.slot === 1 && out.l && out.u && out.f && !out.a && !out.d && out.aimX === 80.4 && out.aimY === 200.5 && out.x === 120.5 && out.y === 300 && out.targetY === 290)) return false;
+    buf = encodeInput({ t: "input", n: 12, slot: 0, l: 0, r: 0, f: 0, a: 1, ab: 3, x: 10, targetX: 10, y: 326, targetY: 326 });
     out = decode(buf);
-    return !!(out && out.t === "input" && out.a && out.ab === 3);
+    return !!(out && out.t === "input" && out.a && out.ab === 3 && out.y === 326);
   }
 
   window.__netcodec = {
