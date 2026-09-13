@@ -54,7 +54,9 @@ var leftover = {
 var filtered = publicView(leftover, banned);
 assert(filtered.you === null, "GET hides leftover denied row");
 assert(filtered.entries.length === 1 && filtered.entries[0].name === "Pilot-6217", "GET does not return leftover");
-assert(!needsPersist(leftover, applyDenied(leftover)), "already scrubbed board stays put");
+assert(needsPersist(leftover, applyDenied(leftover)), "leftover denied row is deleted from blob");
+var clean = applyDenied(leftover);
+assert(!needsPersist(clean, applyDenied(clean)), "already scrubbed board stays put");
 
 var scored = applyScore(board, banned, "Pilot-6216", 99000, 9);
 assert(scored.skipped, "score post skipped for denied name");

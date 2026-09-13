@@ -150,7 +150,7 @@ export function needsPersist(raw, next) {
     if (!have[nameKey(list[i])]) return true;
   }
   if (JSON.stringify(hiddenList(raw)) !== JSON.stringify(hiddenList(next))) return true;
-  if (JSON.stringify(Array.isArray(raw && raw.entries) ? raw.entries : []) !==
+  if (JSON.stringify(sortEntries(Array.isArray(raw && raw.entries) ? raw.entries : [])) !==
       JSON.stringify(Array.isArray(next && next.entries) ? next.entries : [])) {
     return true;
   }
