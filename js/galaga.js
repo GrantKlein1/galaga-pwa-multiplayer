@@ -169,7 +169,7 @@
     { id: "kaleido", name: "KALEIDO", color: "#a8f0ff", dark: "#102838", r: 19, hp: 516, spd: 44, amp: 12, freq: 1.4, cd: 1.5, tele: 0.46, pts: 4950,
       base: ["shatter", "pane"], p2: ["twin", "catch"], p3: ["fracture"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "MIRROR FIELD", p3Text: "FRACTURE", flavor: "Splitting shards, glass panes, mirror strips" },
-    { id: "helios", name: "HELIOS", color: "#ffe08a", dark: "#401808", r: 24, hp: 576, spd: 34, amp: 7, freq: 1.05, cd: 1.42, tele: 0.5, pts: 5350,
+    { id: "helios", name: "HELIOS", color: "#ffe08a", dark: "#401808", r: 24, hp: 576, spd: 34, amp: 7, freq: 1.05, cd: 0.96, tele: 0.38, pts: 5350,
       base: ["glare", "sear"], p2: ["prominence", "hearth"], p3: ["noon"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "PROMINENCES RISE", p3Text: "HIGH NOON", flavor: "Heat glare, sear plates, a noon pillar" },
     { id: "selene", name: "SELENE", color: "#c8d4ff", dark: "#080c22", r: 22, hp: 628, spd: 36, amp: 9, freq: 0.85, cd: 1.44, tele: 0.52, pts: 5800,
@@ -5194,7 +5194,7 @@
     e.followups = [];
     e.stream = null;
     e.afterReturn = "";
-    e.atkCd = 0.9;
+    e.atkCd = e.type === "helios" ? 0.52 : 0.9;
     e.hitFlash = 0.3;
     if (kitHas(e, "regrow")) { e.shieldHp = Math.max(e.shieldHp, 2 + e.tier); }
     if (kitHas(e, "voidguard") && idx === 1) summonEscorts(e, "shield", 2, 64);
@@ -5371,15 +5371,21 @@
       addTele("vline", W / 2, 8, W / 2, H - 8, delay + 0.12, col);
       addTele("vline", W - 50, 8, W - 50, H - 8, delay + 0.12, col);
       delay += 0.12;
-    } else if (atk === "slab" || atk === "crypt" || atk === "sear" || atk === "vigil" || atk === "occult") {
+    } else if (atk === "slab" || atk === "crypt" || atk === "vigil" || atk === "occult") {
       e.slamX = clamp(e.aimX, 22, W - 22);
       e.slamY = clampAimY(e.aimY);
       e.echoY = echoAimY(e.slamY);
       addZone(e.slamX, e.slamY, atk === "crypt" ? 16 : 20, atk === "slab" ? 36 : 18, delay + 0.12, col);
-      if (atk === "sear") addZone(e.slamX, e.echoY, 20, 16, delay + 0.12, "#ffb060");
       if (atk === "vigil") addTele("hline", 12, e.slamY, W - 12, e.slamY, delay + 0.12, col);
       if (atk === "occult") addTele("hline", 12, e.echoY, W - 12, e.echoY, delay + 0.12, "#8aa0ff");
       delay += 0.12;
+    } else if (atk === "sear") {
+      e.slamX = clamp(e.aimX, 22, W - 22);
+      e.slamY = clampAimY(e.aimY);
+      e.echoY = echoAimY(e.slamY);
+      addZone(e.slamX, e.slamY, 20, 18, delay + 0.08, col);
+      addZone(e.slamX, e.echoY, 20, 16, delay + 0.08, "#ffb060");
+      delay += 0.08;
     } else if (atk === "knell") {
       e.slamY = clampAimY(e.aimY);
       addTele("ring", 36, e.slamY, 0, 0, delay + 0.14, col);
@@ -5392,26 +5398,29 @@
       addTele("hline", 12, H - 42, W - 12, H - 42, delay + 0.16, col);
       addZone(e.gapX, (H / 2 + H - 40) * 0.5, 28, 90, delay + 0.16, "#7ef9ff");
       delay += 0.16;
-    } else if (atk === "glare" || atk === "crescent") {
+    } else if (atk === "glare") {
+      addTele("line", e.x, e.y + 8, e.aimX, e.aimY, delay + 0.06, col);
+      delay += 0.04;
+    } else if (atk === "crescent") {
       addTele("line", e.x, e.y + 8, e.aimX, e.aimY, delay + 0.1, col);
       delay += 0.08;
     } else if (atk === "prominence") {
       e.slamX = clamp(e.aimX, 28, W - 28);
       e.slamY = clampAimY(e.aimY);
-      addTele("line", 18, 24, e.slamX, e.slamY, delay + 0.16, col);
-      addTele("line", W - 18, 24, e.slamX, e.slamY, delay + 0.16, col);
-      addZone(e.slamX, e.slamY, 22, 22, delay + 0.16, col);
-      delay += 0.16;
+      addTele("line", 18, 24, e.slamX, e.slamY, delay + 0.1, col);
+      addTele("line", W - 18, 24, e.slamX, e.slamY, delay + 0.1, col);
+      addZone(e.slamX, e.slamY, 22, 22, delay + 0.1, col);
+      delay += 0.1;
     } else if (atk === "hearth" || atk === "noon") {
       e.slamX = clamp(e.aimX, 22, W - 22);
       e.slamY = clampAimY(e.aimY);
-      addTele("hline", 12, H - 40, W - 12, H - 40, delay + 0.14, col);
-      if (atk === "hearth") addTele("hline", 12, H / 2 + 18, W - 12, H / 2 + 18, delay + 0.14, "#ffb060");
+      addTele("hline", 12, H - 40, W - 12, H - 40, delay + 0.1, col);
+      if (atk === "hearth") addTele("hline", 12, H / 2 + 18, W - 12, H / 2 + 18, delay + 0.1, "#ffb060");
       if (atk === "noon") {
-        addTele("vline", e.slamX, 20, e.slamX, H - 12, delay + 0.16, col);
-        addZone(e.slamX, e.slamY, 18, 16, delay + 0.16, col);
+        addTele("vline", e.slamX, 20, e.slamX, H - 12, delay + 0.1, col);
+        addZone(e.slamX, e.slamY, 18, 16, delay + 0.1, col);
       }
-      delay += 0.16;
+      delay += 0.1;
     } else if (atk === "limb") {
       e.paneLeft = e.aimX < W / 2;
       addZone(e.paneLeft ? W * 0.25 : W * 0.75, H * 0.75, W * 0.25, H * 0.25 - 6, delay + 0.14, col);
@@ -6219,7 +6228,7 @@
       aimedWedge(W - 18, 28, px, base, 3, 0.22, spd + 8, { color: "#ffe08a", glow: col, r: 2.8, silent: true });
     } else if (atk === "hearth") {
       slamBox(W / 2, H - 40, W / 2 - 10, 10, col);
-      queueFollow(e, 0.42, "hearth2");
+      queueFollow(e, 0.3, "hearth2");
     } else if (atk === "hearth2") {
       slamBox(W / 2, H / 2 + 18, W / 2 - 10, 10, "#ffb060");
     } else if (atk === "noon") {
@@ -6525,7 +6534,7 @@
       t = t * t * (3 - 2 * t);
       e.x = W / 2;
       e.y = lerp(-36, 72, t);
-      if (e.t >= 1) { e.state = "form"; e.x = W / 2; e.y = 72; e.atkCd = 0.8; }
+      if (e.t >= 1) { e.state = "form"; e.x = W / 2; e.y = 72; e.atkCd = e.type === "helios" ? 0.48 : 0.8; }
       return;
     }
     if (e.state === "dive" || e.state === "kami") {

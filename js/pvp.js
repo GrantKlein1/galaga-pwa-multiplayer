@@ -173,10 +173,10 @@
       fireHint: "SPACE / FIRE — solar glare",
       abilityHint: "1 — heat plates",
       abilities: [
-        { id: "sear", key: "1", name: "Sear", cd: 5.4 },
-        { id: "prominence", key: "2", name: "Prominence", cd: 7.0 },
-        { id: "hearth", key: "3", name: "Hearth", cd: 7.4 },
-        { id: "noon", key: "4", name: "High noon", cd: 8.6 }
+        { id: "sear", key: "1", name: "Sear", cd: 4.1 },
+        { id: "prominence", key: "2", name: "Prominence", cd: 5.3 },
+        { id: "hearth", key: "3", name: "Hearth", cd: 5.6 },
+        { id: "noon", key: "4", name: "High noon", cd: 6.5 }
       ]
     },
     selene: {
