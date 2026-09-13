@@ -1404,7 +1404,8 @@
         dmg: src.dmg, r: src.r || 2, age: 0, life: src.life || 0,
         pierce: src.pierce || 0, hit: src.pierce ? [] : null,
         homing: !!src.homing, homeT: src.homeT || 0, hsp: src.hsp || 0, hturn: src.hturn || 0,
-        splash: src.splash || null, gun: src.gun || "pulse", owner: who.slot, ghost: ghost, skinEcho: true
+        splash: src.splash || null, gun: src.gun || "pulse", owner: who.slot, ghost: ghost, skinEcho: true,
+        homeLock: src.homeLock, homeId: src.homeId, homeSlot: src.homeSlot
       };
       if (src.helix) {
         b.helix = true; b.bx = b.x; b.ha = src.ha; b.hf = src.hf; b.hp0 = src.hp0 || 0;
@@ -1436,7 +1437,8 @@
         echoItems.push({
           dx: b.x - who.x, vx: b.vx, vy: b.vy, dmg: (b.dmg || 1) * 0.7, r: b.r, life: b.life,
           pierce: b.pierce || 0, homing: b.homing, homeT: b.homeT, hsp: b.hsp, hturn: b.hturn,
-          splash: b.splash, gun: b.gun, helix: b.helix, ha: b.ha, hf: b.hf, hp0: b.hp0
+          splash: b.splash, gun: b.gun, helix: b.helix, ha: b.ha, hf: b.hf, hp0: b.hp0,
+          homeLock: b.homeLock, homeId: b.homeId, homeSlot: b.homeSlot
         });
       }
       who.skinEcho = { t: 0.16, items: echoItems };
@@ -3405,6 +3407,7 @@
       if (g.helix) {
         b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
       }
+      if (g.id === "seeker") lockSeekerHome(b);
       pbul.push(b);
     }
     if (bolt) {
@@ -3740,30 +3743,80 @@
     sfxTele();
   }
 
-  // Player homing. Seeker uses gun hsp/hturn (a bit above Colossus 153/1.92).
-  // Storm bolts keep the old snap (300 / 3.2) when those fields are unset.
-  function steerPlayerHoming(b, dt) {
-    var bestE, bestD, j, e, dd, pdx, pdy, plen, psp, turn;
-    if (!b.homing || b.homeT <= 0) return;
-    b.homeT -= dt;
-    bestE = null;
-    bestD = 1e12;
+  // Player homing. Seeker locks one target at fire and never retargets.
+  // Storm bolts keep nearest retarget and the old snap (300 / 3.2) when hsp/hturn are unset.
+  function lockSeekerHome(b) {
+    var best = null, bestD = 1e12, j, e, dd;
+    b.homeLock = 1;
     if (isPvpRun()) {
       for (j = 0; j < players.length; j++) {
         e = players[j];
         if (!e || !e.alive || e.slot === b.owner) continue;
         dd = dist2(b.x, b.y, e.x, e.y);
-        if (dd < bestD) { bestD = dd; bestE = e; }
+        if (dd < bestD) { bestD = dd; best = e; }
       }
+      if (best) b.homeSlot = best.slot;
     } else {
       for (j = 0; j < enemies.length; j++) {
         e = enemies[j];
         if (!e.alive) continue;
         dd = dist2(b.x, b.y, e.x, e.y);
-        if (dd < bestD) { bestD = dd; bestE = e; }
+        if (dd < bestD) { bestD = dd; best = e; }
+      }
+      if (best) b.homeId = best.id;
+    }
+  }
+  function seekerLockedTarget(b) {
+    var j, e;
+    if (isPvpRun()) {
+      if (b.homeSlot == null) return null;
+      for (j = 0; j < players.length; j++) {
+        e = players[j];
+        if (e && e.alive && e.slot === b.homeSlot) return e;
+      }
+      return null;
+    }
+    if (b.homeId == null) return null;
+    for (j = 0; j < enemies.length; j++) {
+      e = enemies[j];
+      if (e.alive && e.id === b.homeId) return e;
+    }
+    return null;
+  }
+  function steerPlayerHoming(b, dt) {
+    var bestE, bestD, j, e, dd, pdx, pdy, plen, psp, turn, lockOn;
+    if (!b.homing || b.homeT <= 0) return;
+    b.homeT -= dt;
+    lockOn = b.gun === "seeker";
+    bestE = null;
+    if (lockOn) {
+      if (!b.homeLock) lockSeekerHome(b);
+      bestE = seekerLockedTarget(b);
+    } else {
+      bestD = 1e12;
+      if (isPvpRun()) {
+        for (j = 0; j < players.length; j++) {
+          e = players[j];
+          if (!e || !e.alive || e.slot === b.owner) continue;
+          dd = dist2(b.x, b.y, e.x, e.y);
+          if (dd < bestD) { bestD = dd; bestE = e; }
+        }
+      } else {
+        for (j = 0; j < enemies.length; j++) {
+          e = enemies[j];
+          if (!e.alive) continue;
+          dd = dist2(b.x, b.y, e.x, e.y);
+          if (dd < bestD) { bestD = dd; bestE = e; }
+        }
       }
     }
-    if (!bestE) return;
+    if (!bestE) {
+      if (lockOn) {
+        b.homing = false;
+        b.homeT = 0;
+      }
+      return;
+    }
     pdx = bestE.x - b.x;
     pdy = bestE.y - b.y;
     plen = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
