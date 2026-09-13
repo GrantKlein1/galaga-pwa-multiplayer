@@ -452,7 +452,7 @@
     var w = getWriter();
     var flags;
     msg = msg || {};
-    flags = (msg.l ? 1 : 0) | (msg.r ? 2 : 0) | (msg.f ? 4 : 0) | (msg.a ? 8 : 0) | (msg.aimX == null ? 0 : 16);
+        flags = (msg.l ? 1 : 0) | (msg.r ? 2 : 0) | (msg.f ? 4 : 0) | (msg.a ? 8 : 0) | (msg.aimX == null ? 0 : 16) | ((msg.a ? ((msg.ab | 0) & 7) : 0) << 5);
     w.u8w(MAGIC);
     w.u8w(VER);
     w.u8w(TYPE_INPUT);
@@ -475,6 +475,7 @@
       r: false,
       f: false,
       a: false,
+      ab: 0,
       aimX: null,
       x: 0,
       targetX: 0
@@ -484,6 +485,8 @@
     msg.r = !!(flags & 2);
     msg.f = !!(flags & 4);
     msg.a = !!(flags & 8);
+    msg.ab = (flags >> 5) & 7;
+    if (msg.a && !msg.ab) msg.ab = 1;
     if (flags & 16) msg.aimX = r.coord();
     msg.x = r.coord();
     msg.targetX = r.coord();
@@ -589,7 +592,10 @@
     if (!(out.s.sc === 99 && e.type === "grunt" && e.id === 7 && p.ship === "wisp" && out.s.bn.text === "WAVE 2")) return false;
     buf = encodeInput({ t: "input", n: 11, slot: 1, l: 1, r: 0, f: 1, a: 0, aimX: 80.4, x: 120.5, targetX: 118 });
     out = decode(buf);
-    return !!(out && out.t === "input" && out.n === 11 && out.slot === 1 && out.l && out.f && !out.a && out.aimX === 80.4 && out.x === 120.5);
+    if (!(out && out.t === "input" && out.n === 11 && out.slot === 1 && out.l && out.f && !out.a && out.aimX === 80.4 && out.x === 120.5)) return false;
+    buf = encodeInput({ t: "input", n: 12, slot: 0, l: 0, r: 0, f: 0, a: 1, ab: 3, x: 10, targetX: 10 });
+    out = decode(buf);
+    return !!(out && out.t === "input" && out.a && out.ab === 3);
   }
 
   window.__netcodec = {

@@ -38,8 +38,10 @@
   <div id="board-wrap">
     <canvas id="board" tabindex="0"></canvas>
     <div id="pvp-hint" class="pvp-hint hidden" aria-hidden="true">
-      <div id="pvp-hint-fire">FIRE — primary</div>
-      <div id="pvp-hint-ability">E / ABILITY — special</div>
+      <div id="pvp-hint-fire">SPACE / FIRE — primary</div>
+      <div id="pvp-hint-abilities" class="pvp-hint-abilities">
+        <div id="pvp-hint-ability">1 / E — special</div>
+      </div>
     </div>
   </div>
   <div id="touchpad" aria-label="Game controls">
@@ -182,8 +184,8 @@
         <div id="lobby-pvp-tutorial" class="pvp-tutorial hidden">
           <div class="pvp-tutorial-title" id="pvp-tutorial-name">Boss</div>
           <div class="pvp-tutorial-line" id="pvp-tutorial-fire"></div>
-          <div class="pvp-tutorial-line" id="pvp-tutorial-ability"></div>
-          <div class="help">FIRE is your primary. ABILITY (E / Shift, or the pad) is the special. Hints stay on screen in-fight.</div>
+          <div id="pvp-tutorial-ability"></div>
+          <div class="help">SPACE / FIRE is your primary. Abilities are keys 1–6 (E / Shift = 1, or tap the on-screen tips / pad). Each ability shows its cooldown.</div>
           <button type="button" class="btn" id="btn-pvp-tutorial-ok">Got it</button>
         </div>
         <div id="lobby-pvp-status" class="lobby-status"></div>
