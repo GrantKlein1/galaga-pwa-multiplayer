@@ -151,6 +151,51 @@ html, body {
   gap: 4px;
   width: 100%;
 }
+.start-wave-opts:focus {
+  outline: none;
+}
+.start-wave-opts:focus-visible .start-wave-stepper {
+  border-color: #7ef9ff;
+  box-shadow: 0 0 0 1px rgba(126, 249, 255, 0.7);
+}
+.start-wave-stepper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid #2a3a66;
+  border-radius: 6px;
+  background: #101028;
+  min-height: 44px;
+  overflow: hidden;
+}
+.start-wave-chev {
+  flex: none;
+  width: 44px;
+  min-height: 44px;
+  background: transparent;
+  color: #7ef9ff;
+  border: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+.start-wave-chev:hover:not(:disabled) { background: rgba(126, 249, 255, 0.12); }
+.start-wave-chev:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  color: #6a7aa8;
+}
+.start-wave-value {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7ef9ff;
+  pointer-events: none;
+}
 .start-wave-opt {
   flex: 1 1 28%;
   min-width: 72px;

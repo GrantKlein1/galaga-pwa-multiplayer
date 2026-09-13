@@ -1356,6 +1356,35 @@
     profile.startWave = clampStartWave(n);
     saveProfile();
   }
+  function unlockedStartWaves(lv, reached) {
+    var opts = startWaveOptions(lv), out = [], i;
+    for (i = 0; i < opts.length; i++) {
+      if (startWaveUnlocked(opts[i], reached)) out.push(opts[i]);
+    }
+    return out;
+  }
+  function adjacentUnlockedStartWave(from, dir, lv, reached) {
+    var list = unlockedStartWaves(lv, reached);
+    var cur = clampStartWave(from, lv, reached);
+    var i;
+    if (!dir) return cur;
+    dir = dir < 0 ? -1 : 1;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] === cur) {
+        if (list[i + dir] != null) return list[i + dir];
+        return cur;
+      }
+    }
+    return cur;
+  }
+  function nudgePreferredStartWave(dir) {
+    var next;
+    if (!dir) return false;
+    next = adjacentUnlockedStartWave(preferredStartWave(), dir);
+    if (next === preferredStartWave()) return false;
+    setPreferredStartWave(next);
+    return true;
+  }
   function skipCredit(startN) {
     var n, slots, i, pts = 0, meta, d, plan;
     startN = Math.max(1, startN | 0);
@@ -6544,49 +6573,100 @@
       renderAccount();
     });
   }
+  function lobbyStartWaveReadOnly() {
+    return uiScreen === "lobby" && netRole !== "host";
+  }
+  function refreshStartWavePickers(focusId) {
+    var keep = document.activeElement;
+    renderStartWavePicker("start-wave-opts");
+    renderStartWavePicker("lobby-start-wave-opts", lobbyStartWaveReadOnly());
+    if (focusId && el(focusId) && keep && (keep === el(focusId) || el(focusId).contains(keep))) {
+      el(focusId).focus();
+    }
+  }
+  function startWaveDirFromKey(k) {
+    if (k === "ArrowLeft" || k === "a" || k === "A") return -1;
+    if (k === "ArrowRight" || k === "d" || k === "D") return 1;
+    return 0;
+  }
+  function bindStartWaveStepper(box, id) {
+    box.tabIndex = 0;
+    box.setAttribute("role", "group");
+    box.setAttribute("aria-label", "Start wave");
+    box.onclick = function (ev) {
+      var btn = ev.target && ev.target.closest ? ev.target.closest("[data-dir]") : null;
+      box.focus();
+      if (!btn || btn.disabled) return;
+      if (!nudgePreferredStartWave(btn.getAttribute("data-dir") | 0)) return;
+      refreshStartWavePickers(id);
+    };
+    box.onkeydown = function (ev) {
+      var dir = startWaveDirFromKey(ev.key);
+      if (!dir) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (!nudgePreferredStartWave(dir)) return;
+      refreshStartWavePickers(id);
+    };
+  }
+  function unbindStartWaveStepper(box) {
+    box.removeAttribute("tabindex");
+    box.removeAttribute("role");
+    box.removeAttribute("aria-label");
+    box.onclick = null;
+    box.onkeydown = null;
+  }
   function renderStartWavePicker(id, readOnly) {
     var box = el(id);
     var hint = el(id === "start-wave-opts" ? "start-wave-hint" : "lobby-start-wave-hint");
     var lv = xpLevel(profile.totalXp);
     var opts = startWaveOptions(lv);
     var chosen = preferredStartWave();
-    var html = "", i, n, label, locked, hasLocked = false;
+    var i, n, hasLocked = false, unlocked = [], idx = -1, canLeft, canRight, nextLocked = false;
+    var leftBtn, rightBtn, val, stepper;
     if (!box) return;
     if (readOnly) {
       box.innerHTML = "";
+      unbindStartWaveStepper(box);
       if (hint) hint.textContent = "Host chooses the starting wave";
       return;
     }
     for (i = 0; i < opts.length; i++) {
       n = opts[i];
-      locked = !startWaveUnlocked(n);
-      if (locked) hasLocked = true;
-      label = n === 1 ? "Wave 1" : ("Wave " + n);
-      html += '<button type="button" class="start-wave-opt' + (n === chosen ? " active" : "") + (locked ? " locked" : "") + '" data-wave="' + n + '"' + (locked ? ' disabled title="Beat this wave first to unlock starting at it."' : "") + ">" + label + "</button>";
+      if (!startWaveUnlocked(n)) {
+        hasLocked = true;
+        if (n > chosen) nextLocked = true;
+      } else {
+        unlocked.push(n);
+      }
     }
-    box.innerHTML = html;
-    if (!readOnly) {
-      box.onclick = function (ev) {
-        var btn = ev.target && ev.target.closest ? ev.target.closest(".start-wave-opt") : null;
-        var w;
-        if (!btn || btn.disabled) return;
-        w = btn.getAttribute("data-wave") | 0;
-        if (!startWaveUnlocked(w)) return;
-        setPreferredStartWave(w);
-        // Already-selected Wave 1 would otherwise be a no-op; start on any tap.
-        if (id === "start-wave-opts") {
-          leaveNet();
-          startNewGame({ startWave: w });
-          return;
-        }
-        if (id === "lobby-start-wave-opts" && netRole === "host" && lobbyGuest) {
-          lobbyStart();
-          return;
-        }
-        renderStartWavePicker("start-wave-opts");
-        renderStartWavePicker("lobby-start-wave-opts");
-      };
+    for (i = 0; i < unlocked.length; i++) {
+      if (unlocked[i] === chosen) idx = i;
     }
+    canLeft = idx > 0;
+    canRight = idx >= 0 && idx < unlocked.length - 1;
+    stepper = box.querySelector(".start-wave-stepper");
+    if (!stepper) {
+      box.innerHTML = '<div class="start-wave-stepper">' +
+        '<button type="button" class="start-wave-chev" data-dir="-1" tabindex="-1" aria-label="Lower start wave">‹</button>' +
+        '<div class="start-wave-value" aria-live="polite"></div>' +
+        '<button type="button" class="start-wave-chev" data-dir="1" tabindex="-1" aria-label="Higher start wave">›</button>' +
+        "</div>";
+    }
+    leftBtn = box.querySelector('[data-dir="-1"]');
+    rightBtn = box.querySelector('[data-dir="1"]');
+    val = box.querySelector(".start-wave-value");
+    if (val) val.textContent = chosen === 1 ? "Wave 1" : ("Wave " + chosen);
+    if (leftBtn) {
+      leftBtn.disabled = !canLeft;
+      leftBtn.removeAttribute("title");
+    }
+    if (rightBtn) {
+      rightBtn.disabled = !canRight;
+      if (!canRight && nextLocked) rightBtn.setAttribute("title", "Beat this wave first to unlock starting at it.");
+      else rightBtn.removeAttribute("title");
+    }
+    bindStartWaveStepper(box, id);
     if (hint) {
       if (lv < 10) hint.textContent = "Reach level 10 to skip early waves";
       else if (hasLocked) hint.textContent = "Beat this wave first to unlock starting at it.";
@@ -11654,6 +11734,8 @@
       skipCredit: skipCredit,
       preferredStartWave: preferredStartWave,
       setPreferredStartWave: setPreferredStartWave,
+      unlockedStartWaves: unlockedStartWaves,
+      adjacentUnlockedStartWave: adjacentUnlockedStartWave,
       guestBossPlan: guestBossPlan,
       buildSlots: buildSlots,
       XP_SCORE_MUL: XP_SCORE_MUL,
