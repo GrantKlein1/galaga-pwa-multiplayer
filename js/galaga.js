@@ -2030,6 +2030,9 @@
     return Math.max(hp + (n - 1), Math.round(hp * n));
   }
   function escortCap() { return 9 * playerCount(); }
+  // Overlord escorts are orange kami (same type as harrier darts). Cap Overlord's
+  // spawn path so it never pushes living kami past this total. Harrier is uncapped.
+  var OVERLORD_KAMI_CAP = 8;
   function ebulCap() { return MAX_EBUL + extraPlayers() * 32; }
   // Effective loadout numbers (ship stat x mod bonuses). Used by the run and by the hangar readouts.
   function loadoutFireMul(ship, mod) {
@@ -4436,10 +4439,20 @@
       }
     }
   }
+  function livingKamiCount() {
+    var n = 0, i;
+    for (i = 0; i < enemies.length; i++) {
+      if (enemies[i].alive && enemies[i].type === "kami") n += 1;
+    }
+    return n;
+  }
   function summonKami(e, n) {
-    var i, k;
+    var i, k, room;
     n = (n || 1) + extraPlayers();
     if (aliveCount() >= escortCap()) return;
+    room = OVERLORD_KAMI_CAP - livingKamiCount();
+    if (n > room) n = room;
+    if (n <= 0) return;
     for (i = 0; i < n; i++) {
       k = makeEnemy((i - (n - 1) / 2) * 80, 40, "kami");
       k.x = e.x + (i - (n - 1) / 2) * 40; k.y = e.y + 10;
