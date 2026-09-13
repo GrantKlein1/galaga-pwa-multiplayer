@@ -163,18 +163,18 @@
     { id: "mandala", name: "MANDALA", color: "#f0a070", dark: "#3a1420", r: 20, hp: 420, spd: 38, amp: 10, freq: 1.1, cd: 1.52, tele: 0.48, pts: 4300,
       base: ["seal", "stamp"], p2: ["orbit", "bloom"], p3: ["wheel"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "SEALS ALIGN", p3Text: "SINGULARITY WHEEL", flavor: "Petal rings, glyph stamps, a spinning wheel" },
-    { id: "myrmidon", name: "MYRMIDON", color: "#e8a020", dark: "#2a1a04", r: 21, hp: 468, spd: 40, amp: 8, freq: 1.3, cd: 1.55, tele: 0.48, pts: 4600,
-      base: ["column", "order"], p2: ["sacrifice", "pincer"], p3: ["throne"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
-      p2Text: "HIVE ORDERS", p3Text: "THE THRONE", flavor: "Marching columns, lane orders, hive grenades" },
+    { id: "cenotaph", name: "CENOTAPH", color: "#d8e4ee", dark: "#101820", r: 20, hp: 488, spd: 28, amp: 4, freq: 0.7, cd: 1.4, tele: 0.5, pts: 4600,
+      base: ["slab", "crypt"], p2: ["knell", "burial"], p3: ["vigil"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "THE VAULT OPENS", p3Text: "THE VIGIL", flavor: "Aimed slabs, crypt boxes, a still vigil" },
     { id: "kaleido", name: "KALEIDO", color: "#a8f0ff", dark: "#102838", r: 19, hp: 516, spd: 44, amp: 12, freq: 1.4, cd: 1.5, tele: 0.46, pts: 4950,
       base: ["shatter", "pane"], p2: ["twin", "catch"], p3: ["fracture"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "MIRROR FIELD", p3Text: "FRACTURE", flavor: "Splitting shards, glass panes, mirror strips" },
-    { id: "harrow", name: "HARROW", color: "#b8b0a4", dark: "#1c1814", r: 22, hp: 564, spd: 36, amp: 8, freq: 1.0, cd: 1.58, tele: 0.5, pts: 5350,
-      base: ["sweep", "sow"], p2: ["reap", "hook"], p3: ["harvest"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
-      p2Text: "REAPING", p3Text: "HARVEST MOON", flavor: "Scythe arcs, seeds, a pulling crescent" },
-    { id: "nexus", name: "NEXUS", color: "#40ffc4", dark: "#041c18", r: 21, hp: 612, spd: 34, amp: 6, freq: 0.9, cd: 1.6, tele: 0.5, pts: 5800,
-      base: ["rail", "node"], p2: ["gridlock", "surge"], p3: ["blackout"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
-      p2Text: "GRIDLOCK", p3Text: "BLACKOUT", flavor: "Lit rails, corner nodes, a plus-grid surge" }
+    { id: "helios", name: "HELIOS", color: "#ffe08a", dark: "#401808", r: 24, hp: 576, spd: 34, amp: 7, freq: 1.05, cd: 1.42, tele: 0.5, pts: 5350,
+      base: ["glare", "sear"], p2: ["prominence", "hearth"], p3: ["noon"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "CORONA FLARES", p3Text: "HIGH NOON", flavor: "Aimed glare, heat plates, a noon pillar" },
+    { id: "selene", name: "SELENE", color: "#c8d4ff", dark: "#080c22", r: 22, hp: 628, spd: 36, amp: 9, freq: 0.85, cd: 1.44, tele: 0.52, pts: 5800,
+      base: ["crescent", "limb"], p2: ["tide", "waning"], p3: ["occult"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "THE TIDE TURNS", p3Text: "OCCULTATION", flavor: "Crescents, shadow limbs, a waning veil" }
   ];
   var GUEST_BOSS_POOL = 10;
 
@@ -239,10 +239,10 @@
     { id: "lt_basilisk", name: "Basilisk Contract", desc: "Defeat Basilisk twice", target: 2, kind: "bossCount", type: "basilisk", reward: { coins: 265 } },
     { id: "lt_overlord", name: "Overlord Contract", desc: "Defeat Overlord twice", target: 2, kind: "bossCount", type: "overlord", reward: { coins: 480, ship: "strix", consolation: 360 } },
     { id: "lt_mandala", name: "Mandala Contract", desc: "Defeat Mandala twice", target: 2, kind: "bossCount", type: "mandala", reward: { coins: 520, consolation: 380 } },
-    { id: "lt_myrmidon", name: "Myrmidon Contract", desc: "Defeat Myrmidon twice", target: 2, kind: "bossCount", type: "myrmidon", reward: { coins: 560, consolation: 400 } },
+    { id: "lt_cenotaph", name: "Cenotaph Contract", desc: "Defeat Cenotaph twice", target: 2, kind: "bossCount", type: "cenotaph", reward: { coins: 560, consolation: 400 } },
     { id: "lt_kaleido", name: "Kaleido Contract", desc: "Defeat Kaleido twice", target: 2, kind: "bossCount", type: "kaleido", reward: { coins: 600, consolation: 430 } },
-    { id: "lt_harrow", name: "Harrow Contract", desc: "Defeat Harrow twice", target: 2, kind: "bossCount", type: "harrow", reward: { coins: 650, consolation: 460 } },
-    { id: "lt_nexus", name: "Nexus Contract", desc: "Defeat Nexus twice", target: 2, kind: "bossCount", type: "nexus", reward: { coins: 720, consolation: 500 } },
+    { id: "lt_helios", name: "Helios Contract", desc: "Defeat Helios twice", target: 2, kind: "bossCount", type: "helios", reward: { coins: 650, consolation: 460 } },
+    { id: "lt_selene", name: "Selene Contract", desc: "Defeat Selene twice", target: 2, kind: "bossCount", type: "selene", reward: { coins: 720, consolation: 500 } },
     { id: "lt_seraph5", name: "Seraph Hunter", desc: "Defeat Seraph 8 times", target: 8, kind: "bossCount", type: "seraph", reward: { coins: 150 } },
     { id: "lt_wraith5", name: "Wraith Hunter", desc: "Defeat Wraith 8 times", target: 8, kind: "bossCount", type: "wraith", reward: { coins: 165 } },
     { id: "lt_hydra5", name: "Hydra Hunter", desc: "Defeat Hydra 8 times", target: 8, kind: "bossCount", type: "hydra", reward: { coins: 190 } },
@@ -592,7 +592,7 @@
     return 0;
   }
   // Early Seraph–Hydra, mid Colossus–Inferno, late Nullwarden and after
-  // (Basilisk, Overlord, and the post-50 five if they ever guest).
+  // (Basilisk, Overlord, and the post-50 roster if they ever guest).
   function guestBossBand(idx) {
     if (idx <= 2) return 0;
     if (idx <= 6) return 1;
@@ -630,7 +630,7 @@
     return out;
   }
   // Dual guests: random pair of different ids, but never two late-tier
-  // bosses (Overlord+Basilisk, Overlord+Nexus, …). Early+late or two mids is fine.
+  // bosses (Overlord+Basilisk, Overlord+Selene, …). Early+late or two mids is fine.
   function pickGuestBossPair(rng, n, avoid) {
     var pool = guestBossPool(n, avoid, 2), pairs = [], i, j, pick;
     for (i = 0; i < pool.length; i++) {
@@ -4817,6 +4817,26 @@
       addEbul(x, y, Math.sin(ang) * spd, Math.cos(ang) * spd + (base || 0), opt);
     }
   }
+  function aimedWedge(x, y, tx, ty, count, spread, spd, opt) {
+    var i, base, ang, n;
+    n = count < 1 ? 1 : count;
+    base = Math.atan2((ty || fallbackAimY()) - y, (tx == null ? W / 2 : tx) - x);
+    for (i = 0; i < n; i++) {
+      ang = base + (n === 1 ? 0 : -spread / 2 + i * (spread / (n - 1)));
+      addEbul(x, y, Math.cos(ang) * spd, Math.sin(ang) * spd, opt);
+    }
+  }
+  function echoAimY(y) {
+    var lo = H / 2 + 22;
+    var hi = H - 40;
+    var mid = (lo + hi) * 0.5;
+    y = y == null ? fallbackAimY() : y;
+    return y < mid ? hi : lo;
+  }
+  function slamBox(x, y, hw, hh, col) {
+    explode(x, y, col || "#ffe08a", false);
+    tryHitPlayersRect(x, y, hw, hh);
+  }
   function ringShot(x, y, count, spd, opt) {
     var i, a;
     for (i = 0; i < count; i++) {
@@ -5121,7 +5141,7 @@
     if (kitHas(e, "regrow")) { e.shieldHp = Math.max(e.shieldHp, 2 + e.tier); }
     if (kitHas(e, "voidguard") && idx === 1) summonEscorts(e, "shield", 2, 64);
     if (kitHas(e, "core") && idx === 1) summonEscorts(e, "shield", 2, 56);
-    if (e.type === "myrmidon" && idx >= 2) e.throne = true;
+    if (e.type === "cenotaph" && idx >= 2) e.throne = true;
     if (idx >= 2) sfxWave(true);
     rebuildBossQueue(e, e.lastAtk);
   }
@@ -5269,12 +5289,7 @@
     } else if (atk === "bloom") {
       addTele("vline", e.aimX, e.y + 8, e.aimX, H - 10, delay + 0.16, col);
       delay += 0.16;
-    } else if (atk === "column" || atk === "pincer" || atk === "throne") {
-      addTele("hline", 12, e.y + 22, W - 12, e.y + 22, delay, col);
-    } else if (atk === "order") {
-      addZone(e.aimX, e.aimY, 18, 22, delay + 0.14, col);
-      delay += 0.14;
-    } else if (atk === "sacrifice" || atk === "shatter") {
+    } else if (atk === "shatter") {
       addTele("line", e.x, e.y + 10, e.aimX, e.aimY, delay + 0.08, col);
     } else if (atk === "pane") {
       e.paneLeft = e.aimX < W / 2;
@@ -5288,37 +5303,61 @@
       addTele("vline", W / 2, 8, W / 2, H - 8, delay + 0.12, col);
       addTele("vline", W - 50, 8, W - 50, H - 8, delay + 0.12, col);
       delay += 0.12;
-    } else if (atk === "sweep") {
-      addTele("hline", 12, 72, W - 12, 72, delay + 0.1, col);
-    } else if (atk === "sow") {
-      e.seedXs = pickSpreadXs(3, 56, 28);
-      for (i = 0; i < e.seedXs.length; i++) addZone(e.seedXs[i], 118, 10, 10, delay + 0.12, col);
+    } else if (atk === "slab" || atk === "crypt" || atk === "sear" || atk === "vigil" || atk === "occult") {
+      e.slamX = clamp(e.aimX, 22, W - 22);
+      e.slamY = clampAimY(e.aimY);
+      e.echoY = echoAimY(e.slamY);
+      addZone(e.slamX, e.slamY, atk === "crypt" ? 16 : 20, atk === "slab" ? 36 : 18, delay + 0.12, col);
+      if (atk === "sear") addZone(e.slamX, e.echoY, 20, 16, delay + 0.12, "#ffb060");
+      if (atk === "vigil") addTele("hline", 12, e.slamY, W - 12, e.slamY, delay + 0.12, col);
+      if (atk === "occult") addTele("hline", 12, e.echoY, W - 12, e.echoY, delay + 0.12, "#8aa0ff");
       delay += 0.12;
-    } else if (atk === "hook" || atk === "harvest") {
-      addTele("ring", e.aimX, e.aimY, 0, 0, delay + 0.16, col);
-      delay += 0.16;
-    } else if (atk === "rail") {
-      e.railH = Math.random() < 0.5;
-      if (e.railH) {
-        e.railPos = clampAimY(e.aimY);
-        addTele("hline", 16, e.railPos, W - 16, e.railPos, delay + 0.12, col);
-      } else {
-        e.railPos = clamp(e.aimX, 24, W - 24);
-        addTele("vline", e.railPos, 40, e.railPos, H - 20, delay + 0.12, col);
-      }
-      delay += 0.12;
-    } else if (atk === "node") {
-      addZone(28, 48, 10, 10, delay, col);
-      addZone(W - 28, 48, 10, 10, delay, col);
-      addZone(28, H - 48, 10, 10, delay, col);
-      addZone(W - 28, H - 48, 10, 10, delay, col);
-    } else if (atk === "gridlock" || atk === "blackout") {
-      addTele("vline", W / 2, 20, W / 2, H - 16, delay + 0.14, col);
-      addTele("hline", 12, H * 0.55, W - 12, H * 0.55, delay + 0.14, col);
+    } else if (atk === "knell") {
+      e.slamY = clampAimY(e.aimY);
+      addTele("ring", 36, e.slamY, 0, 0, delay + 0.14, col);
+      addTele("ring", W - 36, e.slamY, 0, 0, delay + 0.14, col);
       delay += 0.14;
-    } else if (atk === "surge") {
-      addTele("vline", clamp(e.aimX, 20, W - 20), e.y + 8, clamp(e.aimX, 20, W - 20), H - 10, delay + 0.16, col);
+    } else if (atk === "burial") {
+      e.gapX = 40 + Math.random() * (W - 80);
+      addTele("hline", 12, H / 2 + 16, W - 12, H / 2 + 16, delay + 0.16, col);
+      addTele("hline", 12, (H / 2 + H - 40) * 0.5, W - 12, (H / 2 + H - 40) * 0.5, delay + 0.16, col);
+      addTele("hline", 12, H - 42, W - 12, H - 42, delay + 0.16, col);
+      addZone(e.gapX, (H / 2 + H - 40) * 0.5, 28, 90, delay + 0.16, "#7ef9ff");
       delay += 0.16;
+    } else if (atk === "glare" || atk === "crescent") {
+      addTele("line", e.x, e.y + 8, e.aimX, e.aimY, delay + 0.1, col);
+      delay += 0.08;
+    } else if (atk === "prominence") {
+      e.slamX = clamp(e.aimX, 28, W - 28);
+      e.slamY = clampAimY(e.aimY);
+      addTele("line", 18, 24, e.slamX, e.slamY, delay + 0.16, col);
+      addTele("line", W - 18, 24, e.slamX, e.slamY, delay + 0.16, col);
+      addZone(e.slamX, e.slamY, 22, 22, delay + 0.16, col);
+      delay += 0.16;
+    } else if (atk === "hearth" || atk === "noon") {
+      e.slamX = clamp(e.aimX, 22, W - 22);
+      e.slamY = clampAimY(e.aimY);
+      addTele("hline", 12, H - 40, W - 12, H - 40, delay + 0.14, col);
+      if (atk === "hearth") addTele("hline", 12, H / 2 + 18, W - 12, H / 2 + 18, delay + 0.14, "#ffb060");
+      if (atk === "noon") {
+        addTele("vline", e.slamX, 20, e.slamX, H - 12, delay + 0.16, col);
+        addZone(e.slamX, e.slamY, 18, 16, delay + 0.16, col);
+      }
+      delay += 0.16;
+    } else if (atk === "limb") {
+      e.paneLeft = e.aimX < W / 2;
+      addZone(e.paneLeft ? W * 0.25 : W * 0.75, H * 0.75, W * 0.25, H * 0.25 - 6, delay + 0.14, col);
+      delay += 0.14;
+    } else if (atk === "tide") {
+      e.slamY = clampAimY(e.aimY);
+      e.echoY = echoAimY(e.slamY);
+      e.tideDir = e.aimX > W / 2 ? -1 : 1;
+      addTele("hline", 12, e.slamY, W - 12, e.slamY, delay + 0.12, col);
+      delay += 0.12;
+    } else if (atk === "waning") {
+      addTele("ring", e.x, e.y, 0, 0, delay + 0.12, col);
+      addTele("glow", e.x, e.y, 0, 0, delay + 0.12, col);
+      delay += 0.12;
     } else {
       addTele("glow", e.x, e.y, 0, 0, delay, col);
     }
@@ -5455,6 +5494,12 @@
         else playerDie(pl);
       }
     }
+  }
+  function angAbsDiff(a, b) {
+    var d = a - b;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return d < 0 ? -d : d;
   }
   function yankPlayers(tx, amt, ty) {
     var i, pl, band;
@@ -5624,6 +5669,43 @@
             }
           }
           if (litHit) banner = { text: "SHOCK", life: 0.55 };
+        }
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "pall") {
+        tryHitPlayersRect(W / 2, f.y, W / 2 - 8, f.hh || 7);
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "limb") {
+        f.pulse = (f.pulse || 0) - dt;
+        if (f.pulse <= 0) {
+          f.pulse = 0.36;
+          for (pi = 0; pi < players.length; pi++) {
+            pl = players[pi];
+            if (!pl || !pl.alive || pl.invuln > 0 || pl.y < H / 2 - 4) continue;
+            if (f.left ? pl.x < W / 2 - 8 : pl.x > W / 2 + 8) {
+              if (isPvpRun()) pvpHurt(pl, 8);
+              else playerDie(pl);
+            }
+          }
+        }
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "tide") {
+        f.x += (f.vx || 0) * dt;
+        tryHitPlayersRect(f.x, f.y, f.hw || 20, f.hh || 10);
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "waning") {
+        f.ang += (f.dAng || 1) * dt;
+        f.pulse = (f.pulse || 0) - dt;
+        if (f.pulse <= 0) {
+          f.pulse = 0.4;
+          for (pi = 0; pi < players.length; pi++) {
+            pl = players[pi];
+            if (!pl || !pl.alive || pl.invuln > 0 || pl.y < H / 2 - 6) continue;
+            ang = Math.atan2(pl.y - f.y, pl.x - f.x);
+            if (angAbsDiff(ang, f.ang) > (f.gap || 0.7) * 0.5) {
+              if (isPvpRun()) pvpHurt(pl, 8);
+              else playerDie(pl);
+            }
+          }
         }
         if (f.life <= 0) bossFx.splice(i, 1);
       } else if (f.life <= 0) {
@@ -5943,36 +6025,6 @@
       fanShot(e.x, e.y + 8, 4, 0.7, spd + 10, 20, opt);
     } else if (atk === "wheel") {
       e.stream = { n: 8, dt: 0.14, acc: 0, kind: "spoke", ang: Math.random() * 6.28, dAng: Math.PI / 2, spd: spd, gap: Math.random() * 6.28 };
-    } else if (atk === "column") {
-      e.colX = 40 + Math.floor(Math.random() * 3) * 80;
-      fireColumn(e.colX, e.y + 12, 6, 78, { r: 2.8, color: "#ffe08a", glow: col });
-      if (aliveCount() < escortCap()) {
-        summonEscorts(e, "grunt", 2, 64);
-      }
-    } else if (atk === "order") {
-      px = clamp(e.aimX, 24, W - 24);
-      fireColumn(px, e.y + 12, 7, spd + 20, { r: 3, color: "#ffe08a", glow: col });
-      var drones = myrmidonGrunts();
-      for (i = 0; i < drones.length; i++) {
-        if (Math.abs(drones[i].x - px) < 48 && drones[i].state === "form") startDive(drones[i]);
-      }
-    } else if (atk === "sacrifice") {
-      drones = myrmidonGrunts();
-      if (drones.length) {
-        killEnemy(drones[0], false, 99);
-        explode(e.x, e.y, col, false);
-      }
-      aimedShot(e, 0.95, spd + 70, { color: "#fff0c0", glow: col, r: 4.6 });
-      aimedShot({ x: e.x - 6, y: e.y }, 0.95, spd + 50, { color: "#ffe08a", glow: col, r: 3.4 });
-    } else if (atk === "pincer") {
-      e.stream = { n: 5, dt: 0.15, acc: 0, kind: "squeeze", x: 22, x2: W - 22, dx: 16, spd: spd + 18, count: 3 };
-    } else if (atk === "throne") {
-      fireColumn(W * 0.28, e.y + 10, 5, 86, { r: 2.8, color: "#ffe08a", glow: col });
-      fireColumn(W * 0.72, e.y + 10, 5, 86, { r: 2.8, color: "#ffe08a", glow: col });
-      for (i = -1; i <= 1; i++) {
-        a = 0.55 + i * 0.28;
-        addEbul(e.x, e.y + 8, Math.sin(a) * 70 + i * 28, 40, { color: col, glow: col, r: 3.4, grav: 150, life: 5 });
-      }
     } else if (atk === "shatter") {
       aimedShot(e, 0.8, spd + 8, { color: col, glow: col, r: 3.6, splitT: 0.38 });
       aimedShot({ x: e.x - 10, y: e.y }, 0.7, spd, { color: col, glow: col, r: 3.2, splitT: 0.46 });
@@ -5999,63 +6051,97 @@
         });
         addTele("vline", 46 + i * 74, 8, 46 + i * 74, H - 8, 1.1, col);
       }
-    } else if (atk === "sweep") {
-      e.stream = { n: 7, dt: 0.07, acc: 0, kind: "scythe", x: 16, dx: 34, y: 68, spd: spd + 8 };
-    } else if (atk === "sow") {
-      if (!e.seedXs || !e.seedXs.length) e.seedXs = pickSpreadXs(3, 56, 28);
-      for (i = 0; i < e.seedXs.length; i++) plantSeed(e.seedXs[i], 118 + i * 8, col, 1.25);
-      queueFollow(e, 1.35, "sowcut");
-    } else if (atk === "sowcut") {
-      drones = seedEbulList();
-      for (i = 0; i < drones.length; i++) fireColumn(drones[i].x, drones[i].y, 5, 62, { r: 2.6, color: "#d8d0c4", glow: col });
-    } else if (atk === "reap") {
-      drones = seedEbulList();
-      if (!drones.length && e.seedXs) {
-        for (i = 0; i < e.seedXs.length; i++) fireColumn(e.seedXs[i], 20, 10, spd + 20, { r: 3, color: "#d8d0c4", glow: col });
-      } else {
-        for (i = 0; i < drones.length; i++) fireColumn(drones[i].x, 16, 11, spd + 24, { r: 3.1, color: "#e8e0d4", glow: col });
+    } else if (atk === "slab") {
+      slamBox(e.slamX || e.aimX, e.slamY || e.aimY, 14, 38, col);
+    } else if (atk === "crypt") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      slamBox(px, base, 16, 16, col);
+      for (i = 0; i < 4; i++) {
+        a = i * Math.PI / 2;
+        addEbul(px + Math.cos(a) * 10, base + Math.sin(a) * 10, Math.cos(a) * 90, Math.sin(a) * 90, { color: col, glow: col, r: 3, life: 3.4, silent: i > 0 });
       }
-    } else if (atk === "hook") {
-      for (i = 0; i < 7; i++) {
-        a = -0.9 + i * 0.3;
-        addEbul(e.x, e.y + 8, Math.sin(a) * 90, Math.cos(a) * 90 + 20, { color: col, glow: col, r: 2.8, life: 3.2 });
-      }
-      yankPlayers(e.aimX, 0.34, e.aimY);
-      banner = { text: "HOOKED", life: 0.55 };
-    } else if (atk === "harvest") {
-      fireSpoke(16, 24, 0.85, 6, 110, opt);
-      fireSpoke(W - 16, 24, Math.PI - 0.85, 6, 110, opt);
-      queueFollow(e, 0.45, "harvestring");
-    } else if (atk === "harvestring") {
-      aim = targetPlayer(e.x, e.y);
-      px = aim ? aim.x : W / 2;
-      base = aim ? aim.y : fallbackAimY();
-      for (i = 0; i < 8; i++) {
-        a = (i / 8) * Math.PI * 2;
-        plantSeed(clamp(px + Math.cos(a) * 42, 18, W - 18), clamp(base + Math.sin(a) * 28, 24, H - 24), col, 3.4);
-      }
-    } else if (atk === "rail") {
-      if (e.railH) addRailFx("h", e.railPos || clampAimY(e.aimY), 16, W - 16, 2.6, col, true);
-      else addRailFx("v", e.railPos || clamp(e.aimX, 24, W - 24), 40, H - 18, 2.6, col, true);
-    } else if (atk === "node") {
-      addEbul(28, 48, 70, 0, { color: col, glow: col, r: 3, life: 5 });
-      addEbul(W - 28, 48, -70, 0, { color: col, glow: col, r: 3, life: 5, silent: true });
-      addEbul(28, H - 48, 0, -70, { color: col, glow: col, r: 3, life: 5, silent: true });
-      addEbul(W - 28, H - 48, 0, -70, { color: col, glow: col, r: 3, life: 5, silent: true });
-    } else if (atk === "gridlock") {
-      addRailFx("v", W / 2, 28, H - 16, 2.8, col, true);
-      addRailFx("h", H * 0.55, 12, W - 12, 2.8, col, true);
-    } else if (atk === "surge") {
-      px = clamp(e.aimX, 20, W - 20);
-      fireColumn(px, e.y + 10, 9, spd + 50, { r: 4.2, color: "#b8ffe8", glow: col });
-    } else if (atk === "blackout") {
-      nx = 50 + Math.random() * (W - 100);
-      base = 90 + Math.random() * 80;
-      f = addRailFx("v", nx, 24, H - 16, 2.5, col, false);
-      f.relight = 1.45;
-      f = addRailFx("h", base, 12, W - 12, 2.5, col, false);
-      f.relight = 1.45;
+    } else if (atk === "knell") {
+      base = e.slamY || clampAimY(e.aimY);
+      fireGappedRing(36, base, 10, 86, 2, 3, { color: col, glow: col, r: 2.8 });
+      fireGappedRing(W - 36, base, 10, 86, 7, 3, { color: "#b8c8d8", glow: col, r: 2.8 });
+    } else if (atk === "burial") {
+      gx = e.gapX || W / 2;
+      burialBar(H / 2 + 16, gx, col);
+      burialBar((H / 2 + H - 40) * 0.5, gx, col);
+      burialBar(H - 42, gx, col);
+    } else if (atk === "vigil") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      slamBox(px, base, 18, 20, col);
+      bossFx.push({ kind: "pall", y: base, hh: 7, life: 1.15, color: col });
+      addTele("hline", 12, base, W - 12, base, 1.1, col);
+    } else if (atk === "glare") {
+      aimedWedge(e.x, e.y + 6, e.aimX, e.aimY, 5, 0.42, spd + 18, { color: "#fff0c0", glow: col, r: 3 });
+    } else if (atk === "sear") {
+      slamBox(e.slamX || e.aimX, e.slamY || e.aimY, 20, 16, col);
+      slamBox(e.slamX || e.aimX, e.echoY || echoAimY(e.aimY), 20, 16, "#ffb060");
+    } else if (atk === "prominence") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      slamBox(px, base, 20, 18, col);
+      aimedWedge(18, 28, px, base, 3, 0.22, spd + 8, { color: "#ffb060", glow: col, r: 2.8 });
+      aimedWedge(W - 18, 28, px, base, 3, 0.22, spd + 8, { color: "#ffe08a", glow: col, r: 2.8, silent: true });
+    } else if (atk === "hearth") {
+      slamBox(W / 2, H - 40, W / 2 - 10, 10, col);
+      queueFollow(e, 0.42, "hearth2");
+    } else if (atk === "hearth2") {
+      slamBox(W / 2, H / 2 + 18, W / 2 - 10, 10, "#ffb060");
+    } else if (atk === "noon") {
+      px = e.slamX || e.aimX;
+      slamBox(px, H * 0.75, 12, H * 0.25 - 8, col);
+      slamBox(px, e.slamY || e.aimY, 18, 14, "#fff0c0");
+      aimedWedge(e.x, e.y + 6, px, e.slamY || e.aimY, 4, 0.34, spd + 12, opt);
+    } else if (atk === "crescent") {
+      aimedWedge(e.x, e.y + 4, e.aimX, e.aimY, 4, 0.7, spd - 6, { color: col, glow: col, r: 3.4 });
+      aimedWedge(e.x, e.y + 4, e.aimX, e.aimY, 3, 0.38, spd + 24, { color: "#8aa0ff", glow: col, r: 2.6, silent: true });
+    } else if (atk === "limb") {
+      bossFx.push({
+        kind: "limb", life: 1.85, color: col,
+        left: e.paneLeft !== false,
+        pulse: 0
+      });
+      addZone(e.paneLeft !== false ? W * 0.25 : W * 0.75, H * 0.75, W * 0.25, H * 0.25 - 6, 1.8, col);
+    } else if (atk === "tide") {
+      base = e.slamY || clampAimY(e.aimY);
+      k = e.tideDir || 1;
+      bossFx.push({
+        kind: "tide", x: k > 0 ? -24 : W + 24, y: base, vx: k * 168, hw: 22, hh: 11,
+        life: 1.7, color: col
+      });
+      queueFollow(e, 0.55, "tiderev");
+    } else if (atk === "tiderev") {
+      base = e.echoY || echoAimY(e.aimY);
+      k = -(e.tideDir || 1);
+      bossFx.push({
+        kind: "tide", x: k > 0 ? -24 : W + 24, y: base, vx: k * 168, hw: 22, hh: 11,
+        life: 1.7, color: "#8aa0ff"
+      });
+    } else if (atk === "waning") {
+      bossFx.push({
+        kind: "waning", life: 2.35, color: col, x: e.x, y: e.y,
+        ang: Math.atan2(e.aimY - e.y, e.aimX - e.x) - 0.45,
+        dAng: 1.15, gap: 0.72, pulse: 0
+      });
+    } else if (atk === "occult") {
+      explode(e.x, e.y, col, false);
+      e.x = clamp(W - e.x + rand(-18, 18), 40, W - 40);
+      e.y = 64 + rand(-6, 10);
+      explode(e.x, e.y, col, false);
+      slamBox(e.slamX || e.aimX, e.slamY || e.aimY, 18, 18, col);
+      queueFollow(e, 0.32, "tiderev");
     }
+  }
+
+  function burialBar(y, gapX, col) {
+    var gap = 30;
+    slamBox((gapX - gap) * 0.5, y, Math.max(8, (gapX - gap) * 0.5), 9, col);
+    slamBox((W + gapX + gap) * 0.5, y, Math.max(8, (W - (gapX + gap)) * 0.5), 9, col);
   }
 
   function fireStream(e, s) {
@@ -6124,6 +6210,7 @@
     var t = time + (e.phase || 0);
     var fy, hx, ang;
     if (e.throne) {
+      // Cenotaph vigil: planted, still a threat from overlapping aimed boxes.
       e.x += (W / 2 - e.x) * Math.min(1, 3.2 * dt);
       fy = 64 + Math.sin(t * 1.4) * 3;
       e.x = clamp(e.x, 34, W - 34);
@@ -9606,6 +9693,33 @@
         context.stroke();
       } else if (f.kind === "glyph") {
         context.beginPath(); context.arc(f.x, f.y, 10, 0, Math.PI * 2); context.stroke();
+      } else if (f.kind === "pall") {
+        context.globalAlpha = 0.4 + 0.2 * Math.sin(time * 16);
+        context.lineWidth = 3;
+        context.beginPath(); context.moveTo(10, f.y); context.lineTo(W - 10, f.y); context.stroke();
+      } else if (f.kind === "limb") {
+        context.globalAlpha = 0.16 + 0.08 * Math.sin(time * 10);
+        context.fillRect(f.left ? 8 : W / 2 + 4, H / 2, W / 2 - 12, H / 2 - 10);
+        context.globalAlpha = 0.45;
+        context.beginPath();
+        context.moveTo(W / 2, H / 2);
+        context.lineTo(W / 2, H - 8);
+        context.stroke();
+      } else if (f.kind === "tide") {
+        context.globalAlpha = 0.5;
+        context.fillRect(f.x - (f.hw || 20), f.y - (f.hh || 10), (f.hw || 20) * 2, (f.hh || 10) * 2);
+        context.globalAlpha = 0.7;
+        context.strokeRect(f.x - (f.hw || 20), f.y - (f.hh || 10), (f.hw || 20) * 2, (f.hh || 10) * 2);
+      } else if (f.kind === "waning") {
+        context.translate(f.x, f.y);
+        context.globalAlpha = 0.22;
+        context.beginPath(); context.arc(0, 0, 78, 0, Math.PI * 2); context.fill();
+        context.globalAlpha = 0.55;
+        context.beginPath();
+        context.moveTo(0, 0);
+        context.arc(0, 0, 82, f.ang - (f.gap || 0.7) * 0.5, f.ang + (f.gap || 0.7) * 0.5);
+        context.closePath();
+        context.stroke();
       }
       context.restore();
     }
@@ -10787,20 +10901,17 @@
       context.beginPath(); context.arc(0, 0, 6, 0, Math.PI * 2); context.fill();
       context.fillStyle = e.hitFlash > 0 ? "#fff" : "#ffd23d";
       context.beginPath(); context.arc(0, 0, 2.4 + (e.phaseIdx >= 2 ? Math.sin(t * 12) * 0.8 : 0), 0, Math.PI * 2); context.fill();
-    } else if (e.type === "myrmidon") {
+    } else if (e.type === "cenotaph") {
       context.beginPath();
-      for (i = 0; i < 6; i++) {
-        a = i * Math.PI / 3 - Math.PI / 6;
-        if (i === 0) context.moveTo(Math.cos(a) * 16, Math.sin(a) * 16);
-        else context.lineTo(Math.cos(a) * 16, Math.sin(a) * 16);
-      }
+      context.moveTo(0, -22); context.lineTo(9, -16); context.lineTo(8, 14); context.lineTo(-8, 14); context.lineTo(-9, -16);
       context.closePath(); context.fill();
+      context.fillRect(-12, 12, 24, 6);
       context.fillStyle = dark;
-      context.fillRect(-4, -6, 8, 7);
+      context.fillRect(-4, -8, 8, 12);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#7ef9ff";
+      context.fillRect(-2, -4, 4, 5);
       context.fillStyle = col;
-      context.fillRect(-2, -14, 1.6, 8); context.fillRect(0.4, -14, 1.6, 8);
-      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#fff0c0";
-      context.beginPath(); context.arc(-4, -2, 1.6, 0, Math.PI * 2); context.arc(4, -2, 1.6, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.moveTo(-6, -18); context.lineTo(0, -24); context.lineTo(6, -18); context.closePath(); context.fill();
     } else if (e.type === "kaleido") {
       context.beginPath();
       context.moveTo(0, -16); context.lineTo(12, 0); context.lineTo(0, 16); context.lineTo(-12, 0);
@@ -10812,26 +10923,33 @@
       context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#e8ffff";
       context.lineWidth = 1.2;
       context.beginPath(); context.moveTo(-10, -4); context.lineTo(10, 4); context.moveTo(-8, 8); context.lineTo(8, -8); context.stroke();
-    } else if (e.type === "harrow") {
-      context.beginPath();
-      context.moveTo(-4, -6); context.quadraticCurveTo(18, -16, 20, 2); context.quadraticCurveTo(10, 8, -2, 6);
-      context.closePath(); context.fill();
-      context.beginPath();
-      context.moveTo(4, -6); context.quadraticCurveTo(-18, -16, -20, 2); context.quadraticCurveTo(-10, 8, 2, 6);
-      context.closePath(); context.fill();
+    } else if (e.type === "helios") {
+      context.fillStyle = col;
+      for (i = 0; i < 12; i++) {
+        a = (i / 12) * Math.PI * 2 + t * 0.45;
+        context.beginPath();
+        context.moveTo(Math.cos(a) * 11, Math.sin(a) * 11);
+        context.lineTo(Math.cos(a + 0.09) * (22 + Math.sin(t * 5 + i) * 2), Math.sin(a + 0.09) * (22 + Math.sin(t * 5 + i) * 2));
+        context.lineTo(Math.cos(a + 0.18) * 11, Math.sin(a + 0.18) * 11);
+        context.closePath(); context.fill();
+      }
+      context.beginPath(); context.arc(0, 0, 13, 0, Math.PI * 2); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#fff8e0";
+      context.beginPath(); context.arc(0, 0, 7 + (e.phaseIdx >= 2 ? Math.sin(t * 10) * 1.2 : 0), 0, Math.PI * 2); context.fill();
       context.fillStyle = dark;
-      context.fillRect(-3, -2, 6, 16);
-      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#e8e0d0";
-      context.fillRect(-5, 12, 10, 3);
-    } else if (e.type === "nexus") {
-      context.fillRect(-14, -14, 28, 28);
+      context.beginPath(); context.arc(-3, -2, 1.5, 0, Math.PI * 2); context.arc(3, -2, 1.5, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "selene") {
+      context.fillStyle = col;
+      context.beginPath(); context.arc(0, 0, 16, 0, Math.PI * 2); context.fill();
       context.fillStyle = dark;
-      context.fillRect(-9, -9, 18, 18);
-      context.strokeStyle = col; context.lineWidth = 1.4;
-      context.beginPath(); context.moveTo(-14, 0); context.lineTo(14, 0); context.moveTo(0, -14); context.lineTo(0, 14); context.stroke();
-      context.fillStyle = e.hitFlash > 0 ? "#fff" : (e.phaseIdx >= 2 ? "#ff4d4d" : "#7effd0");
-      context.beginPath(); context.arc(-12, -12, 2.2, 0, Math.PI * 2); context.arc(12, -12, 2.2, 0, Math.PI * 2);
-      context.arc(-12, 12, 2.2, 0, Math.PI * 2); context.arc(12, 12, 2.2, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.arc(5 + (e.phaseIdx >= 2 ? 2 : 0), -1, 14, 0, Math.PI * 2); context.fill();
+      context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#e8eeff";
+      context.lineWidth = 1.4;
+      context.beginPath(); context.arc(0, 0, 16, 0.4, 2.5); context.stroke();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#9aacff";
+      context.beginPath(); context.arc(-5, -4, 2.2, 0, Math.PI * 2); context.arc(2, 5, 1.6, 0, Math.PI * 2); context.fill();
+      context.fillStyle = col;
+      context.beginPath(); context.arc(-6, -5, 0.8, 0, Math.PI * 2); context.fill();
     } else {
       context.beginPath(); context.arc(0, 0, e.r, 0, Math.PI * 2); context.fill();
     }

@@ -13,7 +13,7 @@
     "mortar", "hex", "harrier", "bulwark", "archon",
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
-    "mandala", "myrmidon", "kaleido", "harrow", "nexus"
+    "mandala", "cenotaph", "kaleido", "helios", "selene"
   ];
   var ENEMY_STATES = ["", "enter", "form", "dive", "kami", "return", "charge"];
   var GUN_IDS = [
