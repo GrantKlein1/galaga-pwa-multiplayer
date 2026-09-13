@@ -4,6 +4,8 @@ var PATH = "galaga-leaderboard.json";
 var ACCESS = "private";
 var MAX_ENTRIES = 100;
 var MAX_HIDDEN = 500;
+var MAX_DENIED_NAMES = 100;
+var DENIED_NAME_SEEDS = ["Pilot-6216"];
 var TOP = 25;
 var MAX_SCORE = 9999999;
 var MAX_RETRIES = 4;
@@ -69,6 +71,41 @@ export function hiddenSet(board) {
   return set;
 }
 
+export function deniedNameList(board) {
+  var out = [], seen = {}, list, i, name, key;
+  list = DENIED_NAME_SEEDS.concat(Array.isArray(board && board.deniedNames) ? board.deniedNames : []);
+  for (i = 0; i < list.length; i++) {
+    name = sanitizeName(list[i]);
+    key = nameKey(name);
+    if (!key || seen[key]) continue;
+    seen[key] = 1;
+    out.push(name);
+  }
+  if (out.length > MAX_DENIED_NAMES) out = out.slice(out.length - MAX_DENIED_NAMES);
+  return out;
+}
+
+export function deniedNameSet(board) {
+  var set = {}, list = deniedNameList(board), i;
+  for (i = 0; i < list.length; i++) set[nameKey(list[i])] = 1;
+  return set;
+}
+
+export function isDeniedName(board, name) {
+  return !!deniedNameSet(board)[nameKey(name)];
+}
+
+function packBoard(entries, hidden, board) {
+  var hide = hidden;
+  if (hide.length > MAX_HIDDEN) hide = hide.slice(hide.length - MAX_HIDDEN);
+  return {
+    v: 1,
+    entries: sortEntries(entries),
+    hidden: hide,
+    deniedNames: deniedNameList(board)
+  };
+}
+
 function dropPid(entries, id) {
   var out = [], i, row;
   for (i = 0; i < entries.length; i++) {
@@ -79,13 +116,55 @@ function dropPid(entries, id) {
   return out;
 }
 
+export function applyDenied(board) {
+  var denied = deniedNameSet(board);
+  var hidden = hiddenList(board);
+  var seen = hiddenSet(board);
+  var entries = Array.isArray(board && board.entries) ? board.entries : [];
+  var next = [], i, row, id;
+  for (i = 0; i < entries.length; i++) {
+    row = entries[i];
+    if (!row) continue;
+    if (denied[nameKey(row.name)]) {
+      id = sanitizeId(row.id);
+      if (id && !seen[id]) {
+        hidden.push(id);
+        seen[id] = 1;
+      }
+      continue;
+    }
+    next.push(row);
+  }
+  return packBoard(next, hidden, board);
+}
+
+export function needsPersist(raw, next) {
+  var have = {}, list, i, key;
+  list = Array.isArray(raw && raw.deniedNames) ? raw.deniedNames : [];
+  for (i = 0; i < list.length; i++) {
+    key = nameKey(list[i]);
+    if (key) have[key] = 1;
+  }
+  list = next && Array.isArray(next.deniedNames) ? next.deniedNames : [];
+  for (i = 0; i < list.length; i++) {
+    if (!have[nameKey(list[i])]) return true;
+  }
+  if (JSON.stringify(hiddenList(raw)) !== JSON.stringify(hiddenList(next))) return true;
+  if (JSON.stringify(Array.isArray(raw && raw.entries) ? raw.entries : []) !==
+      JSON.stringify(Array.isArray(next && next.entries) ? next.entries : [])) {
+    return true;
+  }
+  return false;
+}
+
 export function visibleEntries(board) {
   var hidden = hiddenSet(board);
+  var denied = deniedNameSet(board);
   var entries = Array.isArray(board && board.entries) ? board.entries : [];
   var out = [], i, row;
   for (i = 0; i < entries.length; i++) {
     row = entries[i];
-    if (!row || !row.id || hidden[row.id]) continue;
+    if (!row || !row.id || hidden[row.id] || denied[nameKey(row.name)]) continue;
     out.push(row);
   }
   return sortEntries(out);
@@ -114,20 +193,21 @@ export function publicView(board, pid) {
 }
 
 export function applyHide(board, id) {
-  var entries = dropPid(Array.isArray(board && board.entries) ? board.entries : [], id);
+  board = applyDenied(board);
+  var entries = dropPid(Array.isArray(board.entries) ? board.entries : [], id);
   var hidden = hiddenList(board);
-  if (hidden.indexOf(id) < 0) hidden.push(id);
-  if (hidden.length > MAX_HIDDEN) hidden = hidden.slice(hidden.length - MAX_HIDDEN);
-  return { v: 1, entries: sortEntries(entries), hidden: hidden };
+  if (id && hidden.indexOf(id) < 0) hidden.push(id);
+  return packBoard(entries, hidden, board);
 }
 
 export function applyScore(board, id, name, score, now) {
+  board = applyDenied(board);
   var hidden = hiddenList(board);
   var entries, idx, i;
-  if (hidden.indexOf(id) >= 0) {
+  if (hidden.indexOf(id) >= 0 || isDeniedName(board, name)) {
     return { board: applyHide(board, id), skipped: true };
   }
-  entries = Array.isArray(board && board.entries) ? board.entries.slice() : [];
+  entries = Array.isArray(board.entries) ? board.entries.slice() : [];
   idx = -1;
   for (i = 0; i < entries.length; i++) {
     if (entries[i] && entries[i].id === id) { idx = i; break; }
@@ -141,23 +221,24 @@ export function applyScore(board, id, name, score, now) {
   } else if (score > 0) {
     entries.push({ id: id, name: name, score: score, at: now });
   } else {
-    return { board: { v: 1, entries: entries, hidden: hidden }, skipped: true };
+    return { board: packBoard(entries, hidden, board), skipped: true };
   }
   entries = sortEntries(entries);
   if (entries.length > MAX_ENTRIES) entries.length = MAX_ENTRIES;
-  return { board: { v: 1, entries: entries, hidden: hidden }, skipped: false };
+  return { board: packBoard(entries, hidden, board), skipped: false };
 }
 
 export async function readBoard() {
   var result = await get(PATH, { access: ACCESS, useCache: false });
   if (!result || result.statusCode !== 200 || !result.stream) {
-    return { board: { v: 1, entries: [], hidden: [] }, etag: null };
+    return { board: { v: 1, entries: [], hidden: [], deniedNames: [] }, etag: null };
   }
   var text = await new Response(result.stream).text();
   var board;
   try { board = JSON.parse(text); } catch (err) { board = null; }
-  if (!board || !Array.isArray(board.entries)) board = { v: 1, entries: [], hidden: [] };
+  if (!board || !Array.isArray(board.entries)) board = { v: 1, entries: [], hidden: [], deniedNames: [] };
   if (!Array.isArray(board.hidden)) board.hidden = [];
+  if (!Array.isArray(board.deniedNames)) board.deniedNames = [];
   return { board: board, etag: result.blob && result.blob.etag ? result.blob.etag : null };
 }
 
@@ -178,7 +259,17 @@ export async function GET(request) {
     var url = new URL(request.url);
     var pid = sanitizeId(url.searchParams.get("id"));
     var got = await readBoard();
-    return jsonRes(publicView(got.board, pid));
+    var next = applyDenied(got.board);
+    if (needsPersist(got.board, next)) {
+      try {
+        await writeBoard(next, got.etag);
+      } catch (err) {
+        if (!(err instanceof BlobPreconditionFailedError)) {
+          console.error("leaderboard GET persist", err);
+        }
+      }
+    }
+    return jsonRes(publicView(next, pid));
   } catch (err) {
     console.error("leaderboard GET", err);
     return jsonRes({ error: "unavailable", entries: [], you: null, total: 0 }, 503);
@@ -208,11 +299,10 @@ export async function POST(request) {
       var got = await readBoard();
       var board = got.board;
       var next;
-      if (hide || hiddenSet(board)[id]) {
+      if (hide || hiddenSet(board)[id] || isDeniedName(board, name)) {
         next = applyHide(board, id);
       } else {
         next = applyScore(board, id, name, score, Date.now());
-        if (next.skipped) return jsonRes(publicView(next.board, id));
         next = next.board;
       }
       try {
