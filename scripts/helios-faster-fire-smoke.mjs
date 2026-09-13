@@ -34,8 +34,9 @@ assert(galaga.indexOf("delay += 0.08;\n    } else if (atk === \"knell\")") >= 0,
 assert(galaga.indexOf('} else if (atk === "glare") {') >= 0, "Glare has its own windup");
 assert(galaga.indexOf("delay += 0.04;\n    } else if (atk === \"crescent\")") >= 0, "Glare extra delay 0.04");
 assert(galaga.indexOf("delay += 0.08;\n    } else if (atk === \"prominence\")") >= 0, "Crescent extra delay stays 0.08");
-assert(/atk === "prominence"[\s\S]{0,280}delay \+= 0\.1;/.test(galaga), "Prominence extra delay 0.10");
-assert(/atk === "hearth" \|\| atk === "noon"[\s\S]{0,420}delay \+= 0\.1;/.test(galaga), "Hearth / noon extra delay 0.10");
+assert(galaga.indexOf('addZone(e.slamX, e.slamY, 22, 22, delay + 0.1, col)') >= 0, "Prominence extra delay 0.10");
+assert(galaga.indexOf('addTele("hline", 12, H - 40, W - 12, H - 40, delay + 0.1, col)') >= 0, "Hearth / noon extra delay 0.10");
+assert(galaga.indexOf("delay += 0.1;\n    } else if (atk === \"limb\")") >= 0, "Hearth / noon fire delay 0.10");
 assert(galaga.indexOf('queueFollow(e, 0.3, "hearth2")') >= 0, "Hearth midline follow 0.30s");
 assert(galaga.indexOf('queueFollow(e, 0.42, "hearth2")') < 0, "old hearth follow gone");
 assert(galaga.indexOf('e.atkCd = e.type === "helios" ? 0.52 : 0.9') >= 0, "Helios phase gap 0.52");
