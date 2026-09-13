@@ -24,6 +24,8 @@
   var PROFILE_VER = 4;
   var ACCOUNT_PUSH_MS = 900;
   var ACCOUNT_PULL_MS = 5000;
+  var ADMIN_CODE = "1234";
+  var RESET_QUICK_MS = 420;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
   // Playfield is 240x360 with 16px side margins (208px of travel). Formations
@@ -2753,17 +2755,140 @@
         : "Coins, XP, hangar, quests, stats, and high score will be wiped. This cannot be undone.";
     }
   }
-  function setResetConfirm(on) {
-    var panel = el("reset-confirm");
+  var resetTapN = 0;
+  var resetTapT = 0;
+  function clearResetTaps() {
+    resetTapN = 0;
+    if (resetTapT) {
+      clearTimeout(resetTapT);
+      resetTapT = 0;
+    }
+  }
+  function setQuestsResetUi(mode) {
+    var confirm = el("reset-confirm");
+    var pass = el("admin-passcode");
     var btn = el("btn-reset-progress");
     var note = el("reset-note");
+    var inp = el("admin-passcode-in");
+    var err = el("admin-passcode-err");
+    var showConfirm = mode === "confirm";
+    var showPass = mode === "passcode";
+    var hideReset = showConfirm || showPass;
+    if (mode === "idle") clearResetTaps();
     refreshResetCopy();
-    if (panel) panel.classList.toggle("hidden", !on);
-    if (btn) btn.classList.toggle("hidden", on);
-    if (note) note.classList.toggle("hidden", on);
-    if (on && panel && panel.scrollIntoView) {
-      try { panel.scrollIntoView({ block: "nearest" }); } catch (err) {}
+    if (confirm) confirm.classList.toggle("hidden", !showConfirm);
+    if (pass) pass.classList.toggle("hidden", !showPass);
+    if (btn) btn.classList.toggle("hidden", hideReset);
+    if (note) note.classList.toggle("hidden", hideReset);
+    if (err) {
+      err.textContent = "";
+      err.classList.add("hidden");
     }
+    if (inp) inp.value = "";
+    if (showPass) {
+      if (pass && pass.scrollIntoView) {
+        try { pass.scrollIntoView({ block: "nearest" }); } catch (err2) {}
+      }
+      if (inp) {
+        try { inp.focus(); } catch (err2) {}
+      }
+    } else if (showConfirm && confirm && confirm.scrollIntoView) {
+      try { confirm.scrollIntoView({ block: "nearest" }); } catch (err2) {}
+    }
+  }
+  function setResetConfirm(on) {
+    if (!on) clearResetTaps();
+    setQuestsResetUi(on ? "confirm" : "idle");
+  }
+  function catalogIdUnion(owned, catalog) {
+    var out = [], seen = {}, i, id, src = owned || [];
+    for (i = 0; i < src.length; i++) {
+      id = src[i];
+      if (typeof id !== "string" || seen[id]) continue;
+      seen[id] = 1;
+      out.push(id);
+    }
+    for (i = 0; i < catalog.length; i++) {
+      id = catalog[i] && catalog[i].id;
+      if (typeof id !== "string" || seen[id]) continue;
+      seen[id] = 1;
+      out.push(id);
+    }
+    return out;
+  }
+  function catalogCostTotal() {
+    var n = 0, i, li, list, lists = [SHIPS, GUNS, MODS, SHIP_COIN_SKINS];
+    for (li = 0; li < lists.length; li++) {
+      list = lists[li];
+      for (i = 0; i < list.length; i++) n += list[i].cost | 0;
+    }
+    return n;
+  }
+  function grantAllUnlocks() {
+    var keepShip = profile.equipped && profile.equipped.ship;
+    var keepGun = profile.equipped && profile.equipped.gun;
+    var keepMod = profile.equipped ? profile.equipped.mod : null;
+    profile.ownedShips = catalogIdUnion(profile.ownedShips, SHIPS);
+    profile.ownedGuns = catalogIdUnion(profile.ownedGuns, GUNS);
+    profile.ownedMods = catalogIdUnion(profile.ownedMods, MODS);
+    profile.totalXp = Math.max(profile.totalXp | 0, xpForLevel(MAX_LEVEL));
+    profile.coins = Math.max(profile.coins | 0, catalogCostTotal());
+    if (!profile.stats) profile.stats = emptyStats();
+    profile.stats.maxWave = Math.max(profile.stats.maxWave | 0, maxStartWave(MAX_LEVEL) + 1);
+    if (!profile.equipped) profile.equipped = { ship: "wisp", gun: "pulse", mod: null };
+    if (profile.ownedShips.indexOf(keepShip) >= 0) profile.equipped.ship = keepShip;
+    else profile.equipped.ship = "wisp";
+    if (profile.ownedGuns.indexOf(keepGun) >= 0) profile.equipped.gun = keepGun;
+    else profile.equipped.gun = "pulse";
+    if (keepMod && profile.ownedMods.indexOf(keepMod) >= 0) profile.equipped.mod = keepMod;
+    else if (keepMod) profile.equipped.mod = null;
+    grantLevelSkins(profile);
+    profile.startWave = clampStartWave(profile.startWave || 1);
+  }
+  function onResetProgressTap(e) {
+    e.preventDefault();
+    resetTapN += 1;
+    if (resetTapT) {
+      clearTimeout(resetTapT);
+      resetTapT = 0;
+    }
+    if (resetTapN >= 3) {
+      resetTapN = 0;
+      setQuestsResetUi("passcode");
+      return;
+    }
+    resetTapT = setTimeout(function () {
+      resetTapT = 0;
+      resetTapN = 0;
+      setQuestsResetUi("confirm");
+    }, RESET_QUICK_MS);
+  }
+  function submitAdminPasscode() {
+    var inp = el("admin-passcode-in");
+    var err = el("admin-passcode-err");
+    var code = inp ? String(inp.value || "").trim() : "";
+    if (code === ADMIN_CODE) {
+      grantAllUnlocks();
+      saveProfile();
+      flushAccountPush();
+      updateHud();
+      setQuestsResetUi("idle");
+      refreshProfileUi();
+      renderHub();
+      return;
+    }
+    if (err) {
+      err.textContent = "Wrong passcode";
+      err.classList.remove("hidden");
+    }
+    if (inp) inp.value = "";
+    setTimeout(function () {
+      var pass = el("admin-passcode");
+      var again = el("admin-passcode-in");
+      if (pass && !pass.classList.contains("hidden") && again && !String(again.value || "").trim()) {
+        setQuestsResetUi("idle");
+      }
+    }, 700);
   }
   function resetAllProgress() {
     var keepMuted = muted;
@@ -7315,6 +7440,14 @@
   }
   function showScreen(name) {
     uiScreen = name;
+    if (name !== "quests") {
+      clearResetTaps();
+      var passOpen = el("admin-passcode");
+      var confirmOpen = el("reset-confirm");
+      if ((passOpen && !passOpen.classList.contains("hidden")) || (confirmOpen && !confirmOpen.classList.contains("hidden"))) {
+        setQuestsResetUi("idle");
+      }
+    }
     if (name === "play") {
       overlay.classList.add("hidden");
       stopHubAnim();
@@ -11192,9 +11325,21 @@
       if (e.key === "Enter") { e.preventDefault(); boardName.blur(); }
     });
   }
-  el("btn-reset-progress").addEventListener("click", function (e) { e.preventDefault(); setResetConfirm(true); });
+  el("btn-reset-progress").addEventListener("click", onResetProgressTap);
   el("btn-reset-confirm").addEventListener("click", function (e) { e.preventDefault(); resetAllProgress(); });
   el("btn-reset-cancel").addEventListener("click", function (e) { e.preventDefault(); setResetConfirm(false); });
+  el("btn-admin-passcode-go").addEventListener("click", function (e) { e.preventDefault(); submitAdminPasscode(); });
+  el("btn-admin-passcode-cancel").addEventListener("click", function (e) { e.preventDefault(); setQuestsResetUi("idle"); });
+  (function bindAdminPasscode() {
+    var inp = el("admin-passcode-in");
+    if (!inp) return;
+    inp.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submitAdminPasscode();
+      }
+    });
+  })();
   el("btn-resume").addEventListener("click", function (e) { e.preventDefault(); resumeGame(); });
   el("btn-quit").addEventListener("click", function (e) { e.preventDefault(); quitToHub(); });
   el("btn-again").addEventListener("click", function (e) { e.preventDefault(); playAgain(); });
