@@ -21,6 +21,23 @@ export function sanitizeName(raw) {
   return s;
 }
 
+export function nameKey(raw) {
+  return sanitizeName(raw).toLowerCase().replace(/ /g, "_");
+}
+
+export function nameTakenByOther(board, name, exceptId) {
+  var want = nameKey(name);
+  var entries, i, row;
+  if (!want) return false;
+  entries = Array.isArray(board && board.entries) ? board.entries : [];
+  for (i = 0; i < entries.length; i++) {
+    row = entries[i];
+    if (!row || row.id === exceptId) continue;
+    if (nameKey(row.name) === want) return true;
+  }
+  return false;
+}
+
 export function sanitizeId(raw) {
   var s = String(raw || "");
   if (!/^[a-zA-Z0-9_-]{8,64}$/.test(s)) return "";
@@ -131,7 +148,7 @@ export function applyScore(board, id, name, score, now) {
   return { board: { v: 1, entries: entries, hidden: hidden }, skipped: false };
 }
 
-async function readBoard() {
+export async function readBoard() {
   var result = await get(PATH, { access: ACCESS, useCache: false });
   if (!result || result.statusCode !== 200 || !result.stream) {
     return { board: { v: 1, entries: [], hidden: [] }, etag: null };

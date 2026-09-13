@@ -1,5 +1,5 @@
 import fs from "fs";
-import { applyHide, applyScore, publicView } from "../api/leaderboard.js";
+import { applyHide, applyScore, publicView, nameTakenByOther } from "../api/leaderboard.js";
 import { sanitizeProfile } from "../api/account.js";
 
 function assert(cond, msg) {
@@ -54,6 +54,10 @@ assert(scored.board.entries.length === 1 && scored.board.entries[0].id === other
 var otherUp = applyScore(hidden, other, "Sam", 2000, 9);
 assert(!otherUp.skipped, "other pilots still post");
 assert(otherUp.board.entries[0].score === 2000, "other score updated");
+
+assert(nameTakenByOther(hidden, "Sam", admin), "other name still unique-blocked");
+assert(!nameTakenByOther(hidden, "Sam", other), "same pid may keep name");
+assert(!nameTakenByOther(hidden, "Nova", other), "unused name is free");
 
 var guest = sanitizeProfile({});
 assert(guest.admin === false, "cloud guest admin off");

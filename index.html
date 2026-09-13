@@ -77,7 +77,7 @@
       <button type="button" class="btn btn-ghost" id="btn-quests">Quests</button>
     </div>
     <button type="button" class="btn btn-ghost" id="btn-board">Leaderboard</button>
-    <button type="button" class="btn btn-ghost" id="btn-account">Account</button>
+    <button type="button" class="btn btn-ghost" id="btn-account">Save progress</button>
     <div class="help" id="hub-help">
       Drag or hold the play field to move (including up / down) &nbsp;&middot;&nbsp; tap / hold to fire<br>
       Or use the pad &nbsp;&middot;&nbsp; Pause / Mute in the HUD
@@ -132,16 +132,22 @@
   </div>
   <div id="screen-account" class="screen hidden">
     <div class="screen-title">Account</div>
-    <div class="help">Optional. Guest play stays on this device. An account syncs hangar, coins, quests, and score.</div>
+    <div class="help" id="account-help">Optional. Guest play stays on this device. Save progress to keep hangar, coins, quests, and score under a unique name.</div>
     <div id="account-out">
-      <label class="lobby-code-lab" for="account-user">Username</label>
-      <input id="account-user" class="board-name-in" type="text" maxlength="16" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="username">
-      <label class="lobby-code-lab" for="account-pass">Password</label>
-      <input id="account-pass" class="board-name-in" type="password" maxlength="72" autocomplete="current-password" spellcheck="false" enterkeyhint="done" placeholder="password">
-      <button type="button" class="btn" id="btn-account-create">Create account</button>
+      <div id="account-menu">
+        <button type="button" class="btn" id="btn-account-save">Save progress</button>
+      </div>
+      <div id="account-form" class="hidden">
+        <label class="lobby-code-lab" id="account-user-lab" for="account-user">Display name</label>
+        <input id="account-user" class="board-name-in" type="text" maxlength="16" autocomplete="username" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="unique name">
+        <label class="lobby-code-lab" id="account-pass-lab" for="account-pass">Password</label>
+        <input id="account-pass" class="board-name-in" type="password" maxlength="72" autocomplete="current-password" spellcheck="false" enterkeyhint="done" placeholder="password">
+        <button type="button" class="btn" id="btn-account-go">Continue</button>
+        <button type="button" class="btn btn-ghost" id="btn-account-form-back">Back</button>
+      </div>
       <button type="button" class="btn btn-ghost" id="btn-account-login">Sign in</button>
       <button type="button" class="btn btn-ghost" id="btn-account-forgot">Forgot password</button>
-      <div class="help">Forgot password sets a new one from the username. Anyone who knows the username can reset it.</div>
+      <div class="help">Forgot password sets a new one from the display name. Anyone who knows the name can reset it.</div>
     </div>
     <div id="account-in" class="hidden">
       <div id="account-who" class="hub-stats">Signed in</div>

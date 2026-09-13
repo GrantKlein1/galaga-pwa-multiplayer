@@ -1,6 +1,7 @@
 import { createHash, randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
-import { get, put, BlobNotFoundError, BlobPreconditionFailedError } from "@vercel/blob";
+import { get, put, head, BlobNotFoundError, BlobPreconditionFailedError } from "@vercel/blob";
+import { nameTakenByOther, readBoard } from "./leaderboard.js";
 
 var scrypt = promisify(scryptCb);
 
@@ -31,10 +32,28 @@ function jsonRes(data, status) {
   });
 }
 
-export function sanitizeUsername(raw) {
-  var s = String(raw || "").trim().toLowerCase();
-  if (!/^[a-z0-9_]{3,16}$/.test(s)) return "";
+export function sanitizeDisplayName(raw) {
+  var s = String(raw || "").replace(/[^\w .\-]/g, "").replace(/\s+/g, " ").trim();
+  if (s.length > 16) s = s.slice(0, 16).trim();
+  if (s.length < 3) return "";
   return s;
+}
+
+export function accountKey(raw) {
+  var display = sanitizeDisplayName(raw);
+  var key;
+  if (display) {
+    key = display.toLowerCase().replace(/ /g, "_");
+    if (/^[a-z0-9][a-z0-9_.-]{2,15}$/.test(key)) return key;
+  }
+  // Old create-account blobs used username keys: 3–16 [a-z0-9_].
+  key = String(raw || "").trim().toLowerCase();
+  if (/^[a-z0-9_]{3,16}$/.test(key)) return key;
+  return "";
+}
+
+export function sanitizeUsername(raw) {
+  return accountKey(raw);
 }
 
 export function sanitizePassword(raw) {
@@ -248,9 +267,12 @@ export function accountPath(username) {
 }
 
 function clientProfile(acct) {
+  var profile = acct.profile || defaultCloudProfile();
+  var name = sanitizeDisplayName(profile.name) || acct.username || "";
   return {
     username: acct.username,
-    profile: acct.profile || defaultCloudProfile(),
+    name: name,
+    profile: profile,
     updatedAt: acct.updatedAt || 0
   };
 }
@@ -263,12 +285,12 @@ function newToken(username) {
   return username + "." + randomBytes(32).toString("hex");
 }
 
-function parseToken(raw) {
+export function parseAccountToken(raw) {
   var s = String(raw || "").trim();
-  var i = s.indexOf(".");
+  var i = s.lastIndexOf(".");
   var user, rest;
   if (i < 1) return null;
-  user = sanitizeUsername(s.slice(0, i));
+  user = accountKey(s.slice(0, i));
   rest = s.slice(i + 1);
   if (!user || !/^[a-f0-9]{64}$/.test(rest)) return null;
   return { username: user, token: s };
@@ -376,21 +398,87 @@ async function checkPassword(password, rec) {
   return timingSafeEqual(got, expected);
 }
 
-async function readAccount(username) {
-  var result, text, acct;
+export function isBlobMissing(err) {
+  var code, msg;
+  if (!err) return false;
+  if (err instanceof BlobNotFoundError) return true;
+  code = err.statusCode || err.status || err.code;
+  if (code === 404 || code === "404") return true;
+  msg = String(err.message || "");
+  if (/not found/i.test(msg) && !/token/i.test(msg)) return true;
+  return false;
+}
+
+export function blobEtagFromGet(result) {
+  var tag = "";
+  var headers;
+  if (!result) return null;
+  if (result.blob && typeof result.blob.etag === "string") tag = result.blob.etag;
+  else if (typeof result.etag === "string") tag = result.etag;
+  if (!tag && result.headers) {
+    headers = result.headers;
+    if (typeof headers.get === "function") tag = headers.get("etag") || "";
+    else if (typeof headers.etag === "string") tag = headers.etag;
+  }
+  tag = String(tag || "").trim();
+  return tag || null;
+}
+
+export function isExistsWriteError(err) {
+  var msg;
+  if (!err) return false;
+  if (err instanceof BlobPreconditionFailedError) return false;
+  msg = String(err.message || err);
+  if (/already exists/i.test(msg)) return true;
+  if (/this blob already exists/i.test(msg)) return true;
+  if (/cannot overwrite|overwrite.*exist/i.test(msg)) return true;
+  return false;
+}
+
+export function isPreconditionWriteError(err) {
+  var code;
+  if (!err) return false;
+  if (err instanceof BlobPreconditionFailedError) return true;
+  code = err.statusCode || err.status || err.code;
+  if (code === 412 || code === "412") return true;
+  return /precondition failed/i.test(String(err.message || ""));
+}
+
+async function headAccount(username) {
   try {
-    result = await get(accountPath(username), { access: ACCESS, useCache: false });
+    return await head(accountPath(username));
   } catch (err) {
-    if (err instanceof BlobNotFoundError) return { acct: null, etag: null };
+    if (isBlobMissing(err)) return null;
     throw err;
   }
+}
+
+async function getAccountBlob(username) {
+  try {
+    return await get(accountPath(username), { access: ACCESS, useCache: false });
+  } catch (err) {
+    if (isBlobMissing(err)) return null;
+    throw err;
+  }
+}
+
+async function readAccount(username) {
+  var result, text, acct, etag, meta;
+  result = await getAccountBlob(username);
   if (!result || result.statusCode !== 200 || !result.stream) {
-    return { acct: null, etag: null };
+    meta = await headAccount(username);
+    if (!meta) return { acct: null, etag: null };
+    result = await getAccountBlob(username);
+    etag = meta.etag || null;
+    if (!result || result.statusCode !== 200 || !result.stream) {
+      return { acct: null, etag: etag, unread: true };
+    }
   }
   text = await new Response(result.stream).text();
   try { acct = JSON.parse(text); } catch (err) { acct = null; }
   if (!acct || typeof acct !== "object") acct = null;
-  return { acct: acct, etag: result.blob && result.blob.etag ? result.blob.etag : null };
+  etag = blobEtagFromGet(result) || etag || null;
+  return { acct: acct, etag: etag };
 }
 
 async function writeAccount(username, acct, etag, create) {
@@ -406,24 +494,52 @@ async function writeAccount(username, acct, etag, create) {
 }
 
 async function mutateAccount(username, fn) {
-  var attempt, got, next;
+  var attempt, got, next, errKind;
   for (attempt = 0; attempt < MAX_RETRIES; attempt++) {
     got = await readAccount(username);
+    if (got.unread && !got.acct) return jsonRes({ error: "unavailable" }, 503);
     next = await fn(got.acct, got);
     if (next.response) return next.response;
     try {
       await writeAccount(username, next.acct, got.etag, !!next.create);
       return next.after || jsonRes({ ok: true });
     } catch (err) {
-      if (err instanceof BlobPreconditionFailedError) continue;
-      if (next.create) {
+      if (next.create && (isExistsWriteError(err) || isPreconditionWriteError(err))) {
         got = await readAccount(username);
         if (got.acct) return jsonRes({ error: "exists" }, 409);
+        if (isExistsWriteError(err)) return jsonRes({ error: "exists" }, 409);
+        continue;
+      }
+      if (isPreconditionWriteError(err)) continue;
+      if (isBlobMissing(err)) {
+        if (next.create) continue;
+        return jsonRes({ error: "unavailable" }, 503);
       }
       throw err;
     }
   }
-  return jsonRes({ error: "busy" }, 409);
+  got = await readAccount(username);
+  if (got.unread && !got.acct) return jsonRes({ error: "unavailable" }, 503);
+  next = await fn(got.acct, got);
+  if (next.response) return next.response;
+  try {
+    if (next.create) {
+      if (got.acct) return jsonRes({ error: "exists" }, 409);
+      await writeAccount(username, next.acct, null, true);
+    } else {
+      await writeAccount(username, next.acct, null, false);
+    }
+    return next.after || jsonRes({ ok: true });
+  } catch (err) {
+    errKind = err;
+    if (next.create && (isExistsWriteError(errKind) || isPreconditionWriteError(errKind))) {
+      got = await readAccount(username);
+      if (got.acct || isExistsWriteError(errKind)) return jsonRes({ error: "exists" }, 409);
+      throw errKind;
+    }
+    if (isBlobMissing(errKind) && !next.create) return jsonRes({ error: "unavailable" }, 503);
+    throw errKind;
+  }
 }
 
 function publicAuth(acct, token) {
@@ -433,14 +549,34 @@ function publicAuth(acct, token) {
   return view;
 }
 
-async function handleCreate(body) {
-  var username = sanitizeUsername(body.username);
+function requestDisplayName(body) {
+  if (!body || typeof body !== "object") return "";
+  return sanitizeDisplayName(body.name || body.displayName || body.username);
+}
+
+async function displayNameConflict(name, pid) {
+  var got;
+  try {
+    got = await readBoard();
+  } catch (err) {
+    return false;
+  }
+  return nameTakenByOther(got && got.board, name, pid);
+}
+
+async function handleSave(body) {
+  var displayName = requestDisplayName(body);
+  var username = accountKey(displayName) || accountKey(body && body.username);
   var password = sanitizePassword(body.password);
   var profile = sanitizeProfile(body.profile);
   var now = Date.now();
-  if (!username) return jsonRes({ error: "bad_username" }, 400);
+  if (!displayName || !username) return jsonRes({ error: "bad_username" }, 400);
   if (!password) return jsonRes({ error: "bad_password" }, 400);
   if (!profile.pid) return jsonRes({ error: "bad_profile" }, 400);
+  if (await displayNameConflict(displayName, profile.pid)) {
+    return jsonRes({ error: "exists" }, 409);
+  }
+  profile.name = displayName;
   profile.updatedAt = now;
   return mutateAccount(username, async function (acct) {
     var token, pass;
@@ -465,7 +601,8 @@ async function handleCreate(body) {
 }
 
 async function handleLogin(body) {
-  var username = sanitizeUsername(body.username);
+  var displayName = requestDisplayName(body);
+  var username = accountKey(displayName) || accountKey(body && body.username);
   var password = sanitizePassword(body.password);
   var now = Date.now();
   if (!username || !password) return jsonRes({ error: "bad_request" }, 400);
@@ -486,6 +623,8 @@ async function handleLogin(body) {
     acct.sessions.push({ hash: hashToken(token), exp: now + SESSION_MS });
     acct.username = username;
     if (!acct.profile) acct.profile = defaultCloudProfile();
+    if (displayName) acct.profile.name = displayName;
+    else if (!acct.profile.name) acct.profile.name = username;
     return {
       acct: acct,
       after: jsonRes(publicAuth(acct, token))
@@ -494,7 +633,8 @@ async function handleLogin(body) {
 }
 
 async function handleForgot(body, request) {
-  var username = sanitizeUsername(body.username);
+  var displayName = requestDisplayName(body);
+  var username = accountKey(displayName) || accountKey(body && body.username);
   var password = sanitizePassword(body.password);
   var now = Date.now();
   var ip = clientIp(request);
@@ -516,7 +656,7 @@ async function handleForgot(body, request) {
 }
 
 async function handleLogout(request) {
-  var parsed = parseToken(bearerToken(request));
+  var parsed = parseAccountToken(bearerToken(request));
   var now = Date.now();
   if (!parsed) return jsonRes({ ok: true });
   return mutateAccount(parsed.username, async function (acct) {
@@ -533,7 +673,7 @@ async function handleLogout(request) {
 }
 
 async function handleGet(request) {
-  var parsed = parseToken(bearerToken(request));
+  var parsed = parseAccountToken(bearerToken(request));
   var got;
   if (!parsed) return jsonRes({ error: "unauthorized" }, 401);
   got = await readAccount(parsed.username);
@@ -544,7 +684,7 @@ async function handleGet(request) {
 }
 
 async function handlePut(request) {
-  var parsed = parseToken(bearerToken(request));
+  var parsed = parseAccountToken(bearerToken(request));
   var body, profile, now;
   if (!parsed) return jsonRes({ error: "unauthorized" }, 401);
   try { body = await request.json(); } catch (err) { body = null; }
@@ -600,7 +740,7 @@ export async function POST(request) {
     parsed = await readJson(request);
     if (parsed.error) return parsed.error;
     op = String(parsed.body.op || "");
-    if (op === "create") return await handleCreate(parsed.body);
+    if (op === "save" || op === "create") return await handleSave(parsed.body);
     if (op === "login") return await handleLogin(parsed.body);
     if (op === "forgot") return await handleForgot(parsed.body, request);
     if (op === "logout") return await handleLogout(request);

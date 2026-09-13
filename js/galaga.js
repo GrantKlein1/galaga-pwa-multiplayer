@@ -321,6 +321,8 @@
   var accountPullAt = 0;
   var accountPullInflight = false;
   var accountBusy = false;
+  var accountStep = "menu";
+  var accountSavePass = "";
   var qSnap = {};
   var longSnap = {};
   var run = emptyRun();
@@ -2623,7 +2625,11 @@
       var txt = localStorage.getItem(SESSION_KEY);
       var raw = txt ? JSON.parse(txt) : null;
       if (raw && typeof raw.token === "string" && typeof raw.username === "string") {
-        accountSession = { username: String(raw.username).toLowerCase(), token: raw.token };
+        accountSession = {
+          username: String(raw.username).toLowerCase(),
+          token: raw.token,
+          name: typeof raw.name === "string" && raw.name ? raw.name : String(raw.username)
+        };
         return;
       }
     } catch (err) {}
@@ -2632,7 +2638,11 @@
   function persistAccountSession(sess) {
     accountSession = sess;
     try {
-      if (sess) localStorage.setItem(SESSION_KEY, JSON.stringify({ username: sess.username, token: sess.token }));
+      if (sess) localStorage.setItem(SESSION_KEY, JSON.stringify({
+        username: sess.username,
+        token: sess.token,
+        name: sess.name || sess.username
+      }));
       else localStorage.removeItem(SESSION_KEY);
     } catch (err) {}
   }
@@ -6590,6 +6600,8 @@
     if (lab) lab.textContent = lv >= MAX_LEVEL ? "MAX LEVEL  ·  " + profile.totalXp + " XP" : (profile.totalXp - lo) + " / " + (hi - lo) + " XP to Lv " + (lv + 1);
     renderStartWavePicker("start-wave-opts");
     drawHubPreview();
+    var accBtn = el("btn-account");
+    if (accBtn) accBtn.textContent = accountSession ? "Sign out" : "Save progress";
   }
   function setAccountStatus(msg, isErr) {
     var node = el("account-status");
@@ -6598,7 +6610,7 @@
     node.classList.toggle("lobby-err", !!isErr);
   }
   function setAccountBusy(on) {
-    var ids = ["btn-account-create", "btn-account-login", "btn-account-forgot", "btn-account-out"];
+    var ids = ["btn-account-save", "btn-account-login", "btn-account-forgot", "btn-account-go", "btn-account-form-back", "btn-account-out", "btn-account"];
     var i, node;
     accountBusy = !!on;
     for (i = 0; i < ids.length; i++) {
@@ -6606,58 +6618,118 @@
       if (node) node.disabled = !!on;
     }
   }
+  function accountNameOk(raw) {
+    var s = sanitizeName(raw);
+    return s.length >= 3 && s.length <= 16;
+  }
   function accountFieldValues() {
     var userEl = el("account-user");
     var passEl = el("account-pass");
     return {
-      username: userEl ? String(userEl.value || "").trim() : "",
+      name: userEl ? String(userEl.value || "").trim() : "",
       password: passEl ? String(passEl.value || "") : ""
     };
   }
   function accountErrorText(code, fallback) {
-    if (code === "exists") return "That username is taken.";
-    if (code === "bad_login") return "Wrong username or password.";
-    if (code === "unknown") return "No account with that username.";
+    if (code === "exists") return "That display name is taken. Pick another.";
+    if (code === "bad_login") return "Wrong display name or password.";
+    if (code === "unknown") return "No saved progress with that display name.";
     if (code === "rate_limited") return "Too many tries. Wait a bit.";
-    if (code === "bad_username") return "Username: 3–16 letters, numbers, or _.";
+    if (code === "bad_username") return "Display name: 3–16 letters, numbers, spaces, _ . or -.";
     if (code === "bad_password") return "Password needs at least 4 characters.";
-    if (code === "bad_profile") return "Need a local profile first. Play once, then create the account.";
+    if (code === "bad_profile") return "Need a local profile first. Play once, then save progress.";
     if (code === "unauthorized") return "Signed out. Sign in again.";
     if (code === "bad_request" || code === "bad_op") return "Could not complete that.";
-    if (code === "busy") return "Server busy. Try again.";
+    if (code === "busy") return "Couldn't save just then. Try again.";
     if (code === "too_large") return "Profile is too large to sync.";
     return fallback || "Can't reach the cloud. Progress stays on this device.";
+  }
+  function setAccountStep(step) {
+    var menu = el("account-menu");
+    var form = el("account-form");
+    var userLab = el("account-user-lab");
+    var userEl = el("account-user");
+    var passLab = el("account-pass-lab");
+    var passEl = el("account-pass");
+    var go = el("btn-account-go");
+    var help = el("account-help");
+    accountStep = step || "menu";
+    if (menu) menu.classList.toggle("hidden", accountStep !== "menu");
+    if (form) form.classList.toggle("hidden", accountStep === "menu");
+    if (el("btn-account-login")) el("btn-account-login").classList.toggle("hidden", accountStep === "login");
+    if (el("btn-account-forgot")) el("btn-account-forgot").classList.toggle("hidden", accountStep === "forgot");
+    if (userLab) userLab.classList.toggle("hidden", accountStep === "save-pass");
+    if (userEl) userEl.classList.toggle("hidden", accountStep === "save-pass");
+    if (passLab) {
+      passLab.classList.toggle("hidden", accountStep === "save-name");
+      passLab.textContent = accountStep === "forgot" ? "New password" : "Password";
+    }
+    if (passEl) {
+      passEl.classList.toggle("hidden", accountStep === "save-name");
+      passEl.autocomplete = (accountStep === "forgot" || accountStep === "save-pass") ? "new-password" : "current-password";
+    }
+    if (go) {
+      if (accountStep === "save-pass") go.textContent = "Continue";
+      else if (accountStep === "save-name") go.textContent = "Save progress";
+      else if (accountStep === "forgot") go.textContent = "Set new password";
+      else go.textContent = "Sign in";
+    }
+    if (help) {
+      if (accountStep === "save-pass") help.textContent = "Choose a password for this save. You'll pick a unique display name next.";
+      else if (accountStep === "save-name") help.textContent = "This name is your account. It must be unique, and it shows on the leaderboard and hub.";
+      else if (accountStep === "login") help.textContent = "Sign in with the display name and password from another device.";
+      else if (accountStep === "forgot") help.textContent = "Set a new password from the display name. Anyone who knows the name can reset it.";
+      else help.textContent = "Optional. Guest play stays on this device. Save progress to keep hangar, coins, quests, and score under a unique name.";
+    }
+  }
+  function signedAccountName() {
+    if (!accountSession) return "";
+    return accountSession.name || accountSession.username || "";
   }
   function renderAccount() {
     var signed = !!(accountSession && accountSession.username);
     var out = el("account-out");
     var inn = el("account-in");
     var who = el("account-who");
+    var nameIn = el("board-name");
     if (out) out.classList.toggle("hidden", signed);
     if (inn) inn.classList.toggle("hidden", !signed);
-    if (who) who.textContent = signed ? ("Signed in as " + accountSession.username) : "";
+    if (who) who.textContent = signed ? ("Signed in as " + signedAccountName()) : "";
+    if (signed) setAccountStep("menu");
+    else setAccountStep(accountStep || "menu");
+    if (nameIn) {
+      nameIn.readOnly = signed;
+      nameIn.disabled = signed;
+      if (signed) nameIn.value = profile.name || signedAccountName();
+    }
   }
   function finishAccountAuth(data, mode) {
     var passEl = el("account-pass");
+    var userEl = el("account-user");
+    var display;
     if (!data || !data.token || !data.username) {
       setAccountStatus(accountErrorText(data && data.error), true);
       return;
     }
-    persistAccountSession({ username: data.username, token: data.token });
+    display = sanitizeName(data.name || (data.profile && data.profile.name) || data.username);
+    persistAccountSession({ username: data.username, token: data.token, name: display });
+    if (display) profile.name = display;
     if (mode === "login" && data.profile) applyCloudProfile(data.profile, data.updatedAt);
     else saveProfile();
+    accountSavePass = "";
+    accountStep = "menu";
     if (passEl) passEl.value = "";
-    setAccountStatus(mode === "create" ? "Account created. Progress is syncing." : "Signed in. Progress merged.");
+    if (userEl) userEl.value = "";
+    setAccountStatus(mode === "save" ? "Progress saved. This device is signed in." : "Signed in. Progress merged.");
     renderAccount();
     renderHub();
   }
-  function postAccount(op) {
-    var fields = accountFieldValues();
-    var user = String(fields.username || "").trim().toLowerCase();
-    var pass = fields.password;
+  function postAccount(op, name, pass) {
     var body;
     if (accountBusy) return;
-    if (!/^[a-z0-9_]{3,16}$/.test(user)) {
+    name = sanitizeName(name);
+    pass = String(pass || "");
+    if (!accountNameOk(name)) {
       setAccountStatus(accountErrorText("bad_username"), true);
       return;
     }
@@ -6666,8 +6738,12 @@
       return;
     }
     ensurePilot();
-    body = { op: op, username: user, password: pass };
-    if (op === "create") body.profile = profileForCloud();
+    body = { op: op, name: name, username: name, password: pass };
+    if (op === "save" || op === "create") {
+      body.op = "save";
+      body.profile = profileForCloud();
+      body.profile.name = name;
+    }
     setAccountBusy(true);
     setAccountStatus(op === "forgot" ? "Updating password…" : "Working…");
     fetch("/api/account", {
@@ -6687,6 +6763,8 @@
     }).then(function (data) {
       if (op === "forgot") {
         if (data && data.ok) {
+          accountStep = "login";
+          setAccountStep("login");
           setAccountStatus("Password updated. Sign in with the new password.");
           return;
         }
@@ -6694,7 +6772,7 @@
         return;
       }
       if (data && data.token) {
-        finishAccountAuth(data, op === "create" ? "create" : "login");
+        finishAccountAuth(data, op === "save" || op === "create" ? "save" : "login");
         return;
       }
       setAccountStatus(accountErrorText(data && data.error), true);
@@ -6703,6 +6781,60 @@
     }).then(function () {
       setAccountBusy(false);
     });
+  }
+  function openAccountSave() {
+    var passEl = el("account-pass");
+    accountSavePass = "";
+    accountStep = "save-pass";
+    if (passEl) passEl.value = "";
+    setAccountStatus("");
+    setAccountStep("save-pass");
+  }
+  function accountFormGo() {
+    var fields = accountFieldValues();
+    var passEl = el("account-pass");
+    var userEl = el("account-user");
+    if (accountStep === "save-pass") {
+      if (fields.password.length < 4 || fields.password.length > 72) {
+        setAccountStatus(accountErrorText("bad_password"), true);
+        return;
+      }
+      accountSavePass = fields.password;
+      accountStep = "save-name";
+      if (userEl && !userEl.value) userEl.value = profile.name || "";
+      if (passEl) passEl.value = "";
+      setAccountStatus("");
+      setAccountStep("save-name");
+      if (userEl) userEl.focus();
+      return;
+    }
+    if (accountStep === "save-name") {
+      postAccount("save", fields.name, accountSavePass);
+      return;
+    }
+    if (accountStep === "forgot") {
+      postAccount("forgot", fields.name, fields.password);
+      return;
+    }
+    postAccount("login", fields.name, fields.password);
+  }
+  function accountFormBack() {
+    var passEl = el("account-pass");
+    var userEl = el("account-user");
+    if (accountStep === "save-name") {
+      accountStep = "save-pass";
+      if (passEl) passEl.value = accountSavePass || "";
+      setAccountStatus("");
+      setAccountStep("save-pass");
+      if (passEl) passEl.focus();
+      return;
+    }
+    accountSavePass = "";
+    accountStep = "menu";
+    if (passEl) passEl.value = "";
+    if (userEl) userEl.value = "";
+    setAccountStatus("");
+    setAccountStep("menu");
   }
   function signOutAccount() {
     if (accountBusy) return;
@@ -6715,9 +6847,12 @@
     }).catch(function () {
     }).then(function () {
       clearAccountSession();
+      accountSavePass = "";
+      accountStep = "menu";
       setAccountBusy(false);
       setAccountStatus("Signed out. Progress stays on this device.");
       renderAccount();
+      renderHub();
     });
   }
   function lobbyStartWaveReadOnly() {
@@ -6875,7 +7010,11 @@
   function refreshRanks() {
     ensurePilot();
     var nameIn = el("board-name");
-    if (nameIn && document.activeElement !== nameIn) nameIn.value = profile.name || "";
+    if (nameIn) {
+      if (document.activeElement !== nameIn) nameIn.value = profile.name || "";
+      nameIn.readOnly = !!accountSession;
+      nameIn.disabled = !!accountSession;
+    }
     var youLine = el("board-you");
     if (youLine) youLine.textContent = "Your best  " + fmtScore(best);
     var status = el("board-status");
@@ -6929,6 +7068,10 @@
   function commitPilotName() {
     var nameIn = el("board-name");
     if (!nameIn) return;
+    if (accountSession) {
+      nameIn.value = profile.name || signedAccountName();
+      return;
+    }
     var next = sanitizeName(nameIn.value);
     if (!next) next = defaultPilotName(profile.pid);
     nameIn.value = next;
@@ -7516,7 +7659,14 @@
       stopHubAnim();
       if (name === "quests") { setResetConfirm(false); renderQuests(); }
       if (name === "ranks") refreshRanks();
-      if (name === "account") { setAccountStatus(""); renderAccount(); }
+      if (name === "account") {
+        if (!accountSession) {
+          accountStep = "save-pass";
+          openAccountSave();
+        }
+        setAccountStatus("");
+        renderAccount();
+      }
       if (name === "lobby") renderLobby();
     }
   }
@@ -11354,24 +11504,49 @@
   el("btn-hangar").addEventListener("click", function (e) { e.preventDefault(); showScreen("hangar"); });
   el("btn-quests").addEventListener("click", function (e) { e.preventDefault(); showScreen("quests"); });
   el("btn-board").addEventListener("click", function (e) { e.preventDefault(); showScreen("ranks"); });
-  el("btn-account").addEventListener("click", function (e) { e.preventDefault(); showScreen("account"); });
+  el("btn-account").addEventListener("click", function (e) {
+    e.preventDefault();
+    if (accountSession) signOutAccount();
+    else {
+      accountStep = "save-pass";
+      showScreen("account");
+    }
+  });
   el("btn-hangar-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
   el("btn-quests-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
   el("btn-board-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
   el("btn-account-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
-  el("btn-account-create").addEventListener("click", function (e) { e.preventDefault(); postAccount("create"); });
-  el("btn-account-login").addEventListener("click", function (e) { e.preventDefault(); postAccount("login"); });
-  el("btn-account-forgot").addEventListener("click", function (e) { e.preventDefault(); postAccount("forgot"); });
+  el("btn-account-save").addEventListener("click", function (e) { e.preventDefault(); openAccountSave(); });
+  el("btn-account-login").addEventListener("click", function (e) {
+    e.preventDefault();
+    accountSavePass = "";
+    accountStep = "login";
+    setAccountStatus("");
+    setAccountStep("login");
+    if (el("account-user")) el("account-user").focus();
+  });
+  el("btn-account-forgot").addEventListener("click", function (e) {
+    e.preventDefault();
+    accountSavePass = "";
+    accountStep = "forgot";
+    setAccountStatus("");
+    setAccountStep("forgot");
+    if (el("account-user")) el("account-user").focus();
+  });
+  el("btn-account-go").addEventListener("click", function (e) { e.preventDefault(); accountFormGo(); });
+  el("btn-account-form-back").addEventListener("click", function (e) { e.preventDefault(); accountFormBack(); });
   el("btn-account-out").addEventListener("click", function (e) { e.preventDefault(); signOutAccount(); });
   (function bindAccountFields() {
     var passEl = el("account-pass");
-    if (!passEl) return;
-    passEl.addEventListener("keydown", function (e) {
+    var userEl = el("account-user");
+    function onEnter(e) {
       if (e.key === "Enter") {
         e.preventDefault();
-        postAccount("login");
+        accountFormGo();
       }
-    });
+    }
+    if (passEl) passEl.addEventListener("keydown", onEnter);
+    if (userEl) userEl.addEventListener("keydown", onEnter);
   })();
   var boardName = el("board-name");
   if (boardName) {
@@ -11954,7 +12129,7 @@
       finishRun: function () { finishRun(true); },
       showScreen: showScreen,
       mergeProfiles: mergeProfiles,
-      accountUser: function () { return accountSession ? accountSession.username : ""; },
+      accountUser: function () { return signedAccountName(); },
       setHangarTab: function (t) { hangarTab = t; renderHangar(); drawHangarPreview(); },
       hangarView: hangarView,
       applyHangarItem: applyHangarItem,
