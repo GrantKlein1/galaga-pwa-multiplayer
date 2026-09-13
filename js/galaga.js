@@ -567,9 +567,36 @@
     return hard ? "tank" : "grunt";
   }
   // Some mid/late non-boss waves mix in a roster boss plus a thin escort.
-  // Hash the wave so co-op skip credit and the live spawn stay in sync.
+  // Seed by wave so co-op skip credit, formation cap, and the live spawn agree;
+  // the roll itself is among every debuted guest-pool boss, not a fixed index.
+  function guestUnlockedCount(n) {
+    return Math.min(GUEST_BOSS_POOL, Math.max(3, Math.floor(n / BOSS_EVERY)));
+  }
+  function pickGuestBossIds(rng, n, count, avoid) {
+    var pool = [], i, j, id, idx, skip, out = [];
+    count = count || 1;
+    for (i = 0; i < guestUnlockedCount(n); i++) {
+      id = BOSS_DEFS[i].id;
+      skip = false;
+      if (avoid) {
+        for (j = 0; j < avoid.length; j++) if (avoid[j] === id) { skip = true; break; }
+      }
+      if (!skip) pool.push(id);
+    }
+    if (pool.length < count) {
+      pool = [];
+      for (i = 0; i < guestUnlockedCount(n); i++) pool.push(BOSS_DEFS[i].id);
+    }
+    count = Math.min(count, pool.length);
+    for (i = 0; i < count; i++) {
+      idx = Math.floor(rng() * pool.length);
+      out.push(pool[idx]);
+      pool.splice(idx, 1);
+    }
+    return out;
+  }
   function guestBossPlan(n) {
-    var rng, roll, late, bosses, tier, a, b, maxIdx, idx;
+    var rng, roll, late, bosses, tier, dual, last;
     if (n < 16 || isBossWave(n) || isMiniWave(n)) return null;
     rng = seededRand(0xC0FFEE ^ Math.imul(n, 2246822519));
     roll = rng();
@@ -577,18 +604,17 @@
     if (roll > (late ? 0.42 : 0.28)) return null;
     bosses = [];
     tier = 0;
-    if (!late) {
+    if (n < 31) {
       bosses.push(BOSS_DEFS[Math.floor(rng() * 3)].id);
-    } else if (rng() < 0.45) {
-      a = Math.floor(rng() * 3);
-      b = (a + 1 + Math.floor(rng() * 2)) % 3;
-      bosses.push(BOSS_DEFS[a].id, BOSS_DEFS[b].id);
-      if (n >= 56) tier = 1;
     } else {
-      maxIdx = Math.min(GUEST_BOSS_POOL - 1, 3 + Math.floor((n - 36) / 8));
-      idx = 3 + Math.floor(rng() * Math.max(1, maxIdx - 2));
-      bosses.push(BOSS_DEFS[idx].id);
-      if (n >= 60) tier = 1;
+      // After wave 30, roll among debuted Seraph–Overlord guests. The old
+      // index math collapsed to Colossus for waves 36–43. Skip the last
+      // scheduled every-5 fight; duals are two different ids.
+      dual = late && rng() < 0.45;
+      last = Math.floor(n / BOSS_EVERY) * BOSS_EVERY;
+      bosses = pickGuestBossIds(rng, n, dual ? 2 : 1, last >= BOSS_EVERY && last < n ? [bossMeta(last).type] : null);
+      if (late && bosses.length > 1 && n >= 56) tier = 1;
+      else if (late && bosses.length === 1 && n >= 60) tier = 1;
     }
     return { bosses: bosses, tier: tier };
   }
