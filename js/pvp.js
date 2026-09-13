@@ -4,7 +4,7 @@
   var BOSS_IDS = [
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
-    "mandala", "myrmidon", "kaleido", "harrow", "nexus"
+    "mandala", "cenotaph", "kaleido", "helios", "selene"
   ];
   var DRAFT_STEPS = ["ship", "mod", "skin", "gun"];
   // Insane duel only (not co-op / PvE bosses).
@@ -146,15 +146,15 @@
         { id: "wheel", key: "4", name: "Singularity wheel", cd: 8.6 }
       ]
     },
-    myrmidon: {
-      fire: "column", ability: "order",
-      fireHint: "SPACE / FIRE — drone column",
-      abilityHint: "1 — lane order",
+    cenotaph: {
+      fire: "slab", ability: "crypt",
+      fireHint: "SPACE / FIRE — grave slab",
+      abilityHint: "1 — crypt box",
       abilities: [
-        { id: "order", key: "1", name: "Lane order", cd: 5.6 },
-        { id: "sacrifice", key: "2", name: "Sacrifice bolt", cd: 6.4 },
-        { id: "pincer", key: "3", name: "Pincer", cd: 7.4 },
-        { id: "throne", key: "4", name: "Throne", cd: 8.8 }
+        { id: "crypt", key: "1", name: "Crypt", cd: 5.6 },
+        { id: "knell", key: "2", name: "Knell", cd: 6.6 },
+        { id: "burial", key: "3", name: "Burial bars", cd: 7.6 },
+        { id: "vigil", key: "4", name: "Vigil", cd: 8.8 }
       ]
     },
     kaleido: {
@@ -168,26 +168,26 @@
         { id: "fracture", key: "4", name: "Fracture", cd: 8.6 }
       ]
     },
-    harrow: {
-      fire: "sweep", ability: "sow",
-      fireHint: "SPACE / FIRE — scythe sweep",
-      abilityHint: "1 — sow seeds",
+    helios: {
+      fire: "glare", ability: "sear",
+      fireHint: "SPACE / FIRE — solar glare",
+      abilityHint: "1 — heat plates",
       abilities: [
-        { id: "sow", key: "1", name: "Sow", cd: 5.6 },
-        { id: "reap", key: "2", name: "Reap", cd: 7.2 },
-        { id: "hook", key: "3", name: "Hook yank", cd: 7.4 },
-        { id: "harvest", key: "4", name: "Harvest moon", cd: 8.8 }
+        { id: "sear", key: "1", name: "Sear", cd: 5.4 },
+        { id: "prominence", key: "2", name: "Prominence", cd: 7.0 },
+        { id: "hearth", key: "3", name: "Hearth", cd: 7.4 },
+        { id: "noon", key: "4", name: "High noon", cd: 8.6 }
       ]
     },
-    nexus: {
-      fire: "node", ability: "rail",
-      fireHint: "SPACE / FIRE — node pings",
-      abilityHint: "1 — spark rail",
+    selene: {
+      fire: "crescent", ability: "limb",
+      fireHint: "SPACE / FIRE — crescent volley",
+      abilityHint: "1 — shadow limb",
       abilities: [
-        { id: "rail", key: "1", name: "Rail", cd: 5.8 },
-        { id: "gridlock", key: "2", name: "Gridlock", cd: 7.4 },
-        { id: "surge", key: "3", name: "Rail surge", cd: 6.6 },
-        { id: "blackout", key: "4", name: "Blackout", cd: 8.8 }
+        { id: "limb", key: "1", name: "Shadow limb", cd: 6.4 },
+        { id: "tide", key: "2", name: "Dark tide", cd: 7.2 },
+        { id: "waning", key: "3", name: "Waning veil", cd: 7.8 },
+        { id: "occult", key: "4", name: "Occultation", cd: 8.8 }
       ]
     }
   };
