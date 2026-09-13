@@ -124,7 +124,7 @@ function sanitizeBoolMap(raw, maxKeys) {
 
 function defaultCloudProfile() {
   return {
-    v: 3,
+    v: 4,
     coins: 0,
     totalXp: 0,
     best: 0,
@@ -137,7 +137,8 @@ function defaultCloudProfile() {
     equipped: { ship: "wisp", gun: "pulse", mod: null },
     equippedSkins: { wisp: "stock" },
     startWave: 1,
-    dailies: { date: "", ids: [], progress: {}, claimed: {} },
+    dailies: { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} },
+    dailyTracks: {},
     longTerm: {},
     stats: {
       killsByType: {}, maxWave: 0, bosses: {}, bossBest: {}, pickups: {},
@@ -174,10 +175,12 @@ function sanitizeLongTerm(raw) {
     if (!rec || typeof rec !== "object") continue;
     out[k.slice(0, 40)] = {
       progress: asInt(rec.progress, 9999999),
-      claimed: !!rec.claimed
+      claimed: !!rec.claimed,
+      tier: asInt(rec.tier, 9999),
+      mark: asInt(rec.mark, 99999999)
     };
     n += 1;
-    if (n >= 80) break;
+    if (n >= 120) break;
   }
   return out;
 }
@@ -213,6 +216,9 @@ export function sanitizeProfile(raw) {
   p.dailies.ids = sanitizeStrList(d.ids, [], 6);
   p.dailies.progress = sanitizeNumMap(d.progress, 999999, 16);
   p.dailies.claimed = sanitizeBoolMap(d.claimed, 16);
+  p.dailies.tier = sanitizeNumMap(d.tier, 9999, 16);
+  p.dailies.target = sanitizeNumMap(d.target, 9999999, 16);
+  p.dailyTracks = sanitizeNumMap(raw.dailyTracks, 9999, 80);
   p.longTerm = sanitizeLongTerm(raw.longTerm);
   st = raw.stats && typeof raw.stats === "object" ? raw.stats : {};
   p.stats.killsByType = sanitizeNumMap(st.killsByType, 9999999);
@@ -231,7 +237,7 @@ export function sanitizeProfile(raw) {
   p.stats.maxCleanRunKills = asInt(st.maxCleanRunKills, 9999999);
   p.stats.runs = asInt(st.runs, 9999999);
   p.updatedAt = asTime(raw.updatedAt);
-  p.v = 3;
+  p.v = 4;
   return p;
 }
 
