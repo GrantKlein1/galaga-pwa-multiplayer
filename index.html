@@ -37,12 +37,14 @@
   </div>
   <div id="board-wrap">
     <canvas id="board" tabindex="0"></canvas>
-    <div id="pvp-hint" class="pvp-hint hidden" aria-hidden="true">
-      <div id="pvp-hint-fire">SPACE / FIRE — primary</div>
-      <div id="pvp-hint-abilities" class="pvp-hint-abilities">
-        <div id="pvp-hint-ability">1 / E — special</div>
-      </div>
-    </div>
+  </div>
+  <div id="pvp-hint" class="pvp-hint hidden" aria-hidden="true">
+    <button type="button" id="pvp-hint-fire" class="pvp-ab-tip pvp-ab-fire" data-pvp-fire="1" aria-label="Primary fire">
+      <span class="pvp-ab-key">SPC</span>
+      <span class="pvp-ab-name">Primary</span>
+      <span class="pvp-ab-cd">READY</span>
+    </button>
+    <div id="pvp-hint-abilities" class="pvp-hint-abilities"></div>
   </div>
   <div id="touchpad" aria-label="Game controls">
     <button type="button" class="pad-btn pad-move" id="pad-left" data-dir="left" aria-label="Move left">&#9664;</button>
@@ -207,7 +209,7 @@
           <div class="pvp-tutorial-title" id="pvp-tutorial-name">Boss</div>
           <div class="pvp-tutorial-line" id="pvp-tutorial-fire"></div>
           <div id="pvp-tutorial-ability"></div>
-          <div class="help">SPACE / FIRE is your primary. Abilities are keys 1–6 (E / Shift = 1, or tap the on-screen tips / pad). Each ability shows its cooldown.</div>
+          <div class="help">SPACE / FIRE is your primary. Abilities are keys 1–6 (E / Shift = 1, or tap the buttons under the field). Each ability shows its cooldown.</div>
           <button type="button" class="btn" id="btn-pvp-tutorial-ok">Got it</button>
         </div>
         <div id="lobby-pvp-status" class="lobby-status"></div>

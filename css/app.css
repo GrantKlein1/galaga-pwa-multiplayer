@@ -792,36 +792,50 @@ html.is-pwa #touchpad.hidden,
   color: #ffe08a;
 }
 .pad-ability { display: none; }
+#app.is-pvp-insane #pad-ability,
 #app.is-pvp-insane #pad-ability:not(.hidden) {
-  display: flex;
+  display: none !important;
 }
+#app.is-pvp-insane #hint { display: none; }
 
 #app.is-pvp #pwr-row { display: none; }
 
 .pvp-hint {
-  position: absolute;
-  left: 6px;
-  top: 6px;
+  flex: none;
+  position: relative;
+  left: auto;
+  top: auto;
   right: auto;
   bottom: auto;
-  max-width: 54%;
+  width: 100%;
+  max-width: none;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  pointer-events: none;
-  font-size: 8px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 4px;
+  pointer-events: auto;
+  font-size: 9px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(232, 246, 255, 0.72);
+  color: rgba(232, 246, 255, 0.86);
   text-shadow: 0 1px 4px #050510;
-  z-index: 3;
+  z-index: 6;
   text-align: left;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .pvp-hint.hidden { display: none; }
 .pvp-hint-abilities {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+  pointer-events: auto;
 }
 .pvp-ab-tip {
   display: flex;
@@ -829,17 +843,35 @@ html.is-pwa #touchpad.hidden,
   gap: 5px;
   pointer-events: auto;
   margin: 0;
-  padding: 3px 5px;
-  min-height: 22px;
+  padding: 6px 7px;
+  min-height: 40px;
+  min-width: 52px;
+  flex: 1 1 56px;
   border: 1px solid rgba(126, 249, 255, 0.22);
-  border-radius: 4px;
-  background: rgba(5, 5, 16, 0.62);
+  border-radius: 8px;
+  background: rgba(16, 16, 40, 0.94);
   color: inherit;
   font: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
   cursor: pointer;
   text-align: left;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.pvp-ab-fire {
+  flex: 1.15 1 64px;
+  border-color: rgba(126, 249, 255, 0.45);
+  background: rgba(16, 40, 48, 0.96);
+}
+#app.is-pvp-insane .pvp-ab-tip {
+  min-height: 44px;
+  font-size: 10px;
+}
+.pvp-ab-tip:active, .pvp-ab-tip.held {
+  background: rgba(42, 58, 102, 0.95);
 }
 .pvp-ab-tip.ready { border-color: rgba(61, 255, 176, 0.45); }
 .pvp-ab-tip.cooling { border-color: rgba(255, 122, 61, 0.4); }
@@ -954,5 +986,9 @@ html.is-pwa #touchpad.hidden,
 
 @media (min-width: 520px) {
   #touchpad { height: 96px; }
+}
+#app.is-pvp-insane #touchpad {
+  height: 72px;
+  min-height: 64px;
 }
 
