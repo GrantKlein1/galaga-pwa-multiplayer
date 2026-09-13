@@ -21,7 +21,7 @@
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
   var SESSION_KEY = "galaga.session";
-  var PROFILE_VER = 3;
+  var PROFILE_VER = 4;
   var ACCOUNT_PUSH_MS = 900;
   var ACCOUNT_PULL_MS = 5000;
   var COIN_SPAWN_MUL = 0.75;
@@ -1014,7 +1014,8 @@
       equipped: { ship: "wisp", gun: "pulse", mod: null },
       equippedSkins: { wisp: "stock" },
       startWave: 1,
-      dailies: { date: "", ids: [], progress: {}, claimed: {} },
+      dailies: { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} },
+      dailyTracks: {},
       longTerm: {},
       stats: emptyStats(),
       updatedAt: 0
@@ -1025,6 +1026,28 @@
     var out = [], i;
     for (i = 0; i < a.length; i++) if (typeof a[i] === "string") out.push(a[i]);
     return out.length ? out : fallback.slice();
+  }
+  function cloneNumMap(raw) {
+    var out = {}, k;
+    if (!raw || typeof raw !== "object") return out;
+    for (k in raw) {
+      if (Object.prototype.hasOwnProperty.call(raw, k) && typeof raw[k] === "number" && isFinite(raw[k])) {
+        out[k] = Math.max(0, raw[k] | 0);
+      }
+    }
+    return out;
+  }
+  function emptyLongRec() {
+    return { progress: 0, claimed: false, tier: 0, mark: 0 };
+  }
+  function cloneLongRec(raw) {
+    if (!raw || typeof raw !== "object") return emptyLongRec();
+    return {
+      progress: Math.max(0, raw.progress | 0),
+      claimed: !!raw.claimed,
+      tier: Math.max(0, raw.tier | 0),
+      mark: Math.max(0, raw.mark | 0)
+    };
   }
   function cloneSkinMap(raw) {
     var out = {}, k, list;
@@ -1079,10 +1102,12 @@
     if (raw.dailies && typeof raw.dailies === "object") {
       p.dailies.date = typeof raw.dailies.date === "string" ? raw.dailies.date : "";
       p.dailies.ids = cloneArr(raw.dailies.ids, []);
-      p.dailies.progress = raw.dailies.progress && typeof raw.dailies.progress === "object" ? raw.dailies.progress : {};
-      p.dailies.claimed = raw.dailies.claimed && typeof raw.dailies.claimed === "object" ? raw.dailies.claimed : {};
+      p.dailies.progress = cloneNumMap(raw.dailies.progress);
+      p.dailies.claimed = orBoolMap(raw.dailies.claimed, {});
+      p.dailies.tier = cloneNumMap(raw.dailies.tier);
+      p.dailies.target = cloneNumMap(raw.dailies.target);
     }
-    if (raw.longTerm && typeof raw.longTerm === "object") p.longTerm = raw.longTerm;
+    p.dailyTracks = cloneNumMap(raw.dailyTracks);
     if (raw.stats && typeof raw.stats === "object") {
       if (raw.stats.killsByType && typeof raw.stats.killsByType === "object") p.stats.killsByType = raw.stats.killsByType;
       if (typeof raw.stats.maxWave === "number") p.stats.maxWave = raw.stats.maxWave | 0;
@@ -1107,6 +1132,7 @@
     for (k in p.stats.bosses) {
       if (Object.prototype.hasOwnProperty.call(p.stats.bosses, k) && p.stats.bosses[k] > 0 && !p.stats.bossBest[k]) p.stats.bossBest[k] = 1;
     }
+    p.longTerm = migrateLongTermMap(raw.longTerm, p);
     p.v = PROFILE_VER;
     return p;
   }
@@ -1163,40 +1189,55 @@
     return out;
   }
   function mergeDailies(a, b) {
-    a = a || { date: "", ids: [], progress: {}, claimed: {} };
-    b = b || { date: "", ids: [], progress: {}, claimed: {} };
+    a = a || { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} };
+    b = b || { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} };
+    function pack(src) {
+      return {
+        date: src.date || "",
+        ids: cloneArr(src.ids, []),
+        progress: maxNumMap(src.progress, {}),
+        claimed: orBoolMap(src.claimed, {}),
+        tier: maxNumMap(src.tier, {}),
+        target: maxNumMap(src.target, {})
+      };
+    }
     if (a.date === b.date) {
       return {
         date: a.date,
         ids: unionStr(a.ids, b.ids).slice(0, 6),
         progress: maxNumMap(a.progress, b.progress),
-        claimed: orBoolMap(a.claimed, b.claimed)
+        claimed: orBoolMap(a.claimed, b.claimed),
+        tier: maxNumMap(a.tier, b.tier),
+        target: maxNumMap(a.target, b.target)
       };
     }
-    if (!a.date) return { date: b.date, ids: cloneArr(b.ids, []), progress: maxNumMap(b.progress, {}), claimed: orBoolMap(b.claimed, {}) };
-    if (!b.date) return { date: a.date, ids: cloneArr(a.ids, []), progress: maxNumMap(a.progress, {}), claimed: orBoolMap(a.claimed, {}) };
-    return (a.date >= b.date)
-      ? { date: a.date, ids: cloneArr(a.ids, []), progress: maxNumMap(a.progress, {}), claimed: orBoolMap(a.claimed, {}) }
-      : { date: b.date, ids: cloneArr(b.ids, []), progress: maxNumMap(b.progress, {}), claimed: orBoolMap(b.claimed, {}) };
+    if (!a.date) return pack(b);
+    if (!b.date) return pack(a);
+    return pack(a.date >= b.date ? a : b);
   }
   function mergeLongTerm(a, b) {
-    var out = {}, k, la, lb;
+    var out = {}, k, ids = {}, i;
     a = a && typeof a === "object" ? a : {};
     b = b && typeof b === "object" ? b : {};
     function rec(src) {
-      if (!src || typeof src !== "object") return { progress: 0, claimed: false };
-      return { progress: src.progress | 0, claimed: !!src.claimed };
+      return cloneLongRec(src);
     }
-    for (k in a) {
-      if (!Object.prototype.hasOwnProperty.call(a, k)) continue;
-      la = rec(a[k]);
-      lb = rec(b[k]);
-      out[k] = { progress: Math.max(la.progress, lb.progress), claimed: !!(la.claimed || lb.claimed) };
+    function pick(la, lb) {
+      if (la.tier > lb.tier) return la;
+      if (lb.tier > la.tier) return lb;
+      return {
+        progress: Math.max(la.progress, lb.progress),
+        claimed: !!(la.claimed || lb.claimed),
+        tier: la.tier,
+        mark: Math.max(la.mark, lb.mark)
+      };
     }
-    for (k in b) {
-      if (!Object.prototype.hasOwnProperty.call(b, k) || out[k]) continue;
-      lb = rec(b[k]);
-      out[k] = { progress: lb.progress, claimed: lb.claimed };
+    for (k in a) if (Object.prototype.hasOwnProperty.call(a, k)) ids[k] = 1;
+    for (k in b) if (Object.prototype.hasOwnProperty.call(b, k)) ids[k] = 1;
+    for (i = 0; i < LONG_DEFS.length; i++) ids[LONG_DEFS[i].id] = 1;
+    for (k in ids) {
+      if (!Object.prototype.hasOwnProperty.call(ids, k)) continue;
+      out[k] = pick(rec(a[k]), rec(b[k]));
     }
     return out;
   }
@@ -1250,6 +1291,7 @@
     if (out.equipped.mod && out.ownedMods.indexOf(out.equipped.mod) < 0) out.equipped.mod = null;
     out.equippedSkins = cloneSkinEquip(newer.equippedSkins);
     out.dailies = mergeDailies(local.dailies, cloud.dailies);
+    out.dailyTracks = maxNumMap(local.dailyTracks, cloud.dailyTracks);
     out.longTerm = mergeLongTerm(local.longTerm, cloud.longTerm);
     out.stats = mergeStats(local.stats, cloud.stats);
     out.startWave = clampStartWave(Math.max(local.startWave | 0, cloud.startWave | 0), xpLevel(out.totalXp), out.stats.maxWave);
@@ -1386,6 +1428,359 @@
       return x / 4294967296;
     };
   }
+  function questNum(n) {
+    n = Math.max(0, n | 0);
+    if (n >= 10000) return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return String(n);
+  }
+  function foeNoun(type, n) {
+    var many;
+    if (type === "kami") return "kami";
+    if (type === "tank") many = "tanks";
+    else if (type === "sniper") many = "snipers";
+    else if (type === "grunt") many = "grunts";
+    else if (type === "weaver") many = "weavers";
+    else if (type === "shield") many = "shield drones";
+    else many = type ? type + "s" : "foes";
+    return n === 1 ? (type === "shield" ? "shield drone" : type) : many;
+  }
+  function pickupNoun(type, n) {
+    if (type === "spread") return n === 1 ? "spread gem" : "spread gems";
+    if (type === "double") return n === 1 ? "double gem" : "double gems";
+    if (type === "heal") return n === 1 ? "heal pickup" : "heal pickups";
+    if (type === "shield") return n === 1 ? "shield gem" : "shield gems";
+    return n === 1 ? (type || "pickup") : (type || "pickup") + "s";
+  }
+  function questCurve(def) {
+    var hasItem = def.reward && typeof def.reward === "object" && (def.reward.gun || def.reward.ship || def.reward.mod);
+    var h = 0, i;
+    if (hasItem) return { t: 1.38, c: 1.2, name: "items" };
+    for (i = 0; i < def.id.length; i++) h = (h + def.id.charCodeAt(i) * (i + 3)) % 11;
+    if (def.kind === "wave" || def.kind === "level" || def.kind === "noHitWave" || def.kind === "livesOkWave" || def.kind === "bossTier") {
+      return { t: 1.2, c: 1.42, name: "gentle" };
+    }
+    if (def.kind === "score" || def.kind === "scoreLife" || def.kind === "coinsLife" || def.kind === "coinsRun" || def.kind === "runCoins" || def.kind === "ownShips" || def.kind === "ownGuns" || def.kind === "ownCollection" || def.kind === "xpBank") {
+      return { t: 1.26, c: 1.52, name: "coins" };
+    }
+    if (h % 3 === 0 && (def.kind === "kills" || def.kind === "killsLife" || def.kind === "killsRun" || def.kind === "killsAllLife" || def.kind === "diveKills" || def.kind === "diveKillsLife" || def.kind === "bossCount" || def.kind === "bossesLife" || def.kind === "perfectLife" || def.kind === "bossRun")) {
+      return { t: 1.68, c: 1.18, name: "steep" };
+    }
+    if (h % 3 === 1) return { t: 1.3, c: 1.48, name: "coins" };
+    return { t: 1.42, c: 1.34, name: "balanced" };
+  }
+  function scaleCoins(base, tier, grow, cap) {
+    var t, expo, extra, raw;
+    if (!base) return 0;
+    t = Math.max(0, tier | 0);
+    grow = grow || 1.32;
+    cap = cap || 1800;
+    expo = Math.pow(grow, Math.min(t, 7));
+    extra = t > 7 ? 1 + 0.07 * (t - 7) : 1;
+    raw = base * expo * extra;
+    if (raw <= cap) return Math.max(1, Math.round(raw));
+    return Math.round(cap + Math.log(1 + (raw - cap) / cap) * cap * 0.18);
+  }
+  function roundQuestTarget(def, t) {
+    t = Math.max(1, t);
+    if (def.kind === "score" || def.kind === "scoreLife") {
+      if (t >= 20000) return Math.max(1000, Math.round(t / 1000) * 1000);
+      return Math.max(500, Math.round(t / 500) * 500);
+    }
+    if (def.kind === "runCoins" || def.kind === "coinsRun" || def.kind === "coinsLife" || def.kind === "xpBank") {
+      return Math.max(5, Math.round(t / 5) * 5);
+    }
+    if (def.kind === "enemySet" || def.kind === "pickupSet" || def.kind === "ownCollection") return def.target;
+    if (def.kind === "bossTier") return 1;
+    return Math.max(1, Math.round(t));
+  }
+  function playerPowerTier(p) {
+    p = p || profile;
+    var lv = xpLevel(p.totalXp);
+    var w = (p.stats && p.stats.maxWave) || 0;
+    var kills = bossKills(p.stats && p.stats.killsByType);
+    return Math.max(0, Math.floor(Math.max(0, lv - 1) / 10), Math.floor(w / 16), Math.floor(kills / 400));
+  }
+  function dailyTrackTier(id, p) {
+    p = p || profile;
+    return (p.dailyTracks && p.dailyTracks[id]) ? (p.dailyTracks[id] | 0) : 0;
+  }
+  function dailyRollTier(id, p) {
+    return Math.max(dailyTrackTier(id, p), playerPowerTier(p));
+  }
+  function isDeltaKind(kind) {
+    return kind === "bossCount" || kind === "killsLife" || kind === "killsAllLife" || kind === "pickupLife" || kind === "diveKillsLife" || kind === "coinsLife" || kind === "bossesLife" || kind === "perfectLife" || kind === "xpBank";
+  }
+  function isPeakKind(kind) {
+    return kind === "wave" || kind === "level" || kind === "noHitWave" || kind === "livesOkWave" || kind === "scoreLife" || kind === "coinsRun" || kind === "bossRun" || kind === "cleanKillsRun" || kind === "ownShips" || kind === "ownGuns";
+  }
+  function dailyTargetCap(def, p) {
+    var maxWave = (p && p.stats && p.stats.maxWave) || 1;
+    if (def.kind === "kills") return 72;
+    if (def.kind === "killsRun") return 160;
+    if (def.kind === "wave") return Math.max(def.target, Math.min(42, Math.max(def.target, maxWave + 1)));
+    if (def.kind === "bossAny") return 2;
+    if (def.kind === "bossRun") return Math.max(def.target, Math.min(6, Math.max(1, Math.floor(maxWave / 5) || def.target)));
+    if (def.kind === "noHitBoss") return 3;
+    if (def.kind === "score") return 60000;
+    if (def.kind === "runCoins") return 140;
+    if (def.kind === "pickup") return 6;
+    if (def.kind === "noHitWave") return Math.min(22, Math.max(def.target, maxWave || def.target));
+    if (def.kind === "diveKills") return 50;
+    if (def.kind === "enemySet" || def.kind === "pickupSet") return def.target;
+    if (def.kind === "cleanKillsRun") return 90;
+    return Math.max(def.target, def.target * 4);
+  }
+  function scaleTarget(def, tier, opts) {
+    var curve = questCurve(def), t, cap, p, maxWave, step;
+    opts = opts || {};
+    p = opts.profile || profile;
+    tier = Math.max(0, tier | 0);
+    if (def.kind === "enemySet" || def.kind === "pickupSet" || def.kind === "ownCollection" || def.kind === "bossTier") {
+      t = def.target;
+    } else {
+      t = def.target * Math.pow(curve.t, tier);
+      if (opts.daily) t *= 1 + 0.07 * Math.min(6, playerPowerTier(p));
+      t = roundQuestTarget(def, t);
+    }
+    if (opts.daily) {
+      cap = dailyTargetCap(def, p);
+      if (def.kind === "wave") {
+        maxWave = (p.stats && p.stats.maxWave) || 0;
+        t = Math.round(def.target + maxWave * 0.32 + tier * 2);
+        t = Math.max(def.target, Math.min(cap, t));
+      } else if (t > cap) t = cap;
+    }
+    if (opts.mark && isPeakKind(def.kind)) {
+      step = Math.max(1, Math.round(def.target * 0.18));
+      t = Math.max(t, (opts.mark | 0) + step);
+    }
+    return Math.max(1, t | 0);
+  }
+  function scaleReward(def, tier) {
+    var rew = def.reward, curve = questCurve(def), cap, coins, keepItem, out;
+    if (rew == null) return 0;
+    cap = optsDailyCap(def);
+    if (typeof rew === "number") return scaleCoins(rew, tier, curve.c, cap);
+    out = {};
+    coins = rew.coins || 0;
+    keepItem = !!(tier <= 2 && (rew.gun || rew.ship || rew.mod));
+    if (keepItem) {
+      if (rew.gun) out.gun = rew.gun;
+      if (rew.ship) out.ship = rew.ship;
+      if (rew.mod) out.mod = rew.mod;
+      if (rew.consolation) out.consolation = scaleCoins(rew.consolation, tier, curve.c, cap);
+      if (coins) out.coins = scaleCoins(coins, tier, curve.c, cap);
+    } else {
+      coins = coins || rew.consolation || 40;
+      out.coins = scaleCoins(coins, tier, curve.c, cap);
+    }
+    return out;
+  }
+  function optsDailyCap(def) {
+    return def.id.indexOf("d_") === 0 ? 220 : 2200;
+  }
+  function questDesc(q) {
+    var n = q.target, name, boss;
+    if (q.kind === "kills") return "Kill " + questNum(n) + " " + foeNoun(q.type, n);
+    if (q.kind === "killsRun") return "Destroy " + questNum(n) + " foes in one run";
+    if (q.kind === "killsLife") return "Destroy " + questNum(n) + " " + foeNoun(q.type, n);
+    if (q.kind === "killsAllLife") return "Destroy " + questNum(n) + " foes";
+    if (q.kind === "wave") return "Reach wave " + questNum(n);
+    if (q.kind === "level") return "Reach level " + questNum(n);
+    if (q.kind === "xpBank") return "Bank " + questNum(n) + " XP";
+    if (q.kind === "bossAny") return n <= 1 ? "Defeat a boss" : "Defeat " + n + " bosses";
+    if (q.kind === "bossRun") return "Defeat " + questNum(n) + " bosses in one run";
+    if (q.kind === "bossCount") {
+      boss = bossName(q.type);
+      return "Defeat " + (boss === "BOSS" ? q.type : boss.charAt(0) + boss.slice(1).toLowerCase()) + " " + questNum(n) + (n === 1 ? " time" : " times");
+    }
+    if (q.kind === "bossesLife") return "Defeat " + questNum(n) + " bosses across all runs";
+    if (q.kind === "bossTier") {
+      boss = bossName(q.type);
+      name = boss === "BOSS" ? q.type : boss.charAt(0) + boss.slice(1).toLowerCase();
+      return "Defeat " + name + " at tier " + (q.needTier || q.tier || 1) + " or higher";
+    }
+    if (q.kind === "noHitBoss") return "Defeat " + questNum(n) + " bosses without taking a hit";
+    if (q.kind === "perfectLife") return "Defeat " + questNum(n) + " bosses without taking a hit";
+    if (q.kind === "score" || q.kind === "scoreLife") {
+      return q.kind === "score" ? ("Score " + questNum(n) + " in one run") : ("Reach a best score of " + questNum(n));
+    }
+    if (q.kind === "runCoins" || q.kind === "coinsRun") return "Collect " + questNum(n) + " coins in one run";
+    if (q.kind === "coinsLife") return "Earn " + questNum(n) + " coins across all runs";
+    if (q.kind === "pickup") return "Collect " + questNum(n) + " " + pickupNoun(q.type, n);
+    if (q.kind === "pickupLife") return "Collect " + questNum(n) + " " + pickupNoun(q.type, n);
+    if (q.kind === "noHitWave") return "Reach wave " + questNum(n) + " without taking a hit";
+    if (q.kind === "livesOkWave") return "Reach wave " + questNum(n) + " without losing a life";
+    if (q.kind === "diveKills" || q.kind === "diveKillsLife") return "Destroy " + questNum(n) + " diving foes";
+    if (q.kind === "ownShips") return "Own " + questNum(n) + " ships";
+    if (q.kind === "ownGuns") return "Own " + questNum(n) + " guns";
+    if (q.kind === "cleanKillsRun") return "Destroy " + questNum(n) + " foes in a run without taking a hit";
+    if (q.kind === "bossRoster") {
+      if (q.needTier) return "Defeat every boss at tier " + q.needTier + " or higher";
+      return n >= BOSS_DEFS.length ? "Defeat every boss in the roster" : ("Defeat " + questNum(n) + " different bosses");
+    }
+    if (q.kind === "ownCollection") return "Own " + questNum(q.ships || 6) + " ships and " + questNum(q.guns || 10) + " guns";
+    if (q.kind === "enemySet") return q.desc;
+    if (q.kind === "pickupSet") return q.desc;
+    return q.desc;
+  }
+  function questTitle(def, tier) {
+    if (!tier) return def.name;
+    return def.name + " +" + tier;
+  }
+  function instantiateQuest(def, tier, opts) {
+    var q, recMark, shipsN, gunsN, extra, lvTarget;
+    opts = opts || {};
+    tier = Math.max(0, tier | 0);
+    recMark = opts.mark | 0;
+    q = {
+      id: def.id,
+      name: questTitle(def, tier),
+      kind: def.kind,
+      type: def.type,
+      types: def.types,
+      ships: def.ships,
+      guns: def.guns,
+      tier: def.tier,
+      category: def.category,
+      trackTier: tier,
+      target: def.target,
+      reward: scaleReward(def, tier),
+      desc: def.desc
+    };
+    if (def.kind === "level") {
+      lvTarget = scaleTarget(def, tier, { profile: opts.profile || profile, mark: recMark });
+      if (lvTarget > MAX_LEVEL) {
+        q.kind = "xpBank";
+        extra = Math.max(0, lvTarget - MAX_LEVEL);
+        q.target = roundQuestTarget(q, 8000 + extra * 400 + tier * 1200);
+        q.desc = questDesc(q);
+        return q;
+      }
+      q.target = lvTarget;
+    } else if (def.kind === "bossTier") {
+      q.needTier = (def.tier || 1) + tier;
+      if (tier > 0 && recMark) q.needTier = Math.max(q.needTier, recMark + 1);
+      q.tier = q.needTier;
+      q.target = 1;
+    } else if (def.kind === "bossRoster") {
+      if (tier <= 0) q.target = def.target;
+      else if (tier === 1) q.target = BOSS_DEFS.length;
+      else {
+        q.needTier = tier - 1;
+        q.target = BOSS_DEFS.length;
+      }
+    } else if (def.kind === "ownShips") {
+      q.target = Math.min(SHIPS.length, scaleTarget(def, tier, { profile: opts.profile || profile, mark: recMark }));
+      if (tier > 0 && (opts.profile || profile).ownedShips.length >= SHIPS.length) {
+        q.kind = "coinsLife";
+        q.target = roundQuestTarget(q, 400 + tier * 120);
+      }
+    } else if (def.kind === "ownGuns") {
+      q.target = Math.min(GUNS.length, scaleTarget(def, tier, { profile: opts.profile || profile, mark: recMark }));
+      if (tier > 0 && (opts.profile || profile).ownedGuns.length >= GUNS.length) {
+        q.kind = "coinsLife";
+        q.target = roundQuestTarget(q, 400 + tier * 120);
+      }
+    } else if (def.kind === "ownCollection") {
+      shipsN = Math.min(SHIPS.length, (def.ships || 6) + tier);
+      gunsN = Math.min(GUNS.length, (def.guns || 10) + tier * 2);
+      q.ships = shipsN;
+      q.guns = gunsN;
+      if (tier > 0 && shipsN >= SHIPS.length && gunsN >= GUNS.length) {
+        q.kind = "coinsLife";
+        q.target = roundQuestTarget(q, 500 + tier * 140);
+      } else q.target = 1;
+    } else {
+      q.target = scaleTarget(def, tier, {
+        daily: !!opts.daily,
+        profile: opts.profile || profile,
+        mark: recMark
+      });
+    }
+    q.desc = questDesc(q);
+    return q;
+  }
+  function longStatRaw(q, p) {
+    var st, bossCount, bi, need;
+    p = p || profile;
+    st = p.stats || emptyStats();
+    if (q.kind === "wave") return st.maxWave || 0;
+    if (q.kind === "boss") return st.bosses[q.type] ? 1 : 0;
+    if (q.kind === "bossCount") return st.bosses[q.type] || 0;
+    if (q.kind === "bossTier") {
+      need = (q.needTier != null ? q.needTier : (q.tier || 0));
+      return ((st.bossBest && st.bossBest[q.type]) || 0) >= need + 1 ? 1 : 0;
+    }
+    if (q.kind === "level") return xpLevel(p.totalXp);
+    if (q.kind === "xpBank") return p.totalXp || 0;
+    if (q.kind === "killsLife") return st.killsByType[q.type] || 0;
+    if (q.kind === "killsAllLife") return bossKills(st.killsByType);
+    if (q.kind === "noHitWave") return st.cleanWave || 0;
+    if (q.kind === "livesOkWave") return st.safeWave || 0;
+    if (q.kind === "pickupLife") return (st.pickups && st.pickups[q.type]) || 0;
+    if (q.kind === "diveKillsLife") return st.diveKills || 0;
+    if (q.kind === "scoreLife") return p.best || 0;
+    if (q.kind === "bossRun") return st.maxBossesRun || 0;
+    if (q.kind === "coinsRun") return st.maxRunCoins || 0;
+    if (q.kind === "coinsLife") return st.coinsEarned || 0;
+    if (q.kind === "bossesLife") return bossKills(st.bosses);
+    if (q.kind === "perfectLife") return st.perfectBosses || 0;
+    if (q.kind === "ownShips") return p.ownedShips.length;
+    if (q.kind === "ownGuns") return p.ownedGuns.length;
+    if (q.kind === "cleanKillsRun") return st.maxCleanRunKills || 0;
+    if (q.kind === "bossRoster") {
+      bossCount = 0;
+      need = q.needTier || 0;
+      for (bi = 0; bi < BOSS_DEFS.length; bi++) {
+        if (need) {
+          if (((st.bossBest && st.bossBest[BOSS_DEFS[bi].id]) || 0) >= need + 1) bossCount += 1;
+        } else if (st.bosses[BOSS_DEFS[bi].id]) bossCount += 1;
+      }
+      return bossCount;
+    }
+    if (q.kind === "ownCollection") return p.ownedShips.length >= q.ships && p.ownedGuns.length >= q.guns ? 1 : 0;
+    return 0;
+  }
+  function migrateLongTermMap(raw, p) {
+    var out = {}, i, def, rec, q0, live;
+    raw = raw && typeof raw === "object" ? raw : {};
+    p = p || profile;
+    for (i = 0; i < LONG_DEFS.length; i++) {
+      def = LONG_DEFS[i];
+      rec = cloneLongRec(raw[def.id]);
+      if (rec.claimed && rec.tier === 0 && rec.mark === 0) {
+        q0 = instantiateQuest(def, 0, { profile: p, long: true });
+        rec.tier = 1;
+        rec.claimed = false;
+        rec.progress = 0;
+        rec.mark = longStatRaw(q0, p);
+      } else if (!rec.claimed && rec.tier === 0 && rec.mark === 0) {
+        live = rec.progress | 0;
+        rec.progress = live;
+      }
+      out[def.id] = rec;
+    }
+    return out;
+  }
+  function freezeDailyQuest(dailies, id, p) {
+    var def = findIn(DAILY_DEFS, id), q, tier, target, prog, claimed;
+    if (!def) return;
+    if (!dailies.tier) dailies.tier = {};
+    if (!dailies.target) dailies.target = {};
+    if (dailies.tier[id] != null && dailies.target[id]) return;
+    tier = dailyRollTier(id, p);
+    q = instantiateQuest(def, tier, { daily: true, profile: p });
+    target = q.target;
+    prog = dailies.progress[id] || 0;
+    claimed = !!(dailies.claimed && dailies.claimed[id]);
+    if (!claimed && prog >= def.target) {
+      tier = 0;
+      target = def.target;
+    }
+    dailies.tier[id] = tier;
+    dailies.target[id] = target;
+  }
   function dailiesValid(ids) {
     var i;
     if (!ids || ids.length !== 3) return false;
@@ -1394,15 +1789,34 @@
   }
   function ensureDailies() {
     var today = todayStr();
-    if (profile.dailies.date === today && dailiesValid(profile.dailies.ids)) return false;
+    var i, id, frozen = false;
+    if (profile.dailies.date === today && dailiesValid(profile.dailies.ids)) {
+      if (!profile.dailies.tier) profile.dailies.tier = {};
+      if (!profile.dailies.target) profile.dailies.target = {};
+      for (i = 0; i < profile.dailies.ids.length; i++) {
+        id = profile.dailies.ids[i];
+        if (profile.dailies.tier[id] == null || !profile.dailies.target[id]) {
+          freezeDailyQuest(profile.dailies, id, profile);
+          frozen = true;
+        }
+      }
+      return frozen;
+    }
     var pool = DAILY_DEFS.slice();
     var rng = seededRand(hashDate(today));
-    var i, j, tmp;
+    var j, tmp, q, tier;
     for (i = pool.length - 1; i > 0; i--) {
       j = Math.floor(rng() * (i + 1));
       tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
     }
-    profile.dailies = { date: today, ids: [pool[0].id, pool[1].id, pool[2].id], progress: {}, claimed: {} };
+    profile.dailies = { date: today, ids: [pool[0].id, pool[1].id, pool[2].id], progress: {}, claimed: {}, tier: {}, target: {} };
+    for (i = 0; i < profile.dailies.ids.length; i++) {
+      id = profile.dailies.ids[i];
+      tier = dailyRollTier(id, profile);
+      q = instantiateQuest(findIn(DAILY_DEFS, id), tier, { daily: true, profile: profile });
+      profile.dailies.tier[id] = tier;
+      profile.dailies.target[id] = q.target;
+    }
     return true;
   }
   function findIn(list, id) {
@@ -1836,8 +2250,24 @@
     shipId = shipId || ((profile.equipped && profile.equipped.ship) || "wisp");
     return map[shipId] || "stock";
   }
-  function dailyById(id) { return findIn(DAILY_DEFS, id); }
-  function longById(id) { return findIn(LONG_DEFS, id); }
+  function dailyById(id) {
+    var def = findIn(DAILY_DEFS, id), tier, q, frozen;
+    if (!def) return null;
+    frozen = profile.dailies || {};
+    tier = frozen.tier && frozen.tier[id] != null ? (frozen.tier[id] | 0) : dailyRollTier(id);
+    q = instantiateQuest(def, tier, { daily: true });
+    if (frozen.target && frozen.target[id]) {
+      q.target = frozen.target[id] | 0;
+      q.desc = questDesc(q);
+    }
+    return q;
+  }
+  function longById(id) {
+    var def = findIn(LONG_DEFS, id), rec;
+    if (!def) return null;
+    rec = profile.longTerm[id] || emptyLongRec();
+    return instantiateQuest(def, rec.tier || 0, { long: true, mark: rec.mark | 0, profile: profile });
+  }
   function equippedGun(p) {
     if (p && p.loadout) return p.loadout.gun || "pulse";
     return (profile.equipped && profile.equipped.gun) || "pulse";
@@ -2261,11 +2691,13 @@
     else if (uiScreen === "hub") renderHub();
   }
   function applyProfile(raw) {
+    var prevVer = raw && typeof raw === "object" ? raw.v : 0;
     profile = migrateProfile(raw);
     muted = profile.muted;
     best = profile.best;
     var dirty = ensurePilot();
     if (ensureDailies()) dirty = true;
+    if (prevVer !== PROFILE_VER) dirty = true;
     if (dirty) saveProfile();
     refreshProfileUi();
   }
@@ -5761,34 +6193,13 @@
     return base;
   }
   function longProgressValue(q) {
-    var st = profile.stats;
-    if (q.kind === "wave") return st.maxWave || 0;
-    if (q.kind === "boss") return st.bosses[q.type] ? 1 : 0;
-    if (q.kind === "bossCount") return st.bosses[q.type] || 0;
-    if (q.kind === "bossTier") return ((st.bossBest && st.bossBest[q.type]) || 0) >= (q.tier || 0) + 1 ? 1 : 0;
-    if (q.kind === "level") return xpLevel(profile.totalXp);
-    if (q.kind === "killsLife") return st.killsByType[q.type] || 0;
-    if (q.kind === "killsAllLife") return bossKills(st.killsByType);
-    if (q.kind === "noHitWave") return st.cleanWave || 0;
-    if (q.kind === "livesOkWave") return st.safeWave || 0;
-    if (q.kind === "pickupLife") return (st.pickups && st.pickups[q.type]) || 0;
-    if (q.kind === "diveKillsLife") return st.diveKills || 0;
-    if (q.kind === "scoreLife") return profile.best || 0;
-    if (q.kind === "bossRun") return st.maxBossesRun || 0;
-    if (q.kind === "coinsRun") return st.maxRunCoins || 0;
-    if (q.kind === "coinsLife") return st.coinsEarned || 0;
-    if (q.kind === "bossesLife") return bossKills(st.bosses);
-    if (q.kind === "perfectLife") return st.perfectBosses || 0;
-    if (q.kind === "ownShips") return profile.ownedShips.length;
-    if (q.kind === "ownGuns") return profile.ownedGuns.length;
-    if (q.kind === "cleanKillsRun") return st.maxCleanRunKills || 0;
-    if (q.kind === "bossRoster") {
-      var bossCount = 0, bi;
-      for (bi = 0; bi < BOSS_DEFS.length; bi++) if (st.bosses[BOSS_DEFS[bi].id]) bossCount += 1;
-      return bossCount;
-    }
-    if (q.kind === "ownCollection") return profile.ownedShips.length >= q.ships && profile.ownedGuns.length >= q.guns ? 1 : 0;
-    return 0;
+    var raw = longStatRaw(q);
+    var rec = profile.longTerm[q.id] || emptyLongRec();
+    var mark = rec.mark | 0;
+    if (q.kind === "bossTier" || q.kind === "ownCollection" || q.kind === "bossRoster") return raw;
+    if (isDeltaKind(q.kind)) return Math.max(0, raw - mark);
+    if (isPeakKind(q.kind) && mark > 0 && raw <= mark) return 0;
+    return raw;
   }
   function syncQuestProgress() {
     ensureDailies();
@@ -5806,8 +6217,9 @@
       if (q) profile.dailies.progress[q.id] = questLive(q);
     }
     for (i = 0; i < LONG_DEFS.length; i++) {
-      q = LONG_DEFS[i];
-      if (!profile.longTerm[q.id]) profile.longTerm[q.id] = { progress: 0, claimed: false };
+      q = longById(LONG_DEFS[i].id);
+      if (!q) continue;
+      if (!profile.longTerm[q.id]) profile.longTerm[q.id] = emptyLongRec();
       var prog = longProgressValue(q);
       if (profile.longTerm[q.id].progress < prog) profile.longTerm[q.id].progress = prog;
     }
@@ -5820,9 +6232,9 @@
       if ((qSnap[q.id] || 0) < q.target && (profile.dailies.progress[q.id] || 0) >= q.target) out.push({ q: q, scope: "daily" });
     }
     for (i = 0; i < LONG_DEFS.length; i++) {
-      q = LONG_DEFS[i];
-      var lt = profile.longTerm[q.id];
-      if (!lt || lt.claimed) continue;
+      q = longById(LONG_DEFS[i].id);
+      var lt = profile.longTerm[LONG_DEFS[i].id];
+      if (!q || !lt) continue;
       if ((longSnap[q.id] || 0) < q.target && lt.progress >= q.target) out.push({ q: q, scope: "long" });
     }
     return out;
@@ -5934,7 +6346,7 @@
     drawHangarPreview();
   }
   function claimQuest(scope, id, pick) {
-    var q, item;
+    var q, item, rec, next;
     if (scope === "daily") {
       q = dailyById(id);
       if (!q || profile.dailies.claimed[id]) return;
@@ -5945,20 +6357,30 @@
         if (pick === "item" && item && isOwned(item.cat, item.id)) return;
       }
       profile.dailies.claimed[id] = true;
+      if (!profile.dailyTracks) profile.dailyTracks = {};
+      profile.dailyTracks[id] = (profile.dailyTracks[id] | 0) + 1;
       applyReward(q.reward, pick);
     } else {
       q = longById(id);
       if (!q) return;
-      if (!profile.longTerm[id]) profile.longTerm[id] = { progress: 0, claimed: false };
-      var lt = profile.longTerm[id];
-      if (lt.claimed || (lt.progress || 0) < q.target) return;
+      if (!profile.longTerm[id]) profile.longTerm[id] = emptyLongRec();
+      rec = profile.longTerm[id];
+      if ((rec.progress || 0) < q.target) return;
       if (rewardNeedsChoice(q.reward)) {
         if (pick !== "item" && pick !== "coins") return;
         item = rewardItem(q.reward);
         if (pick === "item" && item && isOwned(item.cat, item.id)) return;
       }
-      lt.claimed = true;
       applyReward(q.reward, pick);
+      rec.tier = (rec.tier | 0) + 1;
+      rec.claimed = false;
+      rec.progress = 0;
+      next = instantiateQuest(findIn(LONG_DEFS, id), rec.tier, { long: true, profile: profile, mark: 0 });
+      if (next.kind === "bossTier") {
+        rec.mark = Math.max(0, (((profile.stats.bossBest || {})[next.type] || 0) - 1));
+      } else {
+        rec.mark = longStatRaw(next, profile);
+      }
     }
     syncQuestProgress();
     ensureAudio();
@@ -6523,7 +6945,7 @@
   }
   function questGroup(q) {
     if (q.category) return q.category;
-    if (q.kind === "wave" || q.kind === "level") return "Campaign";
+    if (q.kind === "wave" || q.kind === "level" || q.kind === "xpBank") return "Campaign";
     if (q.kind === "boss" || q.kind === "bossCount" || q.kind === "bossTier" || q.kind === "bossRun" || q.kind === "bossesLife" || q.kind === "perfectLife") return "Boss Contracts";
     if (q.kind === "pickupLife" || q.kind === "coinsRun" || q.kind === "coinsLife" || q.kind === "ownShips" || q.kind === "ownGuns") return "Salvage & Collection";
     return "Combat Mastery";
@@ -6545,10 +6967,10 @@
       g = groups[gi];
       h += '<div class="cat-title">' + g + "</div>";
       for (i = 0; i < LONG_DEFS.length; i++) {
-        q = LONG_DEFS[i];
-        if (questGroup(q) !== g) continue;
-        if (!profile.longTerm[q.id]) profile.longTerm[q.id] = { progress: 0, claimed: false };
-        h += questRow(q, profile.longTerm[q.id].progress || 0, !!profile.longTerm[q.id].claimed, "long");
+        q = longById(LONG_DEFS[i].id);
+        if (!q || questGroup(q) !== g) continue;
+        if (!profile.longTerm[q.id]) profile.longTerm[q.id] = emptyLongRec();
+        h += questRow(q, profile.longTerm[q.id].progress || 0, false, "long");
       }
     }
     lists.innerHTML = h;
@@ -6565,7 +6987,9 @@
     for (i = 0; i < runQuestClaims.length; i++) {
       item = runQuestClaims[i];
       q = item.q;
-      claimed = item.scope === "daily" ? !!profile.dailies.claimed[q.id] : !!(profile.longTerm[q.id] && profile.longTerm[q.id].claimed);
+      claimed = item.scope === "daily"
+        ? !!profile.dailies.claimed[q.id]
+        : !!profile.longTerm[q.id] && (profile.longTerm[q.id].tier | 0) > (q.trackTier | 0);
       h += '<div class="summary-quest' + (!claimed && rewardNeedsChoice(q.reward) ? " choice" : "") + '"><div class="summary-quest-info"><div class="cat-name">' + q.name + '</div><div class="cat-desc">' + q.desc + '</div><div class="q-reward">' + rewardText(q.reward) + '</div></div>';
       if (claimed) h += '<span class="summary-claimed">Claimed</span>';
       else h += questClaimControls(q, item.scope, true);
@@ -11261,6 +11685,10 @@
       BOSS_DEFS: BOSS_DEFS,
       DAILY_DEFS: DAILY_DEFS,
       LONG_DEFS: LONG_DEFS,
+      instantiateQuest: instantiateQuest,
+      dailyById: dailyById,
+      longById: longById,
+      claimQuest: claimQuest,
       POWER_WEIGHTS: POWER_WEIGHTS,
       isPvp: isPvp,
       isPvpMatch: isPvpMatch,
