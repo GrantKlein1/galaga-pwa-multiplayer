@@ -35,8 +35,8 @@
   var PICKUP_CLAIM_R = 96;
   var POWER_WEIGHTS = [
     { kind: "spread", w: 1 },
-    { kind: "double", w: 1 },
-    { kind: "rapid", w: 2 },
+    { kind: "double", w: 1.15 },
+    { kind: "rapid", w: 2.3 },
     { kind: "shield", w: 5 },
     { kind: "speed", w: 5 }
   ];
