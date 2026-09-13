@@ -193,6 +193,13 @@ html, body {
   min-height: 44px;
 }
 .btn:hover { background: #b8ffff; }
+.btn:disabled, .btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn:disabled:hover, .btn[disabled]:hover { background: #7ef9ff; }
+.btn-ghost:disabled:hover, .btn-ghost[disabled]:hover { background: transparent; }
+#account-status.lobby-err { color: #ff7a7a; opacity: 1; }
 .btn-ghost {
   background: transparent;
   color: #7ef9ff;
