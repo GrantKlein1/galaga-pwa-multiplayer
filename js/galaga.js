@@ -349,8 +349,8 @@
   var VOL_MUSIC = 0.16;
   var waveKind = "line";
 
-  var input = { left: false, right: false, fire: false, ability: false, ab: 0, holdL: 0, holdR: 0 };
-  var pointerSteer = { id: 0, aimX: null, fire: false };
+  var input = { left: false, right: false, up: false, down: false, fire: false, ability: false, ab: 0, holdL: 0, holdR: 0, holdU: 0, holdD: 0 };
+  var pointerSteer = { id: 0, aimX: null, aimY: null, fire: false };
   var player = null;
   var players = [];
   var localSlot = 0;
@@ -1746,6 +1746,15 @@
     if ((count || players.length || 1) < 2) return W / 2;
     return slot === 0 ? W / 2 - 30 : W / 2 + 30;
   }
+  function spawnYFor(slot) {
+    if (isPvp() && (slot | 0) === 1) return 34;
+    return H - 34;
+  }
+  function shipYBand(p, margin) {
+    var mid = H / 2;
+    if (isPvpRun() && p && p.slot === 1) return { lo: margin, hi: mid - margin };
+    return { lo: mid + margin, hi: H - margin };
+  }
   function pvpFacing(p) {
     if (p && p.facing) return p.facing;
     return p && p.slot === 1 ? 1 : -1;
@@ -2906,10 +2915,11 @@
     spec = spec || profileLoadoutSpec();
     var s = findShip(spec.ship);
     var x = spawnXFor(slot, count || 1);
+    var y = spawnYFor(slot);
     return {
       slot: slot,
       loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null, skin: spec.skin || equippedSkinFor(spec.ship || "wisp") },
-      x: x, targetX: x, y: H - 34,
+      x: x, targetX: x, y: y, targetY: y,
       facing: slot === 1 ? 1 : -1,
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
       weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0,
@@ -2921,8 +2931,8 @@
       skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
       skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
       skinSentinelCd: 0, skinUmbraT: 0, skinCarrion: 0, skinCoronaAcc: 0, skinKeepX: false,
-      input: { left: false, right: false, fire: false, ability: false, ab: 0, holdL: 0, holdR: 0, aimX: null },
-      hostX: x
+      input: { left: false, right: false, up: false, down: false, fire: false, ability: false, ab: 0, holdL: 0, holdR: 0, holdU: 0, holdD: 0, aimX: null, aimY: null },
+      hostX: x, hostY: y
     };
   }
   function resetPlayer() {
@@ -3081,7 +3091,9 @@
   function applyPvpLayout(p) {
     if (!p) return;
     p.facing = p.slot === 1 ? 1 : -1;
-    p.y = p.slot === 1 ? 34 : H - 34;
+    p.y = spawnYFor(p.slot);
+    p.targetY = p.y;
+    p.hostY = p.y;
     p.x = W / 2;
     p.targetX = p.x;
     p.hostX = p.x;
@@ -3286,6 +3298,8 @@
     } else if (!who.skinKeepX) {
       who.x = spawnXFor(who.slot, players.length);
       who.targetX = who.x;
+      who.y = spawnYFor(who.slot);
+      who.targetY = who.y;
     }
     who.skinKeepX = false;
     who.invuln = (who.invulnDur || INVULN) + (hasMod("guardian", who) ? 0.6 : 0);
@@ -3330,6 +3344,8 @@
     target.lives = Math.max(1, target.lives);
     target.x = spawnXFor(target.slot, players.length);
     target.targetX = target.x;
+    target.y = spawnYFor(target.slot);
+    target.targetY = target.y;
     target.invuln = (target.invulnDur || INVULN) + (hasMod("guardian", target) ? 0.6 : 0);
     target.weapon = "normal";
     target.weaponT = 0;
@@ -4561,7 +4577,7 @@
         for (pi = 0; pi < players.length; pi++) {
           pl = players[pi];
           if (!pl || !pl.alive) continue;
-          moving = !!(pl.input && (pl.input.left || pl.input.right));
+          moving = !!(pl.input && (pl.input.left || pl.input.right || pl.input.up || pl.input.down));
           if (Math.abs(pl.x - f.x) < 10) {
             if (!moving && pl.invuln <= 0) {
               if (isPvpRun()) pvpHurt(pl, 8);
@@ -6420,13 +6436,13 @@
   function stopLoop() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
   function startLoop() { stopLoop(); lastTs = 0; rafId = requestAnimationFrame(tick); }
   function resetInput() {
-    input.left = false; input.right = false; input.fire = false; input.ability = false; input.ab = 0; input.holdL = 0; input.holdR = 0;
-    pointerSteer.id = 0; pointerSteer.aimX = null; pointerSteer.fire = false;
+    input.left = false; input.right = false; input.up = false; input.down = false; input.fire = false; input.ability = false; input.ab = 0; input.holdL = 0; input.holdR = 0; input.holdU = 0; input.holdD = 0;
+    pointerSteer.id = 0; pointerSteer.aimX = null; pointerSteer.aimY = null; pointerSteer.fire = false;
     var i;
     for (i = 0; i < players.length; i++) {
       if (!players[i] || players[i].slot !== localSlot) continue;
-      players[i].input.left = false; players[i].input.right = false; players[i].input.fire = false; players[i].input.ability = false; players[i].input.ab = 0;
-      players[i].input.holdL = 0; players[i].input.holdR = 0; players[i].input.aimX = null;
+      players[i].input.left = false; players[i].input.right = false; players[i].input.up = false; players[i].input.down = false; players[i].input.fire = false; players[i].input.ability = false; players[i].input.ab = 0;
+      players[i].input.holdL = 0; players[i].input.holdR = 0; players[i].input.holdU = 0; players[i].input.holdD = 0; players[i].input.aimX = null; players[i].input.aimY = null;
     }
   }
 
@@ -6481,6 +6497,9 @@
       p = makePlayer(i, specs[i], specs.length);
       p.x = spawnXFor(i, specs.length);
       p.targetX = p.x;
+      p.y = spawnYFor(i);
+      p.targetY = p.y;
+      p.hostY = p.y;
       if (pvpMode || isPvpMatch()) applyPvpLayout(p);
       applyShipPassives(p);
       if (p.boss) { p.shieldHp = 0; p.shieldT = 0; p.lives = 1; }
@@ -6949,6 +6968,7 @@
       weaponT: p.weaponT || 0, speedT: p.speedT || 0, lives: p.lives, r: p.r,
       slowT: p.slowT || 0, jamT: p.jamT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
       mod: lo.mod || null, skin: lo.skin || "stock", targetX: p.targetX != null ? p.targetX : p.x,
+      targetY: p.targetY != null ? p.targetY : p.y,
       hp: p.hp || 0, maxHp: p.maxHp || 0, facing: p.facing || -1, boss: p.boss || ""
     };
   }
@@ -6962,12 +6982,14 @@
     }
     p.loadout = spec;
     p.hostX = row.x;
+    p.hostY = row.y;
     if (slot !== localSlot && !p.netPlaced) {
       p.x = row.x;
       p.targetX = row.targetX != null ? row.targetX : row.x;
+      p.y = row.y;
+      p.targetY = row.targetY != null ? row.targetY : row.y;
       p.netPlaced = true;
     }
-    p.y = row.y;
     p.alive = !!row.alive;
     p.invuln = row.invuln;
     p.muzzle = row.muzzle;
@@ -7205,7 +7227,7 @@
     p = players[localSlot];
     inputAcc += dt;
     hz = netTransport() === "mqtt" ? 12 : 60;
-    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (input.ability ? "1" : "0") + (input.ab || 0) + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX));
+    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + (input.up ? "1" : "0") + (input.down ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (input.ability ? "1" : "0") + (input.ab || 0) + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX)) + (pointerSteer.aimY == null ? "" : "y" + Math.round(pointerSteer.aimY));
     if (key !== lastInputKey || inputAcc >= 1 / hz) {
       lastInputKey = key;
       inputAcc = 0;
@@ -7213,13 +7235,16 @@
       netSend({
         t: "input", n: inputSeq, slot: localSlot,
         l: !!(p && p.input.left), r: !!(p && p.input.right),
-        f: !!(p && p.input.fire), a: !!(p && p.input.ability), ab: p ? (p.input.ab | 0) : 0, aimX: p ? p.input.aimX : null,
-        x: p ? p.x : null, targetX: p ? p.targetX : null
+        u: !!(p && p.input.up), d: !!(p && p.input.down),
+        f: !!(p && p.input.fire), a: !!(p && p.input.ability), ab: p ? (p.input.ab | 0) : 0,
+        aimX: p ? p.input.aimX : null, aimY: p ? p.input.aimY : null,
+        x: p ? p.x : null, targetX: p ? p.targetX : null,
+        y: p ? p.y : null, targetY: p ? p.targetY : null
       });
     }
   }
   function updateClientFx(dt) {
-    var i, p, b, e, j, consumed, br, hid, dx;
+    var i, p, b, e, j, consumed, br, hid, dx, dy;
     shake *= Math.exp(-dt * 7);
     if (shake < 0.05) shake = 0;
     flash *= Math.exp(-dt * 8);
@@ -7238,6 +7263,15 @@
         p.x += dx * (1 - Math.exp(-dt * 6));
       }
     }
+    if (p && p.hostY != null) {
+      dy = p.hostY - p.y;
+      if (Math.abs(dy) > 48) {
+        p.y = p.hostY;
+        p.targetY = p.hostY;
+      } else {
+        p.y += dy * (1 - Math.exp(-dt * 6));
+      }
+    }
     for (i = 0; i < players.length; i++) {
       if (i === localSlot) continue;
       p = players[i];
@@ -7245,6 +7279,11 @@
         dx = p.hostX - p.x;
         if (Math.abs(dx) > 48) p.x = p.hostX;
         else p.x += dx * (1 - Math.exp(-dt * 8));
+      }
+      if (p && p.hostY != null) {
+        dy = p.hostY - p.y;
+        if (Math.abs(dy) > 48) p.y = p.hostY;
+        else p.y += dy * (1 - Math.exp(-dt * 8));
       }
     }
     for (i = pbul.length - 1; i >= 0; i--) {
@@ -7460,16 +7499,22 @@
       if (msg.n) lastInputNBySlot[slot] = msg.n;
       p.input.left = !!msg.l;
       p.input.right = !!msg.r;
+      p.input.up = !!msg.u;
+      p.input.down = !!msg.d;
       p.input.fire = !!msg.f;
       p.input.ability = !!msg.a;
       p.input.ab = (msg.ab | 0) || (msg.a ? 1 : 0);
       p.input.aimX = msg.aimX == null ? null : msg.aimX;
+      p.input.aimY = msg.aimY == null ? null : msg.aimY;
       if (msg.x != null && isFinite(msg.x)) {
         p.x = msg.x;
         p.netPlaced = true;
       }
       if (msg.targetX != null && isFinite(msg.targetX)) p.targetX = msg.targetX;
       else if (msg.x != null && isFinite(msg.x)) p.targetX = msg.x;
+      if (msg.y != null && isFinite(msg.y)) p.y = msg.y;
+      if (msg.targetY != null && isFinite(msg.targetY)) p.targetY = msg.targetY;
+      else if (msg.y != null && isFinite(msg.y)) p.targetY = msg.y;
     });
     n.on("pick", function (msg) {
       if (netRole !== "host") return;
@@ -7578,12 +7623,19 @@
     if (pvpFlipped()) {
       p.input.left = input.right;
       p.input.right = input.left;
+      p.input.up = input.down;
+      p.input.down = input.up;
       aim = pointerSteer.aimX;
       p.input.aimX = aim == null ? null : (W - aim);
+      aim = pointerSteer.aimY;
+      p.input.aimY = aim == null ? null : (H - aim);
     } else {
       p.input.left = input.left;
       p.input.right = input.right;
+      p.input.up = input.up;
+      p.input.down = input.down;
       p.input.aimX = pointerSteer.aimX;
+      p.input.aimY = pointerSteer.aimY;
     }
     p.input.fire = input.fire || pointerSteer.fire;
     p.input.ability = !!input.ability;
@@ -7591,7 +7643,7 @@
   }
 
   function updateOneShip(p, dt, fire) {
-    var spd, margin, inp, aimX;
+    var spd, margin, inp, aimX, aimY, band;
     if (!p || !p.alive) {
       if (p) {
         p.fireCd = Math.max(0, (p.fireCd || 0) - dt);
@@ -7605,10 +7657,16 @@
     if (p.jamT > 0) p.jamT = Math.max(0, p.jamT - dt);
     spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1) * (p.skinSpdMul || 1);
     margin = Math.max(10, (p.r || PLAYER_R) + 4);
+    if (p.targetY == null) p.targetY = p.y;
     if (p.slot === localSlot && pointerSteer.aimX != null) {
       aimX = pvpFlipped() ? (W - pointerSteer.aimX) : pointerSteer.aimX;
     } else {
       aimX = inp.aimX;
+    }
+    if (p.slot === localSlot && pointerSteer.aimY != null) {
+      aimY = pvpFlipped() ? (H - pointerSteer.aimY) : pointerSteer.aimY;
+    } else {
+      aimY = inp.aimY;
     }
     if (aimX != null) {
       p.targetX = aimX;
@@ -7618,6 +7676,17 @@
     }
     p.targetX = clamp(p.targetX, margin, W - margin);
     p.x += (p.targetX - p.x) * (1 - Math.exp(-STEER_FOLLOW * dt));
+    if (!p.dash) {
+      band = shipYBand(p, margin);
+      if (aimY != null) {
+        p.targetY = aimY;
+      } else if (!(netRole === "host" && p.slot !== localSlot)) {
+        p.targetY += steerDelta(inp, inp.up, "holdU", -1, spd, dt);
+        p.targetY += steerDelta(inp, inp.down, "holdD", 1, spd, dt);
+      }
+      p.targetY = clamp(p.targetY, band.lo, band.hi);
+      p.y += (p.targetY - p.y) * (1 - Math.exp(-STEER_FOLLOW * dt));
+    }
     p.fireCd = Math.max(0, p.fireCd - dt);
     p.invuln = Math.max(0, p.invuln - dt);
     p.muzzle = Math.max(0, p.muzzle - dt * 6);
@@ -7683,6 +7752,7 @@
         p.x = p.rewind.x;
         p.targetX = p.x;
         p.y = p.rewind.y;
+        p.targetY = p.y;
         p.invuln = Math.max(p.invuln, 0.45);
         p.rewind = null;
       }
@@ -7708,6 +7778,7 @@
         p.x = lerp(p.dash.sx, p.dash.ex, u);
         p.y = lerp(p.dash.sy, p.dash.ey, u);
         p.targetX = p.x;
+        p.targetY = p.y;
       }
     }
     if (fire && inp.fire && !(pvpS() && pvpS().roundLock)) shootPlayer(p);
@@ -9545,6 +9616,25 @@
     }
     ctx.globalAlpha = 1;
 
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    ctx.strokeStyle = "#9ad8ff";
+    ctx.lineWidth = 1;
+    if (ctx.setLineDash) ctx.setLineDash([5, 7]);
+    ctx.beginPath();
+    ctx.moveTo(10, H / 2);
+    ctx.lineTo(W - 10, H / 2);
+    ctx.stroke();
+    if (ctx.setLineDash) ctx.setLineDash([]);
+    ctx.globalAlpha = 0.08;
+    ctx.strokeStyle = "#c8e8ff";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(10, H / 2);
+    ctx.lineTo(W - 10, H / 2);
+    ctx.stroke();
+    ctx.restore();
+
     for (i = 0; i < teles.length; i++) {
       p = teles[i];
       alpha = 0.25 + 0.45 * (p.t / p.max) * (0.5 + 0.5 * Math.sin(time * 18));
@@ -9854,8 +9944,8 @@
     var hint = document.getElementById("hint");
     var help = document.getElementById("hub-help");
     if (!coarse) {
-      if (hint) hint.textContent = "A/D move · Space fire · Hangar between runs · P pause · M mute";
-      if (help) help.innerHTML = "&larr; &rarr; / A D &mdash; move &nbsp;&middot;&nbsp; Space / click &mdash; fire<br>P / Esc &mdash; pause &nbsp;&middot;&nbsp; M &mdash; mute";
+      if (hint) hint.textContent = "WASD / arrows move · Space fire · Hangar between runs · P pause · M mute";
+      if (help) help.innerHTML = "&larr; &rarr; &uarr; &darr; / WASD &mdash; move &nbsp;&middot;&nbsp; Space / click &mdash; fire<br>P / Esc &mdash; pause &nbsp;&middot;&nbsp; M &mdash; mute";
     }
   }
 
@@ -9895,6 +9985,7 @@
     return k === "ArrowLeft" || k === "ArrowRight" || k === "ArrowUp" || k === "ArrowDown" ||
       k === " " || k === "Enter" || k === "Escape" ||
       k === "a" || k === "A" || k === "d" || k === "D" ||
+      k === "w" || k === "W" || k === "s" || k === "S" ||
       k === "p" || k === "P" || k === "m" || k === "M" ||
       k === "e" || k === "E" || k === "Shift" ||
       !!(player && player.boss && pvpAbilitySlotFromKey(k));
@@ -9919,6 +10010,8 @@
     if (e.repeat) {
       if (k === "ArrowLeft" || k === "a" || k === "A") input.left = true;
       if (k === "ArrowRight" || k === "d" || k === "D") input.right = true;
+      if (k === "ArrowUp" || k === "w" || k === "W") input.up = true;
+      if (k === "ArrowDown" || k === "s" || k === "S") input.down = true;
       if (k === " ") input.fire = true;
       return;
     }
@@ -9942,6 +10035,8 @@
     }
     if (k === "ArrowLeft" || k === "a" || k === "A") input.left = true;
     else if (k === "ArrowRight" || k === "d" || k === "D") input.right = true;
+    else if (k === "ArrowUp" || k === "w" || k === "W") input.up = true;
+    else if (k === "ArrowDown" || k === "s" || k === "S") input.down = true;
     else if (k === " ") { input.fire = true; ensureAudio(); shootPlayer(); }
     else if (player && player.boss && pvpAbilitySlotFromKey(k)) pressPvpAbility(pvpAbilitySlotFromKey(k));
     else if (k === "p" || k === "P" || k === "Escape") pauseGame();
@@ -9951,6 +10046,8 @@
     var k = e.key;
     if (k === "ArrowLeft" || k === "a" || k === "A") input.left = false;
     else if (k === "ArrowRight" || k === "d" || k === "D") input.right = false;
+    else if (k === "ArrowUp" || k === "w" || k === "W") input.up = false;
+    else if (k === "ArrowDown" || k === "s" || k === "S") input.down = false;
     else if (k === " ") input.fire = false;
     else if (player && player.boss && pvpAbilitySlotFromKey(k)) {
       if ((input.ab | 0) === pvpAbilitySlotFromKey(k)) {
@@ -10323,16 +10420,23 @@
     if (!rect.width) return W / 2;
     return clamp((e.clientX - rect.left) / rect.width * W, 0, W);
   }
+  function pointerToGameY(e) {
+    var rect = canvas.getBoundingClientRect();
+    if (!rect.height) return H / 2;
+    return clamp((e.clientY - rect.top) / rect.height * H, 0, H);
+  }
   function applyPointerSteer(e) {
     if (!player) return;
     var margin = Math.max(10, (player.r || PLAYER_R) + 4);
     pointerSteer.aimX = clamp(pointerToGameX(e), margin, W - margin);
+    pointerSteer.aimY = clamp(pointerToGameY(e), margin, H - margin);
   }
   function endPointerSteer(e) {
     if (!pointerSteer.id) return;
     if (e && e.pointerId !== pointerSteer.id) return;
     pointerSteer.id = 0;
     pointerSteer.aimX = null;
+    pointerSteer.aimY = null;
     pointerSteer.fire = false;
   }
   wrap.addEventListener("pointerdown", function (e) {
@@ -10510,13 +10614,15 @@
         updateHud();
       },
       step: function (dt, n) { var i; for (i = 0; i < (n || 1); i++) update(dt || 1 / 60); draw(); return { ebul: ebul.length, pbul: pbul.length, enemies: aliveCount(), wave: wave, lives: lives, score: score }; },
-      setInput: function (l, r, f, a, ab) {
+      setInput: function (l, r, f, a, ab, u, d) {
         if (l != null) input.left = !!l;
         if (r != null) input.right = !!r;
         if (f != null) input.fire = !!f;
         if (a != null) input.ability = !!a;
         if (ab != null) input.ab = ab | 0;
         else if (a) input.ab = 1;
+        if (u != null) input.up = !!u;
+        if (d != null) input.down = !!d;
       },
       pauseGame: pauseGame,
       resumeGame: resumeGame,
