@@ -145,6 +145,7 @@ function defaultCloudProfile() {
       diveKills: 0, cleanWave: 0, safeWave: 0, maxBossesRun: 0, maxRunCoins: 0, coinsEarned: 0,
       perfectBosses: 0, maxKillsRun: 0, maxCleanRunKills: 0, runs: 0
     },
+    admin: false,
     updatedAt: 0
   };
 }
@@ -236,6 +237,7 @@ export function sanitizeProfile(raw) {
   p.stats.maxKillsRun = asInt(st.maxKillsRun, 9999999);
   p.stats.maxCleanRunKills = asInt(st.maxCleanRunKills, 9999999);
   p.stats.runs = asInt(st.runs, 9999999);
+  p.admin = !!raw.admin;
   p.updatedAt = asTime(raw.updatedAt);
   p.v = 4;
   return p;

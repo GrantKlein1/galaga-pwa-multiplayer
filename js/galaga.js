@@ -1020,6 +1020,7 @@
       dailyTracks: {},
       longTerm: {},
       stats: emptyStats(),
+      admin: false,
       updatedAt: 0
     };
   }
@@ -1128,6 +1129,7 @@
       if (typeof raw.stats.runs === "number") p.stats.runs = raw.stats.runs | 0;
     }
     if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp), p.stats.maxWave);
+    p.admin = !!raw.admin;
     if (typeof raw.updatedAt === "number" && isFinite(raw.updatedAt) && raw.updatedAt > 0) p.updatedAt = Math.floor(raw.updatedAt);
     // Profiles saved before the boss roster grew never recorded tiers: assume tier 0 kills.
     var k;
@@ -1297,6 +1299,7 @@
     out.longTerm = mergeLongTerm(local.longTerm, cloud.longTerm);
     out.stats = mergeStats(local.stats, cloud.stats);
     out.startWave = clampStartWave(Math.max(local.startWave | 0, cloud.startWave | 0), xpLevel(out.totalXp), out.stats.maxWave);
+    out.admin = !!(local.admin || cloud.admin);
     out.updatedAt = Math.max(localAt, cloudAt);
     grantLevelSkins(out);
     if (!out.equippedSkins[out.equipped.ship] || (out.ownedSkins[out.equipped.ship] || []).indexOf(out.equippedSkins[out.equipped.ship]) < 0) {
@@ -2844,6 +2847,7 @@
     else if (keepMod) profile.equipped.mod = null;
     grantLevelSkins(profile);
     profile.startWave = clampStartWave(profile.startWave || 1);
+    profile.admin = true;
   }
   function onResetProgressTap(e) {
     e.preventDefault();
@@ -2871,6 +2875,7 @@
       grantAllUnlocks();
       saveProfile();
       flushAccountPush();
+      hideLeaderboard();
       updateHud();
       setQuestsResetUi("idle");
       refreshProfileUi();
@@ -2894,10 +2899,12 @@
     var keepMuted = muted;
     var keepPid = profile.pid;
     var keepName = profile.name;
+    var keepAdmin = !!profile.admin;
     profile = defaultProfile();
     profile.muted = keepMuted;
     profile.pid = keepPid;
     profile.name = keepName;
+    profile.admin = keepAdmin;
     ensurePilot();
     best = 0;
     muted = keepMuted;
@@ -2907,6 +2914,7 @@
     ensureDailies();
     saveProfile();
     flushAccountPush();
+    if (keepAdmin) hideLeaderboard();
     if (bestEl) bestEl.textContent = "0";
     updateHud();
     setResetConfirm(false);
@@ -6800,12 +6808,26 @@
   }
 
   var boardFetch = 0;
+  function profileAdmin() {
+    return !!(profile && profile.admin);
+  }
+  function hideLeaderboard() {
+    ensurePilot();
+    if (!profile.pid) return;
+    fetch("/api/leaderboard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: profile.pid, hide: true })
+    }).then(function (res) {
+      if (res.ok && uiScreen === "ranks") return res.json().then(paintBoard);
+    }).catch(function () {});
+  }
   function paintBoard(data) {
     var list = el("board-list");
     var status = el("board-status");
     var youLine = el("board-you");
     var entries = (data && data.entries) || [];
-    var you = data && data.you;
+    var you = profileAdmin() ? null : (data && data.you);
     var i, h = "", row, rankCls, isYou;
     if (youLine) {
       youLine.textContent = you
@@ -6813,7 +6835,11 @@
         : "Your best  " + fmtScore(best);
     }
     if (!entries.length) {
-      if (status) status.textContent = best > 0 ? "You're first. Finish a run on the live site to post it." : "No scores yet. Finish a run to post yours.";
+      if (status) {
+        status.textContent = profileAdmin()
+          ? "No scores yet."
+          : (best > 0 ? "You're first. Finish a run on the live site to post it." : "No scores yet. Finish a run to post yours.");
+      }
       if (list) list.innerHTML = "";
       return;
     }
@@ -6842,7 +6868,13 @@
     if (status) status.textContent = "Loading…";
     var ticket = ++boardFetch;
     var req;
-    if (profile.best > 0) {
+    if (profileAdmin()) {
+      req = fetch("/api/leaderboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: profile.pid, hide: true })
+      });
+    } else if (profile.best > 0) {
       req = fetch("/api/leaderboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -6867,6 +6899,10 @@
   function submitLeaderboard() {
     if (isPvp()) return;
     ensurePilot();
+    if (profileAdmin()) {
+      hideLeaderboard();
+      return;
+    }
     if (!profile.pid || !(profile.best > 0)) return;
     fetch("/api/leaderboard", {
       method: "POST",
