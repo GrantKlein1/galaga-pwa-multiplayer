@@ -20,7 +20,10 @@
   var STEER_TAP_SPD = 42;
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
+  var SESSION_KEY = "galaga.session";
   var PROFILE_VER = 3;
+  var ACCOUNT_PUSH_MS = 900;
+  var ACCOUNT_PULL_MS = 5000;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
   // Playfield is 240x360 with 16px side margins (208px of travel). Formations
@@ -309,6 +312,13 @@
   var uiScreen = "hub";
   var hubRaf = 0;
   var profile = defaultProfile();
+  var accountSession = null;
+  var accountPushTimer = 0;
+  var accountPushInflight = false;
+  var accountPushAgain = false;
+  var accountPullAt = 0;
+  var accountPullInflight = false;
+  var accountBusy = false;
   var qSnap = {};
   var longSnap = {};
   var run = emptyRun();
@@ -1006,7 +1016,8 @@
       startWave: 1,
       dailies: { date: "", ids: [], progress: {}, claimed: {} },
       longTerm: {},
-      stats: emptyStats()
+      stats: emptyStats(),
+      updatedAt: 0
     };
   }
   function cloneArr(a, fallback) {
@@ -1090,6 +1101,7 @@
       if (typeof raw.stats.runs === "number") p.stats.runs = raw.stats.runs | 0;
     }
     if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp), p.stats.maxWave);
+    if (typeof raw.updatedAt === "number" && isFinite(raw.updatedAt) && raw.updatedAt > 0) p.updatedAt = Math.floor(raw.updatedAt);
     // Profiles saved before the boss roster grew never recorded tiers: assume tier 0 kills.
     var k;
     for (k in p.stats.bosses) {
@@ -1097,6 +1109,156 @@
     }
     p.v = PROFILE_VER;
     return p;
+  }
+  function unionStr(a, b) {
+    var out = [], seen = {}, i, s, lists = [a || [], b || []], li, arr;
+    for (li = 0; li < lists.length; li++) {
+      arr = lists[li];
+      for (i = 0; i < arr.length; i++) {
+        s = arr[i];
+        if (typeof s !== "string" || seen[s]) continue;
+        seen[s] = 1;
+        out.push(s);
+      }
+    }
+    return out;
+  }
+  function maxNumMap(a, b) {
+    var out = {}, k;
+    a = a && typeof a === "object" ? a : {};
+    b = b && typeof b === "object" ? b : {};
+    for (k in a) {
+      if (Object.prototype.hasOwnProperty.call(a, k) && typeof a[k] === "number") out[k] = a[k] | 0;
+    }
+    for (k in b) {
+      if (Object.prototype.hasOwnProperty.call(b, k) && typeof b[k] === "number") {
+        out[k] = Math.max(out[k] | 0, b[k] | 0);
+      }
+    }
+    return out;
+  }
+  function orBoolMap(a, b) {
+    var out = {}, k;
+    a = a && typeof a === "object" ? a : {};
+    b = b && typeof b === "object" ? b : {};
+    for (k in a) {
+      if (Object.prototype.hasOwnProperty.call(a, k) && a[k]) out[k] = true;
+    }
+    for (k in b) {
+      if (Object.prototype.hasOwnProperty.call(b, k) && b[k]) out[k] = true;
+    }
+    return out;
+  }
+  function unionSkinMap(a, b) {
+    var out = cloneSkinMap(a), other = cloneSkinMap(b), k, list, i, s;
+    for (k in other) {
+      if (!Object.prototype.hasOwnProperty.call(other, k)) continue;
+      list = out[k] ? out[k].slice() : ["stock"];
+      for (i = 0; i < other[k].length; i++) {
+        s = other[k][i];
+        if (list.indexOf(s) < 0) list.push(s);
+      }
+      out[k] = list;
+    }
+    return out;
+  }
+  function mergeDailies(a, b) {
+    a = a || { date: "", ids: [], progress: {}, claimed: {} };
+    b = b || { date: "", ids: [], progress: {}, claimed: {} };
+    if (a.date === b.date) {
+      return {
+        date: a.date,
+        ids: unionStr(a.ids, b.ids).slice(0, 6),
+        progress: maxNumMap(a.progress, b.progress),
+        claimed: orBoolMap(a.claimed, b.claimed)
+      };
+    }
+    if (!a.date) return { date: b.date, ids: cloneArr(b.ids, []), progress: maxNumMap(b.progress, {}), claimed: orBoolMap(b.claimed, {}) };
+    if (!b.date) return { date: a.date, ids: cloneArr(a.ids, []), progress: maxNumMap(a.progress, {}), claimed: orBoolMap(a.claimed, {}) };
+    return (a.date >= b.date)
+      ? { date: a.date, ids: cloneArr(a.ids, []), progress: maxNumMap(a.progress, {}), claimed: orBoolMap(a.claimed, {}) }
+      : { date: b.date, ids: cloneArr(b.ids, []), progress: maxNumMap(b.progress, {}), claimed: orBoolMap(b.claimed, {}) };
+  }
+  function mergeLongTerm(a, b) {
+    var out = {}, k, la, lb;
+    a = a && typeof a === "object" ? a : {};
+    b = b && typeof b === "object" ? b : {};
+    function rec(src) {
+      if (!src || typeof src !== "object") return { progress: 0, claimed: false };
+      return { progress: src.progress | 0, claimed: !!src.claimed };
+    }
+    for (k in a) {
+      if (!Object.prototype.hasOwnProperty.call(a, k)) continue;
+      la = rec(a[k]);
+      lb = rec(b[k]);
+      out[k] = { progress: Math.max(la.progress, lb.progress), claimed: !!(la.claimed || lb.claimed) };
+    }
+    for (k in b) {
+      if (!Object.prototype.hasOwnProperty.call(b, k) || out[k]) continue;
+      lb = rec(b[k]);
+      out[k] = { progress: lb.progress, claimed: lb.claimed };
+    }
+    return out;
+  }
+  function mergeStats(a, b) {
+    a = a || emptyStats();
+    b = b || emptyStats();
+    return {
+      killsByType: maxNumMap(a.killsByType, b.killsByType),
+      maxWave: Math.max(a.maxWave | 0, b.maxWave | 0),
+      bosses: maxNumMap(a.bosses, b.bosses),
+      bossBest: maxNumMap(a.bossBest, b.bossBest),
+      pickups: maxNumMap(a.pickups, b.pickups),
+      diveKills: Math.max(a.diveKills | 0, b.diveKills | 0),
+      cleanWave: Math.max(a.cleanWave | 0, b.cleanWave | 0),
+      safeWave: Math.max(a.safeWave | 0, b.safeWave | 0),
+      maxBossesRun: Math.max(a.maxBossesRun | 0, b.maxBossesRun | 0),
+      maxRunCoins: Math.max(a.maxRunCoins | 0, b.maxRunCoins | 0),
+      coinsEarned: Math.max(a.coinsEarned | 0, b.coinsEarned | 0),
+      perfectBosses: Math.max(a.perfectBosses | 0, b.perfectBosses | 0),
+      maxKillsRun: Math.max(a.maxKillsRun | 0, b.maxKillsRun | 0),
+      maxCleanRunKills: Math.max(a.maxCleanRunKills | 0, b.maxCleanRunKills | 0),
+      runs: Math.max(a.runs | 0, b.runs | 0)
+    };
+  }
+  function mergeProfiles(localRaw, cloudRaw) {
+    var local = migrateProfile(localRaw);
+    var cloud = migrateProfile(cloudRaw);
+    var localAt = (localRaw && localRaw.updatedAt) || local.updatedAt || 0;
+    var cloudAt = (cloudRaw && cloudRaw.updatedAt) || cloud.updatedAt || 0;
+    var newer = cloudAt > localAt ? cloud : local;
+    var out = defaultProfile();
+    out.coins = Math.max(local.coins, cloud.coins);
+    out.totalXp = Math.max(local.totalXp, cloud.totalXp);
+    out.best = Math.max(local.best, cloud.best);
+    out.pid = cloud.pid || local.pid;
+    out.name = cloud.name || local.name;
+    out.muted = local.muted;
+    out.ownedShips = unionStr(local.ownedShips, cloud.ownedShips);
+    out.ownedGuns = unionStr(local.ownedGuns, cloud.ownedGuns);
+    out.ownedMods = unionStr(local.ownedMods, cloud.ownedMods);
+    if (out.ownedShips.indexOf("wisp") < 0) out.ownedShips.unshift("wisp");
+    if (out.ownedGuns.indexOf("pulse") < 0) out.ownedGuns.unshift("pulse");
+    out.ownedSkins = unionSkinMap(local.ownedSkins, cloud.ownedSkins);
+    out.equipped = {
+      ship: newer.equipped.ship,
+      gun: newer.equipped.gun,
+      mod: newer.equipped.mod
+    };
+    if (out.ownedShips.indexOf(out.equipped.ship) < 0) out.equipped.ship = "wisp";
+    if (out.ownedGuns.indexOf(out.equipped.gun) < 0) out.equipped.gun = "pulse";
+    if (out.equipped.mod && out.ownedMods.indexOf(out.equipped.mod) < 0) out.equipped.mod = null;
+    out.equippedSkins = cloneSkinEquip(newer.equippedSkins);
+    out.dailies = mergeDailies(local.dailies, cloud.dailies);
+    out.longTerm = mergeLongTerm(local.longTerm, cloud.longTerm);
+    out.stats = mergeStats(local.stats, cloud.stats);
+    out.startWave = clampStartWave(Math.max(local.startWave | 0, cloud.startWave | 0), xpLevel(out.totalXp), out.stats.maxWave);
+    out.updatedAt = Math.max(localAt, cloudAt);
+    grantLevelSkins(out);
+    if (!out.equippedSkins[out.equipped.ship] || (out.ownedSkins[out.equipped.ship] || []).indexOf(out.equippedSkins[out.equipped.ship]) < 0) {
+      out.equippedSkins[out.equipped.ship] = "stock";
+    }
+    return out;
   }
   // XP curve, levels 1-100. Banked XP is run score * XP_SCORE_MUL (Ascension still adds +25%).
   // A ~10k run is ~1.5k XP. Level 100 still needs ~2.5M XP total.
@@ -1961,8 +2123,135 @@
   function saveProfile() {
     profile.best = best;
     profile.muted = muted;
+    profile.updatedAt = Date.now();
     grantLevelSkins();
     try { localStorage.setItem(LS_KEY, JSON.stringify(profile)); } catch (err) {}
+    scheduleAccountPush();
+  }
+  function profileForCloud() {
+    var copy;
+    try { copy = JSON.parse(JSON.stringify(profile)); } catch (err) { copy = profile; }
+    if (copy && typeof copy === "object") delete copy.muted;
+    return copy;
+  }
+  function loadAccountSession() {
+    try {
+      var txt = localStorage.getItem(SESSION_KEY);
+      var raw = txt ? JSON.parse(txt) : null;
+      if (raw && typeof raw.token === "string" && typeof raw.username === "string") {
+        accountSession = { username: String(raw.username).toLowerCase(), token: raw.token };
+        return;
+      }
+    } catch (err) {}
+    accountSession = null;
+  }
+  function persistAccountSession(sess) {
+    accountSession = sess;
+    try {
+      if (sess) localStorage.setItem(SESSION_KEY, JSON.stringify({ username: sess.username, token: sess.token }));
+      else localStorage.removeItem(SESSION_KEY);
+    } catch (err) {}
+  }
+  function clearAccountSession() {
+    persistAccountSession(null);
+  }
+  function accountAuthHeaders() {
+    var h = { "Content-Type": "application/json" };
+    if (accountSession && accountSession.token) h.Authorization = "Bearer " + accountSession.token;
+    return h;
+  }
+  function scheduleAccountPush() {
+    if (!accountSession) return;
+    if (accountPushTimer) clearTimeout(accountPushTimer);
+    accountPushTimer = setTimeout(function () {
+      accountPushTimer = 0;
+      pushAccountNow();
+    }, ACCOUNT_PUSH_MS);
+  }
+  function flushAccountPush() {
+    if (accountPushTimer) {
+      clearTimeout(accountPushTimer);
+      accountPushTimer = 0;
+    }
+    if (accountSession) pushAccountNow();
+  }
+  function pushAccountNow() {
+    if (!accountSession) return;
+    if (accountPushInflight) {
+      accountPushAgain = true;
+      return;
+    }
+    accountPushInflight = true;
+    fetch("/api/account", {
+      method: "PUT",
+      headers: accountAuthHeaders(),
+      cache: "no-store",
+      body: JSON.stringify({ profile: profileForCloud() })
+    }).then(function (res) {
+      if (res.status === 401) {
+        clearAccountSession();
+        if (uiScreen === "account") renderAccount();
+        return;
+      }
+    }).catch(function () {
+    }).then(function () {
+      accountPushInflight = false;
+      if (accountPushAgain) {
+        accountPushAgain = false;
+        pushAccountNow();
+      }
+    });
+  }
+  function canPullAccount() {
+    if (!accountSession) return false;
+    if (started && !gameOver) return false;
+    return true;
+  }
+  function applyCloudProfile(cloud, updatedAt) {
+    var keepMuted = muted;
+    var merged;
+    if (!cloud || typeof cloud !== "object") return;
+    if (updatedAt && !cloud.updatedAt) cloud.updatedAt = updatedAt;
+    merged = mergeProfiles(profile, cloud);
+    merged.muted = keepMuted;
+    applyProfile(merged);
+    saveProfile();
+  }
+  function pullAccountCloud(force) {
+    var now = Date.now();
+    if (!canPullAccount()) return;
+    if (!force && accountPullInflight) return;
+    if (!force && now - accountPullAt < ACCOUNT_PULL_MS) return;
+    accountPullAt = now;
+    accountPullInflight = true;
+    fetch("/api/account", {
+      method: "GET",
+      headers: accountAuthHeaders(),
+      cache: "no-store"
+    }).then(function (res) {
+      if (res.status === 401) {
+        clearAccountSession();
+        if (uiScreen === "account") renderAccount();
+        return null;
+      }
+      if (!res.ok) return null;
+      return res.json();
+    }).then(function (data) {
+      if (!data || !data.profile) return;
+      applyCloudProfile(data.profile, data.updatedAt);
+    }).catch(function () {
+    }).then(function () {
+      accountPullInflight = false;
+    });
+  }
+  function refreshProfileUi() {
+    updateHud();
+    if (started && !gameOver) return;
+    if (uiScreen === "hangar") renderHangar();
+    else if (uiScreen === "quests") renderQuests();
+    else if (uiScreen === "ranks") refreshRanks();
+    else if (uiScreen === "account") renderAccount();
+    else if (uiScreen === "hub") renderHub();
   }
   function applyProfile(raw) {
     profile = migrateProfile(raw);
@@ -1971,13 +2260,7 @@
     var dirty = ensurePilot();
     if (ensureDailies()) dirty = true;
     if (dirty) saveProfile();
-    updateHud();
-    if (!started || gameOver) {
-      if (uiScreen === "hangar") renderHangar();
-      else if (uiScreen === "quests") renderQuests();
-      else if (uiScreen === "ranks") refreshRanks();
-      else showScreen("hub");
-    }
+    refreshProfileUi();
   }
   function requestProfile() {
     var raw = null;
@@ -1987,10 +2270,26 @@
     } catch (err) {}
     applyProfile(raw);
   }
+  function refreshResetCopy() {
+    var note = el("reset-note");
+    var body = el("reset-confirm") && el("reset-confirm").querySelector(".reset-confirm-body");
+    var signed = !!accountSession;
+    if (note) {
+      note.textContent = signed
+        ? "Erases coins, XP, hangar, quests, stats, and high score on this device and in the cloud. Same as a new player. Cannot be undone."
+        : "Erases coins, XP, hangar, quests, stats, and high score. Same as a new player. Cannot be undone.";
+    }
+    if (body) {
+      body.textContent = signed
+        ? "Coins, XP, hangar, quests, stats, and high score will be wiped here and on the cloud account. This cannot be undone."
+        : "Coins, XP, hangar, quests, stats, and high score will be wiped. This cannot be undone.";
+    }
+  }
   function setResetConfirm(on) {
     var panel = el("reset-confirm");
     var btn = el("btn-reset-progress");
     var note = el("reset-note");
+    refreshResetCopy();
     if (panel) panel.classList.toggle("hidden", !on);
     if (btn) btn.classList.toggle("hidden", on);
     if (note) note.classList.toggle("hidden", on);
@@ -2014,6 +2313,7 @@
     run = emptyRun();
     ensureDailies();
     saveProfile();
+    flushAccountPush();
     if (bestEl) bestEl.textContent = "0";
     updateHud();
     setResetConfirm(false);
@@ -5654,6 +5954,135 @@
     renderStartWavePicker("start-wave-opts");
     drawHubPreview();
   }
+  function setAccountStatus(msg, isErr) {
+    var node = el("account-status");
+    if (!node) return;
+    node.textContent = msg || "";
+    node.classList.toggle("lobby-err", !!isErr);
+  }
+  function setAccountBusy(on) {
+    var ids = ["btn-account-create", "btn-account-login", "btn-account-forgot", "btn-account-out"];
+    var i, node;
+    accountBusy = !!on;
+    for (i = 0; i < ids.length; i++) {
+      node = el(ids[i]);
+      if (node) node.disabled = !!on;
+    }
+  }
+  function accountFieldValues() {
+    var userEl = el("account-user");
+    var passEl = el("account-pass");
+    return {
+      username: userEl ? String(userEl.value || "").trim() : "",
+      password: passEl ? String(passEl.value || "") : ""
+    };
+  }
+  function accountErrorText(code, fallback) {
+    if (code === "exists") return "That username is taken.";
+    if (code === "bad_login") return "Wrong username or password.";
+    if (code === "unknown") return "No account with that username.";
+    if (code === "rate_limited") return "Too many tries. Wait a bit.";
+    if (code === "bad_username") return "Username: 3–16 letters, numbers, or _.";
+    if (code === "bad_password") return "Password needs at least 4 characters.";
+    if (code === "bad_profile") return "Need a local profile first. Play once, then create the account.";
+    if (code === "unauthorized") return "Signed out. Sign in again.";
+    if (code === "bad_request" || code === "bad_op") return "Could not complete that.";
+    if (code === "busy") return "Server busy. Try again.";
+    if (code === "too_large") return "Profile is too large to sync.";
+    return fallback || "Can't reach the cloud. Progress stays on this device.";
+  }
+  function renderAccount() {
+    var signed = !!(accountSession && accountSession.username);
+    var out = el("account-out");
+    var inn = el("account-in");
+    var who = el("account-who");
+    if (out) out.classList.toggle("hidden", signed);
+    if (inn) inn.classList.toggle("hidden", !signed);
+    if (who) who.textContent = signed ? ("Signed in as " + accountSession.username) : "";
+  }
+  function finishAccountAuth(data, mode) {
+    var passEl = el("account-pass");
+    if (!data || !data.token || !data.username) {
+      setAccountStatus(accountErrorText(data && data.error), true);
+      return;
+    }
+    persistAccountSession({ username: data.username, token: data.token });
+    if (mode === "login" && data.profile) applyCloudProfile(data.profile, data.updatedAt);
+    else saveProfile();
+    if (passEl) passEl.value = "";
+    setAccountStatus(mode === "create" ? "Account created. Progress is syncing." : "Signed in. Progress merged.");
+    renderAccount();
+    renderHub();
+  }
+  function postAccount(op) {
+    var fields = accountFieldValues();
+    var user = String(fields.username || "").trim().toLowerCase();
+    var pass = fields.password;
+    var body;
+    if (accountBusy) return;
+    if (!/^[a-z0-9_]{3,16}$/.test(user)) {
+      setAccountStatus(accountErrorText("bad_username"), true);
+      return;
+    }
+    if (pass.length < 4 || pass.length > 72) {
+      setAccountStatus(accountErrorText("bad_password"), true);
+      return;
+    }
+    ensurePilot();
+    body = { op: op, username: user, password: pass };
+    if (op === "create") body.profile = profileForCloud();
+    setAccountBusy(true);
+    setAccountStatus(op === "forgot" ? "Updating password…" : "Working…");
+    fetch("/api/account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        data = data || {};
+        data.status = res.status;
+        if (!res.ok && !data.error) data.error = "unavailable";
+        return data;
+      }).catch(function () {
+        return { error: "unavailable", status: res.status };
+      });
+    }).then(function (data) {
+      if (op === "forgot") {
+        if (data && data.ok) {
+          setAccountStatus("Password updated. Sign in with the new password.");
+          return;
+        }
+        setAccountStatus(accountErrorText(data && data.error), true);
+        return;
+      }
+      if (data && data.token) {
+        finishAccountAuth(data, op === "create" ? "create" : "login");
+        return;
+      }
+      setAccountStatus(accountErrorText(data && data.error), true);
+    }).catch(function () {
+      setAccountStatus(accountErrorText("unavailable"), true);
+    }).then(function () {
+      setAccountBusy(false);
+    });
+  }
+  function signOutAccount() {
+    if (accountBusy) return;
+    setAccountBusy(true);
+    fetch("/api/account", {
+      method: "POST",
+      headers: accountAuthHeaders(),
+      cache: "no-store",
+      body: JSON.stringify({ op: "logout" })
+    }).catch(function () {
+    }).then(function () {
+      clearAccountSession();
+      setAccountBusy(false);
+      setAccountStatus("Signed out. Progress stays on this device.");
+      renderAccount();
+    });
+  }
   function renderStartWavePicker(id, readOnly) {
     var box = el(id);
     var hint = el(id === "start-wave-opts" ? "start-wave-hint" : "lobby-start-wave-hint");
@@ -6061,6 +6490,7 @@
     return "Combat Mastery";
   }
   function renderQuests() {
+    refreshResetCopy();
     ensureDailies();
     syncQuestProgress();
     var lists = el("quest-lists");
@@ -6348,7 +6778,7 @@
       return;
     }
     overlay.classList.remove("hidden");
-    var ids = ["hub", "hangar", "quests", "ranks", "lobby", "pause", "summary"];
+    var ids = ["hub", "hangar", "quests", "ranks", "account", "lobby", "pause", "summary"];
     var i;
     for (i = 0; i < ids.length; i++) {
       var node = el("screen-" + ids[i]);
@@ -6360,6 +6790,7 @@
       stopHubAnim();
       if (name === "quests") { setResetConfirm(false); renderQuests(); }
       if (name === "ranks") refreshRanks();
+      if (name === "account") { setAccountStatus(""); renderAccount(); }
       if (name === "lobby") renderLobby();
     }
   }
@@ -10063,7 +10494,7 @@
         if (k === "Escape") { leaveNet(); showScreen("hub"); }
         else if (lobbyMode === "join" && (k === "Enter" || k === " ")) lobbyJoinGo();
         else if (lobbyMode === "ready" && netRole === "host" && (k === "Enter" || k === " ")) lobbyStart();
-      } else if (uiScreen === "hangar" || uiScreen === "quests" || uiScreen === "ranks") {
+      } else if (uiScreen === "hangar" || uiScreen === "quests" || uiScreen === "ranks" || uiScreen === "account") {
         if (k === "Escape" || k === "Backspace") showScreen("hub");
       } else if (uiScreen === "pause") {
         if (k === "Enter" || k === " " || k === "p" || k === "P" || k === "Escape") resumeGame();
@@ -10145,9 +10576,25 @@
   el("btn-hangar").addEventListener("click", function (e) { e.preventDefault(); showScreen("hangar"); });
   el("btn-quests").addEventListener("click", function (e) { e.preventDefault(); showScreen("quests"); });
   el("btn-board").addEventListener("click", function (e) { e.preventDefault(); showScreen("ranks"); });
+  el("btn-account").addEventListener("click", function (e) { e.preventDefault(); showScreen("account"); });
   el("btn-hangar-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
   el("btn-quests-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
   el("btn-board-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
+  el("btn-account-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
+  el("btn-account-create").addEventListener("click", function (e) { e.preventDefault(); postAccount("create"); });
+  el("btn-account-login").addEventListener("click", function (e) { e.preventDefault(); postAccount("login"); });
+  el("btn-account-forgot").addEventListener("click", function (e) { e.preventDefault(); postAccount("forgot"); });
+  el("btn-account-out").addEventListener("click", function (e) { e.preventDefault(); signOutAccount(); });
+  (function bindAccountFields() {
+    var passEl = el("account-pass");
+    if (!passEl) return;
+    passEl.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        postAccount("login");
+      }
+    });
+  })();
   var boardName = el("board-name");
   if (boardName) {
     boardName.addEventListener("blur", commitPilotName);
@@ -10508,10 +10955,14 @@
     if (!overlayVisible()) focusGame();
   });
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) return;
+    if (!document.hidden) {
+      pullAccountCloud();
+      return;
+    }
     if (started && !paused && !gameOver) pauseGame();
     else if (!started || gameOver) { stopLoop(); paused = true; }
   });
+  window.addEventListener("focus", function () { pullAccountCloud(); });
   if (typeof ResizeObserver === "function") {
     new ResizeObserver(function () { layout(); }).observe(wrap);
   }
@@ -10702,6 +11153,8 @@
       gunDps: gunDps,
       finishRun: function () { finishRun(true); },
       showScreen: showScreen,
+      mergeProfiles: mergeProfiles,
+      accountUser: function () { return accountSession ? accountSession.username : ""; },
       setHangarTab: function (t) { hangarTab = t; renderHangar(); drawHangarPreview(); },
       hangarView: hangarView,
       applyHangarItem: applyHangarItem,
@@ -10791,4 +11244,6 @@
   layout();
   showScreen("hub");
   requestProfile();
+  loadAccountSession();
+  pullAccountCloud(true);
 })();
