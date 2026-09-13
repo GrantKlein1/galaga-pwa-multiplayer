@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 4;
+  var VER = 5;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -13,7 +13,7 @@
     "mortar", "hex", "harrier", "bulwark", "archon",
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
-    "mandala", "cenotaph", "kaleido", "helios", "selene"
+    "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch"
   ];
   var ENEMY_STATES = ["", "enter", "form", "dive", "kami", "return", "charge"];
   var GUN_IDS = [
@@ -368,6 +368,7 @@
     w.u8w(Math.max(0, Math.min(255, Math.round(p.maxHp || 0))));
     w.u8w(p.facing && p.facing > 0 ? 1 : 0);
     w.u8w((p.boss || lo.boss) ? idxOf(ENEMY_TYPES, p.boss || lo.boss) : 255);
+    w.u8frac(p.freezeT, 10);
   }
 
   function readPl(r) {
@@ -399,6 +400,7 @@
     p.facing = r.u8r() ? 1 : -1;
     bi = r.u8r();
     p.boss = bi === 255 ? "" : (ENEMY_TYPES[bi] || "");
+    p.freezeT = r.u8frac(10);
     if (!p.mod) p.mod = null;
     if (!p.skin) p.skin = "stock";
     return p;

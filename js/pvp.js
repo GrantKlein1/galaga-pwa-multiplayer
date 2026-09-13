@@ -4,7 +4,7 @@
   var BOSS_IDS = [
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
-    "mandala", "cenotaph", "kaleido", "helios", "selene"
+    "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch"
   ];
   var DRAFT_STEPS = ["ship", "mod", "skin", "gun"];
   // Insane duel only (not co-op / PvE bosses).
@@ -188,6 +188,19 @@
         { id: "tide", key: "2", name: "Dark tide", cd: 7.2 },
         { id: "waning", key: "3", name: "Waning veil", cd: 7.8 },
         { id: "occult", key: "4", name: "Occultation", cd: 8.8 }
+      ]
+    },
+    pentarch: {
+      fire: "pyre", ability: "rime",
+      fireHint: "SPACE / FIRE — pyre burst",
+      abilityHint: "1 — rime lock",
+      abilities: [
+        { id: "rime", key: "1", name: "Rime lock", cd: 6.2 },
+        { id: "bolt", key: "2", name: "Storm bolt", cd: 6.8 },
+        { id: "fault", key: "3", name: "Fault", cd: 7.4 },
+        { id: "shear", key: "4", name: "Wind shear", cd: 7.6 },
+        { id: "gale", key: "5", name: "Gale", cd: 8.4 },
+        { id: "glacier", key: "6", name: "Glacier", cd: 8.2 }
       ]
     }
   };

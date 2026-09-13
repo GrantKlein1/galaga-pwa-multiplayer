@@ -136,9 +136,9 @@
   ];
 
   // Boss roster. Debut wave = (index + 1) * BOSS_EVERY. Kits: base (always), p2 (added below the
-  // first HP threshold), p3 (the five post-Overlord bosses, always 3 phases), t1 (tier 1+), t2
-  // (tier 2+). Seraph–Overlord stay 2-phase on the first cycle; tier 1+ still get a third phase
-  // and tier 2+ still chain attacks into combos.
+  // first HP threshold), p3 (Mandala–Selene, always 3 phases), p4/p5 (Pentarch, 5 exclusive
+  // element phases), t1 (tier 1+), t2 (tier 2+). Seraph–Overlord stay 2-phase on the first cycle;
+  // tier 1+ still get a third phase and tier 2+ still chain attacks into combos.
   var BOSS_DEFS = [
     { id: "seraph", name: "SERAPH", color: "#e8f6ff", dark: "#203044", r: 18, hp: 48, spd: 42, amp: 6, freq: 1.2, cd: 1.39, tele: 0.44, pts: 1500,
       base: ["aimed", "fan", "ram"], p2: ["halo", "fan2"], t1: ["feathers"], t2: ["ramfan"], p2Text: "SERAPH ASCENDS", flavor: "Aimed volleys, fans, dive ram" },
@@ -174,7 +174,13 @@
       p2Text: "PROMINENCES RISE", p3Text: "HIGH NOON", flavor: "Heat glare, sear plates, a noon pillar" },
     { id: "selene", name: "SELENE", color: "#c8d4ff", dark: "#080c22", r: 22, hp: 628, spd: 36, amp: 9, freq: 0.85, cd: 1.44, tele: 0.52, pts: 5800,
       base: ["crescent", "limb"], p2: ["tide", "waning"], p3: ["occult"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
-      p2Text: "THE TIDE TURNS", p3Text: "OCCULTATION", flavor: "Crescents, dark limbs, a waning veil" }
+      p2Text: "THE TIDE TURNS", p3Text: "OCCULTATION", flavor: "Crescents, dark limbs, a waning veil" },
+    { id: "pentarch", name: "PENTARCH", color: "#e8d0a8", dark: "#1a1010", r: 23, hp: 692, spd: 38, amp: 14, freq: 0.9, cd: 1.36, tele: 0.5, pts: 6400,
+      exclusive: true,
+      base: ["pyre", "cinder"], p2: ["rime", "glacier"], p3: ["bolt", "fork"], p4: ["fault", "spire"], p5: ["shear", "gale"],
+      t1: [], t2: [], p2Thresh: 0.8, p3Thresh: 0.6, p4Thresh: 0.4, p5Thresh: 0.2,
+      p2Text: "THE FROST TAKES", p3Text: "THE STORM SPEAKS", p4Text: "THE GROUND SPLITS", p5Text: "THE SKY TEARS",
+      flavor: "Fire pyres, ice locks, lightning forks, earth faults, wind shears" }
   ];
   var GUEST_BOSS_POOL = 10;
 
@@ -243,6 +249,7 @@
     { id: "lt_kaleido", name: "Kaleido Contract", desc: "Defeat Kaleido twice", target: 2, kind: "bossCount", type: "kaleido", reward: { coins: 600, consolation: 430 } },
     { id: "lt_helios", name: "Helios Contract", desc: "Defeat Helios twice", target: 2, kind: "bossCount", type: "helios", reward: { coins: 650, consolation: 460 } },
     { id: "lt_selene", name: "Selene Contract", desc: "Defeat Selene twice", target: 2, kind: "bossCount", type: "selene", reward: { coins: 720, consolation: 500 } },
+    { id: "lt_pentarch", name: "Pentarch Contract", desc: "Defeat Pentarch twice", target: 2, kind: "bossCount", type: "pentarch", reward: { coins: 800, consolation: 560 } },
     { id: "lt_seraph5", name: "Seraph Hunter", desc: "Defeat Seraph 8 times", target: 8, kind: "bossCount", type: "seraph", reward: { coins: 150 } },
     { id: "lt_wraith5", name: "Wraith Hunter", desc: "Defeat Wraith 8 times", target: 8, kind: "bossCount", type: "wraith", reward: { coins: 165 } },
     { id: "lt_hydra5", name: "Hydra Hunter", desc: "Defeat Hydra 8 times", target: 8, kind: "bossCount", type: "hydra", reward: { coins: 190 } },
@@ -464,6 +471,11 @@
     if (type === "archon") return "#ffd6a0";
     var d = bossDef(type);
     return d ? d.color : "#ffffff";
+  }
+  var PENTARCH_HUES = ["#ff6b3d", "#8ad8ff", "#ffe66d", "#c4a06a", "#9dffe0"];
+  function pentarchColor(e) {
+    if (!e || e.type !== "pentarch") return null;
+    return PENTARCH_HUES[Math.min(e.phaseIdx || 0, PENTARCH_HUES.length - 1)];
   }
   // Boss HP: base * (1 + 0.8 * tier) + 72 * tier. Base values are +20% vs the original roster
   // (Colossus +40%). The per-tier add scaled the same 20% so later cycles stay tanky.
@@ -3881,7 +3893,7 @@
       x: x, targetX: x, y: y, targetY: y,
       facing: facingForSlot(slot),
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
-      weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0,
+      weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0, freezeT: 0,
       r: loadoutR(s, spec.mod), speed: loadoutSpeed(s, spec.mod), invulnDur: s.invuln, regen: s.regen, regenT: 0,
       shotCount: 0,
       lives: loadoutLives(s),
@@ -4169,6 +4181,7 @@
       p.speedT = 0;
       p.slowT = 0;
       p.jamT = 0;
+      p.freezeT = 0;
       p.abilityCd = 0.4;
       p.abilityCds = [0.4, 0.4, 0.4, 0.4, 0.4, 0.4];
       p.abilityGcd = 0;
@@ -4234,7 +4247,7 @@
         if (pbul[bi].owner === who.slot) pbul.splice(bi, 1);
       }
     }
-    who.weapon = "normal"; who.weaponT = 0; who.speedT = 0; who.slowT = 0; who.jamT = 0;
+    who.weapon = "normal"; who.weaponT = 0; who.speedT = 0; who.slowT = 0; who.jamT = 0; who.freezeT = 0;
     if (shipDef(who).passive === "nova") novaBurst(who.x, who.y, 6, who.slot);
     who.skinKeepX = false;
     skinAfterHit(who, "hull");
@@ -4311,6 +4324,7 @@
     target.speedT = 0;
     target.slowT = 0;
     target.jamT = 0;
+    target.freezeT = 0;
     target.muzzle = 0;
     target.fireCd = 0.2;
     if (hasMod("guardian", target)) { target.shieldHp = Math.max(target.shieldHp, 2); target.shieldT = 0; }
@@ -4515,6 +4529,10 @@
     } else if (atk === "barrage") {
       pvpFanToward(who, 3, 0.42, 250);
       pvpAimed(who, 0.9, 260, 0);
+    } else if (atk === "pyre") {
+      pvpAimed(who, 0.8, 200, -6);
+      pvpAimed(who, 0.8, 200, 6);
+      pvpEbul(who.x, pvpMuzzleY(who), 0, pvpFacing(who) * 55, who, { r: 4.5, life: 1.5, color: col });
     } else {
       pvpAimed(who, 0.85, 240, -8);
       pvpAimed(who, 0.85, 240, 0);
@@ -4689,6 +4707,36 @@
     } else if (atk === "rail" || atk === "gridlock" || atk === "blackout") {
       pvpColumnAt(who, tx, 7, 230, { r: 3, color: col });
       if (atk !== "rail") pvpCurtainToward(who, 4, 180, { r: 2.4, color: col });
+    } else if (atk === "pyre" || atk === "cinder") {
+      pvpAimed(who, 0.7, 220, -8);
+      pvpAimed(who, 0.7, 220, 8);
+      pvpEbul(tx, ty, 0, face * 40, who, { r: 5, life: 1.6, color: col });
+      if (atk === "cinder") pvpCurtainToward(who, 4, 170, { r: 2.4, color: col });
+    } else if (atk === "rime" || atk === "glacier") {
+      pvpCurtainToward(who, 4, 160, { r: 2.8, color: "#8ad8ff" });
+      if (tgt) {
+        tgt.freezeT = Math.max(tgt.freezeT || 0, 0.7);
+        tgt.slowT = Math.max(tgt.slowT || 0, 1.1);
+        tgt.targetX = tgt.x;
+        tgt.targetY = tgt.y;
+      }
+    } else if (atk === "bolt" || atk === "fork") {
+      pvpColumnAt(who, tx, 8, 270, { r: 3.2, color: col });
+      if (atk === "fork") {
+        pvpColumnAt(who, clamp(tx - 42, 20, W - 20), 6, 240, { r: 2.6, color: col });
+        pvpColumnAt(who, clamp(tx + 42, 20, W - 20), 6, 240, { r: 2.6, color: col });
+      }
+    } else if (atk === "fault" || atk === "spire") {
+      pvpColumnAt(who, tx, 8, 220, { r: 3.4, color: col });
+      pvpColumnAt(who, 36, 5, 190, { r: 2.6, color: col });
+      pvpColumnAt(who, W - 36, 5, 190, { r: 2.6, color: col });
+    } else if (atk === "shear" || atk === "gale") {
+      pvpCurtainToward(who, 5, 200, { r: 2.6, color: col });
+      pvpColumnAt(who, tx, 6, 230, { r: 2.8, color: col });
+      if (atk === "gale" && tgt) {
+        tgt.x = clamp(tgt.x + (who.x - tgt.x) * 0.32, 16, W - 16);
+        tgt.targetX = tgt.x;
+      }
     } else {
       pvpFanToward(who, 7, 1.15, 240);
     }
@@ -4965,9 +5013,19 @@
   var BOSS_MOVE_STYLES = ["patrol", "sine", "figure8", "hover", "zigzag", "orbit", "drift"];
   function bossKit(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
-    var kit = d.base.slice(), i;
-    if (e.phaseIdx >= 1) for (i = 0; i < d.p2.length; i++) kit.push(d.p2[i]);
-    if (e.phaseIdx >= 2 && d.p3) for (i = 0; i < d.p3.length; i++) kit.push(d.p3[i]);
+    var kit, i, idx;
+    if (d.exclusive) {
+      idx = e.phaseIdx || 0;
+      if (idx >= 4 && d.p5) kit = d.p5.slice();
+      else if (idx >= 3 && d.p4) kit = d.p4.slice();
+      else if (idx >= 2 && d.p3) kit = d.p3.slice();
+      else if (idx >= 1) kit = d.p2.slice();
+      else kit = d.base.slice();
+    } else {
+      kit = d.base.slice();
+      if (e.phaseIdx >= 1) for (i = 0; i < d.p2.length; i++) kit.push(d.p2[i]);
+      if (e.phaseIdx >= 2 && d.p3) for (i = 0; i < d.p3.length; i++) kit.push(d.p3[i]);
+    }
     if (e.tier >= 1) for (i = 0; i < d.t1.length; i++) kit.push(d.t1[i]);
     if (e.tier >= 2) for (i = 0; i < d.t2.length; i++) kit.push(d.t2[i]);
     return kit;
@@ -5126,7 +5184,7 @@
   }
   function onBossPhase(e, idx) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
-    banner = { text: idx === 1 ? (d.p2Text || "ENRAGED") : (d.p3Text || (d.name + " FRENZY")), life: 1.3 };
+    banner = { text: bossPhaseBanner(d, idx), life: 1.3 };
     explode(e.x, e.y, d.color, true);
     rings.push({ x: e.x, y: e.y, r: 4, vr: 400, life: 0.7, color: d.color });
     ebul.length = 0;
@@ -5145,15 +5203,25 @@
     if (idx >= 2) sfxWave(true);
     rebuildBossQueue(e, e.lastAtk);
   }
+  function bossPhaseBanner(d, idx) {
+    if (idx === 1) return d.p2Text || "ENRAGED";
+    if (idx === 2) return d.p3Text || (d.name + " FRENZY");
+    if (idx === 3) return d.p4Text || (d.name + " FRENZY");
+    return d.p5Text || (d.name + " FRENZY");
+  }
   function bossIsThreePhase(e) {
     var d = bossDef(e.type);
     if (d && d.p3 && d.p3.length) return true;
     return (e.tier || 0) >= 1;
   }
   // Internal HP splits only (phaseCount - 1 ticks). 2-phase debuts: one mark at
-  // the real p2 cut. 3-phase: 100–66 and 66–33. Never pad a 2-phase bar with a 2/3 leftover.
+  // the real p2 cut. 3-phase: 100–66 and 66–33. 5-phase Pentarch: 80/60/40/20.
+  // Never pad a 2-phase bar with a 2/3 leftover.
   function bossPhaseThresholds(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
+    if (d.p5 && d.p5.length) {
+      return [d.p2Thresh || 0.8, d.p3Thresh || 0.6, d.p4Thresh || 0.4, d.p5Thresh || 0.2];
+    }
     if (!bossIsThreePhase(e)) return [d.p2Thresh || 0.5];
     if (d.p3 && d.p3.length) return [d.p2Thresh || 2 / 3, d.p3Thresh || 1 / 3];
     return [Math.max(0.6, d.p2Thresh || 0.5), 0.25];
@@ -5185,7 +5253,7 @@
 
   function beginBossAttack(e, forced) {
     var atk = forced || pickBossAttack(e);
-    var col = enemyColor(e.type);
+    var col = pentarchColor(e) || enemyColor(e.type);
     var delay = bossTeleDelay(e);
     var px, i, gx;
     e.atk = atk;
@@ -5358,6 +5426,59 @@
       addTele("ring", e.x, e.y, 0, 0, delay + 0.12, col);
       addTele("glow", e.x, e.y, 0, 0, delay + 0.12, col);
       delay += 0.12;
+    } else if (atk === "pyre" || atk === "rime" || atk === "spire" || atk === "fault") {
+      e.slamX = clamp(e.aimX, 22, W - 22);
+      e.slamY = clampAimY(e.aimY);
+      e.echoY = echoAimY(e.slamY);
+      addZone(e.slamX, e.slamY, atk === "rime" ? 22 : 20, atk === "spire" ? 22 : 18, delay + 0.14, col);
+      if (atk === "pyre") addZone(e.slamX, e.echoY, 16, 12, delay + 0.14, "#ffb060");
+      if (atk === "fault") {
+        addTele("vline", e.slamX, H / 2, e.slamX, H - 12, delay + 0.14, col);
+        addZone(e.slamX, H - 40, 16, 16, delay + 0.14, col);
+        addZone(e.slamX, H / 2 + 16, 16, 14, delay + 0.14, "#d8c080");
+      }
+      if (atk === "spire") addZone(e.slamX, e.echoY, 18, 16, delay + 0.14, "#d8c080");
+      delay += 0.14;
+    } else if (atk === "cinder") {
+      addTele("line", e.x, e.y + 8, e.aimX, e.aimY, delay + 0.1, col);
+      addTele("hline", 12, H - 40, W - 12, H - 40, delay + 0.16, col);
+      addTele("hline", 12, H / 2 + 18, W - 12, H / 2 + 18, delay + 0.16, "#ffb060");
+      delay += 0.16;
+    } else if (atk === "glacier") {
+      e.slamY = clampAimY(e.aimY);
+      e.echoY = echoAimY(e.slamY);
+      addTele("hline", 12, e.slamY, W - 12, e.slamY, delay + 0.14, col);
+      addTele("hline", 12, e.echoY, W - 12, e.echoY, delay + 0.14, "#b8e8ff");
+      delay += 0.14;
+    } else if (atk === "bolt") {
+      e.slamX = clamp(e.aimX, 22, W - 22);
+      e.slamY = clampAimY(e.aimY);
+      addTele("vline", e.slamX, 20, e.slamX, H - 12, delay + 0.16, col);
+      addTele("hline", 12, e.slamY, W - 12, e.slamY, delay + 0.16, "#fff4a8");
+      delay += 0.16;
+    } else if (atk === "fork") {
+      e.slamX = clamp(e.aimX, 24, W - 24);
+      e.slamY = clampAimY(e.aimY);
+      e.echoY = echoAimY(e.slamY);
+      addZone(e.slamX, e.slamY, 16, 14, delay + 0.12, col);
+      addZone(e.slamX, (e.slamY + e.echoY) * 0.5, 16, 14, delay + 0.22, "#fff4a8");
+      addZone(e.slamX, e.echoY, 18, 14, delay + 0.32, col);
+      delay += 0.12;
+    } else if (atk === "shear") {
+      e.slamY = clampAimY(e.aimY);
+      e.echoY = echoAimY(e.slamY);
+      e.gapX = 40 + Math.random() * (W - 80);
+      addTele("hline", 12, e.slamY, W - 12, e.slamY, delay + 0.16, col);
+      addTele("hline", 12, e.echoY, W - 12, e.echoY, delay + 0.16, "#c8ffe8");
+      addZone(e.gapX, (e.slamY + e.echoY) * 0.5, 28, 90, delay + 0.16, "#7ef9ff");
+      delay += 0.16;
+    } else if (atk === "gale") {
+      e.slamX = clamp(e.aimX, 22, W - 22);
+      e.slamY = clampAimY(e.aimY);
+      addTele("vline", e.slamX, 20, e.slamX, H - 12, delay + 0.14, col);
+      addTele("hline", 12, H - 40, W - 12, H - 40, delay + 0.14, col);
+      addTele("hline", 12, H / 2 + 18, W - 12, H / 2 + 18, delay + 0.14, "#c8ffe8");
+      delay += 0.16;
     } else {
       addTele("glow", e.x, e.y, 0, 0, delay, col);
     }
@@ -5708,6 +5829,15 @@
           }
         }
         if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "pyre") {
+        f.tick = (f.tick || 0) - dt;
+        if (f.tick <= 0) {
+          f.tick = 0.38;
+          tryHitPlayersRect(f.x, f.y, f.hw || 18, f.hh || 14);
+        }
+        if (f.life <= 0) bossFx.splice(i, 1);
+      } else if (f.kind === "rime") {
+        if (f.life <= 0) bossFx.splice(i, 1);
       } else if (f.life <= 0) {
         bossFx.splice(i, 1);
       }
@@ -5715,8 +5845,8 @@
   }
 
   function fireBossAttack(e, atk) {
-    var i, spd, opt, px, x0, base, fuse, k, a, ox, oy, aim, drones, f, nx;
-    var col = enemyColor(e.type);
+    var i, spd, opt, px, x0, base, fuse, k, a, ox, oy, aim, drones, f, nx, gx;
+    var col = pentarchColor(e) || enemyColor(e.type);
     opt = { color: col, glow: col };
     spd = bossShotSpd(e);
     if (atk === "aimed") {
@@ -6135,7 +6265,108 @@
       explode(e.x, e.y, col, false);
       slamBox(e.slamX || e.aimX, e.slamY || e.aimY, 18, 18, col);
       queueFollow(e, 0.32, "tiderev");
+    } else if (atk === "pyre") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      plantPyre(px, base, 22, 18, 2.15, col);
+      plantPyre(px, e.echoY || echoAimY(base), 16, 12, 1.7, "#ffb060");
+    } else if (atk === "cinder") {
+      aimedWedge(e.x, e.y + 6, e.aimX, e.aimY, 5, 0.38, spd + 16, { color: "#fff0c0", glow: col, r: 3 });
+      queueFollow(e, 0.38, "cinder2");
+    } else if (atk === "cinder2") {
+      slamBox(W / 2, H - 40, W / 2 - 12, 9, col);
+      queueFollow(e, 0.36, "cinder3");
+    } else if (atk === "cinder3") {
+      slamBox(W / 2, H / 2 + 18, W / 2 - 12, 9, "#ffb060");
+    } else if (atk === "rime") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      freezePlayersRect(px, base, 22, 18, 0.72);
+      bossFx.push({ kind: "rime", x: px, y: base, hw: 22, hh: 18, life: 0.7, color: col });
+      aimedWedge(e.x, e.y + 4, px, base, 4, 0.46, spd + 8, { color: "#d8f4ff", glow: col, r: 3 });
+    } else if (atk === "glacier") {
+      base = e.slamY || clampAimY(e.aimY);
+      slamBox(W / 2, base, W / 2 - 10, 8, col);
+      freezePlayersRect(W / 2, base, W / 2 - 10, 10, 0.45);
+      queueFollow(e, 0.48, "glacier2");
+    } else if (atk === "glacier2") {
+      base = e.echoY || echoAimY(e.aimY);
+      slamBox(W / 2, base, W / 2 - 10, 8, "#b8e8ff");
+      freezePlayersRect(W / 2, base, W / 2 - 10, 10, 0.4);
+    } else if (atk === "bolt") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      slamBox(px, H * 0.75, 11, H * 0.25 - 8, col);
+      slamBox(px, base, W / 2 - 18, 8, "#fff4a8");
+    } else if (atk === "fork") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      slamBox(px, base, 16, 14, col);
+      queueFollow(e, 0.28, "fork2");
+    } else if (atk === "fork2") {
+      px = clamp((e.slamX || e.aimX) + ((e.slamX || e.aimX) < W / 2 ? 48 : -48), 24, W - 24);
+      base = ((e.slamY || e.aimY) + (e.echoY || echoAimY(e.aimY))) * 0.5;
+      slamBox(px, base, 16, 14, "#fff4a8");
+      queueFollow(e, 0.28, "fork3");
+    } else if (atk === "fork3") {
+      slamBox(e.slamX || e.aimX, e.echoY || echoAimY(e.aimY), 18, 14, col);
+    } else if (atk === "fault") {
+      px = e.slamX || e.aimX;
+      slamBox(px, H - 40, 16, 16, col);
+      slamBox(px, H / 2 + 16, 16, 14, "#d8c080");
+      queueFollow(e, 0.34, "fault2");
+    } else if (atk === "fault2") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      slamBox(px, base, 20, 18, col);
+    } else if (atk === "spire") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      slamBox(px, base, 18, 22, col);
+      fireColumn(px, 28, 5, spd + 20, { r: 3.2, color: "#e8d0a8", glow: col });
+      queueFollow(e, 0.42, "spire2");
+    } else if (atk === "spire2") {
+      slamBox(e.slamX || e.aimX, e.echoY || echoAimY(e.aimY), 18, 18, "#d8c080");
+    } else if (atk === "shear") {
+      base = e.slamY || clampAimY(e.aimY);
+      gx = e.gapX || W / 2;
+      burialBar(base, gx, col);
+      burialBar(e.echoY || echoAimY(base), gx, "#c8ffe8");
+    } else if (atk === "gale") {
+      px = e.slamX || e.aimX;
+      base = e.slamY || e.aimY;
+      yankPlayers(px, 0.42, base);
+      slamBox(px, H * 0.72, 12, H * 0.22, col);
+      queueFollow(e, 0.4, "gale2");
+    } else if (atk === "gale2") {
+      slamBox(W / 2, H - 40, W / 2 - 10, 9, col);
+      queueFollow(e, 0.34, "gale3");
+    } else if (atk === "gale3") {
+      slamBox(W / 2, H / 2 + 18, W / 2 - 10, 9, "#c8ffe8");
     }
+  }
+
+  function plantPyre(x, y, hw, hh, life, col) {
+    bossFx.push({ kind: "pyre", x: x, y: y, hw: hw, hh: hh, life: life, tick: 0.16, color: col });
+    addZone(x, y, hw, hh, life, col);
+  }
+
+  function freezePlayersRect(cx, cy, hw, hh, dur) {
+    var i, pl, pr, hit = false;
+    dur = dur || 0.7;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
+      pr = pl.r || PLAYER_R;
+      if (Math.abs(pl.x - cx) < hw + pr && Math.abs(pl.y - cy) < hh + pr) {
+        pl.freezeT = Math.max(pl.freezeT || 0, dur);
+        pl.slowT = Math.max(pl.slowT || 0, dur + 0.35);
+        pl.targetX = pl.x;
+        pl.targetY = pl.y;
+        hit = true;
+      }
+    }
+    if (hit) banner = { text: "FROZEN", life: 0.7 };
   }
 
   function burialBar(y, gapX, col) {
@@ -6215,6 +6446,15 @@
       fy = 64 + Math.sin(t * 1.4) * 3;
       e.x = clamp(e.x, 34, W - 34);
       e.y += (fy - e.y) * Math.min(1, 4 * dt);
+      return;
+    }
+    if (e.type === "pentarch") {
+      e.x += e.patrolDir * spd * 0.92 * dt;
+      if (e.x < 34) { e.x = 34; e.patrolDir = 1; }
+      if (e.x > W - 34) { e.x = W - 34; e.patrolDir = -1; }
+      fy = 58 + (H / 2 - 72) * (0.5 + 0.5 * Math.sin(t * freq * 0.52));
+      e.x = clamp(e.x, 34, W - 34);
+      e.y += (fy - e.y) * Math.min(1, 3.2 * dt);
       return;
     }
     if (style === "sine") {
@@ -8406,7 +8646,7 @@
       slot: p.slot, x: p.x, y: p.y, alive: p.alive ? 1 : 0, invuln: p.invuln || 0,
       muzzle: p.muzzle || 0, shieldHp: p.shieldHp || 0, weapon: p.weapon || "normal",
       weaponT: p.weaponT || 0, speedT: p.speedT || 0, lives: p.lives, r: p.r,
-      slowT: p.slowT || 0, jamT: p.jamT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
+      slowT: p.slowT || 0, jamT: p.jamT || 0, freezeT: p.freezeT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
       mod: lo.mod || null, skin: lo.skin || "stock", targetX: p.targetX != null ? p.targetX : p.x,
       targetY: p.targetY != null ? p.targetY : p.y,
       hp: p.hp || 0, maxHp: p.maxHp || 0, facing: p.facing || -1, boss: p.boss || ""
@@ -8441,6 +8681,7 @@
     p.r = row.r;
     p.slowT = row.slowT;
     p.jamT = row.jamT || 0;
+    p.freezeT = row.freezeT || 0;
     if (row.hp != null) p.hp = row.hp;
     if (row.maxHp != null) p.maxHp = row.maxHp;
     if (row.facing) p.facing = row.facing;
@@ -9099,9 +9340,17 @@
     inp = p.input || input;
     if (p.slowT > 0) p.slowT = Math.max(0, p.slowT - dt);
     if (p.jamT > 0) p.jamT = Math.max(0, p.jamT - dt);
+    if ((p.freezeT || 0) > 0) p.freezeT = Math.max(0, p.freezeT - dt);
     spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1) * (p.skinSpdMul || 1);
+    if ((p.freezeT || 0) > 0) {
+      spd = 0;
+      p.targetX = p.x;
+      p.targetY = p.y;
+      p.dash = null;
+    }
     margin = Math.max(10, (p.r || PLAYER_R) + 4);
     if (p.targetY == null) p.targetY = p.y;
+    if (!((p.freezeT || 0) > 0)) {
     if (p.slot === localSlot && pointerSteer.aimX != null) {
       aimX = pvpFlipped() ? (W - pointerSteer.aimX) : pointerSteer.aimX;
     } else {
@@ -9119,9 +9368,11 @@
       p.targetX += steerDelta(inp, inp.right, "holdR", 1, spd, dt);
     }
     p.targetX = clamp(p.targetX, margin, W - margin);
+    }
     p.x += (p.targetX - p.x) * (1 - Math.exp(-STEER_FOLLOW * dt));
     if (!p.dash) {
       band = shipYBand(p, margin);
+      if (!((p.freezeT || 0) > 0)) {
       if (aimY != null) {
         p.targetY = aimY;
       } else if (!(netRole === "host" && p.slot !== localSlot)) {
@@ -9129,6 +9380,7 @@
         p.targetY += steerDelta(inp, inp.down, "holdD", 1, spd, dt);
       }
       p.targetY = clamp(p.targetY, band.lo, band.hi);
+      }
       p.y += (p.targetY - p.y) * (1 - Math.exp(-STEER_FOLLOW * dt));
     }
     p.fireCd = Math.max(0, p.fireCd - dt);
@@ -9720,6 +9972,15 @@
         context.arc(0, 0, 82, f.ang - (f.gap || 0.7) * 0.5, f.ang + (f.gap || 0.7) * 0.5);
         context.closePath();
         context.stroke();
+      } else if (f.kind === "pyre") {
+        context.globalAlpha = 0.22 + 0.12 * Math.sin(time * 14);
+        context.fillRect(f.x - (f.hw || 18), f.y - (f.hh || 14), (f.hw || 18) * 2, (f.hh || 14) * 2);
+        context.globalAlpha = 0.55;
+        context.strokeRect(f.x - (f.hw || 18), f.y - (f.hh || 14), (f.hw || 18) * 2, (f.hh || 14) * 2);
+      } else if (f.kind === "rime") {
+        context.globalAlpha = 0.28 + 0.14 * Math.sin(time * 16);
+        context.strokeRect(f.x - (f.hw || 20), f.y - (f.hh || 16), (f.hw || 20) * 2, (f.hh || 16) * 2);
+        context.beginPath(); context.arc(f.x, f.y, 8 + Math.sin(time * 12) * 2, 0, Math.PI * 2); context.stroke();
       }
       context.restore();
     }
@@ -10966,6 +11227,45 @@
       context.globalAlpha = 1;
       context.fillStyle = e.hitFlash > 0 ? "#fff" : "#f4f7ff";
       context.beginPath(); context.ellipse(-12.2, -6.2, 1.8, 3.2, -0.55, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "pentarch") {
+      var hue = pentarchColor(e) || col;
+      var prong = (e.phaseIdx || 0) % 5;
+      context.fillStyle = hue;
+      context.beginPath();
+      context.moveTo(0, -17);
+      for (i = 1; i <= 5; i++) {
+        a = -Math.PI / 2 + i * Math.PI * 2 / 5;
+        context.lineTo(Math.cos(a) * 16, Math.sin(a) * 16);
+      }
+      context.closePath();
+      context.fill();
+      for (i = 0; i < 5; i++) {
+        a = -Math.PI / 2 + i * Math.PI * 2 / 5;
+        context.globalAlpha = i === prong ? 1 : 0.38;
+        context.fillStyle = e.hitFlash > 0 ? "#fff" : PENTARCH_HUES[i];
+        context.beginPath();
+        context.moveTo(Math.cos(a) * 9, Math.sin(a) * 9);
+        context.lineTo(Math.cos(a - 0.28) * 13, Math.sin(a - 0.28) * 13);
+        context.lineTo(Math.cos(a) * (19 + Math.sin(t * 4 + i) * 1.6), Math.sin(a) * (19 + Math.sin(t * 4 + i) * 1.6));
+        context.lineTo(Math.cos(a + 0.28) * 13, Math.sin(a + 0.28) * 13);
+        context.closePath();
+        context.fill();
+      }
+      context.globalAlpha = 1;
+      context.fillStyle = dark;
+      context.beginPath(); context.arc(0, 0, 6.4, 0, Math.PI * 2); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : hue;
+      context.beginPath(); context.arc(0, 0, 3.2 + Math.sin(t * 10) * 0.7, 0, Math.PI * 2); context.fill();
+      context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#fff4d8";
+      context.lineWidth = 1.1;
+      context.beginPath();
+      for (i = 0; i < 5; i++) {
+        a = -Math.PI / 2 + i * Math.PI * 2 / 5;
+        if (i === 0) context.moveTo(Math.cos(a) * 5.2, Math.sin(a) * 5.2);
+        else context.lineTo(Math.cos(a) * 5.2, Math.sin(a) * 5.2);
+      }
+      context.closePath();
+      context.stroke();
     } else {
       context.beginPath(); context.arc(0, 0, e.r, 0, Math.PI * 2); context.fill();
     }
@@ -11304,6 +11604,16 @@
         drawShip(ctx, p.x, p.y, p.invuln > 0, currentLoadout(p));
       }
       ctx.restore();
+      if ((p.freezeT || 0) > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.45 + 0.2 * Math.sin(time * 14);
+        ctx.strokeStyle = "#8ad8ff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, (p.r || 8) + 5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
       if (p.maxHp) {
         pct = Math.max(0, p.hp / p.maxHp);
         ctx.fillStyle = "rgba(8,10,24,0.7)";
@@ -11347,7 +11657,7 @@
       var basePct = Math.max(0, pct - leechPct);
       ctx.fillStyle = "rgba(8,10,24,0.7)";
       ctx.fillRect(16, 8, W - 32, 10);
-      ctx.fillStyle = boss.phaseIdx >= 2 ? "#ff4d4d" : enemyColor(boss.type);
+      ctx.fillStyle = pentarchColor(boss) || (boss.phaseIdx >= 2 ? "#ff4d4d" : enemyColor(boss.type));
       ctx.fillRect(16, 8, (W - 32) * basePct, 10);
       if (leechPct > 0) {
         ctx.fillStyle = (boss.healFlash || 0) > 0 ? "#b8ffe0" : "#3dffb0";
