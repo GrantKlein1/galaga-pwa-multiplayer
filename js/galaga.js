@@ -171,10 +171,10 @@
       p2Text: "MIRROR FIELD", p3Text: "FRACTURE", flavor: "Splitting shards, glass panes, mirror strips" },
     { id: "helios", name: "HELIOS", color: "#ffe08a", dark: "#401808", r: 24, hp: 576, spd: 34, amp: 7, freq: 1.05, cd: 1.42, tele: 0.5, pts: 5350,
       base: ["glare", "sear"], p2: ["prominence", "hearth"], p3: ["noon"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
-      p2Text: "CORONA FLARES", p3Text: "HIGH NOON", flavor: "Aimed glare, heat plates, a noon pillar" },
+      p2Text: "PROMINENCES RISE", p3Text: "HIGH NOON", flavor: "Heat glare, sear plates, a noon pillar" },
     { id: "selene", name: "SELENE", color: "#c8d4ff", dark: "#080c22", r: 22, hp: 628, spd: 36, amp: 9, freq: 0.85, cd: 1.44, tele: 0.52, pts: 5800,
       base: ["crescent", "limb"], p2: ["tide", "waning"], p3: ["occult"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
-      p2Text: "THE TIDE TURNS", p3Text: "OCCULTATION", flavor: "Crescents, shadow limbs, a waning veil" }
+      p2Text: "THE TIDE TURNS", p3Text: "OCCULTATION", flavor: "Crescents, dark limbs, a waning veil" }
   ];
   var GUEST_BOSS_POOL = 10;
 
@@ -10924,32 +10924,48 @@
       context.lineWidth = 1.2;
       context.beginPath(); context.moveTo(-10, -4); context.lineTo(10, 4); context.moveTo(-8, 8); context.lineTo(8, -8); context.stroke();
     } else if (e.type === "helios") {
-      context.fillStyle = col;
-      for (i = 0; i < 12; i++) {
-        a = (i / 12) * Math.PI * 2 + t * 0.45;
+      var flareA = [-0.38, 0.58, 1.46, 2.38, 3.52, 4.78];
+      var flareL = [12, 7, 14, 8.5, 11, 6];
+      var fl, tx, ty;
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#ff9a3a";
+      for (i = 0; i < flareA.length; i++) {
+        a = flareA[i];
+        fl = flareL[i] + Math.sin(t * 3.1 + i * 1.7) * 2.4;
+        tx = Math.cos(a) * (13 + fl);
+        ty = Math.sin(a) * (13 + fl);
         context.beginPath();
-        context.moveTo(Math.cos(a) * 11, Math.sin(a) * 11);
-        context.lineTo(Math.cos(a + 0.09) * (22 + Math.sin(t * 5 + i) * 2), Math.sin(a + 0.09) * (22 + Math.sin(t * 5 + i) * 2));
-        context.lineTo(Math.cos(a + 0.18) * 11, Math.sin(a + 0.18) * 11);
-        context.closePath(); context.fill();
+        context.moveTo(Math.cos(a - 0.38) * 11, Math.sin(a - 0.38) * 11);
+        context.quadraticCurveTo(tx, ty, Math.cos(a + 0.62) * 10, Math.sin(a + 0.62) * 10);
+        context.quadraticCurveTo(Math.cos(a) * 12.5, Math.sin(a) * 12.5, Math.cos(a - 0.38) * 11, Math.sin(a - 0.38) * 11);
+        context.fill();
       }
-      context.beginPath(); context.arc(0, 0, 13, 0, Math.PI * 2); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#ffc14a";
+      context.beginPath(); context.arc(0, 0, 14, 0, Math.PI * 2); context.fill();
+      context.fillStyle = col;
+      context.beginPath(); context.arc(-1, -1, 10.5, 0, Math.PI * 2); context.fill();
       context.fillStyle = e.hitFlash > 0 ? "#fff" : "#fff8e0";
-      context.beginPath(); context.arc(0, 0, 7 + (e.phaseIdx >= 2 ? Math.sin(t * 10) * 1.2 : 0), 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.arc(-2, -2, 5.8 + (e.phaseIdx >= 2 ? Math.sin(t * 8) * 1.1 : 0), 0, Math.PI * 2); context.fill();
       context.fillStyle = dark;
-      context.beginPath(); context.arc(-3, -2, 1.5, 0, Math.PI * 2); context.arc(3, -2, 1.5, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.ellipse(-4.5, 2.2, 2.6, 1.6, 0.45, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.ellipse(5.2, -3.4, 1.7, 1.15, -0.35, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.ellipse(1.2, 5.4, 1.3, 0.85, 0.2, 0, Math.PI * 2); context.fill();
     } else if (e.type === "selene") {
+      var shade = e.phaseIdx >= 2 ? 13.4 : (e.phaseIdx >= 1 ? 9.6 : 6.2);
       context.fillStyle = col;
       context.beginPath(); context.arc(0, 0, 16, 0, Math.PI * 2); context.fill();
       context.fillStyle = dark;
-      context.beginPath(); context.arc(5 + (e.phaseIdx >= 2 ? 2 : 0), -1, 14, 0, Math.PI * 2); context.fill();
-      context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#e8eeff";
-      context.lineWidth = 1.4;
-      context.beginPath(); context.arc(0, 0, 16, 0.4, 2.5); context.stroke();
-      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#9aacff";
-      context.beginPath(); context.arc(-5, -4, 2.2, 0, Math.PI * 2); context.arc(2, 5, 1.6, 0, Math.PI * 2); context.fill();
-      context.fillStyle = col;
-      context.beginPath(); context.arc(-6, -5, 0.8, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.arc(shade, -1, 15.2, 0, Math.PI * 2); context.fill();
+      context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#f0f4ff";
+      context.lineWidth = 1.7;
+      context.beginPath(); context.arc(0, 0, 16, 0.52, 2.42); context.stroke();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#6a78b0";
+      context.globalAlpha = 0.55;
+      context.beginPath(); context.ellipse(-11.2, -3.4, 2.6, 1.8, -0.4, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.ellipse(-9.4, 5.0, 2.2, 1.6, 0.5, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.ellipse(-12.4, 3.2, 1.4, 1.1, 0.15, 0, Math.PI * 2); context.fill();
+      context.globalAlpha = 1;
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#f4f7ff";
+      context.beginPath(); context.ellipse(-12.2, -6.2, 1.8, 3.2, -0.55, 0, Math.PI * 2); context.fill();
     } else {
       context.beginPath(); context.arc(0, 0, e.r, 0, Math.PI * 2); context.fill();
     }

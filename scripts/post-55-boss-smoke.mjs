@@ -55,6 +55,7 @@ assert(pvp.indexOf("cenotaph:") >= 0 && pvp.indexOf("helios:") >= 0 && pvp.index
 assert(pvp.indexOf("myrmidon") < 0 && pvp.indexOf("harrow:") < 0, "old pvp kits gone");
 
 assert(galaga.indexOf("gear") < 0 && galaga.indexOf("cog") < 0, "no gear/cog art");
-assert(sw.indexOf("galaga-coop-v40") >= 0, "PWA cache bump");
+assert(galaga.indexOf("flareA") >= 0 && galaga.indexOf("var shade") >= 0, "sun prominences and moon terminator");
+assert(sw.indexOf("galaga-coop-v41") >= 0, "PWA cache bump");
 
 console.log("post-55-boss-smoke: ok");
