@@ -5342,6 +5342,21 @@
     }
     return out;
   }
+  function rewardItem(rew) {
+    if (!rew || typeof rew === "number") return null;
+    if (rew.gun) return { cat: "gun", id: rew.gun, name: (findGun(rew.gun) || {}).name || rew.gun };
+    if (rew.ship) return { cat: "ship", id: rew.ship, name: (findShip(rew.ship) || {}).name || rew.ship };
+    if (rew.mod) return { cat: "mod", id: rew.mod, name: (findMod(rew.mod) || {}).name || rew.mod };
+    return null;
+  }
+  function rewardCoinPayout(rew) {
+    if (rew == null) return 0;
+    if (typeof rew === "number") return rew;
+    return rew.coins || rew.consolation || 0;
+  }
+  function rewardNeedsChoice(rew) {
+    return !!(rewardItem(rew) && rewardCoinPayout(rew));
+  }
   function ownOrConsole(cat, id, consolation) {
     if (isOwned(cat, id)) {
       profile.coins += consolation || 40;
@@ -5351,10 +5366,23 @@
     if (cat === "ship") grantLevelSkins();
     return 0;
   }
-  function applyReward(rew) {
+  function applyReward(rew, pick) {
+    var item;
     if (rew == null) return;
     if (typeof rew === "number") {
       profile.coins += rew;
+      return;
+    }
+    if (rewardNeedsChoice(rew)) {
+      item = rewardItem(rew);
+      if (pick === "coins") {
+        profile.coins += rewardCoinPayout(rew);
+        return;
+      }
+      if (pick === "item" && item && !isOwned(item.cat, item.id)) {
+        ownedList(item.cat).push(item.id);
+        if (item.cat === "ship") grantLevelSkins();
+      }
       return;
     }
     if (rew.coins) profile.coins += rew.coins;
@@ -5420,22 +5448,32 @@
     drawHubPreview();
     drawHangarPreview();
   }
-  function claimQuest(scope, id) {
-    var q;
+  function claimQuest(scope, id, pick) {
+    var q, item;
     if (scope === "daily") {
       q = dailyById(id);
       if (!q || profile.dailies.claimed[id]) return;
       if ((profile.dailies.progress[id] || 0) < q.target) return;
+      if (rewardNeedsChoice(q.reward)) {
+        if (pick !== "item" && pick !== "coins") return;
+        item = rewardItem(q.reward);
+        if (pick === "item" && item && isOwned(item.cat, item.id)) return;
+      }
       profile.dailies.claimed[id] = true;
-      applyReward(q.reward);
+      applyReward(q.reward, pick);
     } else {
       q = longById(id);
       if (!q) return;
       if (!profile.longTerm[id]) profile.longTerm[id] = { progress: 0, claimed: false };
       var lt = profile.longTerm[id];
       if (lt.claimed || (lt.progress || 0) < q.target) return;
+      if (rewardNeedsChoice(q.reward)) {
+        if (pick !== "item" && pick !== "coins") return;
+        item = rewardItem(q.reward);
+        if (pick === "item" && item && isOwned(item.cat, item.id)) return;
+      }
       lt.claimed = true;
-      applyReward(q.reward);
+      applyReward(q.reward, pick);
     }
     syncQuestProgress();
     ensureAudio();
@@ -5822,39 +5860,51 @@
   function rewardText(rew) {
     if (rew == null) return "";
     if (typeof rew === "number") return rew + "c";
-    var parts = [], name, extra;
-    if (rew.coins) parts.push(rew.coins + "c");
-    if (rew.gun) {
-      name = (findGun(rew.gun) || {}).name || rew.gun;
-      extra = rew.consolation ? " or " + rew.consolation + "c" : "";
-      parts.push(name + extra);
+    var item = rewardItem(rew);
+    var coins = rewardCoinPayout(rew);
+    if (item && coins) return "Choose one: " + item.name + "  or  " + coins + "c";
+    if (item) return item.name;
+    if (rew.coins) return rew.coins + "c";
+    if (rew.consolation) return rew.consolation + "c";
+    return "";
+  }
+  function questClaimControls(q, scope, summary) {
+    var item = rewardItem(q.reward);
+    var coins = rewardCoinPayout(q.reward);
+    var owned, h;
+    if (rewardNeedsChoice(q.reward)) {
+      owned = isOwned(item.cat, item.id);
+      h = '<div class="q-choice">';
+      if (owned) {
+        h += '<button type="button" class="btn q-pick q-pick-item btn-off" disabled>Already own ' + item.name + '</button>';
+      } else {
+        h += '<button type="button" class="btn q-pick q-pick-item" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '" data-pick="item">Take ' + item.name + '</button>';
+      }
+      h += '<span class="q-or">or</span>';
+      h += '<button type="button" class="btn q-pick q-pick-coins" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '" data-pick="coins">Take ' + coins + 'c</button>';
+      h += "</div>";
+      return h;
     }
-    if (rew.ship) {
-      name = (findShip(rew.ship) || {}).name || rew.ship;
-      extra = rew.consolation ? " or " + rew.consolation + "c" : "";
-      parts.push(name + extra);
+    if (summary) {
+      return '<button type="button" class="btn summary-claim" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Claim ' + rewardText(q.reward) + "</button>";
     }
-    if (rew.mod) {
-      name = (findMod(rew.mod) || {}).name || rew.mod;
-      extra = rew.consolation ? " or " + rew.consolation + "c" : "";
-      parts.push(name + extra);
-    }
-    if (!parts.length && rew.consolation) parts.push(rew.consolation + "c");
-    return parts.join(" · ");
+    return '<button type="button" class="btn btn-mini" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Claim</button>';
   }
   function questRow(q, prog, claimed, scope) {
     var done = prog >= q.target;
     var rew = rewardText(q.reward);
     var pct = Math.round(Math.max(0, Math.min(1, prog / q.target)) * 100);
-    var h = '<div class="cat-row' + (claimed ? " equipped claimed" : done ? " ready" : "") + '">';
+    var choice = done && !claimed && rewardNeedsChoice(q.reward);
+    var h = '<div class="cat-row' + (claimed ? " equipped claimed" : done ? " ready" : "") + (choice ? " choice" : "") + '">';
     h += '<div class="cat-info"><div class="cat-name">' + q.name + '</div><div class="cat-desc">' + q.desc + "</div>";
     if (rew) h += '<div class="q-reward">' + rew + "</div>";
     h += '<div class="q-track"><div class="q-fill" style="width:' + pct + '%"></div></div>';
-    h += '<div class="q-prog">' + Math.min(prog, q.target) + " / " + q.target + "</div></div><div class=\"cat-act\">";
-    if (claimed) h += '<span class="tag on">Claimed</span>';
-    else if (done) h += '<button type="button" class="btn btn-mini" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Claim</button>';
-    else h += '<span class="tag">' + pct + "%</span>";
-    h += "</div></div>";
+    h += '<div class="q-prog">' + Math.min(prog, q.target) + " / " + q.target + "</div></div>";
+    if (claimed) h += '<div class="cat-act"><span class="tag on">Claimed</span></div>';
+    else if (choice) h += questClaimControls(q, scope, false);
+    else if (done) h += '<div class="cat-act">' + questClaimControls(q, scope, false) + "</div>";
+    else h += '<div class="cat-act"><span class="tag">' + pct + "%</span></div>";
+    h += "</div>";
     return h;
   }
   function questGroup(q) {
@@ -5896,14 +5946,14 @@
       list.innerHTML = '<div class="summary-quests-empty">No new quest rewards this run. Keep flying to complete the next one.</div>';
       return;
     }
-    h += '<div class="summary-quest-title">Quest rewards ready</div><div class="summary-quest-hint">Claim the rewards you completed this run</div>';
+    h += '<div class="summary-quest-title">Quest rewards ready</div><div class="summary-quest-hint">Item or coins: pick one. Nothing is granted until you choose.</div>';
     for (i = 0; i < runQuestClaims.length; i++) {
       item = runQuestClaims[i];
       q = item.q;
       claimed = item.scope === "daily" ? !!profile.dailies.claimed[q.id] : !!(profile.longTerm[q.id] && profile.longTerm[q.id].claimed);
-      h += '<div class="summary-quest"><div class="summary-quest-info"><div class="cat-name">' + q.name + '</div><div class="cat-desc">' + q.desc + '</div><div class="q-reward">' + rewardText(q.reward) + '</div></div>';
+      h += '<div class="summary-quest' + (!claimed && rewardNeedsChoice(q.reward) ? " choice" : "") + '"><div class="summary-quest-info"><div class="cat-name">' + q.name + '</div><div class="cat-desc">' + q.desc + '</div><div class="q-reward">' + rewardText(q.reward) + '</div></div>';
       if (claimed) h += '<span class="summary-claimed">Claimed</span>';
-      else h += '<button type="button" class="btn summary-claim" data-act="claim" data-scope="' + item.scope + '" data-id="' + q.id + '">Claim ' + rewardText(q.reward) + '</button>';
+      else h += questClaimControls(q, item.scope, true);
       h += "</div>";
     }
     list.innerHTML = h;
@@ -9889,9 +9939,9 @@
   el("btn-again").addEventListener("click", function (e) { e.preventDefault(); playAgain(); });
   el("btn-summary-hub").addEventListener("click", function (e) { e.preventDefault(); leaveNet(); showScreen("hub"); });
   el("summary-quests").addEventListener("click", function (e) {
-    var t = e.target;
+    var t = e.target && e.target.closest ? e.target.closest("[data-act='claim']") : e.target;
     if (!t || !t.getAttribute) return;
-    if (t.getAttribute("data-act") === "claim") claimQuest(t.getAttribute("data-scope"), t.getAttribute("data-id"));
+    if (t.getAttribute("data-act") === "claim") claimQuest(t.getAttribute("data-scope"), t.getAttribute("data-id"), t.getAttribute("data-pick"));
   });
   function bindLobbyUi() {
     function tap(id, fn) {
@@ -10177,9 +10227,9 @@
     if (tab) { hangarTab = tab; renderHangar(); drawHangarPreview(); }
   });
   el("quest-lists").addEventListener("click", function (e) {
-    var t = e.target;
+    var t = e.target && e.target.closest ? e.target.closest("[data-act='claim']") : e.target;
     if (!t || !t.getAttribute) return;
-    if (t.getAttribute("data-act") === "claim") claimQuest(t.getAttribute("data-scope"), t.getAttribute("data-id"));
+    if (t.getAttribute("data-act") === "claim") claimQuest(t.getAttribute("data-scope"), t.getAttribute("data-id"), t.getAttribute("data-pick"));
   });
   function pointerToGameX(e) {
     var rect = canvas.getBoundingClientRect();

@@ -301,6 +301,42 @@ html, body {
 .q-track { height: 3px; background: #0a0a20; border-radius: 99px; overflow: hidden; margin: 3px 0 1px; }
 .q-fill { height: 100%; background: linear-gradient(90deg, #3df0ff, #7ef9ff); }
 .cat-row.ready { border-color: #ffd23d; }
+.cat-row.choice {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.q-choice {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+.q-choice .q-pick {
+  flex: 1;
+  width: auto;
+  min-height: 48px;
+  padding: 10px 8px;
+  font-size: 12px;
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.q-or {
+  flex: none;
+  align-self: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffd23d;
+  opacity: 0.9;
+}
+.q-pick-item { background: #7ef9ff; color: #041018; }
+.q-pick-coins { background: #ffd23d; color: #241b05; }
+.q-pick-coins:hover { background: #ffe08a; }
+.q-pick-item.btn-off:hover { background: #7ef9ff; }
+.q-pick-coins.btn-off:hover { background: #ffd23d; }
 .cat-row.claimed .q-fill { background: #3a6aaa; }
 .summary-body { width: 100%; font-size: 11px; line-height: 1.7; opacity: 0.9; }
 .summary-body div { margin: 2px 0; }
@@ -366,6 +402,10 @@ html, body {
   border: 1px solid rgba(255, 210, 61, 0.55);
   border-radius: 6px;
   background: #161328;
+}
+.summary-quest.choice {
+  flex-direction: column;
+  align-items: stretch;
 }
 .summary-quest-info { flex: 1; min-width: 0; }
 .summary-claim {
