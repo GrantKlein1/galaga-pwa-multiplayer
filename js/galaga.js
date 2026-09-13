@@ -7435,7 +7435,11 @@
           t = t * t * (3 - 2 * t);
           e.x = lerp(e.sx, fx, t);
           e.y = lerp(e.sy, fy, t);
-          if (e.t >= 1) { e.state = "form"; e.x = fx; e.y = fy; }
+          if (e.t >= 1) {
+            e.state = "form"; e.x = fx; e.y = fy;
+            // Boss waves never pick divers, so Overlord kami would freeze in form.
+            if (e.type === "kami" && isBossWave(wave)) startDive(e);
+          }
         } else if (e.state === "archon-return") {
           e.t += dt / e.dur;
           t = e.t > 1 ? 1 : e.t;
