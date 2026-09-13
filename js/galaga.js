@@ -572,10 +572,26 @@
   function guestUnlockedCount(n) {
     return Math.min(GUEST_BOSS_POOL, Math.max(3, Math.floor(n / BOSS_EVERY)));
   }
-  function pickGuestBossIds(rng, n, count, avoid) {
-    var pool = [], i, j, id, idx, skip, out = [];
-    count = count || 1;
-    for (i = 0; i < guestUnlockedCount(n); i++) {
+  function guestBossIndex(id) {
+    var i;
+    for (i = 0; i < BOSS_DEFS.length; i++) if (BOSS_DEFS[i].id === id) return i;
+    return 0;
+  }
+  // Early Seraph–Hydra, mid Colossus–Inferno, late Nullwarden and after
+  // (Basilisk, Overlord, and the post-50 five if they ever guest).
+  function guestBossBand(idx) {
+    if (idx <= 2) return 0;
+    if (idx <= 6) return 1;
+    return 2;
+  }
+  function guestPairOk(idA, idB) {
+    if (!idA || !idB || idA === idB) return false;
+    return !(guestBossBand(guestBossIndex(idA)) === 2 && guestBossBand(guestBossIndex(idB)) === 2);
+  }
+  function guestBossPool(n, avoid, minCount) {
+    var pool = [], i, j, id, skip, size = guestUnlockedCount(n);
+    minCount = minCount || 1;
+    for (i = 0; i < size; i++) {
       id = BOSS_DEFS[i].id;
       skip = false;
       if (avoid) {
@@ -583,11 +599,15 @@
       }
       if (!skip) pool.push(id);
     }
-    if (pool.length < count) {
+    if (pool.length < minCount) {
       pool = [];
-      for (i = 0; i < guestUnlockedCount(n); i++) pool.push(BOSS_DEFS[i].id);
+      for (i = 0; i < size; i++) pool.push(BOSS_DEFS[i].id);
     }
-    count = Math.min(count, pool.length);
+    return pool;
+  }
+  function pickGuestBossIds(rng, n, count, avoid) {
+    var pool = guestBossPool(n, avoid, count), i, idx, out = [];
+    count = Math.min(count || 1, pool.length);
     for (i = 0; i < count; i++) {
       idx = Math.floor(rng() * pool.length);
       out.push(pool[idx]);
@@ -595,8 +615,22 @@
     }
     return out;
   }
+  // Dual guests: random pair of different ids, but never two late-tier
+  // bosses (Overlord+Basilisk, Overlord+Nexus, …). Early+late or two mids is fine.
+  function pickGuestBossPair(rng, n, avoid) {
+    var pool = guestBossPool(n, avoid, 2), pairs = [], i, j, pick;
+    for (i = 0; i < pool.length; i++) {
+      for (j = i + 1; j < pool.length; j++) {
+        if (guestPairOk(pool[i], pool[j])) pairs.push([pool[i], pool[j]]);
+      }
+    }
+    if (!pairs.length) return pickGuestBossIds(rng, n, 1, avoid);
+    pick = pairs[Math.floor(rng() * pairs.length)];
+    if (rng() < 0.5) return [pick[1], pick[0]];
+    return [pick[0], pick[1]];
+  }
   function guestBossPlan(n) {
-    var rng, roll, late, bosses, tier, dual, last;
+    var rng, roll, late, bosses, tier, dual, last, avoid;
     if (n < 16 || isBossWave(n) || isMiniWave(n)) return null;
     rng = seededRand(0xC0FFEE ^ Math.imul(n, 2246822519));
     roll = rng();
@@ -607,12 +641,12 @@
     if (n < 31) {
       bosses.push(BOSS_DEFS[Math.floor(rng() * 3)].id);
     } else {
-      // After wave 30, roll among debuted Seraph–Overlord guests. The old
-      // index math collapsed to Colossus for waves 36–43. Skip the last
-      // scheduled every-5 fight; duals are two different ids.
+      // After wave 30, roll among debuted Seraph–Overlord guests. Skip the
+      // last scheduled every-5 fight. Duals pick a random reasonable pair.
       dual = late && rng() < 0.45;
       last = Math.floor(n / BOSS_EVERY) * BOSS_EVERY;
-      bosses = pickGuestBossIds(rng, n, dual ? 2 : 1, last >= BOSS_EVERY && last < n ? [bossMeta(last).type] : null);
+      avoid = last >= BOSS_EVERY && last < n ? [bossMeta(last).type] : null;
+      bosses = dual ? pickGuestBossPair(rng, n, avoid) : pickGuestBossIds(rng, n, 1, avoid);
       if (late && bosses.length > 1 && n >= 56) tier = 1;
       else if (late && bosses.length === 1 && n >= 60) tier = 1;
     }
