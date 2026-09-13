@@ -1802,6 +1802,18 @@
     if (n === 1) return only;
     return best;
   }
+  function fallbackAimY() {
+    return H - 34;
+  }
+  function clampAimY(y) {
+    return clamp(y == null ? fallbackAimY() : y, 24, H - 24);
+  }
+  function aimStandoffY(fromY, toY, standoff) {
+    var y = toY == null ? fallbackAimY() : toY;
+    if (fromY < y) y -= standoff;
+    else y += standoff;
+    return clampAimY(y);
+  }
   function netSend(msg) {
     var n = window.__net;
     if (n && n.isConnected()) n.send(msg);
@@ -2754,7 +2766,7 @@
   }
   function armLaneBomb(x, y, color) {
     x = clamp(x, 20, W - 20);
-    y = H - 40;
+    y = clampAimY(y);
     teles.push({ kind: "zone", x: x, y: y, x2: 18, y2: 22, t: 0.65, max: 0.65, color: color || "#ff6b3d", blast: true });
     sfxTele();
   }
@@ -3697,7 +3709,7 @@
     } else if (atk === "venompool") {
       pvpAimed(who, 0.5, 170, -12);
       pvpAimed(who, 0.5, 170, 12);
-      pvpEbul(tx, my + face * 36, 0, face * 50, who, { r: 4.5, life: 1.8, color: col });
+      pvpEbul(tx, ty, 0, face * 50, who, { r: 4.5, life: 1.8, color: col });
     } else if (atk === "petrify") {
       pvpColumnAt(who, tx, 7, 220, { r: 2.8, color: "#ff4d9a" });
       if (tgt && Math.abs(tgt.x - tx) < 28) tgt.slowT = Math.max(tgt.slowT || 0, 1.15);
@@ -3846,7 +3858,7 @@
     var tgt = targetPlayer(e.x, e.y);
     if (!tgt) return;
     var dx = tgt.x - e.x;
-    var dy = Math.max(30, tgt.y - e.y);
+    var dy = tgt.y - e.y;
     var len = Math.sqrt(dx * dx + dy * dy) || 1;
     spd = spd || 140;
     addEbul(e.x, e.y + 8, dx / len * spd * (spread || 0.7), dy / len * spd, opt);
@@ -3892,7 +3904,7 @@
     if (e.shotCd > 0) return;
     if (e.type === "mortar") {
       tgt = targetPlayer(e.x, e.y);
-      armLaneBomb(tgt ? tgt.x : W / 2, H - 40, "#ff6b3d");
+      armLaneBomb(tgt ? tgt.x : W / 2, tgt ? tgt.y : fallbackAimY(), "#ff6b3d");
       e.shotCd = 2.9 / (1 + extraPlayers() * 0.2);
     } else if (e.type === "hex") {
       e.jamTele = 0.4;
@@ -3906,13 +3918,14 @@
   function startArchonCharge(e) {
     var tgt = targetPlayer(e.x, e.y), margin = e.r + 18;
     e.aimX = clamp((tgt ? tgt.x : W / 2) + rand(-34, 34), margin, W - margin);
+    e.aimY = tgt ? tgt.y : fallbackAimY();
     e.state = "charge";
     e.t = 0;
     e.dur = rand(0.72, 1.02);
     e.sx = e.x;
     e.sy = e.y;
     e.ex = e.aimX;
-    e.ey = H - 50;
+    e.ey = aimStandoffY(e.y, e.aimY, 16);
     e.cx = clamp(e.x + (e.ex - e.x) * 0.5 + rand(-74, 74), margin, W - margin);
     e.cy = e.y + rand(48, 108);
   }
@@ -3959,15 +3972,16 @@
     enraged = e.phaseIdx >= 1;
     tgt = targetPlayer(e.x, e.y);
     e.aimX = tgt ? tgt.x : W / 2;
+    e.aimY = tgt ? tgt.y : fallbackAimY();
     if (Math.random() < (enraged ? 0.22 : 0.28)) {
-      addTele("line", e.x, e.y, e.aimX, H - 50, 0.38, "#ff5c7a");
+      addTele("line", e.x, e.y, e.aimX, e.aimY, 0.38, "#ff5c7a");
       e.tele = { atk: "charge", t: 0.38 };
       return;
     }
     count = enraged ? 5 : 3;
     spread = enraged ? 0.7 : 0.48;
     fanShot(e.x, e.y + 8, count, spread, 150 + wave * 2, 20, { color: "#ffd6a0", glow: "#ff5c7a" });
-    if (enraged) armLaneBomb(e.aimX, H - 40, "#ff5c7a");
+    if (enraged) armLaneBomb(e.aimX, e.aimY, "#ff5c7a");
     e.atkCd = enraged ? 1.27 : 1.69;
   }
   function currentArchon() {
@@ -4178,7 +4192,7 @@
     e.lastAtk = atk;
     var aim = targetPlayer(e.x, e.y);
     e.aimX = aim ? aim.x : W / 2;
-    e.aimY = aim ? aim.y : H - 34;
+    e.aimY = aim ? aim.y : fallbackAimY();
     if (atk === "aimed" || atk === "feathers" || atk === "homing" || atk === "torpedo" || atk === "venom" || atk === "venompool" || atk === "spitburst") {
       addTele("line", e.x, e.y + 10, e.aimX, e.aimY, delay + 0.08, atk === "homing" || atk === "torpedo" ? "#ffc14d" : "#7ef9ff");
     } else if (atk === "clones" || atk === "riftburst") {
@@ -4218,10 +4232,10 @@
       delay += 0.2;
     } else if (atk === "meteor") {
       e.mets = pickSpreadXs(3, 78, 30);
-      for (i = 0; i < e.mets.length; i++) addZone(e.mets[i], H - 42, 20, 18, delay + 0.18, col);
+      for (i = 0; i < e.mets.length; i++) addZone(e.mets[i], e.aimY, 20, 18, delay + 0.18, col);
       delay += 0.18;
     } else if (atk === "decree" || atk === "decree2" || atk === "decree3") {
-      addZone(e.aimX, H - 40, 20, 20, delay + 0.14, col);
+      addZone(e.aimX, e.aimY, 20, 20, delay + 0.14, col);
       delay += 0.14;
     } else if (atk === "grid") {
       px = clamp(e.aimX, 44, W - 44);
@@ -4254,7 +4268,7 @@
       addZone(gx, e.aimY, 26, 32, delay + 0.2, "#ff4d9a");
       delay += 0.2;
     } else if (atk === "slowfield") {
-      addZone(e.aimX, e.aimY - 10, 44, 34, delay + 0.16, col);
+      addZone(e.aimX, clampAimY(e.aimY), 44, 34, delay + 0.16, col);
       delay += 0.16;
     } else if (atk === "gates" || atk === "gates2") {
       addZone(44, e.y + 34, 14, 10, delay + 0.16, col);
@@ -4269,7 +4283,7 @@
       addTele("ring", e.x, e.y, 0, 0, delay, col);
     } else if (atk === "stamp") {
       e.stampX = clamp(e.aimX + rand(-36, 36), 28, W - 28);
-      e.stampY = clamp(e.aimY - 48, 88, H - 70);
+      e.stampY = clampAimY(e.aimY);
       addZone(e.stampX, e.stampY, 16, 16, delay + 0.1, col);
       delay += 0.1;
     } else if (atk === "bloom") {
@@ -4278,7 +4292,7 @@
     } else if (atk === "column" || atk === "pincer" || atk === "throne") {
       addTele("hline", 12, e.y + 22, W - 12, e.y + 22, delay, col);
     } else if (atk === "order") {
-      addZone(e.aimX, H - 40, 18, 22, delay + 0.14, col);
+      addZone(e.aimX, e.aimY, 18, 22, delay + 0.14, col);
       delay += 0.14;
     } else if (atk === "sacrifice" || atk === "shatter") {
       addTele("line", e.x, e.y + 10, e.aimX, e.aimY, delay + 0.08, col);
@@ -4306,7 +4320,7 @@
     } else if (atk === "rail") {
       e.railH = Math.random() < 0.5;
       if (e.railH) {
-        e.railPos = clamp(e.aimY, 90, H - 50);
+        e.railPos = clampAimY(e.aimY);
         addTele("hline", 16, e.railPos, W - 16, e.railPos, delay + 0.12, col);
       } else {
         e.railPos = clamp(e.aimX, 24, W - 24);
@@ -4393,7 +4407,7 @@
     var T = 1.4, g = 160;
     var venomTgt = targetPlayer(e.x, e.y);
     var tx = (venomTgt ? venomTgt.x : W / 2) + k * 30;
-    var ty = venomTgt ? venomTgt.y : H - 34;
+    var ty = venomTgt ? venomTgt.y : fallbackAimY();
     var dx = tx - e.x, dy = ty - e.y;
     var o = { color: opt.color, glow: opt.glow, r: pool ? 4 : 3.2, grav: g };
     if (pool) { o.pauseAt = ty + 2; o.pauseT = 2.2; }
@@ -4462,13 +4476,18 @@
       }
     }
   }
-  function yankPlayers(tx, amt) {
-    var i, pl;
+  function yankPlayers(tx, amt, ty) {
+    var i, pl, band;
     for (i = 0; i < players.length; i++) {
       pl = players[i];
       if (!pl || !pl.alive) continue;
       pl.x = clamp(pl.x + (tx - pl.x) * amt, 16, W - 16);
       pl.targetX = pl.x;
+      if (ty != null) {
+        band = shipYBand(pl, 16);
+        pl.y = clamp(pl.y + (ty - pl.y) * amt, band.lo, band.hi);
+        pl.targetY = pl.y;
+      }
     }
   }
   function playerOnRail(pl, f) {
@@ -4723,14 +4742,15 @@
       e.state = "charge";
       e.t = 0; e.dur = 0.95;
       e.sx = e.x; e.sy = e.y;
-      e.ex = e.aimX != null ? e.aimX : ((targetPlayer(e.x, e.y) || player || {}).x || W / 2); e.ey = H - 50;
+      e.ex = e.aimX != null ? e.aimX : ((targetPlayer(e.x, e.y) || player || {}).x || W / 2);
+      e.ey = aimStandoffY(e.y, e.aimY != null ? e.aimY : fallbackAimY(), 16);
       if (atk === "charge2") e.afterReturn = "charge";
     } else if (atk === "lunge" || atk === "lunge2") {
       e.state = "lunge";
       e.t = 0; e.dur = 0.68;
       e.sx = e.x; e.sy = e.y;
       e.ex = clamp(e.aimX != null ? e.aimX : ((targetPlayer(e.x, e.y) || player || {}).x || W / 2), 28, W - 28);
-      e.ey = H - 78;
+      e.ey = aimStandoffY(e.y, e.aimY != null ? e.aimY : fallbackAimY(), 44);
       e.cx = (e.sx + e.ex) * 0.5 + (e.ex >= e.sx ? 38 : -38);
       e.cy = (e.sy + e.ey) * 0.5 - 8;
       if (atk === "lunge2") e.afterReturn = "lunge";
@@ -4768,7 +4788,7 @@
       var si, sp;
       for (si = 0; si < players.length; si++) {
         sp = players[si];
-        if (sp && sp.alive && Math.abs(sp.x - e.aimX) < 50 && Math.abs(sp.y - (e.aimY - 10)) < 40) {
+        if (sp && sp.alive && Math.abs(sp.x - e.aimX) < 50 && Math.abs(sp.y - e.aimY) < 40) {
           sp.slowT = 3;
           banner = { text: "SLOWED", life: 0.7 };
         }
@@ -4849,7 +4869,7 @@
     } else if (atk === "eclipse2") {
       aim = targetPlayer(e.x, e.y);
       e.aimX = aim ? aim.x : W / 2;
-      e.aimY = aim ? aim.y : H - 34;
+      e.aimY = aim ? aim.y : fallbackAimY();
       eclipseRing(e, 58, 0.48, 168, { color: "#e0c8ff", glow: col });
     } else if (atk === "riftstep") {
       ox = e.x;
@@ -4898,16 +4918,16 @@
       fireColumn(px + 48, e.y + 14, 6, spd + 30, { r: 3, color: "#fff0c0", glow: col });
       fireCurtain(e.y + 60, 5, 70, { r: 2.8, color: "#fff0c0", glow: col });
     } else if (atk === "decree") {
-      armLaneBomb(e.aimX, H - 40, col);
+      armLaneBomb(e.aimX, e.aimY, col);
       queueFollow(e, 0.4, "decree2");
     } else if (atk === "decree2") {
       px = e.aimX >= W / 2 ? clamp(e.aimX - 86, 28, W - 28) : clamp(e.aimX + 86, 28, W - 28);
       e.aimX = px;
-      armLaneBomb(px, H - 40, col);
+      armLaneBomb(px, e.aimY, col);
       queueFollow(e, 0.4, "decree3");
     } else if (atk === "decree3") {
       px = e.aimX >= W / 2 ? clamp(e.aimX - 86, 28, W - 28) : clamp(e.aimX + 86, 28, W - 28);
-      armLaneBomb(px, H - 40, col);
+      armLaneBomb(px, e.aimY, col);
     } else if (atk === "escorts") {
       summonKami(e, 2 + (e.tier > 0 ? 1 : 0));
     } else if (atk === "corering") {
@@ -4929,8 +4949,8 @@
       fireGappedRing(e.x, e.y, 12, 92, Math.floor(Math.random() * 12), 2, opt);
       e.stream = { n: 6, dt: 0.16, acc: 0, kind: "petal", ang: Math.random() * 6.28, dAng: 0.42, spd: 88, count: 12, skipN: 2 };
     } else if (atk === "stamp") {
-      bossFx.push({ kind: "glyph", x: e.stampX || e.aimX, y: e.stampY || e.aimY - 40, life: 0.72, color: col });
-      addZone(e.stampX || e.aimX, e.stampY || e.aimY - 40, 14, 14, 0.7, col);
+      bossFx.push({ kind: "glyph", x: e.stampX || e.aimX, y: e.stampY || e.aimY, life: 0.72, color: col });
+      addZone(e.stampX || e.aimX, e.stampY || e.aimY, 14, 14, 0.7, col);
     } else if (atk === "orbit") {
       fireGappedRing(e.x, e.y, 12, 78, 0, 2, opt);
       fireGappedRing(e.x, e.y, 10, 118, 5, 2, { color: "#ffd0b0", glow: col, r: 2.6 });
@@ -5020,7 +5040,7 @@
         a = -0.9 + i * 0.3;
         addEbul(e.x, e.y + 8, Math.sin(a) * 90, Math.cos(a) * 90 + 20, { color: col, glow: col, r: 2.8, life: 3.2 });
       }
-      yankPlayers(e.aimX, 0.34);
+      yankPlayers(e.aimX, 0.34, e.aimY);
       banner = { text: "HOOKED", life: 0.55 };
     } else if (atk === "harvest") {
       fireSpoke(16, 24, 0.85, 6, 110, opt);
@@ -5029,13 +5049,13 @@
     } else if (atk === "harvestring") {
       aim = targetPlayer(e.x, e.y);
       px = aim ? aim.x : W / 2;
-      base = aim ? aim.y : H - 40;
+      base = aim ? aim.y : fallbackAimY();
       for (i = 0; i < 8; i++) {
         a = (i / 8) * Math.PI * 2;
-        plantSeed(clamp(px + Math.cos(a) * 42, 18, W - 18), clamp(base + Math.sin(a) * 28, 70, H - 24), col, 3.4);
+        plantSeed(clamp(px + Math.cos(a) * 42, 18, W - 18), clamp(base + Math.sin(a) * 28, 24, H - 24), col, 3.4);
       }
     } else if (atk === "rail") {
-      if (e.railH) addRailFx("h", e.railPos || clamp(e.aimY, 90, H - 50), 16, W - 16, 2.6, col, true);
+      if (e.railH) addRailFx("h", e.railPos || clampAimY(e.aimY), 16, W - 16, 2.6, col, true);
       else addRailFx("v", e.railPos || clamp(e.aimX, 24, W - 24), 40, H - 18, 2.6, col, true);
     } else if (atk === "node") {
       addEbul(28, 48, 70, 0, { color: col, glow: col, r: 3, life: 5 });
