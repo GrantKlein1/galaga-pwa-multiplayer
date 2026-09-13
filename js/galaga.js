@@ -3815,11 +3815,14 @@
     if (idx >= 2) sfxWave(true);
     rebuildBossQueue(e, e.lastAtk);
   }
-  function checkBossPhase(e) {
+  function bossPhaseThresholds(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
-    var th;
-    if (d.p3 && d.p3.length) th = [d.p2Thresh || 2 / 3, d.p3Thresh || 1 / 3];
-    else th = e.tier >= 1 ? [Math.max(0.6, d.p2Thresh || 0.5), 0.25] : [d.p2Thresh || 0.5];
+    if (d.p3 && d.p3.length) return [d.p2Thresh || 2 / 3, d.p3Thresh || 1 / 3];
+    if (e.tier >= 1) return [Math.max(0.6, d.p2Thresh || 0.5), 0.25];
+    return [d.p2Thresh || 0.5];
+  }
+  function checkBossPhase(e) {
+    var th = bossPhaseThresholds(e);
     while (e.phaseIdx < th.length && e.hp <= e.maxHp * th[e.phaseIdx]) {
       e.phaseIdx += 1;
       onBossPhase(e, e.phaseIdx);
@@ -9347,8 +9350,7 @@
       }
     }
     if (boss) {
-      var bd = bossDef(boss.type) || BOSS_DEFS[0];
-      var th = boss.tier >= 1 ? [Math.max(0.6, bd.p2Thresh || 0.5), 0.25] : [bd.p2Thresh || 0.5];
+      var th = bossPhaseThresholds(boss);
       pct = Math.max(0, boss.hp / boss.maxHp);
       var leechAmt = hydraLeechTotal();
       var leechPct = boss.maxHp > 0 ? Math.min(pct, leechAmt / boss.maxHp) : 0;
