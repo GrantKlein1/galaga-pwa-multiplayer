@@ -349,7 +349,7 @@
   var VOL_MUSIC = 0.16;
   var waveKind = "line";
 
-  var input = { left: false, right: false, fire: false, ability: false, holdL: 0, holdR: 0 };
+  var input = { left: false, right: false, fire: false, ability: false, ab: 0, holdL: 0, holdR: 0 };
   var pointerSteer = { id: 0, aimX: null, fire: false };
   var player = null;
   var players = [];
@@ -2068,16 +2068,27 @@
     if (score > best) { best = score; profile.best = best; saveProfile(); setText(bestEl, best); }
   }
   var lastPvpChrome = "";
+  function pvpAbilityCdText(sec) {
+    if (!(sec > 0)) return "READY";
+    if (sec >= 9.95) return Math.ceil(sec) + "s";
+    return sec.toFixed(1) + "s";
+  }
   function syncPvpHudChrome() {
     var app = el("app");
     var hint = el("pvp-hint");
     var padAb = el("pad-ability");
     var sess = pvpS();
-    var kit, localBoss, cd, key, fireEl, abEl;
+    var kit, localBoss, abs, i, spec, cd, cds, key, fireEl, abBox, html, ready, padLab;
     localBoss = player && player.boss;
-    kit = localBoss && pvpApi() ? pvpApi().kitFor(localBoss) : null;
-    cd = kit && player && player.abilityCd > 0 ? "  " + Math.ceil(player.abilityCd) + "s" : "";
-    key = (isPvpRun() ? "1" : "0") + "|" + ((sess && sess.mode) || "") + "|" + (localBoss || "") + "|" + (kit ? kit.fireHint : "") + "|" + (kit ? kit.abilityHint : "") + "|" + cd;
+    kit = isPvpRun() && localBoss && pvpApi() ? pvpApi().kitFor(localBoss) : null;
+    abs = kit && pvpApi() && pvpApi().kitAbilities ? pvpApi().kitAbilities(localBoss) : [];
+    cds = (player && player.abilityCds) || [];
+    key = (isPvpRun() ? "1" : "0") + "|" + ((sess && sess.mode) || "") + "|" + (localBoss || "") + "|" + (kit ? kit.fireHint : "");
+    for (i = 0; i < abs.length; i++) {
+      spec = abs[i];
+      cd = cds[i] || 0;
+      key += "|" + spec.key + ":" + spec.id + ":" + pvpAbilityCdText(cd);
+    }
     if (key === lastPvpChrome) return;
     lastPvpChrome = key;
     if (app) {
@@ -2089,12 +2100,44 @@
       hint.setAttribute("aria-hidden", kit ? "false" : "true");
       if (kit) {
         fireEl = el("pvp-hint-fire");
-        abEl = el("pvp-hint-ability");
+        abBox = el("pvp-hint-abilities") || el("pvp-hint-ability");
         if (fireEl) setText(fireEl, kit.fireHint);
-        if (abEl) setText(abEl, kit.abilityHint + cd);
+        if (abBox) {
+          var tips = abBox.querySelectorAll(".pvp-ab-tip");
+          var cdEl;
+          if (tips.length === abs.length && abs.length) {
+            for (i = 0; i < abs.length; i++) {
+              spec = abs[i];
+              cd = cds[i] || 0;
+              ready = !(cd > 0);
+              tips[i].classList.toggle("ready", ready);
+              tips[i].classList.toggle("cooling", !ready);
+              cdEl = tips[i].querySelector(".pvp-ab-cd");
+              if (cdEl) cdEl.textContent = pvpAbilityCdText(cd);
+            }
+          } else {
+            html = "";
+            for (i = 0; i < abs.length; i++) {
+              spec = abs[i];
+              cd = cds[i] || 0;
+              ready = !(cd > 0);
+              html += '<button type="button" class="pvp-ab-tip' + (ready ? " ready" : " cooling") + '" data-pvp-ab="' + (i + 1) + '">' +
+                '<span class="pvp-ab-key">' + spec.key + "</span>" +
+                '<span class="pvp-ab-name">' + (spec.name || spec.id) + "</span>" +
+                '<span class="pvp-ab-cd">' + pvpAbilityCdText(cd) + "</span></button>";
+            }
+            abBox.innerHTML = html;
+          }
+        }
       }
     }
-    if (padAb) padAb.classList.toggle("hidden", !kit);
+    if (padAb) {
+      padAb.classList.toggle("hidden", !kit);
+      if (kit && abs[0]) {
+        padLab = abs[0].key + " " + (abs[0].name || "ABILITY");
+        if (padAb.textContent !== padLab) padAb.textContent = padLab;
+      }
+    }
   }
 
   function ensureAudio() {
@@ -2631,6 +2674,7 @@
       bx: x,
       pauseAt: opt.pauseAt || 0,
       pauseT: opt.pauseT || 0,
+      pauseAfter: opt.pauseAfter || 0,
       paused: false,
       resumeSpd: opt.resumeSpd || 0,
       splitOnResume: !!opt.splitOnResume,
@@ -2647,7 +2691,7 @@
         r: opt.r, homing: opt.homing, homeT: opt.homeT, hsp: opt.hsp, hturn: opt.hturn,
         mine: opt.mine, fuse: opt.fuse, pellets: opt.pellets, pelletSpd: opt.pelletSpd,
         life: opt.life, grav: opt.grav, accel: opt.accel, sway: opt.sway, swayF: opt.swayF,
-        swayPh: opt.swayPh, pauseAt: opt.pauseAt, pauseT: opt.pauseT, resumeSpd: opt.resumeSpd,
+        swayPh: opt.swayPh, pauseAt: opt.pauseAt, pauseT: opt.pauseT, pauseAfter: opt.pauseAfter, resumeSpd: opt.resumeSpd,
         splitOnResume: opt.splitOnResume, splitAt: opt.splitAt, splitT: opt.splitT,
         seed: opt.seed, color: opt.color, glow: opt.glow, owner: opt.owner,
         silent: true, noTwin: true
@@ -2836,12 +2880,12 @@
       r: loadoutR(s, spec.mod), speed: loadoutSpeed(s, spec.mod), invulnDur: s.invuln, regen: s.regen, regenT: 0,
       shotCount: 0,
       lives: loadoutLives(s),
-      hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, dash: null, rewind: null,
+      hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, abilityCds: [0, 0, 0, 0, 0, 0], abilityGcd: 0, dash: null, rewind: null, pvpFollow: null,
       leech: 0,
       skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
       skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
       skinSentinelCd: 0, skinUmbraT: 0, skinCarrion: 0, skinCoronaAcc: 0, skinKeepX: false,
-      input: { left: false, right: false, fire: false, ability: false, holdL: 0, holdR: 0, aimX: null },
+      input: { left: false, right: false, fire: false, ability: false, ab: 0, holdL: 0, holdR: 0, aimX: null },
       hostX: x
     };
   }
@@ -3017,6 +3061,9 @@
       p.speed = Math.max(150, (d.spd || 40) * 3.2);
       p.invulnDur = (api && api.PVP_HIT_INVULN) || 0.16;
       p.abilityCd = 0.6;
+      p.abilityCds = [0.6, 0.6, 0.6, 0.6, 0.6, 0.6];
+      p.abilityGcd = 0;
+      p.pvpFollow = null;
     }
   }
 
@@ -3116,6 +3163,9 @@
       p.slowT = 0;
       p.jamT = 0;
       p.abilityCd = 0.4;
+      p.abilityCds = [0.4, 0.4, 0.4, 0.4, 0.4, 0.4];
+      p.abilityGcd = 0;
+      p.pvpFollow = null;
       p.dash = null;
       p.rewind = null;
       resetSkinWave(p);
@@ -3376,6 +3426,62 @@
       pvpEbul(who.x, who.y, Math.cos(a) * spd, Math.sin(a) * spd, who);
     }
   }
+  function pvpShotTarget(who, b) {
+    var owner = who ? who.slot : (b && b.owner);
+    var i, pl;
+    if (isPvpRun() && owner != null && owner >= 0) {
+      for (i = 0; i < players.length; i++) {
+        pl = players[i];
+        if (pl && pl.alive && pl.slot !== owner) return pl;
+      }
+    }
+    return targetPlayer((b && b.x) || (who && who.x) || 0, (b && b.y) || (who && who.y) || 0);
+  }
+  function pvpDashTo(who, dist, dur, inv) {
+    var tgt = pvpOpponent(who);
+    var face = pvpFacing(who);
+    who.dash = {
+      t: 0, dur: dur || 0.55,
+      sx: who.x, sy: who.y,
+      ex: tgt ? tgt.x : who.x,
+      ey: clamp(who.y + face * dist, 28, H - 28),
+      back: true
+    };
+    who.invuln = Math.max(who.invuln, inv || 0.32);
+  }
+  function pvpColumnAt(who, x, n, spd, extra) {
+    var face = pvpFacing(who), i, my = pvpMuzzleY(who);
+    extra = extra || {};
+    x = clamp(x, 16, W - 16);
+    spd = spd || 250;
+    for (i = 0; i < n; i++) pvpEbul(x, my + face * (12 + i * 16), 0, face * spd, who, extra);
+  }
+  function pvpCurtainToward(who, n, spd, extra) {
+    var i, x, gap, tgt = pvpOpponent(who), my = pvpMuzzleY(who), face = pvpFacing(who);
+    extra = extra || {};
+    n = n || 5;
+    gap = tgt ? clamp(Math.round(tgt.x / W * (n - 1)) + (who.x > W / 2 ? -1 : 1), 0, n - 1) : (n >> 1);
+    for (i = 0; i < n; i++) {
+      if (i === gap) continue;
+      x = 16 + i * ((W - 32) / Math.max(1, n - 1));
+      pvpEbul(x, my, 0, face * (spd || 200), who, extra);
+    }
+  }
+  function pvpSideVolley(who, spread, spd, heavy) {
+    var x0 = clamp(who.x - 42, 18, W - 18);
+    var x1 = clamp(who.x + 42, 18, W - 18);
+    var saved = who.x;
+    who.x = x0;
+    pvpAimed(who, spread || 0.85, spd || 220, 0);
+    if (heavy) pvpFanToward(who, 3, 0.5, (spd || 220) * 0.85);
+    who.x = x1;
+    pvpAimed(who, spread || 0.85, spd || 220, 0);
+    if (heavy) pvpFanToward(who, 3, 0.5, (spd || 220) * 0.85);
+    who.x = saved;
+  }
+  function pvpQueueFollow(who, t, atk) {
+    who.pvpFollow = { t: t, atk: atk };
+  }
   function pvpBossPrimary(who) {
     var kit = pvpApi() ? pvpApi().kitFor(who.boss) : null;
     var atk = kit ? kit.fire : "aimed";
@@ -3402,71 +3508,201 @@
       pvpAimed(who, 0.85, 240, 0);
       pvpAimed(who, 0.85, 240, 8);
     }
-    who.fireCd = (pvpApi() && pvpApi().PVP_FIRE_CD) || 2.4;
+    who.fireCd = (pvpApi() && pvpApi().PVP_FIRE_CD) || 1.92;
     who.muzzle = 1;
     sfxShoot(who);
   }
-  function pvpBossAbility(who) {
-    var kit = pvpApi() ? pvpApi().kitFor(who.boss) : null;
-    var atk = kit ? kit.ability : "ram";
+  function pvpCastAbility(who, atk) {
     var tgt = pvpOpponent(who);
     var face = pvpFacing(who);
-    var i, x, col = enemyColor(who.boss);
-    if (!who.boss || (who.abilityCd || 0) > 0) return;
-    who.abilityCd = (pvpApi() && pvpApi().ABILITY_CD) || 4;
-    if (atk === "ram" || atk === "charge" || atk === "whip") {
-      who.dash = {
-        t: 0, dur: 0.55,
-        sx: who.x, sy: who.y,
-        ex: tgt ? tgt.x : who.x,
-        ey: clamp(who.y + face * 150, 28, H - 28),
-        back: true
-      };
-      who.invuln = Math.max(who.invuln, 0.35);
+    var i, x, x2, col = enemyColor(who.boss);
+    var mx = who.x, my = pvpMuzzleY(who);
+    var tx = tgt ? tgt.x : who.x;
+    var ty = tgt ? tgt.y : who.y;
+    if (atk === "ram" || atk === "charge") {
+      pvpDashTo(who, atk === "charge" ? 170 : 150, 0.55, 0.34);
+    } else if (atk === "lunge") {
+      pvpDashTo(who, 130, 0.48, 0.3);
+    } else if (atk === "lunge2") {
+      pvpDashTo(who, 175, 0.52, 0.38);
+      pvpFanToward(who, 3, 0.55, 220);
+    } else if (atk === "whip") {
+      pvpDashTo(who, 140, 0.5, 0.28);
+      pvpFanToward(who, 5, 1.05, 210);
     } else if (atk === "blink") {
-      who.x = clamp(tgt ? tgt.x + (Math.random() < 0.5 ? -28 : 28) : who.x, 20, W - 20);
+      who.x = clamp(tx + (Math.random() < 0.5 ? -28 : 28), 20, W - 20);
       who.targetX = who.x;
       pvpAimed(who, 0.95, 280, 0);
       explode(who.x, who.y, col, false);
-    } else if (atk === "beam" || atk === "gaze") {
-      x = clamp(tgt ? tgt.x : who.x, 16, W - 16);
-      for (i = 0; i < 8; i++) pvpEbul(x, who.y + face * (14 + i * 18), 0, face * 260, who, { r: 3.2, color: col });
+    } else if (atk === "blink2") {
+      who.x = clamp(tx + (Math.random() < 0.5 ? -28 : 28), 20, W - 20);
+      who.targetX = who.x;
+      pvpAimed(who, 0.95, 270, -6);
+      pvpAimed(who, 0.95, 270, 6);
+      explode(who.x, who.y, col, false);
+      pvpQueueFollow(who, 0.4, "blink");
+    } else if (atk === "riftstep") {
+      explode(who.x, who.y, col, true);
+      pvpRing(who, 8, 95);
+      who.x = clamp(tx + (Math.random() < 0.5 ? -32 : 32), 20, W - 20);
+      who.targetX = who.x;
+      pvpAimed(who, 0.8, 160, 0);
+      explode(who.x, who.y, col, false);
     } else if (atk === "rewind") {
       who.rewind = { x: who.x, y: who.y, t: 0.55 };
       who.invuln = Math.max(who.invuln, 0.7);
       pvpRing(who, 8, 120);
+    } else if (atk === "beam" || atk === "gaze" || atk === "order" || atk === "surge" || atk === "bloom") {
+      pvpColumnAt(who, tx, atk === "bloom" ? 9 : 8, atk === "bloom" ? 290 : 260, { r: atk === "bloom" ? 3.6 : 3.2, color: col });
     } else if (atk === "lance2") {
-      x = clamp(tgt ? tgt.x : who.x, 24, W - 24);
-      for (i = 0; i < 7; i++) {
-        pvpEbul(x - 18, who.y + face * (12 + i * 16), 0, face * 280, who, { r: 2.6, color: col });
-        pvpEbul(x + 18, who.y + face * (12 + i * 16), 0, face * 280, who, { r: 2.6, color: col });
+      x = clamp(tx, 24, W - 24);
+      pvpColumnAt(who, x - 18, 7, 280, { r: 2.6, color: col });
+      pvpColumnAt(who, x + 18, 7, 280, { r: 2.6, color: col });
+    } else if (atk === "constrict") {
+      pvpColumnAt(who, 22, 8, 240, { r: 3, color: col });
+      pvpColumnAt(who, W - 22, 8, 240, { r: 3, color: col });
+    } else if (atk === "pincer") {
+      pvpColumnAt(who, 36, 7, 230, { r: 2.8, color: col });
+      pvpColumnAt(who, W - 36, 7, 230, { r: 2.8, color: col });
+    } else if (atk === "throne") {
+      pvpColumnAt(who, W * 0.28, 6, 210, { r: 2.8, color: col });
+      pvpColumnAt(who, W * 0.5, 6, 210, { r: 2.8, color: col });
+      pvpColumnAt(who, W * 0.72, 6, 210, { r: 2.8, color: col });
+      pvpAimed(who, 0.7, 180, -10);
+      pvpAimed(who, 0.7, 180, 10);
+    } else if (atk === "fan" || atk === "flare") {
+      pvpFanToward(who, 5, 0.95, 230);
+    } else if (atk === "fan2") {
+      pvpFanToward(who, 5, 1.05, 230);
+      pvpQueueFollow(who, 0.28, "fan");
+    } else if (atk === "halo" || atk === "stamp" || atk === "coil" || atk === "corering") {
+      pvpRing(who, atk === "corering" ? 12 : 10, atk === "halo" ? 85 : 95);
+    } else if (atk === "orbit") {
+      pvpRing(who, 8, 88);
+      pvpRing(who, 8, 128);
+    } else if (atk === "wheel") {
+      pvpRing(who, 12, 110);
+      pvpFanToward(who, 4, 1.2, 200);
+    } else if (atk === "ring2") {
+      pvpRing(who, 8, 90);
+      pvpQueueFollow(who, 0.3, "halo");
+    } else if (atk === "mines" || atk === "depth" || atk === "meteor") {
+      for (i = -1; i <= 1; i++) {
+        pvpEbul(mx + i * 26, my, i * 18, face * 70, who, {
+          mine: true, fuse: atk === "meteor" ? 0.95 : 1.45, r: atk === "depth" ? 5 : 4.4,
+          pellets: atk === "depth" ? 7 : 5, pelletSpd: 100, color: col, glow: col
+        });
       }
+    } else if (atk === "sweep" || atk === "rain" || atk === "shock" || atk === "pendulum") {
+      pvpCurtainToward(who, atk === "pendulum" ? 4 : 5, atk === "shock" ? 160 : 190, {
+        r: 2.6, color: col, sway: atk === "pendulum" ? 22 : 0, swayF: 2.4
+      });
+    } else if (atk === "riptide") {
+      for (i = 0; i < 4; i++) {
+        pvpEbul(8, my + face * (10 + i * 18), 90 + i * 10, face * (70 + i * 8), who, { r: 2.6, color: col, sway: 14, swayF: 2.4, swayPh: i });
+      }
+      pvpQueueFollow(who, 0.4, "riptideB");
+    } else if (atk === "riptideB") {
+      for (i = 0; i < 4; i++) {
+        pvpEbul(W - 8, my + face * (10 + i * 18), -(90 + i * 10), face * (70 + i * 8), who, { r: 2.6, color: col, sway: 14, swayF: 2.4, swayPh: i + 1 });
+      }
+    } else if (atk === "homing" || atk === "sacrifice") {
+      pvpEbul(mx - 10, my, -20, face * 90, who, { homing: true, homeT: 1.8, hsp: 150, hturn: 1.7, r: 3.2, color: col });
+      pvpEbul(mx + 10, my, 20, face * 90, who, { homing: true, homeT: 1.8, hsp: 150, hturn: 1.7, r: 3.2, color: col });
+      if (atk === "sacrifice") pvpAimed(who, 1, 300, 0);
     } else if (atk === "collapse") {
       pvpAimed(who, 1, 90, 0);
-      pvpRing(who, 12, 70);
-      if (tgt) {
-        tgt.slowT = Math.max(tgt.slowT || 0, 1.1);
-      }
+      pvpRing(who, 10, 70);
+      if (tgt) tgt.slowT = Math.max(tgt.slowT || 0, 0.9);
     } else if (atk === "decree" || atk === "pane") {
       for (i = 0; i < 5; i++) {
         x = 28 + i * ((W - 56) / 4);
-        if (tgt && Math.abs(x - tgt.x) < 18) continue;
-        pvpEbul(x, who.y + face * 10, 0, face * 240, who, { r: 2.4, color: col });
+        if (tgt && Math.abs(x - tx) < 18) continue;
+        pvpEbul(x, my, 0, face * 240, who, { r: 2.4, color: col });
       }
-    } else if (atk === "stamp") {
-      pvpRing(who, 10, 95);
-    } else if (atk === "order" || atk === "surge") {
-      x = clamp(tgt ? tgt.x : who.x, 16, W - 16);
-      for (i = 0; i < 8; i++) pvpEbul(x, who.y + face * (14 + i * 18), 0, face * 260, who, { r: 3.4, color: col });
     } else if (atk === "hook") {
       pvpFanToward(who, 6, 1.05, 210);
       if (tgt) {
-        tgt.x = clamp(tgt.x + (who.x - tgt.x) * 0.32, 16, W - 16);
+        tgt.x = clamp(tgt.x + (who.x - tgt.x) * 0.28, 16, W - 16);
         tgt.targetX = tgt.x;
       }
+    } else if (atk === "summon" || atk === "escorts") {
+      pvpSideVolley(who, 0.8, 220, false);
+    } else if (atk === "summontank") {
+      pvpSideVolley(who, 0.7, 200, true);
+    } else if (atk === "gates") {
+      for (i = 0; i < 3; i++) {
+        pvpEbul(28, my, 40 + i * 18, face * 180, who, { r: 2.6, color: col });
+        pvpEbul(W - 28, my, -(40 + i * 18), face * 180, who, { r: 2.6, color: col });
+      }
+    } else if (atk === "eclipse") {
+      for (i = 0; i < 6; i++) {
+        x = clamp(tx + Math.cos((i / 6) * Math.PI * 2) * 62, 14, W - 14);
+        x2 = clamp(ty + Math.sin((i / 6) * Math.PI * 2) * 44, 24, H - 24);
+        pvpEbul(x, x2, 0, 0, who, { r: 3, life: 3.8, pauseAfter: 0.12, pauseT: 0.5, resumeSpd: 150, color: col });
+      }
+    } else if (atk === "venompool") {
+      pvpAimed(who, 0.5, 170, -12);
+      pvpAimed(who, 0.5, 170, 12);
+      pvpEbul(tx, my + face * 36, 0, face * 50, who, { r: 4.5, life: 1.8, color: col });
+    } else if (atk === "petrify") {
+      pvpColumnAt(who, tx, 7, 220, { r: 2.8, color: "#ff4d9a" });
+      if (tgt && Math.abs(tgt.x - tx) < 28) tgt.slowT = Math.max(tgt.slowT || 0, 1.15);
+    } else if (atk === "embers" || atk === "emberssplit") {
+      for (i = 0; i < 6; i++) {
+        x = 22 + i * ((W - 44) / 5);
+        pvpEbul(x, my, (Math.random() - 0.5) * 24, face * (80 + Math.random() * 28), who, {
+          r: 2.6, life: 4.5, color: col, splitT: atk === "emberssplit" ? 0.5 : 0
+        });
+      }
+    } else if (atk === "ticksplit") {
+      pvpEbul(mx - 8, my, 0, face * 140, who, { r: 3, life: 4, pauseAfter: 0.45, pauseT: 0.55, resumeSpd: 210, splitOnResume: true, color: col });
+      pvpEbul(mx + 8, my, 0, face * 140, who, { r: 3, life: 4, pauseAfter: 0.45, pauseT: 0.55, resumeSpd: 210, splitOnResume: true, color: col });
+    } else if (atk === "sow") {
+      for (i = -1; i <= 1; i++) pvpColumnAt(who, clamp(tx + i * 48, 20, W - 20), 4, 160, { r: 2.2, color: col });
+    } else if (atk === "reap") {
+      pvpColumnAt(who, clamp(tx - 36, 20, W - 20), 8, 240, { r: 2.8, color: col });
+      pvpColumnAt(who, clamp(tx + 36, 20, W - 20), 8, 240, { r: 2.8, color: col });
+    } else if (atk === "harvest") {
+      pvpRing(who, 8, 70);
+      pvpColumnAt(who, 40, 6, 210, { r: 2.6, color: col });
+      pvpColumnAt(who, W - 40, 6, 210, { r: 2.6, color: col });
+    } else if (atk === "twin" || atk === "fracture") {
+      pvpColumnAt(who, W * 0.25, 6, 200, { r: 2.5, color: col });
+      pvpColumnAt(who, W * 0.75, 6, 200, { r: 2.5, color: col });
+      if (atk === "fracture") pvpColumnAt(who, W * 0.5, 6, 200, { r: 2.5, color: col });
+    } else if (atk === "catch") {
+      pvpFanToward(who, 6, 0.9, 240);
+      pvpAimed(who, 0.95, 260, 0);
+    } else if (atk === "rail" || atk === "gridlock" || atk === "blackout") {
+      pvpColumnAt(who, tx, 7, 230, { r: 3, color: col });
+      if (atk !== "rail") pvpCurtainToward(who, 4, 180, { r: 2.4, color: col });
     } else {
       pvpFanToward(who, 7, 1.15, 240);
     }
+  }
+  function pvpBossAbility(who, slot) {
+    var api = pvpApi();
+    var spec, idx, cds, cd, gcd;
+    if (!who || !who.boss) return;
+    if (pvpS() && pvpS().roundLock) return;
+    slot = (slot | 0) || 1;
+    spec = api && api.abilityAt ? api.abilityAt(who.boss, slot) : null;
+    if (!spec) {
+      if (slot !== 1) return;
+      spec = { id: (api && api.kitFor(who.boss).ability) || "ram", cd: (api && api.ABILITY_CD) || 4 };
+    }
+    idx = slot - 1;
+    if (!who.abilityCds) who.abilityCds = [0, 0, 0, 0, 0, 0];
+    cds = who.abilityCds;
+    gcd = (api && api.ABILITY_GCD) || 0.45;
+    if ((who.abilityGcd || 0) > 0) return;
+    if ((cds[idx] || 0) > 0) return;
+    cd = spec.cd || (api && api.ABILITY_CD) || 4;
+    cds[idx] = cd;
+    who.abilityCd = Math.max(who.abilityCd || 0, cds[0] || 0);
+    who.abilityGcd = gcd;
+    pvpCastAbility(who, spec.id);
     sfxTele();
   }
 
@@ -6044,12 +6280,12 @@
   function stopLoop() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
   function startLoop() { stopLoop(); lastTs = 0; rafId = requestAnimationFrame(tick); }
   function resetInput() {
-    input.left = false; input.right = false; input.fire = false; input.ability = false; input.holdL = 0; input.holdR = 0;
+    input.left = false; input.right = false; input.fire = false; input.ability = false; input.ab = 0; input.holdL = 0; input.holdR = 0;
     pointerSteer.id = 0; pointerSteer.aimX = null; pointerSteer.fire = false;
     var i;
     for (i = 0; i < players.length; i++) {
       if (!players[i] || players[i].slot !== localSlot) continue;
-      players[i].input.left = false; players[i].input.right = false; players[i].input.fire = false; players[i].input.ability = false;
+      players[i].input.left = false; players[i].input.right = false; players[i].input.fire = false; players[i].input.ability = false; players[i].input.ab = 0;
       players[i].input.holdL = 0; players[i].input.holdR = 0; players[i].input.aimX = null;
     }
   }
@@ -6344,7 +6580,16 @@
         tut.classList.remove("hidden");
         if (el("pvp-tutorial-name")) el("pvp-tutorial-name").textContent = d ? d.name : picked;
         if (el("pvp-tutorial-fire")) el("pvp-tutorial-fire").textContent = kit.fireHint;
-        if (el("pvp-tutorial-ability")) el("pvp-tutorial-ability").textContent = kit.abilityHint;
+        var abTut = el("pvp-tutorial-ability");
+        var abs = api.kitAbilities ? api.kitAbilities(picked) : [];
+        var lines = "", ai, spec;
+        if (abTut) {
+          for (ai = 0; ai < abs.length; ai++) {
+            spec = abs[ai];
+            lines += '<div class="pvp-tutorial-line"><b>' + spec.key + "</b> — " + (spec.name || spec.id) + "  <span class=\"pvp-tutorial-cd\">CD " + (spec.cd || 4).toFixed(1) + "s</span></div>";
+          }
+          abTut.innerHTML = lines;
+        }
       }
       return;
     }
@@ -6413,7 +6658,7 @@
       hint.textContent = sess.mode === "draft"
         ? "Same 3 options each. Pick ship, mod, paint, gun."
         : sess.mode === "insane"
-          ? "Fight as a boss. Same roster, duplicate picks allowed."
+          ? "Fight as a boss. Space fires. Keys 1–6 are abilities (E / Shift = 1). Cooldowns show on screen."
           : "Bring your hangar ship, gun, mod, and paint.";
     }
     if (wagerLab) wagerLab.classList.toggle("hidden", !host && !sess.wager);
@@ -6820,7 +7065,7 @@
     p = players[localSlot];
     inputAcc += dt;
     hz = netTransport() === "mqtt" ? 12 : 60;
-    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (input.ability ? "1" : "0") + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX));
+    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (input.ability ? "1" : "0") + (input.ab || 0) + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX));
     if (key !== lastInputKey || inputAcc >= 1 / hz) {
       lastInputKey = key;
       inputAcc = 0;
@@ -6828,7 +7073,7 @@
       netSend({
         t: "input", n: inputSeq, slot: localSlot,
         l: !!(p && p.input.left), r: !!(p && p.input.right),
-        f: !!(p && p.input.fire), a: !!(p && p.input.ability), aimX: p ? p.input.aimX : null,
+        f: !!(p && p.input.fire), a: !!(p && p.input.ability), ab: p ? (p.input.ab | 0) : 0, aimX: p ? p.input.aimX : null,
         x: p ? p.x : null, targetX: p ? p.targetX : null
       });
     }
@@ -7077,6 +7322,7 @@
       p.input.right = !!msg.r;
       p.input.fire = !!msg.f;
       p.input.ability = !!msg.a;
+      p.input.ab = (msg.ab | 0) || (msg.a ? 1 : 0);
       p.input.aimX = msg.aimX == null ? null : msg.aimX;
       if (msg.x != null && isFinite(msg.x)) {
         p.x = msg.x;
@@ -7201,6 +7447,7 @@
     }
     p.input.fire = input.fire || pointerSteer.fire;
     p.input.ability = !!input.ability;
+    p.input.ab = input.ab | 0;
   }
 
   function updateOneShip(p, dt, fire) {
@@ -7276,6 +7523,20 @@
       p.regenT = 0;
     }
     p.abilityCd = Math.max(0, (p.abilityCd || 0) - dt);
+    p.abilityGcd = Math.max(0, (p.abilityGcd || 0) - dt);
+    if (p.abilityCds) {
+      var ai;
+      for (ai = 0; ai < p.abilityCds.length; ai++) p.abilityCds[ai] = Math.max(0, (p.abilityCds[ai] || 0) - dt);
+      p.abilityCd = p.abilityCds[0] || 0;
+    }
+    if (p.pvpFollow) {
+      p.pvpFollow.t -= dt;
+      if (p.pvpFollow.t <= 0) {
+        var followAtk = p.pvpFollow.atk;
+        p.pvpFollow = null;
+        if (followAtk) pvpCastAbility(p, followAtk);
+      }
+    }
     if (p.rewind) {
       p.rewind.t -= dt;
       if (p.rewind.t <= 0) {
@@ -7310,7 +7571,10 @@
       }
     }
     if (fire && inp.fire && !(pvpS() && pvpS().roundLock)) shootPlayer(p);
-    if (fire && inp.ability && p.boss && !(pvpS() && pvpS().roundLock)) pvpBossAbility(p);
+    if (fire && p.boss && !(pvpS() && pvpS().roundLock)) {
+      var abSlot = (inp.ab | 0) || (inp.ability ? 1 : 0);
+      if (abSlot) pvpBossAbility(p, abSlot);
+    }
   }
 
   function update(dt) {
@@ -7600,19 +7864,19 @@
         if (b.pauseT <= 0) {
           if (!b.resumeSpd) { ebul.splice(i, 1); continue; }
           b.paused = false;
-          var resumeTgt = targetPlayer(b.x, b.y);
+          var resumeTgt = pvpShotTarget(null, b) || targetPlayer(b.x, b.y);
           var rdx = (resumeTgt ? resumeTgt.x : b.x) - b.x, rdy = (resumeTgt ? resumeTgt.y : H) - b.y;
           var rlen = Math.sqrt(rdx * rdx + rdy * rdy) || 1;
           b.vx = rdx / rlen * b.resumeSpd; b.vy = rdy / rlen * b.resumeSpd;
           b.bx = b.x;
           if (b.splitOnResume) {
             var ra = Math.atan2(rdy, rdx);
-            addEbul(b.x, b.y, Math.cos(ra - 0.42) * b.resumeSpd, Math.sin(ra - 0.42) * b.resumeSpd, { color: b.color, glow: b.glow, r: b.r, silent: true });
-            addEbul(b.x, b.y, Math.cos(ra + 0.42) * b.resumeSpd, Math.sin(ra + 0.42) * b.resumeSpd, { color: b.color, glow: b.glow, r: b.r, silent: true });
+            addEbul(b.x, b.y, Math.cos(ra - 0.42) * b.resumeSpd, Math.sin(ra - 0.42) * b.resumeSpd, { color: b.color, glow: b.glow, r: b.r, silent: true, owner: b.owner });
+            addEbul(b.x, b.y, Math.cos(ra + 0.42) * b.resumeSpd, Math.sin(ra + 0.42) * b.resumeSpd, { color: b.color, glow: b.glow, r: b.r, silent: true, owner: b.owner });
           }
         }
       }
-      var homeTgt = targetPlayer(b.x, b.y);
+      var homeTgt = pvpShotTarget(null, b) || targetPlayer(b.x, b.y);
       if (!b.paused && b.homing && homeTgt && homeTgt.alive && b.homeT > 0) {
         b.homeT -= dt;
         var hdx = homeTgt.x - b.x, hdy = homeTgt.y - b.y;
@@ -7633,15 +7897,20 @@
           b.x += b.vx * dt;
         }
         b.y += b.vy * dt;
-        if (b.pauseAt && b.vy > 0 && b.y >= b.pauseAt) {
+        if (b.pauseAt && ((b.vy > 0 && b.y >= b.pauseAt) || (b.vy < 0 && b.y <= b.pauseAt))) {
           b.paused = true; b.vx = 0; b.vy = 0; b.y = b.pauseAt;
           b.pauseAt = 0;
+        }
+        if (b.pauseAfter && b.age >= b.pauseAfter) {
+          b.paused = true; b.vx = 0; b.vy = 0;
+          b.pauseAfter = 0;
+          if (!(b.pauseT > 0)) b.pauseT = 0.01;
         }
       }
       if (b.splitAt && b.y >= b.splitAt) {
         b.splitAt = 0;
-        addEbul(b.x, b.y, -60, 95, { color: b.color, glow: b.glow, r: 2.4, silent: true, life: 4 });
-        addEbul(b.x, b.y, 60, 95, { color: b.color, glow: b.glow, r: 2.4, silent: true, life: 4 });
+        addEbul(b.x, b.y, -60, 95, { color: b.color, glow: b.glow, r: 2.4, silent: true, life: 4, owner: b.owner });
+        addEbul(b.x, b.y, 60, 95, { color: b.color, glow: b.glow, r: 2.4, silent: true, life: 4, owner: b.owner });
         explode(b.x, b.y, b.glow, false);
         ebul.splice(i, 1);
         continue;
@@ -7649,8 +7918,8 @@
       if (b.splitT && b.age >= b.splitT) {
         b.splitT = 0;
         ang = Math.atan2(b.vy, b.vx);
-        addEbul(b.x, b.y, Math.cos(ang - 0.46) * 150, Math.sin(ang - 0.46) * 150, { color: b.color, glow: b.glow, r: 2.6, silent: true, life: 4, noTwin: true });
-        addEbul(b.x, b.y, Math.cos(ang + 0.46) * 150, Math.sin(ang + 0.46) * 150, { color: b.color, glow: b.glow, r: 2.6, silent: true, life: 4, noTwin: true });
+        addEbul(b.x, b.y, Math.cos(ang - 0.46) * 150, Math.sin(ang - 0.46) * 150, { color: b.color, glow: b.glow, r: 2.6, silent: true, life: 4, noTwin: true, owner: b.owner });
+        addEbul(b.x, b.y, Math.cos(ang + 0.46) * 150, Math.sin(ang + 0.46) * 150, { color: b.color, glow: b.glow, r: 2.6, silent: true, life: 4, noTwin: true, owner: b.owner });
         explode(b.x, b.y, b.glow, false);
         ebul.splice(i, 1);
         continue;
@@ -7661,7 +7930,7 @@
           pellets = b.pellets || 6;
           for (j = 0; j < pellets; j++) {
             ang = (j / pellets) * Math.PI * 2 + b.age;
-            addEbul(b.x, b.y, Math.cos(ang) * (b.pelletSpd || 110), Math.sin(ang) * (b.pelletSpd || 110), { color: "#ffd0a0", glow: b.glow || "#ff9a3d", silent: true });
+            addEbul(b.x, b.y, Math.cos(ang) * (b.pelletSpd || 110), Math.sin(ang) * (b.pelletSpd || 110), { color: "#ffd0a0", glow: b.glow || "#ff9a3d", silent: true, owner: b.owner });
           }
           explode(b.x, b.y, b.glow || "#ff9a3d", false);
           ebul.splice(i, 1);
@@ -9465,12 +9734,27 @@
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
     return !!t.isContentEditable;
   }
+  function pvpAbilitySlotFromKey(k) {
+    var api = pvpApi();
+    if (api && api.abilityKeyIndex) return api.abilityKeyIndex(k);
+    if (k === "e" || k === "E" || k === "Shift") return 1;
+    if (k === "1" || k === "2" || k === "3" || k === "4" || k === "5" || k === "6") return k.charCodeAt(0) - 48;
+    return 0;
+  }
+  function pressPvpAbility(slot) {
+    slot = slot | 0;
+    if (!slot) return;
+    input.ability = true;
+    input.ab = slot;
+    if (player && player.boss) pvpBossAbility(player, slot);
+  }
   function isGameKey(k) {
     return k === "ArrowLeft" || k === "ArrowRight" || k === "ArrowUp" || k === "ArrowDown" ||
       k === " " || k === "Enter" || k === "Escape" ||
       k === "a" || k === "A" || k === "d" || k === "D" ||
       k === "p" || k === "P" || k === "m" || k === "M" ||
-      k === "e" || k === "E" || k === "Shift";
+      k === "e" || k === "E" || k === "Shift" ||
+      !!(player && player.boss && pvpAbilitySlotFromKey(k));
   }
   function toggleMute() {
     muted = !muted;
@@ -9516,10 +9800,7 @@
     if (k === "ArrowLeft" || k === "a" || k === "A") input.left = true;
     else if (k === "ArrowRight" || k === "d" || k === "D") input.right = true;
     else if (k === " ") { input.fire = true; ensureAudio(); shootPlayer(); }
-    else if (k === "e" || k === "E" || k === "Shift") {
-      input.ability = true;
-      if (player && player.boss) pvpBossAbility(player);
-    }
+    else if (player && player.boss && pvpAbilitySlotFromKey(k)) pressPvpAbility(pvpAbilitySlotFromKey(k));
     else if (k === "p" || k === "P" || k === "Escape") pauseGame();
   }
   function onKeyUp(e) {
@@ -9528,7 +9809,12 @@
     if (k === "ArrowLeft" || k === "a" || k === "A") input.left = false;
     else if (k === "ArrowRight" || k === "d" || k === "D") input.right = false;
     else if (k === " ") input.fire = false;
-    else if (k === "e" || k === "E" || k === "Shift") input.ability = false;
+    else if (player && player.boss && pvpAbilitySlotFromKey(k)) {
+      if ((input.ab | 0) === pvpAbilitySlotFromKey(k)) {
+        input.ability = false;
+        input.ab = 0;
+      }
+    }
   }
 
   window.addEventListener("keydown", onKeyDown);
@@ -9537,6 +9823,32 @@
     resetInput();
     if (started && !paused && !gameOver) pauseGame();
   });
+  (function bindPvpAbilityTips() {
+    var box = el("pvp-hint-abilities") || el("pvp-hint-ability");
+    if (!box) return;
+    function slotOf(t) {
+      while (t && t !== box) {
+        if (t.getAttribute && t.getAttribute("data-pvp-ab")) return t.getAttribute("data-pvp-ab") | 0;
+        t = t.parentNode;
+      }
+      return 0;
+    }
+    box.addEventListener("pointerdown", function (e) {
+      var slot = slotOf(e.target);
+      if (!slot) return;
+      e.preventDefault();
+      e.stopPropagation();
+      pressPvpAbility(slot);
+    });
+    box.addEventListener("pointerup", function (e) {
+      var slot = slotOf(e.target);
+      if (!slot) return;
+      if ((input.ab | 0) === slot) {
+        input.ability = false;
+        input.ab = 0;
+      }
+    });
+  })();
   function playAgain() {
     if (isPvp()) {
       showScreen("hub");
@@ -10055,11 +10367,13 @@
         updateHud();
       },
       step: function (dt, n) { var i; for (i = 0; i < (n || 1); i++) update(dt || 1 / 60); draw(); return { ebul: ebul.length, pbul: pbul.length, enemies: aliveCount(), wave: wave, lives: lives, score: score }; },
-      setInput: function (l, r, f, a) {
+      setInput: function (l, r, f, a, ab) {
         if (l != null) input.left = !!l;
         if (r != null) input.right = !!r;
         if (f != null) input.fire = !!f;
         if (a != null) input.ability = !!a;
+        if (ab != null) input.ab = ab | 0;
+        else if (a) input.ab = 1;
       },
       pauseGame: pauseGame,
       resumeGame: resumeGame,

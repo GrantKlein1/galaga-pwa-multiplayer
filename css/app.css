@@ -735,8 +735,8 @@ html.is-pwa #touchpad.hidden,
 }
 .pad-ability {
   flex: 1.1;
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 10px;
+  letter-spacing: 0.04em;
   color: #ffe08a;
   border-color: #7a6a2a;
 }
@@ -757,10 +757,10 @@ html.is-pwa #touchpad.hidden,
   top: 6px;
   right: auto;
   bottom: auto;
-  max-width: 46%;
+  max-width: 54%;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   pointer-events: none;
   font-size: 8px;
   letter-spacing: 0.04em;
@@ -771,6 +771,56 @@ html.is-pwa #touchpad.hidden,
   text-align: left;
 }
 .pvp-hint.hidden { display: none; }
+.pvp-hint-abilities {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pvp-ab-tip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  pointer-events: auto;
+  margin: 0;
+  padding: 3px 5px;
+  min-height: 22px;
+  border: 1px solid rgba(126, 249, 255, 0.22);
+  border-radius: 4px;
+  background: rgba(5, 5, 16, 0.62);
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.pvp-ab-tip.ready { border-color: rgba(61, 255, 176, 0.45); }
+.pvp-ab-tip.cooling { border-color: rgba(255, 122, 61, 0.4); }
+.pvp-ab-key {
+  flex: none;
+  min-width: 12px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(126, 249, 255, 0.16);
+  color: #7ef9ff;
+  font-weight: 800;
+  text-align: center;
+}
+.pvp-ab-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pvp-ab-cd {
+  flex: none;
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: #ffe08a;
+}
+.pvp-ab-tip.ready .pvp-ab-cd { color: #3dffb0; }
+.pvp-ab-tip.cooling .pvp-ab-cd { color: #ff7a3d; }
+.pvp-tutorial-cd {
+  color: #ffe08a;
+  font-weight: 700;
+}
 
 .pvp-wager-lab {
   display: flex;
