@@ -4154,11 +4154,34 @@
     if (idx >= 2) sfxWave(true);
     rebuildBossQueue(e, e.lastAtk);
   }
+  function bossIsThreePhase(e) {
+    var d = bossDef(e.type);
+    if (d && d.p3 && d.p3.length) return true;
+    return (e.tier || 0) >= 1;
+  }
+  // Internal HP splits only (phaseCount - 1 ticks). 2-phase debuts: one mark at
+  // the real p2 cut. 3-phase: 100–66 and 66–33. Never pad a 2-phase bar with a 2/3 leftover.
   function bossPhaseThresholds(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
+    if (!bossIsThreePhase(e)) return [d.p2Thresh || 0.5];
     if (d.p3 && d.p3.length) return [d.p2Thresh || 2 / 3, d.p3Thresh || 1 / 3];
-    if (e.tier >= 1) return [Math.max(0.6, d.p2Thresh || 0.5), 0.25];
-    return [d.p2Thresh || 0.5];
+    return [Math.max(0.6, d.p2Thresh || 0.5), 0.25];
+  }
+  function drawBossPhaseTicks(context, e, x, y, w, h) {
+    var splits = bossPhaseThresholds(e);
+    var i, tx;
+    context.save();
+    context.lineWidth = 1;
+    context.lineCap = "butt";
+    context.strokeStyle = "rgba(255,255,255,0.6)";
+    for (i = 0; i < splits.length; i++) {
+      tx = x + w * splits[i];
+      context.beginPath();
+      context.moveTo(tx, y);
+      context.lineTo(tx, y + h);
+      context.stroke();
+    }
+    context.restore();
   }
   function checkBossPhase(e) {
     var th = bossPhaseThresholds(e);
@@ -9704,7 +9727,7 @@
     ctx.save();
     for (i = 0; i < pbul.length; i++) {
       b = pbul[i];
-      if (b.homing) {
+      if (b.bolt || b.gun === "seeker" || b.homing) {
         glow(ctx, b.bolt ? "#ffd23d" : "#d46bff", 10);
         ctx.fillStyle = b.bolt ? "#fff0c0" : "#f0c8ff";
         ctx.beginPath();
@@ -9850,7 +9873,6 @@
       }
     }
     if (boss) {
-      var th = bossPhaseThresholds(boss);
       pct = Math.max(0, boss.hp / boss.maxHp);
       var leechAmt = hydraLeechTotal();
       var leechPct = boss.maxHp > 0 ? Math.min(pct, leechAmt / boss.maxHp) : 0;
@@ -9864,11 +9886,9 @@
         ctx.fillRect(16 + (W - 32) * basePct, 8, (W - 32) * leechPct, 10);
       }
       ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 1;
       ctx.strokeRect(16, 8, W - 32, 10);
-      ctx.strokeStyle = "rgba(255,255,255,0.6)";
-      for (i = 0; i < th.length; i++) {
-        ctx.beginPath(); ctx.moveTo(16 + (W - 32) * th[i], 8); ctx.lineTo(16 + (W - 32) * th[i], 18); ctx.stroke();
-      }
+      drawBossPhaseTicks(ctx, boss, 16, 8, W - 32, 10);
       ctx.fillStyle = "#e8f6ff";
       ctx.font = "bold 8px ui-sans-serif, system-ui, sans-serif";
       ctx.textAlign = "center";
@@ -10562,6 +10582,9 @@
         var b = currentBoss();
         if (!b) return null;
         return { type: b.type, tier: b.tier, hp: b.hp, maxHp: b.maxHp, state: b.state, atk: b.atk, phaseIdx: b.phaseIdx, x: Math.round(b.x), y: Math.round(b.y), tele: !!b.tele, kit: bossKit(b), healFlash: b.healFlash || 0, leech: hydraLeechTotal(), moveStyle: b.moveStyle || "patrol", atkQueue: (b.atkQueue || []).slice(), patrolDir: b.patrolDir };
+      },
+      bossPhaseTicks: function (type, tier) {
+        return bossPhaseThresholds({ type: type, tier: tier || 0 });
       },
       damageBoss: function (d) { var b = currentBoss(); if (b) killEnemy(b, false, d || 1); return b ? b.hp : 0; },
       bossAtk: function (atk) { var b = currentBoss(); if (b) fireBossAttack(b, atk); return b ? b.atk : ""; },
