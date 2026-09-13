@@ -2430,17 +2430,38 @@
     if (sec >= 9.95) return Math.ceil(sec) + "s";
     return sec.toFixed(1) + "s";
   }
+  function pvpFireHintName(hint) {
+    var text = String(hint || "Primary");
+    var cut = text.indexOf("—");
+    if (cut < 0) cut = text.indexOf("-");
+    if (cut >= 0) text = text.slice(cut + 1);
+    text = text.replace(/^\s*\/\s*FIRE\s*/i, "").replace(/^SPACE\s*/i, "").trim();
+    return text || "Primary";
+  }
+  function paintPvpAbTip(btn, ready, cdText, name) {
+    var cdEl, nameEl;
+    if (!btn) return;
+    btn.classList.toggle("ready", ready);
+    btn.classList.toggle("cooling", !ready);
+    if (name) {
+      nameEl = btn.querySelector(".pvp-ab-name");
+      if (nameEl) nameEl.textContent = name;
+    }
+    cdEl = btn.querySelector(".pvp-ab-cd");
+    if (cdEl) cdEl.textContent = cdText;
+  }
   function syncPvpHudChrome() {
     var app = el("app");
     var hint = el("pvp-hint");
     var padAb = el("pad-ability");
     var sess = pvpS();
-    var kit, localBoss, abs, i, spec, cd, cds, key, fireEl, abBox, html, ready, padLab;
+    var kit, localBoss, abs, i, spec, cd, cds, key, fireEl, fireCd, abBox, html, ready, padLab, fireName;
     localBoss = player && player.boss;
     kit = isPvpRun() && localBoss && pvpApi() ? pvpApi().kitFor(localBoss) : null;
     abs = kit && pvpApi() && pvpApi().kitAbilities ? pvpApi().kitAbilities(localBoss) : [];
     cds = (player && player.abilityCds) || [];
-    key = (isPvpRun() ? "1" : "0") + "|" + ((sess && sess.mode) || "") + "|" + (localBoss || "") + "|" + (kit ? kit.fireHint : "");
+    fireCd = (player && player.fireCd) || 0;
+    key = (isPvpRun() ? "1" : "0") + "|" + ((sess && sess.mode) || "") + "|" + (localBoss || "") + "|" + (kit ? kit.fireHint : "") + "|f:" + pvpAbilityCdText(fireCd);
     for (i = 0; i < abs.length; i++) {
       spec = abs[i];
       cd = cds[i] || 0;
@@ -2458,19 +2479,20 @@
       if (kit) {
         fireEl = el("pvp-hint-fire");
         abBox = el("pvp-hint-abilities") || el("pvp-hint-ability");
-        if (fireEl) setText(fireEl, kit.fireHint);
+        fireName = pvpFireHintName(kit.fireHint);
+        if (fireEl) {
+          ready = !(fireCd > 0);
+          paintPvpAbTip(fireEl, ready, pvpAbilityCdText(fireCd), fireName);
+          fireEl.setAttribute("aria-label", fireName);
+        }
         if (abBox) {
           var tips = abBox.querySelectorAll(".pvp-ab-tip");
-          var cdEl;
           if (tips.length === abs.length && abs.length) {
             for (i = 0; i < abs.length; i++) {
               spec = abs[i];
               cd = cds[i] || 0;
               ready = !(cd > 0);
-              tips[i].classList.toggle("ready", ready);
-              tips[i].classList.toggle("cooling", !ready);
-              cdEl = tips[i].querySelector(".pvp-ab-cd");
-              if (cdEl) cdEl.textContent = pvpAbilityCdText(cd);
+              paintPvpAbTip(tips[i], ready, pvpAbilityCdText(cd));
             }
           } else {
             html = "";
@@ -2489,7 +2511,7 @@
       }
     }
     if (padAb) {
-      padAb.classList.toggle("hidden", !kit);
+      padAb.classList.add("hidden");
       if (kit && abs[0]) {
         padLab = abs[0].key + " " + (abs[0].name || "ABILITY");
         if (padAb.textContent !== padLab) padAb.textContent = padLab;
@@ -10534,31 +10556,76 @@
     resetInput();
     if (started && !paused && !gameOver) pauseGame();
   });
+  function isPvpChromeTarget(t) {
+    var hint = el("pvp-hint");
+    if (!t || !hint) return false;
+    if (hint.contains) return hint.contains(t);
+    while (t) {
+      if (t === hint) return true;
+      t = t.parentNode;
+    }
+    return false;
+  }
   (function bindPvpAbilityTips() {
-    var box = el("pvp-hint-abilities") || el("pvp-hint-ability");
+    var box = el("pvp-hint");
+    var ptr = {};
     if (!box) return;
-    function slotOf(t) {
+    function kindOf(t) {
       while (t && t !== box) {
-        if (t.getAttribute && t.getAttribute("data-pvp-ab")) return t.getAttribute("data-pvp-ab") | 0;
+        if (t.getAttribute && t.getAttribute("data-pvp-fire")) return "fire";
+        if (t.getAttribute && t.getAttribute("data-pvp-ab")) return "ab:" + (t.getAttribute("data-pvp-ab") | 0);
         t = t.parentNode;
       }
-      return 0;
+      return "";
+    }
+    function mark(kind, on) {
+      var btn = kind === "fire"
+        ? el("pvp-hint-fire")
+        : box.querySelector('[data-pvp-ab="' + (kind.slice(3) | 0) + '"]');
+      if (btn) btn.classList.toggle("held", !!on);
+    }
+    function press(kind) {
+      if (kind === "fire") {
+        input.fire = true;
+        ensureAudio();
+        shootPlayer();
+        return;
+      }
+      if (kind.indexOf("ab:") === 0) pressPvpAbility(kind.slice(3) | 0);
+    }
+    function release(kind) {
+      if (kind === "fire") input.fire = false;
+      else if (kind.indexOf("ab:") === 0) {
+        var slot = kind.slice(3) | 0;
+        if ((input.ab | 0) === slot) {
+          input.ability = false;
+          input.ab = 0;
+        }
+      }
     }
     box.addEventListener("pointerdown", function (e) {
-      var slot = slotOf(e.target);
-      if (!slot) return;
+      var kind = kindOf(e.target);
+      if (!kind || ptr[e.pointerId]) return;
       e.preventDefault();
       e.stopPropagation();
-      pressPvpAbility(slot);
+      ptr[e.pointerId] = kind;
+      mark(kind, true);
+      try { box.setPointerCapture(e.pointerId); } catch (err) {}
+      press(kind);
     });
-    box.addEventListener("pointerup", function (e) {
-      var slot = slotOf(e.target);
-      if (!slot) return;
-      if ((input.ab | 0) === slot) {
-        input.ability = false;
-        input.ab = 0;
-      }
-    });
+    function up(e) {
+      var kind = ptr[e.pointerId];
+      if (!kind) return;
+      delete ptr[e.pointerId];
+      mark(kind, false);
+      release(kind);
+    }
+    box.addEventListener("pointerup", up);
+    box.addEventListener("pointercancel", up);
+    box.addEventListener("lostpointercapture", up);
+    box.addEventListener("touchstart", function (e) {
+      if (kindOf(e.target)) e.preventDefault();
+    }, { passive: false });
   })();
   function playAgain() {
     if (isPvp()) {
@@ -10927,6 +10994,7 @@
     pointerSteer.fire = false;
   }
   wrap.addEventListener("pointerdown", function (e) {
+    if (isPvpChromeTarget(e.target)) return;
     e.preventDefault();
     focusGame();
     if (overlayVisible()) return;
@@ -10949,8 +11017,14 @@
   wrap.addEventListener("lostpointercapture", endPointerSteer);
   canvas.addEventListener("touchstart", function (e) { e.preventDefault(); }, { passive: false });
   canvas.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
-  wrap.addEventListener("touchstart", function (e) { e.preventDefault(); }, { passive: false });
-  wrap.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+  wrap.addEventListener("touchstart", function (e) {
+    if (isPvpChromeTarget(e.target)) return;
+    e.preventDefault();
+  }, { passive: false });
+  wrap.addEventListener("touchmove", function (e) {
+    if (isPvpChromeTarget(e.target)) return;
+    e.preventDefault();
+  }, { passive: false });
   canvas.addEventListener("click", function () {
     if (!overlayVisible()) focusGame();
   });
