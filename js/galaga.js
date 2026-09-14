@@ -157,7 +157,7 @@
     { id: "nullwarden", name: "NULLWARDEN", color: "#b07cff", dark: "#100418", r: 21, hp: 264, spd: 34, amp: 12, freq: 1.1, cd: 1.57, tele: 0.5, pts: 3250,
       base: ["well", "gates", "collapse"], p2: ["voidguard", "eclipse", "riftstep"], t1: ["singularity"], t2: ["gates2"], p2Text: "THE VOID ANSWERS", flavor: "Gravity wells, void gates, collapses" },
     { id: "basilisk", name: "BASILISK", color: "#c8ff3d", dark: "#203008", r: 22, hp: 300, spd: 46, amp: 10, freq: 1.5, cd: 1.51, tele: 0.48, pts: 3500,
-      base: ["venom", "gaze", "coil"], p2: ["venompool", "constrict", "petrify"], t1: ["gaze2"], t2: ["spitburst"], p2Text: "BASILISK SHEDS", flavor: "Arcing venom, sweeping gaze, coils" },
+      base: ["venom", "gaze", "coil"], p2: ["venompool", "petrify"], t1: ["gaze2"], t2: ["spitburst"], p2Text: "BASILISK SHEDS", flavor: "Arcing venom, sweeping gaze, coils" },
     { id: "overlord", name: "OVERLORD", color: "#ffd23d", dark: "#3a1a0a", r: 26, hp: 384, spd: 32, amp: 6, freq: 1.0, cd: 1.64, tele: 0.5, pts: 4000,
       base: ["barrage", "decree", "escorts"], p2: ["core", "corering"], t1: ["crownfire"], t2: ["frenzy"], p2Thresh: 0.6, p2Text: "CORE EXPOSED", flavor: "Barrages, edicts, kami escorts" },
     { id: "mandala", name: "MANDALA", color: "#f0a070", dark: "#3a1420", r: 20, hp: 420, spd: 38, amp: 10, freq: 1.1, cd: 1.52, tele: 0.48, pts: 4300,
@@ -488,7 +488,16 @@
   }
   // Regular enemies gain a little HP deep into a run so upgraded guns stay relevant.
   // Solo also +1s everything except grunt/kami, which stay 1-shot for Pulse (dmg 1).
-  function enemyHp(type, tier, n) {
+  // Mixed-wave guests after wave 30 are 75% of a dedicated fight. Wraith and Basilisk
+  // guests take a further 35% cut on top of that (wave 58 mixed fights). Every-5
+  // dedicated HP is unchanged.
+  function guestHpMul(type, n) {
+    if (!n || n < 31) return 1;
+    var mul = 0.75;
+    if (type === "wraith" || type === "basilisk") mul *= 0.65;
+    return mul;
+  }
+  function enemyHp(type, tier, n, asGuest) {
     n = n || wave || 1;
     var hp;
     if (isBossType(type)) hp = bossHp(type, tier);
@@ -499,7 +508,9 @@
     else if (type === "hex" || type === "harrier") hp = 2;
     else hp = 1 + Math.floor(n / 25);
     if (!isCoop() && type !== "grunt" && type !== "kami") hp += 1;
-    return scaleHp(hp);
+    hp = scaleHp(hp);
+    if (asGuest && isBossType(type)) hp = Math.max(1, Math.round(hp * guestHpMul(type, n)));
+    return hp;
   }
   function enemyR(type) {
     var d = bossDef(type);
@@ -3415,7 +3426,7 @@
 
   function makeEnemy(offX, offY, type, extra) {
     extra = extra || {};
-    var hp = enemyHp(type, extra.tier || 0, wave);
+    var hp = enemyHp(type, extra.tier || 0, wave, extra.guest);
     var e = {
       id: extra.id || allocId(),
       offX: offX, offY: offY, type: type,
@@ -3861,7 +3872,7 @@
         run.bossHits = 0;
         for (i = 0; i < plan.bosses.length; i++) {
           bx = plan.bosses.length === 1 ? 0 : (i === 0 ? -56 : 56);
-          guest = makeEnemy(bx, 10, plan.bosses[i], { isBoss: true, tier: plan.tier || 0 });
+          guest = makeEnemy(bx, 10, plan.bosses[i], { isBoss: true, tier: plan.tier || 0, guest: true });
           guest.homeX = plan.bosses.length === 1 ? W / 2 : (i === 0 ? 70 : W - 70);
           enemies.push(guest);
         }
@@ -5253,6 +5264,7 @@
 
   function beginBossAttack(e, forced) {
     var atk = forced || pickBossAttack(e);
+    if (atk === "constrict") return;
     var col = pentarchColor(e) || enemyColor(e.type);
     var delay = bossTeleDelay(e);
     var px, i, gx;
@@ -5855,6 +5867,7 @@
 
   function fireBossAttack(e, atk) {
     var i, spd, opt, px, x0, base, fuse, k, a, ox, oy, aim, drones, f, nx, gx;
+    if (atk === "constrict") return;
     var col = pentarchColor(e) || enemyColor(e.type);
     opt = { color: col, glow: col };
     spd = bossShotSpd(e);
@@ -12555,6 +12568,7 @@
       bossMeta: bossMeta,
       bossHp: bossHp,
       enemyHp: enemyHp,
+      guestHpMul: guestHpMul,
       FIRE_MS: FIRE_MS,
       maxStartWave: maxStartWave,
       startWaveOptions: startWaveOptions,
