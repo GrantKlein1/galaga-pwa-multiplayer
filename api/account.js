@@ -141,9 +141,38 @@ function sanitizeBoolMap(raw, maxKeys) {
   return out;
 }
 
+var SKILL_NODE_IDS = [
+  "hull-life1", "hull-iframes", "hull-life2", "hull-shield", "hull-laststand",
+  "gun-dmg1", "gun-rof1", "gun-dmg2", "gun-rof2", "gun-chip", "gun-gems",
+  "warp-stasis", "warp-pulse", "warp-aegis"
+];
+var SKILL_SPECIALS = ["stasis", "pulse", "aegis"];
+
+function sanitizeSkills(raw) {
+  var owned = [], i, id, seen = {}, eq;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return { owned: [], equipped: null };
+  }
+  if (Array.isArray(raw.owned)) {
+    for (i = 0; i < raw.owned.length && owned.length < SKILL_NODE_IDS.length; i++) {
+      id = raw.owned[i];
+      if (typeof id !== "string" || seen[id]) continue;
+      if (SKILL_NODE_IDS.indexOf(id) < 0) continue;
+      seen[id] = 1;
+      owned.push(id);
+    }
+  }
+  eq = typeof raw.equipped === "string" ? raw.equipped.slice(0, 16) : null;
+  if (eq && SKILL_SPECIALS.indexOf(eq) < 0) eq = null;
+  if (eq === "stasis" && owned.indexOf("warp-stasis") < 0) eq = null;
+  if (eq === "pulse" && owned.indexOf("warp-pulse") < 0) eq = null;
+  if (eq === "aegis" && owned.indexOf("warp-aegis") < 0) eq = null;
+  return { owned: owned, equipped: eq };
+}
+
 function defaultCloudProfile() {
   return {
-    v: 4,
+    v: 5,
     coins: 0,
     totalXp: 0,
     best: 0,
@@ -155,6 +184,7 @@ function defaultCloudProfile() {
     ownedSkins: { wisp: ["stock"] },
     equipped: { ship: "wisp", gun: "pulse", mod: null },
     equippedSkins: { wisp: "stock" },
+    skills: { owned: [], equipped: null },
     startWave: 1,
     dailies: { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} },
     dailyTracks: {},
@@ -229,6 +259,7 @@ export function sanitizeProfile(raw) {
   if (p.equipped.mod && p.ownedMods.indexOf(p.equipped.mod) < 0) p.equipped.mod = null;
   p.equippedSkins = sanitizeStrMap(raw.equippedSkins);
   if (!p.equippedSkins.wisp) p.equippedSkins.wisp = "stock";
+  p.skills = sanitizeSkills(raw.skills);
   p.startWave = asInt(raw.startWave, 100);
   if (p.startWave < 1) p.startWave = 1;
   d = raw.dailies && typeof raw.dailies === "object" ? raw.dailies : {};
@@ -258,7 +289,7 @@ export function sanitizeProfile(raw) {
   p.stats.runs = asInt(st.runs, 9999999);
   p.admin = !!raw.admin;
   p.updatedAt = asTime(raw.updatedAt);
-  p.v = 4;
+  p.v = 5;
   return p;
 }
 

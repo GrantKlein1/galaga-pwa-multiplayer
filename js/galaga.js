@@ -21,11 +21,20 @@
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
   var SESSION_KEY = "galaga.session";
-  var PROFILE_VER = 4;
+  var PROFILE_VER = 5;
   var ACCOUNT_PUSH_MS = 900;
   var ACCOUNT_PULL_MS = 5000;
   var ADMIN_CODE = "1234";
   var RESET_QUICK_MS = 420;
+  var SKILL_REFUND_FEE = 40;
+  var STASIS_SLOW = 0.32;
+  var STASIS_DUR = 2.8;
+  var STASIS_CD = 16;
+  var PULSE_R = 82;
+  var PULSE_DMG = 2;
+  var PULSE_CD = 10;
+  var AEGIS_DUR = 1.65;
+  var AEGIS_CD = 12;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
   // Playfield is 240x360 with 16px side margins (208px of travel). Formations
@@ -44,6 +53,22 @@
     { kind: "rapid", w: 2.3 },
     { kind: "shield", w: 5 },
     { kind: "speed", w: 5 }
+  ];
+  var SKILL_NODES = [
+    { id: "hull-life1", branch: "hull", name: "Bulkhead", short: "+1", desc: "+1 starting life. Life cap 7.", cost: 1, req: null, x: 28, y: 58 },
+    { id: "hull-iframes", branch: "hull", name: "Ablative", short: "i", desc: "+0.45s i-frames after a hit.", cost: 1, req: "hull-life1", x: 14, y: 46 },
+    { id: "hull-life2", branch: "hull", name: "Redundant", short: "+1", desc: "+1 starting life. Life cap 8.", cost: 2, req: "hull-iframes", x: 10, y: 64 },
+    { id: "hull-shield", branch: "hull", name: "Lucky Ward", short: "S", desc: "Shield gems more often. Other pickups may grant a shield.", cost: 2, req: "hull-life2", x: 16, y: 80 },
+    { id: "hull-laststand", branch: "hull", name: "Last Stand", short: "LS", desc: "Once per run, a lethal hit restores half lives.", cost: 3, req: "hull-shield", x: 32, y: 90 },
+    { id: "gun-dmg1", branch: "gun", name: "Overcharge", short: "8%", desc: "+8% damage.", cost: 1, req: null, x: 72, y: 58 },
+    { id: "gun-rof1", branch: "gun", name: "Cyclic", short: "8%", desc: "+8% fire rate.", cost: 1, req: "gun-dmg1", x: 86, y: 46 },
+    { id: "gun-dmg2", branch: "gun", name: "Overcharge II", short: "4%", desc: "+4% damage.", cost: 2, req: "gun-rof1", x: 90, y: 62 },
+    { id: "gun-rof2", branch: "gun", name: "Cyclic II", short: "4%", desc: "+4% fire rate.", cost: 2, req: "gun-dmg2", x: 88, y: 76 },
+    { id: "gun-chip", branch: "gun", name: "Pierce Chip", short: "P", desc: "+1 pierce and a light splash chip on shots.", cost: 2, req: "gun-rof2", x: 74, y: 86 },
+    { id: "gun-gems", branch: "gun", name: "Sustain", short: "G", desc: "+25% gem duration.", cost: 2, req: "gun-chip", x: 60, y: 92 },
+    { id: "warp-stasis", branch: "warp", name: "Stasis", short: "S", desc: "Slow all enemies and enemy shots. You and your fire stay full speed.", cost: 2, req: null, special: "stasis", x: 50, y: 40 },
+    { id: "warp-pulse", branch: "warp", name: "Pulse", short: "P", desc: "Pop nearby enemy shots and ding close foes.", cost: 2, req: "warp-stasis", special: "pulse", x: 50, y: 24 },
+    { id: "warp-aegis", branch: "warp", name: "Aegis", short: "A", desc: "Brief i-frames.", cost: 2, req: "warp-pulse", special: "aegis", x: 50, y: 10 }
   ];
 
   // Ships. Stats: speed (px/s), r (hitbox radius), invuln (s after a hit), extraLives,
@@ -350,6 +375,7 @@
   var time = 0;
   var shake = 0;
   var flash = 0;
+  var stasisT = 0;
   var diveCd = 0;
   var enterT = 0;
   var waveHold = 0;
@@ -1040,6 +1066,7 @@
       ownedSkins: { wisp: ["stock"] },
       equipped: { ship: "wisp", gun: "pulse", mod: null },
       equippedSkins: { wisp: "stock" },
+      skills: { owned: [], equipped: null },
       startWave: 1,
       dailies: { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} },
       dailyTracks: {},
@@ -1099,6 +1126,28 @@
     if (!out.wisp) out.wisp = "stock";
     return out;
   }
+  function emptySkills() { return { owned: [], equipped: null }; }
+  function cloneSkills(raw) {
+    var owned = [], i, id, seen = {}, eq, def, specialOk;
+    if (!raw || typeof raw !== "object") return emptySkills();
+    if (raw.owned && raw.owned.length) {
+      for (i = 0; i < raw.owned.length; i++) {
+        id = raw.owned[i];
+        if (typeof id !== "string" || seen[id]) continue;
+        if (!findIn(SKILL_NODES, id)) continue;
+        seen[id] = 1;
+        owned.push(id);
+      }
+    }
+    eq = typeof raw.equipped === "string" ? raw.equipped : null;
+    specialOk = false;
+    for (i = 0; i < SKILL_NODES.length; i++) {
+      def = SKILL_NODES[i];
+      if (def.special === eq && owned.indexOf(def.id) >= 0) specialOk = true;
+    }
+    if (!specialOk) eq = null;
+    return { owned: owned, equipped: eq };
+  }
   function migrateProfile(raw) {
     var p = defaultProfile();
     if (!raw || typeof raw !== "object") return p;
@@ -1126,6 +1175,7 @@
     if (p.equipped.mod && p.ownedMods.indexOf(p.equipped.mod) < 0) p.equipped.mod = null;
     p.ownedSkins = cloneSkinMap(raw.ownedSkins);
     p.equippedSkins = cloneSkinEquip(raw.equippedSkins);
+    p.skills = cloneSkills(raw.skills);
     grantLevelSkins(p);
     if (raw.dailies && typeof raw.dailies === "object") {
       p.dailies.date = typeof raw.dailies.date === "string" ? raw.dailies.date : "";
@@ -1319,6 +1369,10 @@
     if (out.ownedGuns.indexOf(out.equipped.gun) < 0) out.equipped.gun = "pulse";
     if (out.equipped.mod && out.ownedMods.indexOf(out.equipped.mod) < 0) out.equipped.mod = null;
     out.equippedSkins = cloneSkinEquip(newer.equippedSkins);
+    out.skills = cloneSkills({
+      owned: unionStr(local.skills && local.skills.owned, cloud.skills && cloud.skills.owned),
+      equipped: newer.skills && newer.skills.equipped
+    });
     out.dailies = mergeDailies(local.dailies, cloud.dailies);
     out.dailyTracks = maxNumMap(local.dailyTracks, cloud.dailyTracks);
     out.longTerm = mergeLongTerm(local.longTerm, cloud.longTerm);
@@ -1346,6 +1400,104 @@
       if (xpForLevel(mid) <= xp) lo = mid; else hi = mid - 1;
     }
     return lo;
+  }
+  function skillsOf(who) {
+    if (who && who.loadout && who.loadout.skills) return who.loadout.skills;
+    if (who && who.skills && (who.owned || who.equipped !== undefined)) return who;
+    if (who && who.owned && who.equipped !== undefined && !who.loadout) return who;
+    return (profile && profile.skills) || emptySkills();
+  }
+  function skillOwnedList(who) {
+    var sk = skillsOf(who);
+    return (sk && sk.owned) || [];
+  }
+  function hasSkill(id, who) {
+    return skillOwnedList(who).indexOf(id) >= 0;
+  }
+  function anyHasSkill(id) {
+    var i;
+    if (!players.length) return hasSkill(id);
+    for (i = 0; i < players.length; i++) if (hasSkill(id, players[i])) return true;
+    return false;
+  }
+  function equippedSpecial(who) {
+    var sk = skillsOf(who);
+    return (sk && sk.equipped) || null;
+  }
+  function skillNodeForSpecial(id) {
+    var i, d;
+    for (i = 0; i < SKILL_NODES.length; i++) {
+      d = SKILL_NODES[i];
+      if (d.special === id) return d;
+    }
+    return null;
+  }
+  function skillSpent(who) {
+    var owned = skillOwnedList(who), n = 0, i, def;
+    for (i = 0; i < owned.length; i++) {
+      def = findIn(SKILL_NODES, owned[i]);
+      if (def) n += def.cost | 0;
+    }
+    return n;
+  }
+  function skillBudget(who) {
+    var xp = who && who.totalXp != null ? who.totalXp : profile.totalXp;
+    return Math.min(MAX_LEVEL, xpLevel(xp));
+  }
+  function skillUnspent(who) {
+    return Math.max(0, skillBudget(who) - skillSpent(who));
+  }
+  function skillPrereqMet(def, who) {
+    if (!def) return false;
+    if (!def.req) return true;
+    return hasSkill(def.req, who);
+  }
+  function canUnlockSkill(id, who) {
+    var def = findIn(SKILL_NODES, id);
+    if (!def || hasSkill(id, who)) return false;
+    if (!skillPrereqMet(def, who)) return false;
+    return skillUnspent(who) >= (def.cost | 0);
+  }
+  function unlockSkill(id) {
+    var def = findIn(SKILL_NODES, id);
+    if (!canUnlockSkill(id)) return false;
+    if (!profile.skills) profile.skills = emptySkills();
+    profile.skills.owned.push(def.id);
+    ensureAudio();
+    sfxCredit();
+    saveProfile();
+    return true;
+  }
+  function equipSkillSpecial(id) {
+    var def = skillNodeForSpecial(id);
+    if (!def || !hasSkill(def.id)) return false;
+    if (!profile.skills) profile.skills = emptySkills();
+    profile.skills.equipped = id;
+    saveProfile();
+    return true;
+  }
+  function refundSkills() {
+    var spent = skillSpent();
+    if (!spent) return false;
+    if ((profile.coins | 0) < SKILL_REFUND_FEE) return false;
+    profile.coins -= SKILL_REFUND_FEE;
+    profile.skills = emptySkills();
+    ensureAudio();
+    sfxCredit();
+    saveProfile();
+    return true;
+  }
+  function grantAllSkills() {
+    var i, keep;
+    if (!profile.skills) profile.skills = emptySkills();
+    keep = profile.skills.equipped;
+    profile.skills.owned = [];
+    for (i = 0; i < SKILL_NODES.length; i++) profile.skills.owned.push(SKILL_NODES[i].id);
+    if (keep && skillNodeForSpecial(keep) && hasSkill(skillNodeForSpecial(keep).id)) profile.skills.equipped = keep;
+    else profile.skills.equipped = "stasis";
+  }
+  function gemDurationMul(who) {
+    return hasSkill("gun-gems", who) ? 1.25 : 1;
   }
   // Lv 10 → start wave 5, lv 15 → 10, then +5 wave every +5 levels.
   // Level only *shows* later start buttons. Starting there also requires
@@ -2389,7 +2541,8 @@
       ship: ship,
       gun: (profile.equipped && profile.equipped.gun) || "pulse",
       mod: profile.equipped ? profile.equipped.mod : null,
-      skin: equippedSkinFor(ship)
+      skin: equippedSkinFor(ship),
+      skills: cloneSkills(profile.skills)
     };
   }
   function loadoutLabel(spec) {
@@ -2541,11 +2694,13 @@
   var OVERLORD_KAMI_CAP = 8;
   function ebulCap() { return MAX_EBUL + extraPlayers() * 32; }
   // Effective loadout numbers (ship stat x mod bonuses). Used by the run and by the hangar readouts.
-  function loadoutFireMul(ship, mod) {
-    var m = (ship || shipDef()).fireMul || 1;
-    mod = mod === undefined ? equippedMod() : mod;
+  function loadoutFireMul(ship, mod, p) {
+    var m = (ship || shipDef(p)).fireMul || 1;
+    mod = mod === undefined ? equippedMod(p) : mod;
     if (mod === "overdrive") m *= 1.15;
     if (mod === "ascension") m *= 1.10;
+    if (hasSkill("gun-rof1", p)) m *= 1.08;
+    if (hasSkill("gun-rof2", p)) m *= 1.04;
     return m;
   }
   function loadoutDmgMul(ship, mod, p) {
@@ -2555,9 +2710,11 @@
     if (mod === "reactor") m *= 1.2;
     if (mod === "berserk" && (p || player) && started) {
       var who = p || player;
-      var maxL = START_LIVES + (s.extraLives || 0);
+      var maxL = loadoutLives(s, who);
       m *= 1 + 0.10 * Math.max(0, maxL - (who.lives != null ? who.lives : lives));
     }
+    if (hasSkill("gun-dmg1", p)) m *= 1.08;
+    if (hasSkill("gun-dmg2", p)) m *= 1.04;
     return m;
   }
   function loadoutSpeed(ship, mod) {
@@ -2572,8 +2729,19 @@
     mod = mod === undefined ? equippedMod() : mod;
     return (ship || shipDef()).r + (mod === "reactor" ? 1 : 0);
   }
-  function loadoutLives(ship) { return Math.max(1, START_LIVES + ((ship || shipDef()).extraLives || 0)); }
-  function lifeCap(who) { return Math.min(MAX_LIVES, loadoutLives(shipDef(who)) + 1); }
+  function loadoutLives(ship, who) {
+    var n = START_LIVES + ((ship || shipDef(who)).extraLives || 0);
+    if (hasSkill("hull-life1", who)) n += 1;
+    if (hasSkill("hull-life2", who)) n += 1;
+    return Math.max(1, n);
+  }
+  function maxLivesFor(who) {
+    var n = MAX_LIVES;
+    if (hasSkill("hull-life1", who)) n += 1;
+    if (hasSkill("hull-life2", who)) n += 1;
+    return n;
+  }
+  function lifeCap(who) { return Math.min(maxLivesFor(who), loadoutLives(shipDef(who), who) + 1); }
   function gunInterval(g) {
     return g.cd * FIRE_MS / 140;
   }
@@ -2769,6 +2937,7 @@
     else if (uiScreen === "ranks") refreshRanks();
     else if (uiScreen === "account") renderAccount();
     else if (uiScreen === "hub") renderHub();
+    else if (uiScreen === "skills") renderSkills();
   }
   function applyProfile(raw) {
     var prevVer = raw && typeof raw === "object" ? raw.v : 0;
@@ -2892,6 +3061,7 @@
     if (keepMod && profile.ownedMods.indexOf(keepMod) >= 0) profile.equipped.mod = keepMod;
     else if (keepMod) profile.equipped.mod = null;
     grantLevelSkins(profile);
+    grantAllSkills();
     profile.startWave = clampStartWave(profile.startWave || 1);
     profile.admin = true;
   }
@@ -2995,6 +3165,11 @@
     if ((player.skinHotStacks || 0) > 0) bits.push("STREAK x" + player.skinHotStacks);
     if ((player.skinWard || 0) > 0) bits.push("HOLD x" + player.skinWard);
     if ((player.skinNebulaT || 0) > 0) bits.push("CLOUD");
+    if (equippedSpecial(player)) {
+      if ((player.skillCd || 0) > 0) bits.push(equippedSpecial(player).toUpperCase() + " " + pvpAbilityCdText(player.skillCd));
+      else bits.push(equippedSpecial(player).toUpperCase() + " READY");
+    }
+    if (stasisT > 0) bits.push("TIME " + pvpAbilityCdText(stasisT));
     return bits.length ? bits.join("  ·  ") : "None";
   }
   function playerTag(slot) {
@@ -3109,6 +3284,7 @@
     cds = (player && player.abilityCds) || [];
     fireCd = (player && player.fireCd) || 0;
     key = (isPvpRun() ? "1" : "0") + "|" + ((sess && sess.mode) || "") + "|" + (localBoss || "") + "|" + (kit ? kit.fireHint : "") + "|f:" + pvpAbilityCdText(fireCd);
+    key += "|sk:" + (equippedSpecial(player) || "") + ":" + pvpAbilityCdText(player && player.skillCd) + ":" + (started && player && player.alive ? "1" : "0");
     for (i = 0; i < abs.length; i++) {
       spec = abs[i];
       cd = cds[i] || 0;
@@ -3119,6 +3295,7 @@
     if (app) {
       app.classList.toggle("is-pvp", isPvpRun());
       app.classList.toggle("is-pvp-insane", !!(isPvpRun() && sess && sess.mode === "insane"));
+      app.classList.toggle("has-skill", !!(started && !isPvpRun() && player && player.alive && equippedSpecial(player)));
     }
     if (hint) {
       hint.classList.toggle("hidden", !kit);
@@ -3158,8 +3335,17 @@
       }
     }
     if (padAb) {
-      padAb.classList.add("hidden");
-      if (kit && abs[0]) {
+      var specId = player && equippedSpecial(player);
+      var specDef = specId ? skillNodeForSpecial(specId) : null;
+      var showSkill = !!(started && !isPvpRun() && specDef && player && player.alive);
+      padAb.classList.toggle("hidden", !showSkill);
+      if (showSkill) {
+        padLab = specDef.name.toUpperCase();
+        if ((player.skillCd || 0) > 0) padLab += " " + pvpAbilityCdText(player.skillCd);
+        else padLab += " READY";
+        if (padAb.textContent !== padLab) padAb.textContent = padLab;
+        padAb.setAttribute("aria-label", specDef.name);
+      } else if (kit && abs[0]) {
         padLab = abs[0].key + " " + (abs[0].name || "ABILITY");
         if (padAb.textContent !== padLab) padAb.textContent = padLab;
       }
@@ -3515,11 +3701,17 @@
     return b;
   }
   function pickWeightedPowerup() {
-    var total = 0, i, r;
-    for (i = 0; i < POWER_WEIGHTS.length; i++) total += POWER_WEIGHTS[i].w;
+    var total = 0, i, r, w, luck = anyHasSkill("hull-shield");
+    for (i = 0; i < POWER_WEIGHTS.length; i++) {
+      w = POWER_WEIGHTS[i].w;
+      if (luck && POWER_WEIGHTS[i].kind === "shield") w *= 2.2;
+      total += w;
+    }
     r = Math.random() * total;
     for (i = 0; i < POWER_WEIGHTS.length; i++) {
-      r -= POWER_WEIGHTS[i].w;
+      w = POWER_WEIGHTS[i].w;
+      if (luck && POWER_WEIGHTS[i].kind === "shield") w *= 2.2;
+      r -= w;
       if (r <= 0) return POWER_WEIGHTS[i].kind;
     }
     return POWER_WEIGHTS[POWER_WEIGHTS.length - 1].kind;
@@ -3569,13 +3761,14 @@
     if (kind !== "coin" && kind !== "life" && kind !== "revive" && skinIdOf(who) === "warden-jade") {
       who.invuln = Math.max(who.invuln || 0, 0.4);
     }
+    var gemMul = loadoutPickMul(shipDef(who), equippedMod(who)) * gemDurationMul(who);
     if (kind === "revive") {
       reviveDownedFrom(who);
     } else if (kind === "life") {
       if (who.lives < lifeCap(who)) who.lives += 1;
       banner = { text: "1UP", life: 0.8 };
     } else if (kind === "heal") {
-      if (who.lives < loadoutLives(shipDef(who))) {
+      if (who.lives < loadoutLives(shipDef(who), who)) {
         who.lives += 1;
         banner = { text: "HEAL", life: 0.8 };
       } else {
@@ -3586,12 +3779,18 @@
       }
     } else if (kind === "shield") {
       who.shieldHp = Math.max(who.shieldHp, 2);
-      who.shieldT = SHIELD_T * loadoutPickMul(shipDef(who), equippedMod(who));
+      who.shieldT = SHIELD_T * gemMul;
     } else if (kind === "speed") {
-      who.speedT = SPEED_T * loadoutPickMul(shipDef(who), equippedMod(who));
+      who.speedT = SPEED_T * gemMul;
     } else {
       who.weapon = kind;
-      who.weaponT = WEAPON_T * loadoutPickMul(shipDef(who), equippedMod(who));
+      who.weaponT = WEAPON_T * gemMul;
+    }
+    if (hasSkill("hull-shield", who) && kind !== "shield" && kind !== "life" && kind !== "revive" && kind !== "coin") {
+      if (Math.random() < 0.22) {
+        who.shieldHp = Math.max(who.shieldHp, 1);
+        who.shieldT = Math.max(who.shieldT || 0, 3);
+      }
     }
     syncLocalPlayer();
     syncQuestProgress();
@@ -3898,18 +4097,20 @@
     var s = findShip(spec.ship);
     var x = spawnXFor(slot, count || 1);
     var y = spawnYFor(slot);
+    var who = { loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null, skin: spec.skin || equippedSkinFor(spec.ship || "wisp"), skills: cloneSkills(spec.skills) } };
     return {
       slot: slot,
-      loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null, skin: spec.skin || equippedSkinFor(spec.ship || "wisp") },
+      loadout: who.loadout,
       x: x, targetX: x, y: y, targetY: y,
       facing: facingForSlot(slot),
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
       weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0, freezeT: 0,
-      r: loadoutR(s, spec.mod), speed: loadoutSpeed(s, spec.mod), invulnDur: s.invuln, regen: s.regen, regenT: 0,
+      r: loadoutR(s, spec.mod), speed: loadoutSpeed(s, spec.mod), invulnDur: s.invuln + (hasSkill("hull-iframes", who) ? 0.45 : 0), regen: s.regen, regenT: 0,
       shotCount: 0,
-      lives: loadoutLives(s),
+      lives: loadoutLives(s, who),
       hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, abilityCds: [0, 0, 0, 0, 0, 0], abilityGcd: 0, dash: null, rewind: null, pvpFollow: null,
       leech: 0,
+      skillCd: 0, lastStandUsed: false, skillHeld: false,
       skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
       skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
       skinSentinelCd: 0, skinUmbraT: 0, skinCarrion: 0, skinCoronaAcc: 0, skinKeepX: false,
@@ -4183,7 +4384,7 @@
         p.shieldT = 0;
         p.lives = 1;
       } else {
-        p.lives = loadoutLives(shipDef(p));
+        p.lives = loadoutLives(shipDef(p), p);
       }
       p.invuln = 1.15;
       p.fireCd = 0.25;
@@ -4251,6 +4452,11 @@
     sfxHit();
     who.lives -= 1;
     run.livesLost = (run.livesLost || 0) + 1;
+    if (who.lives <= 0 && hasSkill("hull-laststand", who) && !who.lastStandUsed && !isPvpRun()) {
+      who.lastStandUsed = true;
+      who.lives = Math.max(1, Math.ceil(loadoutLives(shipDef(who), who) / 2));
+      banner = { text: "LAST STAND", life: 1.15 };
+    }
     if (!isPvpRun()) ebul.length = 0;
     else {
       var bi;
@@ -4404,6 +4610,12 @@
         if (!b.hit) b.hit = [];
         b.dmg *= 1.25;
       }
+      if (hasSkill("gun-chip", who)) {
+        b.pierce = (b.pierce || 0) + 1;
+        if (!b.hit) b.hit = [];
+        if (!b.splash) b.splash = { r: 18, dmg: 0.6 };
+        else b.splash = { r: (b.splash.r || 16) + 6, dmg: (b.splash.dmg || 0) + 0.4 };
+      }
       if (g.helix) {
         b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
       }
@@ -4420,10 +4632,64 @@
     applySkinVolley(who, startIdx, g);
     var cd = gunInterval(g);
     if (gem === "rapid") cd *= 0.6;
-    cd /= loadoutFireMul(shipDef(who), equippedMod(who)) * (who.skinFireMul || 1);
+    cd /= loadoutFireMul(shipDef(who), equippedMod(who), who) * (who.skinFireMul || 1);
     who.fireCd = Math.max(0.035, cd / 1000);
     who.muzzle = 1;
     sfxShoot(who);
+  }
+
+  function skillCdFor(id) {
+    if (id === "stasis") return STASIS_CD;
+    if (id === "pulse") return PULSE_CD;
+    if (id === "aegis") return AEGIS_CD;
+    return 0;
+  }
+  function skillFx(who, id) {
+    var col = id === "stasis" ? "#c8a0ff" : id === "pulse" ? "#ffe08a" : "#7ef9ff";
+    rings.push({ x: who.x, y: who.y, r: 6, vr: id === "pulse" ? 320 : 220, life: 0.42, color: col });
+    if (id === "pulse") {
+      rings.push({ x: who.x, y: who.y, r: 2, vr: 420, life: 0.32, color: "#ffffff" });
+      sfxArmor();
+    } else if (id === "stasis") {
+      flash = Math.max(flash, 0.28);
+      sfxPickup();
+    } else if (id === "aegis") {
+      sfxLife();
+    }
+  }
+  function tryCastSkill(who) {
+    var id, i, e, b, predict, cd;
+    who = who || player;
+    if (!who || !who.alive || who.boss) return false;
+    if (pvpS() && pvpS().roundLock) return false;
+    id = equippedSpecial(who);
+    cd = skillCdFor(id);
+    if (!cd) return false;
+    if ((who.skillCd || 0) > 0) return false;
+    predict = netRole === "client";
+    who.skillCd = cd;
+    skillFx(who, id);
+    banner = { text: id.toUpperCase(), life: 0.7 };
+    if (predict) return true;
+    if (id === "stasis") {
+      stasisT = Math.max(stasisT, STASIS_DUR);
+    } else if (id === "pulse") {
+      for (i = ebul.length - 1; i >= 0; i--) {
+        b = ebul[i];
+        if (dist2(b.x, b.y, who.x, who.y) < PULSE_R * PULSE_R) ebul.splice(i, 1);
+      }
+      for (i = 0; i < enemies.length; i++) {
+        e = enemies[i];
+        if (!e.alive) continue;
+        if (dist2(e.x, e.y, who.x, who.y) < (PULSE_R + e.r) * (PULSE_R + e.r)) {
+          killEnemy(e, false, PULSE_DMG, who.slot);
+        }
+      }
+    } else if (id === "aegis") {
+      who.invuln = Math.max(who.invuln || 0, AEGIS_DUR);
+    }
+    updateHud();
+    return true;
   }
 
   function pvpEbul(x, y, vx, vy, who, opt) {
@@ -7434,6 +7700,7 @@
 
   // ---- Hangar ----------------------------------------------------------------------------
   var hangarTab = "ship";
+  var skillsPick = null;
   var hangarPick = null;
   var hangarHover = null;
   var hangarMuzzle = 0;
@@ -7980,6 +8247,106 @@
       muzzle: 0
     });
   }
+  function skillLineColor(branch, owned) {
+    if (branch === "hull") return owned ? "rgba(94, 240, 216, 0.85)" : "rgba(42, 106, 106, 0.45)";
+    if (branch === "gun") return owned ? "rgba(255, 193, 77, 0.85)" : "rgba(106, 90, 42, 0.45)";
+    return owned ? "rgba(200, 160, 255, 0.85)" : "rgba(90, 58, 122, 0.45)";
+  }
+  function renderSkills() {
+    var stats = el("skills-stats");
+    var map = el("skills-map");
+    var detail = el("skills-detail");
+    var eq = el("skills-equip");
+    var refund = el("btn-skills-refund");
+    var lv = skillBudget();
+    var unspent = skillUnspent();
+    var spent = skillSpent();
+    var i, d, owned, open, cls, html, lines, px, py, qx, qy, req, special, specName, canBuy, canEq;
+    if (stats) stats.textContent = unspent + " SP  ·  Lv " + lv + "  ·  " + spent + " spent";
+    special = equippedSpecial();
+    specName = skillNodeForSpecial(special);
+    if (eq) eq.innerHTML = '<span class="eq-lab">Special</span> ' + (specName ? specName.name : "None") + '<span class="eq-dps">E / Skill</span>';
+    if (refund) {
+      refund.disabled = !spent || (profile.coins | 0) < SKILL_REFUND_FEE;
+      refund.textContent = "Refund tree · " + SKILL_REFUND_FEE + "c";
+    }
+    if (map) {
+      lines = '<svg viewBox="0 0 100 100" preserveAspectRatio="none">';
+      for (i = 0; i < SKILL_NODES.length; i++) {
+        d = SKILL_NODES[i];
+        req = d.req ? findIn(SKILL_NODES, d.req) : null;
+        px = d.x; py = d.y;
+        qx = req ? req.x : 50;
+        qy = req ? req.y : 58;
+        lines += '<line x1="' + qx + '" y1="' + qy + '" x2="' + px + '" y2="' + py + '" stroke="' + skillLineColor(d.branch, hasSkill(d.id)) + '" stroke-width="0.7" />';
+      }
+      lines += "</svg><div class=\"skill-core\" title=\"Core\"></div>";
+      html = lines;
+      for (i = 0; i < SKILL_NODES.length; i++) {
+        d = SKILL_NODES[i];
+        owned = hasSkill(d.id);
+        open = !owned && skillPrereqMet(d);
+        cls = "skill-node " + d.branch;
+        if (owned) cls += " owned";
+        else if (open) cls += " open";
+        if (skillsPick === d.id) cls += " selected";
+        if (d.special && special === d.special) cls += " equipped";
+        html += '<button type="button" class="' + cls + '" data-skill="' + d.id + '" style="left:' + d.x + "%;top:" + d.y + '%" aria-label="' + d.name + '">' + d.short + "</button>";
+      }
+      map.innerHTML = html;
+    }
+    d = skillsPick ? findIn(SKILL_NODES, skillsPick) : null;
+    if (detail) {
+      if (!d) {
+        detail.innerHTML = "Tap a node. Skill points come from XP level (1 per level, max 100). Spent points do not reduce XP.";
+      } else {
+        owned = hasSkill(d.id);
+        canBuy = canUnlockSkill(d.id);
+        canEq = !!(d.special && owned && special !== d.special);
+        html = '<div class="sk-name ' + d.branch + '">' + d.name + "</div>";
+        html += '<div class="sk-cost">' + (owned ? "Owned" : (d.cost + " SP")) + (d.special ? " · Warp special" : "") + "</div>";
+        html += '<div class="sk-desc">' + d.desc + "</div>";
+        html += '<div class="sk-acts">';
+        if (!owned) {
+          html += '<button type="button" class="btn"' + (canBuy ? "" : " disabled") + ' data-skill-act="buy" data-skill="' + d.id + '">' + (canBuy ? ("Unlock · " + d.cost + " SP") : (skillPrereqMet(d) ? "Need " + d.cost + " SP" : "Locked")) + "</button>";
+        } else if (d.special) {
+          if (special === d.special) html += '<span class="tag on">Equipped</span>';
+          else html += '<button type="button" class="btn"' + (canEq ? "" : " disabled") + ' data-skill-act="equip" data-skill="' + d.id + '">Equip</button>';
+        } else {
+          html += '<span class="tag on">Active</span>';
+        }
+        html += "</div>";
+        detail.innerHTML = html;
+      }
+    }
+  }
+  function onSkillsClick(e) {
+    var btn = e.target && e.target.closest ? e.target.closest("[data-skill]") : null;
+    var id, act, def;
+    if (!btn) return;
+    e.preventDefault();
+    id = btn.getAttribute("data-skill");
+    act = btn.getAttribute("data-skill-act");
+    def = findIn(SKILL_NODES, id);
+    if (!def) return;
+    if (act === "buy") {
+      if (unlockSkill(id)) {
+        skillsPick = id;
+        renderSkills();
+        renderHub();
+      }
+      return;
+    }
+    if (act === "equip") {
+      if (def.special) equipSkillSpecial(def.special);
+      skillsPick = id;
+      renderSkills();
+      return;
+    }
+    skillsPick = id;
+    renderSkills();
+  }
+
   function showScreen(name) {
     uiScreen = name;
     if (name !== "quests") {
@@ -7996,7 +8363,7 @@
       return;
     }
     overlay.classList.remove("hidden");
-    var ids = ["hub", "hangar", "quests", "ranks", "account", "lobby", "pause", "summary"];
+    var ids = ["hub", "hangar", "skills", "quests", "ranks", "account", "lobby", "pause", "summary"];
     var i;
     for (i = 0; i < ids.length; i++) {
       var node = el("screen-" + ids[i]);
@@ -8004,6 +8371,7 @@
     }
     if (name === "hub") { renderHub(); startHubAnim(); }
     else if (name === "hangar") { renderHangar(); startHubAnim(); }
+    else if (name === "skills") { renderSkills(); }
     else {
       stopHubAnim();
       if (name === "quests") { setResetConfirm(false); renderQuests(); }
@@ -8220,6 +8588,7 @@
     enemies = [];
     skinDecoys = [];
     shake = 0; flash = 0; time = 0;
+    stasisT = 0;
     waveHold = 0;
     run = emptyRun();
     runQuestClaims = [];
@@ -8678,6 +9047,8 @@
     var slot = row.slot;
     var p = players[slot];
     var spec = { ship: row.ship, gun: row.gun, mod: row.mod, skin: row.skin || "stock" };
+    if (p && p.loadout && p.loadout.skills) spec.skills = p.loadout.skills;
+    if (row.skills) spec.skills = cloneSkills(row.skills);
     if (!p) {
       p = makePlayer(slot, spec);
       players[slot] = p;
@@ -9284,6 +9655,8 @@
       sendLocalInput(dt);
       requestClientPickups();
       hideClaimedPickups();
+      if (player) setText(pwrEl, powerHud());
+      syncPvpHudChrome();
     } else {
       update(dt);
       if (netRole === "host") {
@@ -9410,6 +9783,7 @@
     p.muzzle = Math.max(0, p.muzzle - dt * 6);
     if (p.weaponT > 0) { p.weaponT -= dt; if (p.weaponT <= 0) p.weapon = "normal"; }
     if (p.speedT > 0) p.speedT = Math.max(0, p.speedT - dt);
+    if ((p.skillCd || 0) > 0) p.skillCd = Math.max(0, p.skillCd - dt);
     if ((p.skinBoostT || 0) > 0) {
       p.skinBoostT = Math.max(0, p.skinBoostT - dt);
       if (p.skinBoostT <= 0) refreshSkinMuls(p);
@@ -9503,7 +9877,10 @@
     if (fire && p.boss && !(pvpS() && pvpS().roundLock)) {
       var abSlot = (inp.ab | 0) || (inp.ability ? 1 : 0);
       if (abSlot) pvpBossAbility(p, abSlot);
+    } else if (fire && inp.ability && !p.skillHeld && !p.boss && !(pvpS() && pvpS().roundLock)) {
+      tryCastSkill(p);
     }
+    p.skillHeld = !!inp.ability;
   }
 
   function update(dt) {
@@ -9536,6 +9913,7 @@
     var pi;
     for (pi = 0; pi < players.length; pi++) updateOneShip(players[pi], dt, !(pvpS() && pvpS().roundLock));
     if (player) setText(pwrEl, powerHud());
+    syncPvpHudChrome();
     if (isPvpRun()) {
       var sess = pvpS();
       if (sess && sess.roundHold > 0) {
@@ -9550,6 +9928,11 @@
       }
       syncPvpHudChrome();
     }
+
+    var wallDt = dt;
+    var foeDt = stasisT > 0 ? dt * STASIS_SLOW : dt;
+    if (stasisT > 0) stasisT = Math.max(0, stasisT - wallDt);
+    dt = foeDt;
 
     if (enterT > 0 && !isPvpRun()) enterT -= dt;
 
@@ -9669,6 +10052,7 @@
 
     updateHydraLeech(dt);
 
+    dt = wallDt;
     for (i = pickups.length - 1; i >= 0; i--) {
       p = pickups[i];
       var magP = null, magD = 1e12, magLen;
@@ -9788,6 +10172,7 @@
       if (consumed) continue;
     }
 
+    dt = foeDt;
     for (i = ebul.length - 1; i >= 0; i--) {
       b = ebul[i];
       b.age += dt;
@@ -9903,6 +10288,7 @@
       if (hit) break;
     }
 
+    dt = wallDt;
     for (i = particles.length - 1; i >= 0; i--) {
       p = particles[i];
       if (p.siphon) {
@@ -11843,7 +12229,7 @@
         if (k === "Escape") { leaveNet(); showScreen("hub"); }
         else if (lobbyMode === "join" && (k === "Enter" || k === " ")) lobbyJoinGo();
         else if (lobbyMode === "ready" && netRole === "host" && (k === "Enter" || k === " ")) lobbyStart();
-      } else if (uiScreen === "hangar" || uiScreen === "quests" || uiScreen === "ranks" || uiScreen === "account") {
+      } else if (uiScreen === "hangar" || uiScreen === "skills" || uiScreen === "quests" || uiScreen === "ranks" || uiScreen === "account") {
         if (k === "Escape" || k === "Backspace") showScreen("hub");
       } else if (uiScreen === "pause") {
         if (k === "Enter" || k === " " || k === "p" || k === "P" || k === "Escape") resumeGame();
@@ -11859,6 +12245,10 @@
     else if (k === "ArrowDown" || k === "s" || k === "S") input.down = true;
     else if (k === " ") { input.fire = true; ensureAudio(); shootPlayer(); }
     else if (player && player.boss && pvpAbilitySlotFromKey(k)) pressPvpAbility(pvpAbilitySlotFromKey(k));
+    else if ((k === "e" || k === "E") && !(player && player.boss)) {
+      input.ability = true;
+      tryCastSkill(player);
+    }
     else if (k === "p" || k === "P" || k === "Escape") pauseGame();
   }
   function onKeyUp(e) {
@@ -11869,6 +12259,7 @@
     else if (k === "ArrowUp" || k === "w" || k === "W") input.up = false;
     else if (k === "ArrowDown" || k === "s" || k === "S") input.down = false;
     else if (k === " ") input.fire = false;
+    else if ((k === "e" || k === "E") && !(player && player.boss)) input.ability = false;
     else if (player && player.boss && pvpAbilitySlotFromKey(k)) {
       if ((input.ab | 0) === pvpAbilitySlotFromKey(k)) {
         input.ability = false;
@@ -11968,6 +12359,7 @@
   el("btn-coop").addEventListener("click", function (e) { e.preventDefault(); openLobby("coop"); });
   el("btn-pvp").addEventListener("click", function (e) { e.preventDefault(); openLobby("pvp"); });
   el("btn-hangar").addEventListener("click", function (e) { e.preventDefault(); showScreen("hangar"); });
+  el("btn-skills").addEventListener("click", function (e) { e.preventDefault(); showScreen("skills"); });
   el("btn-quests").addEventListener("click", function (e) { e.preventDefault(); showScreen("quests"); });
   el("btn-board").addEventListener("click", function (e) { e.preventDefault(); showScreen("ranks"); });
   el("btn-account").addEventListener("click", function (e) {
@@ -11979,6 +12371,21 @@
     }
   });
   el("btn-hangar-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
+  el("btn-skills-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
+  el("btn-skills-refund").addEventListener("click", function (e) {
+    e.preventDefault();
+    if (refundSkills()) {
+      skillsPick = null;
+      renderSkills();
+      renderHub();
+    }
+  });
+  (function bindSkillsMap() {
+    var map = el("skills-map");
+    var detail = el("skills-detail");
+    if (map) map.addEventListener("click", onSkillsClick);
+    if (detail) detail.addEventListener("click", onSkillsClick);
+  })();
   el("btn-quests-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
   el("btn-board-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
   el("btn-account-back").addEventListener("click", function (e) { e.preventDefault(); showScreen("hub"); });
@@ -12460,7 +12867,7 @@
       getProfile: function () { return profile; },
       resetAllProgress: resetAllProgress,
       COIN_SPAWN_MUL: COIN_SPAWN_MUL,
-      setXp: function (xp) { profile.totalXp = Math.max(0, xp | 0); profile.startWave = clampStartWave(profile.startWave || 1); saveProfile(); if (uiScreen === "hub") renderHub(); else if (uiScreen === "hangar") renderHangar(); else if (uiScreen === "quests") renderQuests(); return xpLevel(profile.totalXp); },
+      setXp: function (xp) { profile.totalXp = Math.max(0, xp | 0); profile.startWave = clampStartWave(profile.startWave || 1); saveProfile(); if (uiScreen === "hub") renderHub(); else if (uiScreen === "hangar") renderHangar(); else if (uiScreen === "skills") renderSkills(); else if (uiScreen === "quests") renderQuests(); return xpLevel(profile.totalXp); },
       setCoins: function (c) { profile.coins = Math.max(0, c | 0); saveProfile(); if (uiScreen === "hangar") renderHangar(); else renderHub(); },
       equip: function (cat, id) {
         if (cat === "skin") {
@@ -12589,6 +12996,7 @@
       lifeDropChance: lifeDropChance,
       healDropChance: healDropChance,
       lifeCap: lifeCap,
+      maxLivesFor: maxLivesFor,
       xpLevel: xpLevel,
       xpForLevel: xpForLevel,
       levelTitle: levelTitle,
@@ -12615,6 +13023,27 @@
       longById: longById,
       claimQuest: claimQuest,
       POWER_WEIGHTS: POWER_WEIGHTS,
+      SKILL_NODES: SKILL_NODES,
+      SKILL_REFUND_FEE: SKILL_REFUND_FEE,
+      PROFILE_VER: PROFILE_VER,
+      skillUnspent: skillUnspent,
+      skillSpent: skillSpent,
+      skillBudget: skillBudget,
+      canUnlockSkill: canUnlockSkill,
+      unlockSkill: unlockSkill,
+      equipSkillSpecial: equipSkillSpecial,
+      refundSkills: refundSkills,
+      grantAllSkills: grantAllSkills,
+      grantAllUnlocks: grantAllUnlocks,
+      hasSkill: hasSkill,
+      equippedSpecial: equippedSpecial,
+      tryCastSkill: tryCastSkill,
+      cloneSkills: cloneSkills,
+      migrateProfile: migrateProfile,
+      profileLoadoutSpec: profileLoadoutSpec,
+      loadoutLives: loadoutLives,
+      loadoutFireMul: loadoutFireMul,
+      loadoutDmgMul: loadoutDmgMul,
       isPvp: isPvp,
       isPvpMatch: isPvpMatch,
       isPvpRun: isPvpRun,

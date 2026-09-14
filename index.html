@@ -49,7 +49,7 @@
   <div id="touchpad" aria-label="Game controls">
     <button type="button" class="pad-btn pad-move" id="pad-left" data-dir="left" aria-label="Move left">&#9664;</button>
     <button type="button" class="pad-btn pad-fire" id="pad-fire" data-dir="fire" aria-label="Fire">FIRE</button>
-    <button type="button" class="pad-btn pad-ability hidden" id="pad-ability" data-dir="ability" aria-label="Ability">ABILITY</button>
+    <button type="button" class="pad-btn pad-ability hidden" id="pad-ability" data-dir="ability" aria-label="Skill">SKILL</button>
     <button type="button" class="pad-btn pad-move" id="pad-right" data-dir="right" aria-label="Move right">&#9654;</button>
   </div>
   <div id="hint">Drag / hold field to move &middot; tap / hold to fire &middot; or use the pad</div>
@@ -74,14 +74,26 @@
     </div>
     <div class="btn-row-2">
       <button type="button" class="btn btn-ghost" id="btn-hangar">Hangar</button>
-      <button type="button" class="btn btn-ghost" id="btn-quests">Quests</button>
+      <button type="button" class="btn btn-ghost" id="btn-skills">Skills</button>
     </div>
-    <button type="button" class="btn btn-ghost" id="btn-board">Leaderboard</button>
+    <div class="btn-row-2">
+      <button type="button" class="btn btn-ghost" id="btn-quests">Quests</button>
+      <button type="button" class="btn btn-ghost" id="btn-board">Leaderboard</button>
+    </div>
     <button type="button" class="btn btn-ghost" id="btn-account">Save progress</button>
     <div class="help" id="hub-help">
       Drag or hold the play field to move (including up / down) &nbsp;&middot;&nbsp; tap / hold to fire<br>
       Or use the pad &nbsp;&middot;&nbsp; Pause / Mute in the HUD
     </div>
+  </div>
+  <div id="screen-skills" class="screen hidden">
+    <div class="screen-title">Skills</div>
+    <div id="skills-stats" class="hub-stats">0 SP</div>
+    <div id="skills-map" class="skills-map" aria-label="Skill constellation"></div>
+    <div id="skills-detail" class="skills-detail">Tap a node</div>
+    <div id="skills-equip" class="hangar-equip"><span class="eq-lab">Special</span> None</div>
+    <button type="button" class="btn btn-ghost" id="btn-skills-refund">Refund tree · 40c</button>
+    <button type="button" class="btn btn-ghost" id="btn-skills-back">Back</button>
   </div>
   <div id="screen-hangar" class="screen hidden">
     <div class="screen-title">Hangar</div>

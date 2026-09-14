@@ -88,6 +88,7 @@ assert(js.indexOf('var ADMIN_CODE = "1234"') >= 0, "passcode");
 assert(js.indexOf("resetTapN >= 3") >= 0, "triple tap");
 assert(js.indexOf("onResetProgressTap") >= 0, "reset tap handler");
 assert(js.indexOf("grantAllUnlocks") >= 0, "unlock grant");
+assert(js.indexOf("grantAllSkills()") >= 0, "admin maxes skill tree");
 assert(js.indexOf("flushAccountPush") >= 0, "account sync");
 assert(html.indexOf("id=\"admin-passcode\"") >= 0, "passcode sheet");
 assert(html.indexOf("Enter passcode") >= 0, "passcode copy");
