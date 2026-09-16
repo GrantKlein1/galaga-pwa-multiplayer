@@ -518,6 +518,14 @@
     var count = BOSS_DEFS.length;
     return { type: BOSS_DEFS[cycle % count].id, tier: Math.floor(cycle / count) };
   }
+  // First-cycle dedicated debut: (index + 1) * BOSS_EVERY. Seraph 5 … Pentarch 80.
+  function bossDebutWave(type) {
+    var i;
+    for (i = 0; i < BOSS_DEFS.length; i++) {
+      if (BOSS_DEFS[i].id === type) return (i + 1) * BOSS_EVERY;
+    }
+    return 0;
+  }
   function bossName(type) {
     var d = bossDef(type);
     return d ? d.name : "BOSS";
@@ -3821,9 +3829,16 @@
     n = n || wave || 1;
     return 0.00288 * (1 + Math.min(0.6, (n - 1) * 0.012));
   }
+  // Heal/1UP from a boss kill only on that id's first-cycle dedicated debut
+  // (Hydra wave 15 yes; Hydra guest on 47 or Hydra +1 rematch no). Coins still drop.
+  function bossDropsHealth(e) {
+    if (!e || !e.isBoss || e.guest) return false;
+    if ((e.tier || 0) !== 0) return false;
+    return wave === bossDebutWave(e.type);
+  }
   function maybeDrop(e, guaranteed) {
     if (guaranteed) {
-      spawnPickup(e.x, e.y, "heal");
+      if (bossDropsHealth(e)) spawnPickup(e.x, e.y, "heal");
       dropCoins(e, true);
       return;
     }
@@ -13051,6 +13066,8 @@
       grantPickup: grantPickup,
       spawnPickup: spawnPickup,
       maybeDrop: maybeDrop,
+      bossDebutWave: bossDebutWave,
+      bossDropsHealth: bossDropsHealth,
       getWave: function () { return wave; },
       getPickups: function () {
         var out = [], i;

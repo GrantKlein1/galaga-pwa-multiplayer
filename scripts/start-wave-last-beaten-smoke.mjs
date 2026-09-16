@@ -71,6 +71,6 @@ assert(js.indexOf("n === wave + 1") >= 0, "spawnWave records clear");
 assert(js.indexOf("sb.w === wave + 1") >= 0, "client snap records clear");
 assert(js.indexOf("clearedWave: run.clearedWave || 0") >= 0, "host over includes clear");
 assert(js.indexOf("startWaveUnlocked") >= 0 && js.indexOf("reachedStartWave(reached) > n") >= 0, "unlock rule unchanged");
-assert(sw.indexOf("galaga-coop-v46") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v47") >= 0, "cache bump");
 
 console.log("start-wave-last-beaten-smoke: ok");
