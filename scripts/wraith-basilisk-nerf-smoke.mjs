@@ -46,6 +46,6 @@ assert(guestHpMul("wraith", 20) === 1, "pre-31 Wraith guests not extra-cut");
 assert(galaga.indexOf("if (atk === \"constrict\") return;") >= 0, "constrict never begins");
 assert(galaga.split("if (atk === \"constrict\") return;").length - 1 >= 2, "constrict never fires");
 
-assert(sw.indexOf("galaga-coop-v45") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v46") >= 0, "PWA cache bump");
 
 console.log("wraith-basilisk-nerf-smoke: ok");

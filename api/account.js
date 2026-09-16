@@ -142,16 +142,25 @@ function sanitizeBoolMap(raw, maxKeys) {
 }
 
 var SKILL_NODE_IDS = [
-  "hull-life1", "hull-iframes", "hull-life2", "hull-shield", "hull-laststand",
-  "gun-dmg1", "gun-rof1", "gun-dmg2", "gun-rof2", "gun-chip", "gun-gems",
-  "warp-stasis", "warp-pulse", "warp-aegis"
+  "hull-life1", "hull-iframes", "hull-life2", "hull-brace", "hull-keel", "hull-iron", "hull-citadel", "hull-bulk",
+  "hull-plate", "hull-shield", "hull-magnet", "hull-scoop", "hull-regen", "hull-coin", "hull-ward2", "hull-laststand", "hull-speed",
+  "gun-dmg1", "gun-rof1", "gun-dmg2", "gun-rof2", "gun-chip", "gun-focus", "gun-dmg3", "gun-pierce",
+  "gun-cool", "gun-gems", "gun-haste", "gun-luck", "gun-caliber", "gun-rof3", "gun-rapid", "gun-wide", "gun-muzzle",
+  "warp-stasis", "warp-pulse", "warp-aegis", "warp-rift", "warp-well", "warp-veil"
 ];
-var SKILL_SPECIALS = ["stasis", "pulse", "aegis"];
+var SKILL_SPECIALS = {
+  stasis: "warp-stasis",
+  pulse: "warp-pulse",
+  aegis: "warp-aegis",
+  rift: "warp-rift",
+  well: "warp-well",
+  veil: "warp-veil"
+};
 
 function sanitizeSkills(raw) {
-  var owned = [], i, id, seen = {}, eq;
+  var owned = [], i, id, seen = {}, eq, bonus, need;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-    return { owned: [], equipped: null };
+    return { owned: [], equipped: null, bonus: 0 };
   }
   if (Array.isArray(raw.owned)) {
     for (i = 0; i < raw.owned.length && owned.length < SKILL_NODE_IDS.length; i++) {
@@ -163,16 +172,16 @@ function sanitizeSkills(raw) {
     }
   }
   eq = typeof raw.equipped === "string" ? raw.equipped.slice(0, 16) : null;
-  if (eq && SKILL_SPECIALS.indexOf(eq) < 0) eq = null;
-  if (eq === "stasis" && owned.indexOf("warp-stasis") < 0) eq = null;
-  if (eq === "pulse" && owned.indexOf("warp-pulse") < 0) eq = null;
-  if (eq === "aegis" && owned.indexOf("warp-aegis") < 0) eq = null;
-  return { owned: owned, equipped: eq };
+  need = eq ? SKILL_SPECIALS[eq] : null;
+  if (!need) eq = null;
+  if (eq && owned.indexOf(need) < 0) eq = null;
+  bonus = asInt(raw.bonus, 80);
+  return { owned: owned, equipped: eq, bonus: bonus };
 }
 
 function defaultCloudProfile() {
   return {
-    v: 5,
+    v: 6,
     coins: 0,
     totalXp: 0,
     best: 0,
@@ -184,7 +193,7 @@ function defaultCloudProfile() {
     ownedSkins: { wisp: ["stock"] },
     equipped: { ship: "wisp", gun: "pulse", mod: null },
     equippedSkins: { wisp: "stock" },
-    skills: { owned: [], equipped: null },
+    skills: { owned: [], equipped: null, bonus: 0 },
     startWave: 1,
     dailies: { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} },
     dailyTracks: {},
@@ -289,7 +298,7 @@ export function sanitizeProfile(raw) {
   p.stats.runs = asInt(st.runs, 9999999);
   p.admin = !!raw.admin;
   p.updatedAt = asTime(raw.updatedAt);
-  p.v = 5;
+  p.v = 6;
   return p;
 }
 

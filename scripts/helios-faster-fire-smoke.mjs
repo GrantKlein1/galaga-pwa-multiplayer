@@ -52,6 +52,6 @@ assert(pvp.indexOf('{ id: "limb", key: "1", name: "Shadow limb", cd: 6.4 }') >= 
 assert(pvp.indexOf('{ id: "crypt", key: "1", name: "Crypt", cd: 5.6 }') >= 0, "Cenotaph PvP cds unchanged");
 assert(pvp.indexOf('{ id: "rime", key: "1", name: "Rime lock", cd: 6.2 }') >= 0, "Pentarch PvP cds unchanged");
 
-assert(sw.indexOf("galaga-coop-v45") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v46") >= 0, "PWA cache bump");
 
 console.log("helios-faster-fire-smoke: ok");

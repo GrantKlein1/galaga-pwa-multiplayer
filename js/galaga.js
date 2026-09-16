@@ -21,12 +21,13 @@
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
   var SESSION_KEY = "galaga.session";
-  var PROFILE_VER = 5;
+  var PROFILE_VER = 6;
   var ACCOUNT_PUSH_MS = 900;
   var ACCOUNT_PULL_MS = 5000;
   var ADMIN_CODE = "1234";
   var RESET_QUICK_MS = 420;
   var SKILL_REFUND_FEE = 40;
+  var SKILL_BONUS_CAP = 80;
   var STASIS_SLOW = 0.32;
   var STASIS_DUR = 2.8;
   var STASIS_CD = 16;
@@ -35,6 +36,16 @@
   var PULSE_CD = 10;
   var AEGIS_DUR = 1.65;
   var AEGIS_CD = 12;
+  var RIFT_DIST = 54;
+  var RIFT_INV = 0.45;
+  var RIFT_CD = 14;
+  var WELL_DUR = 2.1;
+  var WELL_R = 92;
+  var WELL_PULL = 118;
+  var WELL_CD = 18;
+  var VEIL_DUR = 2.2;
+  var VEIL_CD = 16;
+  var VEIL_R_MUL = 0.42;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
   // Playfield is 240x360 with 16px side margins (208px of travel). Formations
@@ -55,20 +66,46 @@
     { kind: "speed", w: 5 }
   ];
   var SKILL_NODES = [
-    { id: "hull-life1", branch: "hull", name: "Bulkhead", short: "+1", desc: "+1 starting life. Life cap 7.", cost: 1, req: null, x: 28, y: 58 },
-    { id: "hull-iframes", branch: "hull", name: "Ablative", short: "i", desc: "+0.45s i-frames after a hit.", cost: 1, req: "hull-life1", x: 14, y: 46 },
-    { id: "hull-life2", branch: "hull", name: "Redundant", short: "+1", desc: "+1 starting life. Life cap 8.", cost: 2, req: "hull-iframes", x: 10, y: 64 },
-    { id: "hull-shield", branch: "hull", name: "Lucky Ward", short: "S", desc: "Shield gems more often. Other pickups may grant a shield.", cost: 2, req: "hull-life2", x: 16, y: 80 },
-    { id: "hull-laststand", branch: "hull", name: "Last Stand", short: "LS", desc: "Once per run, a lethal hit restores half lives.", cost: 3, req: "hull-shield", x: 32, y: 90 },
-    { id: "gun-dmg1", branch: "gun", name: "Overcharge", short: "8%", desc: "+8% damage.", cost: 1, req: null, x: 72, y: 58 },
-    { id: "gun-rof1", branch: "gun", name: "Cyclic", short: "8%", desc: "+8% fire rate.", cost: 1, req: "gun-dmg1", x: 86, y: 46 },
-    { id: "gun-dmg2", branch: "gun", name: "Overcharge II", short: "4%", desc: "+4% damage.", cost: 2, req: "gun-rof1", x: 90, y: 62 },
-    { id: "gun-rof2", branch: "gun", name: "Cyclic II", short: "4%", desc: "+4% fire rate.", cost: 2, req: "gun-dmg2", x: 88, y: 76 },
-    { id: "gun-chip", branch: "gun", name: "Pierce Chip", short: "P", desc: "+1 pierce and a light splash chip on shots.", cost: 2, req: "gun-rof2", x: 74, y: 86 },
-    { id: "gun-gems", branch: "gun", name: "Sustain", short: "G", desc: "+25% gem duration.", cost: 2, req: "gun-chip", x: 60, y: 92 },
-    { id: "warp-stasis", branch: "warp", name: "Stasis", short: "S", desc: "Slow all enemies and enemy shots. You and your fire stay full speed.", cost: 2, req: null, special: "stasis", x: 50, y: 40 },
-    { id: "warp-pulse", branch: "warp", name: "Pulse", short: "P", desc: "Pop nearby enemy shots and ding close foes.", cost: 2, req: "warp-stasis", special: "pulse", x: 50, y: 24 },
-    { id: "warp-aegis", branch: "warp", name: "Aegis", short: "A", desc: "Brief i-frames.", cost: 2, req: "warp-pulse", special: "aegis", x: 50, y: 10 }
+    { id: "hull-life1", branch: "hull", name: "Bulkhead", short: "+1", desc: "+1 starting life. Life cap +1.", cost: 2, req: null, x: 30, y: 58 },
+    { id: "hull-iframes", branch: "hull", name: "Ablative", short: "i", desc: "+0.45s i-frames after a hit.", cost: 2, req: "hull-life1", x: 18, y: 50 },
+    { id: "hull-life2", branch: "hull", name: "Redundant", short: "+1", desc: "+1 starting life. Life cap +1.", cost: 2, req: "hull-iframes", x: 10, y: 42 },
+    { id: "hull-brace", branch: "hull", name: "Brace", short: "i+", desc: "+0.25s i-frames after a hit.", cost: 2, req: "hull-iframes", x: 22, y: 40 },
+    { id: "hull-keel", branch: "hull", name: "Keel", short: "r", desc: "Hitbox −1 (min 5.5).", cost: 2, req: "hull-life2", x: 8, y: 30 },
+    { id: "hull-iron", branch: "hull", name: "Ironclad", short: "i+", desc: "+0.3s i-frames after a hit.", cost: 3, req: "hull-brace", x: 18, y: 28 },
+    { id: "hull-citadel", branch: "hull", name: "Citadel", short: "cap", desc: "Life cap +1 (not extra starting lives).", cost: 3, req: "hull-keel", x: 10, y: 18 },
+    { id: "hull-bulk", branch: "hull", name: "Bulkhead II", short: "ok", desc: "Once per wave, the first hull hit is ignored.", cost: 5, req: "hull-iron", x: 22, y: 16 },
+    { id: "hull-plate", branch: "hull", name: "Plate", short: "pl", desc: "Start each run with +1 shield point.", cost: 2, req: "hull-life1", x: 24, y: 70 },
+    { id: "hull-shield", branch: "hull", name: "Lucky Ward", short: "S", desc: "Shield gems more often. Other pickups may grant a shield.", cost: 2, req: "hull-plate", x: 12, y: 74 },
+    { id: "hull-magnet", branch: "hull", name: "Attractor", short: "M", desc: "Pull pickups (70px). Magnet mod reaches 150px.", cost: 2, req: "hull-plate", x: 28, y: 80 },
+    { id: "hull-scoop", branch: "hull", name: "Scoop", short: "sc", desc: "Pickup grab radius +22.", cost: 2, req: "hull-magnet", x: 14, y: 84 },
+    { id: "hull-regen", branch: "hull", name: "Second Wind", short: "sw", desc: "Boss kills restore a shield point.", cost: 2, req: "hull-shield", x: 8, y: 66 },
+    { id: "hull-coin", branch: "hull", name: "Salvage Net", short: "c", desc: "+10% coin drops.", cost: 3, req: "hull-regen", x: 18, y: 90 },
+    { id: "hull-ward2", branch: "hull", name: "Buffer", short: "sh", desc: "Start +1 extra shield point (stacks with Plate).", cost: 3, req: "hull-coin", x: 32, y: 90 },
+    { id: "hull-laststand", branch: "hull", name: "Last Stand", short: "LS", desc: "Once per run, a lethal hit restores half lives.", cost: 5, req: "hull-ward2", x: 24, y: 93 },
+    { id: "hull-speed", branch: "hull", name: "Rudder", short: "sp", desc: "+6% ship speed.", cost: 2, req: "hull-plate", x: 36, y: 68 },
+    { id: "gun-dmg1", branch: "gun", name: "Overcharge", short: "8%", desc: "+8% damage.", cost: 2, req: null, x: 70, y: 58 },
+    { id: "gun-rof1", branch: "gun", name: "Cyclic", short: "8%", desc: "+8% fire rate.", cost: 2, req: "gun-dmg1", x: 82, y: 50 },
+    { id: "gun-dmg2", branch: "gun", name: "Overcharge II", short: "4%", desc: "+4% damage.", cost: 2, req: "gun-rof1", x: 90, y: 42 },
+    { id: "gun-rof2", branch: "gun", name: "Cyclic II", short: "4%", desc: "+4% fire rate.", cost: 2, req: "gun-dmg2", x: 78, y: 40 },
+    { id: "gun-chip", branch: "gun", name: "Pierce Chip", short: "P", desc: "+1 pierce and a light splash chip on shots.", cost: 2, req: "gun-rof2", x: 92, y: 30 },
+    { id: "gun-focus", branch: "gun", name: "Focus", short: "2%", desc: "+2% damage.", cost: 3, req: "gun-chip", x: 82, y: 28 },
+    { id: "gun-dmg3", branch: "gun", name: "Overcharge III", short: "3%", desc: "+3% damage.", cost: 3, req: "gun-focus", x: 90, y: 18 },
+    { id: "gun-pierce", branch: "gun", name: "Lance Tip", short: "P+", desc: "+1 extra pierce.", cost: 5, req: "gun-dmg3", x: 78, y: 16 },
+    { id: "gun-cool", branch: "gun", name: "Feed", short: "fd", desc: "+3% fire rate.", cost: 2, req: "gun-dmg1", x: 76, y: 70 },
+    { id: "gun-gems", branch: "gun", name: "Sustain", short: "G", desc: "+25% gem duration.", cost: 2, req: "gun-cool", x: 88, y: 74 },
+    { id: "gun-haste", branch: "gun", name: "Bloodcycle", short: "h", desc: "Kills grant 1.15s of +10% fire rate.", cost: 2, req: "gun-cool", x: 72, y: 80 },
+    { id: "gun-luck", branch: "gun", name: "Fortune Chip", short: "lk", desc: "Spread and double gems drop more often.", cost: 3, req: "gun-gems", x: 86, y: 84 },
+    { id: "gun-caliber", branch: "gun", name: "Caliber", short: "2%", desc: "+2% damage.", cost: 2, req: "gun-dmg2", x: 94, y: 66 },
+    { id: "gun-rof3", branch: "gun", name: "Cyclic III", short: "3%", desc: "+3% fire rate.", cost: 3, req: "gun-haste", x: 80, y: 90 },
+    { id: "gun-rapid", branch: "gun", name: "Afterglow", short: "ag", desc: "Speed gems also grant +6% fire rate.", cost: 3, req: "gun-luck", x: 68, y: 90 },
+    { id: "gun-wide", branch: "gun", name: "Burst Chip", short: "w", desc: "Splash chip radius +8 if you have Pierce Chip.", cost: 5, req: "gun-rapid", x: 76, y: 93 },
+    { id: "gun-muzzle", branch: "gun", name: "Muzzle", short: "v", desc: "+8% shot speed.", cost: 2, req: "gun-cool", x: 64, y: 68 },
+    { id: "warp-stasis", branch: "warp", name: "Stasis", short: "S", desc: "Slow all enemies and enemy shots. You and your fire stay full speed.", cost: 5, req: null, special: "stasis", x: 50, y: 46 },
+    { id: "warp-pulse", branch: "warp", name: "Pulse", short: "P", desc: "Pop nearby enemy shots and ding close foes.", cost: 8, req: "warp-stasis", special: "pulse", x: 50, y: 36 },
+    { id: "warp-aegis", branch: "warp", name: "Aegis", short: "A", desc: "Brief i-frames.", cost: 11, req: "warp-pulse", special: "aegis", x: 42, y: 27 },
+    { id: "warp-rift", branch: "warp", name: "Rift", short: "R", desc: "Blink forward. Brief i-frames.", cost: 14, req: "warp-aegis", special: "rift", x: 58, y: 22 },
+    { id: "warp-well", branch: "warp", name: "Well", short: "W", desc: "Gravity well pulls fodder and enemy shots toward a point ahead.", cost: 18, req: "warp-rift", special: "well", x: 42, y: 13 },
+    { id: "warp-veil", branch: "warp", name: "Veil", short: "V", desc: "Shrink your hitbox and gain a short speed lift.", cost: 22, req: "warp-well", special: "veil", x: 50, y: 6 }
   ];
 
   // Ships. Stats: speed (px/s), r (hitbox radius), invuln (s after a hit), extraLives,
@@ -217,48 +254,48 @@
     { id: "d_weavers", name: "Weave Cutter", desc: "Kill 14 weavers", target: 14, kind: "kills", type: "weaver", reward: { coins: 38 } },
     { id: "d_shields", name: "Breaker", desc: "Kill 8 shield drones", target: 8, kind: "kills", type: "shield", reward: { coins: 42 } },
     { id: "d_kills40", name: "Body Count", desc: "Destroy 50 foes in one run", target: 50, kind: "killsRun", reward: { coins: 38 } },
-    { id: "d_kills90", name: "Massacre", desc: "Destroy 110 foes in one run", target: 110, kind: "killsRun", reward: { coins: 65 } },
+    { id: "d_kills90", name: "Massacre", desc: "Destroy 110 foes in one run", target: 110, kind: "killsRun", reward: { coins: 65, skill: 1 } },
     { id: "d_wave10", name: "First Push", desc: "Reach wave 12", target: 12, kind: "wave", reward: { coins: 30 } },
     { id: "d_wave15", name: "Deep Sortie", desc: "Reach wave 18", target: 18, kind: "wave", reward: { coins: 48 } },
     { id: "d_wave20", name: "Hold the Line", desc: "Reach wave 24", target: 24, kind: "wave", reward: { coins: 65 } },
     { id: "d_wave25", name: "Long Patrol", desc: "Reach wave 30", target: 30, kind: "wave", reward: { coins: 88 } },
-    { id: "d_wave30", name: "Into the Deep", desc: "Reach wave 36", target: 36, kind: "wave", reward: { coins: 115 } },
+    { id: "d_wave30", name: "Into the Deep", desc: "Reach wave 36", target: 36, kind: "wave", reward: { coins: 115, skill: 1 } },
     { id: "d_boss", name: "Boss Breaker", desc: "Defeat a boss", target: 1, kind: "bossAny", reward: { coins: 40 } },
     { id: "d_boss2", name: "Double Ace", desc: "Defeat 3 bosses in one run", target: 3, kind: "bossRun", reward: { coins: 70 } },
-    { id: "d_boss3", name: "Triple Crown", desc: "Defeat 4 bosses in one run", target: 4, kind: "bossRun", reward: { coins: 105 } },
-    { id: "d_flawless", name: "Flawless", desc: "Defeat 2 bosses without taking a hit", target: 2, kind: "noHitBoss", reward: { coins: 82 } },
+    { id: "d_boss3", name: "Triple Crown", desc: "Defeat 4 bosses in one run", target: 4, kind: "bossRun", reward: { coins: 105, skill: 1 } },
+    { id: "d_flawless", name: "Flawless", desc: "Defeat 2 bosses without taking a hit", target: 2, kind: "noHitBoss", reward: { coins: 82, skill: 1 } },
     { id: "d_score", name: "High Score", desc: "Score 10,000 in one run", target: 10000, kind: "score", reward: { coins: 42 } },
     { id: "d_score4k", name: "Warm Guns", desc: "Score 5,000 in one run", target: 5000, kind: "score", reward: { coins: 25 } },
     { id: "d_score12k", name: "Hot Streak", desc: "Score 15,000 in one run", target: 15000, kind: "score", reward: { coins: 60 } },
-    { id: "d_score25k", name: "Blazing", desc: "Score 30,000 in one run", target: 30000, kind: "score", reward: { coins: 105 } },
+    { id: "d_score25k", name: "Blazing", desc: "Score 30,000 in one run", target: 30000, kind: "score", reward: { coins: 105, skill: 1 } },
     { id: "d_coins", name: "Scavenger", desc: "Collect 26 coins in one run", target: 26, kind: "runCoins", reward: { coins: 30 } },
     { id: "d_coins40", name: "Payday", desc: "Collect 52 coins in one run", target: 52, kind: "runCoins", reward: { coins: 48 } },
-    { id: "d_coins80", name: "Treasure Run", desc: "Collect 96 coins in one run", target: 96, kind: "runCoins", reward: { coins: 82 } },
+    { id: "d_coins80", name: "Treasure Run", desc: "Collect 96 coins in one run", target: 96, kind: "runCoins", reward: { coins: 82, skill: 1 } },
     { id: "d_spread", name: "Fan Favorite", desc: "Collect 2 spread gems", target: 2, kind: "pickup", type: "spread", reward: { coins: 52 } },
     { id: "d_double", name: "Twin Catch", desc: "Collect 2 double gems", target: 2, kind: "pickup", type: "double", reward: { coins: 48 } },
     { id: "d_heal", name: "Field Medic", desc: "Collect 2 heal pickups", target: 2, kind: "pickup", type: "heal", reward: { coins: 38 } },
     { id: "d_shieldgem", name: "Bubble Up", desc: "Collect 3 shield gems in one run", target: 3, kind: "pickup", type: "shield", reward: { coins: 38 } },
     { id: "d_nohit8", name: "Ghost Pass", desc: "Reach wave 10 without taking a hit", target: 10, kind: "noHitWave", reward: { coins: 60 } },
-    { id: "d_nohit12", name: "Ghost Patrol", desc: "Reach wave 15 without taking a hit", target: 15, kind: "noHitWave", reward: { coins: 92 } },
+    { id: "d_nohit12", name: "Ghost Patrol", desc: "Reach wave 15 without taking a hit", target: 15, kind: "noHitWave", reward: { coins: 92, skill: 1 } },
     { id: "d_dives", name: "Dive Intercept", desc: "Destroy 10 diving foes", target: 10, kind: "diveKills", reward: { coins: 36 } },
     { id: "d_dives20", name: "Air Superiority", desc: "Destroy 25 diving foes", target: 25, kind: "diveKills", reward: { coins: 60 } },
     { id: "d_enemy_set", name: "Full House", desc: "Destroy a tank, kami, and sniper in one run", target: 1, kind: "enemySet", types: ["tank", "kami", "sniper"], reward: { coins: 55 } },
     { id: "d_power_pair", name: "Power Pair", desc: "Collect a spread and double gem in one run", target: 1, kind: "pickupSet", types: ["spread", "double"], reward: { coins: 60 } },
-    { id: "d_clean50", name: "Clean Flight", desc: "Destroy 50 foes in a run without taking a hit", target: 50, kind: "cleanKillsRun", reward: { coins: 70 } }
+    { id: "d_clean50", name: "Clean Flight", desc: "Destroy 50 foes in a run without taking a hit", target: 50, kind: "cleanKillsRun", reward: { coins: 70, skill: 1 } }
   ];
   var LONG_DEFS = [
     { id: "lt_wave20", name: "Wave 25", desc: "Reach wave 25", target: 25, kind: "wave", reward: { coins: 70 } },
-    { id: "lt_wave30", name: "Wave 40", desc: "Reach wave 40", target: 40, kind: "wave", reward: { coins: 120, gun: "twin", consolation: 70 } },
+    { id: "lt_wave30", name: "Wave 40", desc: "Reach wave 40", target: 40, kind: "wave", reward: { coins: 120, gun: "twin", consolation: 70, skill: 1 } },
     { id: "lt_wave40", name: "Wave 55", desc: "Reach wave 55", target: 55, kind: "wave", reward: { gun: "lance", consolation: 180 } },
     { id: "lt_wave50", name: "Wave 70", desc: "Reach wave 70", target: 70, kind: "wave", reward: { gun: "seeker", consolation: 240 } },
-    { id: "lt_wave60", name: "Wave 85", desc: "Reach wave 85", target: 85, kind: "wave", reward: { ship: "phantom", consolation: 300 } },
+    { id: "lt_wave60", name: "Wave 85", desc: "Reach wave 85", target: 85, kind: "wave", reward: { ship: "phantom", consolation: 300, skill: 1 } },
     { id: "lt_wave80", name: "Wave 110", desc: "Reach wave 110", target: 110, kind: "wave", reward: { coins: 360, gun: "scatter", consolation: 300 } },
-    { id: "lt_wave100", name: "Deep Century", desc: "Reach wave 130", target: 130, kind: "wave", reward: { coins: 700, ship: "nova", consolation: 600 } },
+    { id: "lt_wave100", name: "Deep Century", desc: "Reach wave 130", target: 130, kind: "wave", reward: { coins: 700, ship: "nova", consolation: 600, skill: 1 } },
     { id: "lt_lv10", name: "Ensign", desc: "Reach level 15", target: 15, kind: "level", reward: { coins: 120 } },
     { id: "lt_lv25", name: "Lieutenant", desc: "Reach level 35", target: 35, kind: "level", reward: { coins: 300, mod: "magnet", consolation: 180 } },
-    { id: "lt_lv50", name: "Commander", desc: "Reach level 60", target: 60, kind: "level", reward: { coins: 700, gun: "volley", consolation: 600 } },
+    { id: "lt_lv50", name: "Commander", desc: "Reach level 60", target: 60, kind: "level", reward: { coins: 700, gun: "volley", consolation: 600, skill: 1 } },
     { id: "lt_lv75", name: "Admiral", desc: "Reach level 85", target: 85, kind: "level", reward: { coins: 1400, mod: "guardian", consolation: 950 } },
-    { id: "lt_lv100", name: "Eternal", desc: "Reach level 100", target: 100, kind: "level", reward: { coins: 2500, ship: "eclipse", consolation: 2000 } },
+    { id: "lt_lv100", name: "Eternal", desc: "Reach level 100", target: 100, kind: "level", reward: { coins: 2500, ship: "eclipse", consolation: 2000, skill: 1 } },
     { id: "lt_seraph", name: "Seraph Contract", desc: "Defeat Seraph twice", target: 2, kind: "bossCount", type: "seraph", reward: { coins: 50 } },
     { id: "lt_wraith", name: "Wraith Contract", desc: "Defeat Wraith twice", target: 2, kind: "bossCount", type: "wraith", reward: { coins: 60 } },
     { id: "lt_hydra", name: "Hydra Contract", desc: "Defeat Hydra twice", target: 2, kind: "bossCount", type: "hydra", reward: { coins: 72 } },
@@ -268,7 +305,7 @@
     { id: "lt_inferno", name: "Inferno Contract", desc: "Defeat Inferno twice", target: 2, kind: "bossCount", type: "inferno", reward: { coins: 180 } },
     { id: "lt_nullwarden", name: "Nullwarden Contract", desc: "Defeat Nullwarden twice", target: 2, kind: "bossCount", type: "nullwarden", reward: { coins: 215, gun: "railgun", consolation: 180 } },
     { id: "lt_basilisk", name: "Basilisk Contract", desc: "Defeat Basilisk twice", target: 2, kind: "bossCount", type: "basilisk", reward: { coins: 265 } },
-    { id: "lt_overlord", name: "Overlord Contract", desc: "Defeat Overlord twice", target: 2, kind: "bossCount", type: "overlord", reward: { coins: 480, ship: "strix", consolation: 360 } },
+    { id: "lt_overlord", name: "Overlord Contract", desc: "Defeat Overlord twice", target: 2, kind: "bossCount", type: "overlord", reward: { coins: 480, ship: "strix", consolation: 360, skill: 1 } },
     { id: "lt_mandala", name: "Mandala Contract", desc: "Defeat Mandala twice", target: 2, kind: "bossCount", type: "mandala", reward: { coins: 520, consolation: 380 } },
     { id: "lt_cenotaph", name: "Cenotaph Contract", desc: "Defeat Cenotaph twice", target: 2, kind: "bossCount", type: "cenotaph", reward: { coins: 560, consolation: 400 } },
     { id: "lt_kaleido", name: "Kaleido Contract", desc: "Defeat Kaleido twice", target: 2, kind: "bossCount", type: "kaleido", reward: { coins: 600, consolation: 430 } },
@@ -290,33 +327,33 @@
     { id: "lt_inferno_t1", name: "Inferno +1", desc: "Defeat Inferno at tier 1 or higher", target: 1, kind: "bossTier", type: "inferno", tier: 1, reward: { coins: 350, gun: "helix", consolation: 300 } },
     { id: "lt_overlord_t1", name: "Overlord +1", desc: "Defeat Overlord at tier 1 or higher", target: 1, kind: "bossTier", type: "overlord", tier: 1, reward: { coins: 600, mod: "salvage", consolation: 400 } },
     { id: "lt_wraith_t2", name: "Wraith +2", desc: "Defeat Wraith at tier 2 or higher", target: 1, kind: "bossTier", type: "wraith", tier: 2, reward: { coins: 700 } },
-    { id: "lt_overlord_t2", name: "Overlord +2", desc: "Defeat Overlord at tier 2 or higher", target: 1, kind: "bossTier", type: "overlord", tier: 2, reward: { coins: 1500, ship: "tempest", consolation: 1000 } },
+    { id: "lt_overlord_t2", name: "Overlord +2", desc: "Defeat Overlord at tier 2 or higher", target: 1, kind: "bossTier", type: "overlord", tier: 2, reward: { coins: 1500, ship: "tempest", consolation: 1000, skill: 2 } },
     { id: "lt_flawless1", name: "Flawless", desc: "Defeat 2 bosses without taking a hit", target: 2, kind: "perfectLife", reward: { coins: 100 } },
     { id: "lt_flawless10", name: "Untouchable", desc: "Defeat 15 bosses without taking a hit", target: 15, kind: "perfectLife", reward: { coins: 360, mod: "afterburner", consolation: 250 } },
-    { id: "lt_flawless30", name: "Ghost of the Fleet", desc: "Defeat 45 bosses without taking a hit", target: 45, kind: "perfectLife", reward: { coins: 950, ship: "warden", consolation: 800 } },
+    { id: "lt_flawless30", name: "Ghost of the Fleet", desc: "Defeat 45 bosses without taking a hit", target: 45, kind: "perfectLife", reward: { coins: 950, ship: "warden", consolation: 800, skill: 1 } },
     { id: "lt_tanks50", name: "Armored Graveyard", desc: "Destroy 80 tanks", target: 80, kind: "killsLife", type: "tank", reward: { gun: "rapid", consolation: 120 } },
     { id: "lt_kami80", name: "Kami Cemetery", desc: "Destroy 120 kami", target: 120, kind: "killsLife", type: "kami", reward: { coins: 140 } },
     { id: "lt_weaver60", name: "Thread Cut", desc: "Destroy 90 weavers", target: 90, kind: "killsLife", type: "weaver", reward: { coins: 140 } },
     { id: "lt_shield40", name: "Shield Breaker", desc: "Destroy 60 shield drones", target: 60, kind: "killsLife", type: "shield", reward: { coins: 165 } },
     { id: "lt_sniper80", name: "No Safe Orbit", desc: "Destroy 120 snipers", target: 120, kind: "killsLife", type: "sniper", reward: { coins: 140 } },
     { id: "lt_kills1k", name: "Two Thousand Cuts", desc: "Destroy 2,000 foes", target: 2000, kind: "killsAllLife", reward: { coins: 280 } },
-    { id: "lt_kills5k", name: "Exterminator", desc: "Destroy 7,500 foes", target: 7500, kind: "killsAllLife", reward: { coins: 750, gun: "storm", consolation: 620 } },
+    { id: "lt_kills5k", name: "Exterminator", desc: "Destroy 7,500 foes", target: 7500, kind: "killsAllLife", reward: { coins: 750, gun: "storm", consolation: 620, skill: 1 } },
     { id: "lt_nohit15", name: "Untouched 20", desc: "Reach wave 20 without taking a hit", target: 20, kind: "noHitWave", reward: { coins: 130 } },
     { id: "lt_nohit25", name: "Untouched 35", desc: "Reach wave 35 without taking a hit", target: 35, kind: "noHitWave", reward: { coins: 260 } },
-    { id: "lt_nohit40", name: "Perfect Storm", desc: "Reach wave 50 without taking a hit", target: 50, kind: "noHitWave", reward: { coins: 500, mod: "barrier", consolation: 320 } },
+    { id: "lt_nohit40", name: "Perfect Storm", desc: "Reach wave 50 without taking a hit", target: 50, kind: "noHitWave", reward: { coins: 500, mod: "barrier", consolation: 320, skill: 1 } },
     { id: "lt_lives30", name: "Iron Hull", desc: "Reach wave 40 without losing a life", target: 40, kind: "livesOkWave", reward: { coins: 230 } },
     { id: "lt_bosses8", name: "Boss Rush", desc: "Defeat 10 bosses in one run", target: 10, kind: "bossRun", reward: { coins: 310 } },
     { id: "lt_bosses12", name: "Gauntlet", desc: "Defeat 15 bosses in one run", target: 15, kind: "bossRun", reward: { coins: 620, gun: "novacannon", consolation: 540 } },
     { id: "lt_bosses20", name: "Thronebreaker", desc: "Defeat 30 bosses across all runs", target: 30, kind: "bossesLife", reward: { coins: 275 } },
-    { id: "lt_bosses100", name: "Regicide", desc: "Defeat 150 bosses across all runs", target: 150, kind: "bossesLife", reward: { coins: 1100, ship: "bastion", consolation: 850 } },
+    { id: "lt_bosses100", name: "Regicide", desc: "Defeat 150 bosses across all runs", target: 150, kind: "bossesLife", reward: { coins: 1100, ship: "bastion", consolation: 850, skill: 1 } },
     { id: "lt_score25k", name: "Ace Pilot", desc: "Reach a best score of 35,000", target: 35000, kind: "scoreLife", reward: { coins: 165 } },
     { id: "lt_score50k", name: "Legend", desc: "Reach a best score of 70,000", target: 70000, kind: "scoreLife", reward: { coins: 340 } },
-    { id: "lt_score80k", name: "Mythic Sortie", desc: "Reach a best score of 110,000", target: 110000, kind: "scoreLife", reward: { coins: 550, mod: "reactor", consolation: 380 } },
-    { id: "lt_score150k", name: "Starbreaker", desc: "Reach a best score of 200,000", target: 200000, kind: "scoreLife", reward: { coins: 1200, gun: "prism", consolation: 1050 } },
+    { id: "lt_score80k", name: "Mythic Sortie", desc: "Reach a best score of 110,000", target: 110000, kind: "scoreLife", reward: { coins: 550, mod: "reactor", consolation: 380, skill: 1 } },
+    { id: "lt_score150k", name: "Starbreaker", desc: "Reach a best score of 200,000", target: 200000, kind: "scoreLife", reward: { coins: 1200, gun: "prism", consolation: 1050, skill: 2 } },
     { id: "lt_coins50", name: "Haul", desc: "Collect 75 coins in one run", target: 75, kind: "coinsRun", reward: { coins: 100 } },
     { id: "lt_coins100", name: "Vault Breaker", desc: "Collect 150 coins in one run", target: 150, kind: "coinsRun", reward: { coins: 200 } },
     { id: "lt_coins250", name: "Dragon Hoard", desc: "Collect 350 coins in one run", target: 350, kind: "coinsRun", reward: { coins: 500 } },
-    { id: "lt_earned5k", name: "Tycoon", desc: "Earn 7,500 coins across all runs", target: 7500, kind: "coinsLife", reward: { coins: 620 } },
+    { id: "lt_earned5k", name: "Tycoon", desc: "Earn 7,500 coins across all runs", target: 7500, kind: "coinsLife", reward: { coins: 620, skill: 1 } },
     { id: "lt_earned20k", name: "Magnate", desc: "Earn 30,000 coins across all runs", target: 30000, kind: "coinsLife", reward: { coins: 1800 } },
     { id: "lt_ships4", name: "Small Fleet", desc: "Own 5 ships", target: 5, kind: "ownShips", reward: { coins: 250 } },
     { id: "lt_ships8", name: "Armada", desc: "Own 9 ships", target: 9, kind: "ownShips", reward: { coins: 800 } },
@@ -376,6 +413,9 @@
   var shake = 0;
   var flash = 0;
   var stasisT = 0;
+  var wellT = 0;
+  var wellX = 0;
+  var wellY = 0;
   var diveCd = 0;
   var enterT = 0;
   var waveHold = 0;
@@ -1066,7 +1106,7 @@
       ownedSkins: { wisp: ["stock"] },
       equipped: { ship: "wisp", gun: "pulse", mod: null },
       equippedSkins: { wisp: "stock" },
-      skills: { owned: [], equipped: null },
+      skills: { owned: [], equipped: null, bonus: 0 },
       startWave: 1,
       dailies: { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} },
       dailyTracks: {},
@@ -1126,9 +1166,15 @@
     if (!out.wisp) out.wisp = "stock";
     return out;
   }
-  function emptySkills() { return { owned: [], equipped: null }; }
+  function emptySkills() { return { owned: [], equipped: null, bonus: 0 }; }
+  function clampSkillBonus(n) {
+    n = n | 0;
+    if (n < 0) return 0;
+    if (n > SKILL_BONUS_CAP) return SKILL_BONUS_CAP;
+    return n;
+  }
   function cloneSkills(raw) {
-    var owned = [], i, id, seen = {}, eq, def, specialOk;
+    var owned = [], i, id, seen = {}, eq, def, specialOk, bonus;
     if (!raw || typeof raw !== "object") return emptySkills();
     if (raw.owned && raw.owned.length) {
       for (i = 0; i < raw.owned.length; i++) {
@@ -1146,7 +1192,8 @@
       if (def.special === eq && owned.indexOf(def.id) >= 0) specialOk = true;
     }
     if (!specialOk) eq = null;
-    return { owned: owned, equipped: eq };
+    bonus = clampSkillBonus(raw.bonus);
+    return { owned: owned, equipped: eq, bonus: bonus };
   }
   function migrateProfile(raw) {
     var p = defaultProfile();
@@ -1371,7 +1418,11 @@
     out.equippedSkins = cloneSkinEquip(newer.equippedSkins);
     out.skills = cloneSkills({
       owned: unionStr(local.skills && local.skills.owned, cloud.skills && cloud.skills.owned),
-      equipped: newer.skills && newer.skills.equipped
+      equipped: newer.skills && newer.skills.equipped,
+      bonus: Math.max(
+        (local.skills && local.skills.bonus) | 0,
+        (cloud.skills && cloud.skills.bonus) | 0
+      )
     });
     out.dailies = mergeDailies(local.dailies, cloud.dailies);
     out.dailyTracks = maxNumMap(local.dailyTracks, cloud.dailyTracks);
@@ -1432,6 +1483,12 @@
     }
     return null;
   }
+  function skillBonusOf(who) {
+    var sk;
+    if (who && who.skills && typeof who.skills === "object" && who.skills.owned) sk = who.skills;
+    else sk = skillsOf(who);
+    return clampSkillBonus(sk && sk.bonus);
+  }
   function skillSpent(who) {
     var owned = skillOwnedList(who), n = 0, i, def;
     for (i = 0; i < owned.length; i++) {
@@ -1442,15 +1499,26 @@
   }
   function skillBudget(who) {
     var xp = who && who.totalXp != null ? who.totalXp : profile.totalXp;
-    return Math.min(MAX_LEVEL, xpLevel(xp));
+    return Math.min(MAX_LEVEL, xpLevel(xp)) + skillBonusOf(who);
   }
   function skillUnspent(who) {
     return Math.max(0, skillBudget(who) - skillSpent(who));
   }
+  function skillReqIds(def) {
+    var out = [], i;
+    if (!def || def.req == null) return out;
+    if (typeof def.req === "string") return [def.req];
+    if (def.req.length) {
+      for (i = 0; i < def.req.length; i++) if (typeof def.req[i] === "string") out.push(def.req[i]);
+    }
+    return out;
+  }
   function skillPrereqMet(def, who) {
+    var reqs, i;
     if (!def) return false;
-    if (!def.req) return true;
-    return hasSkill(def.req, who);
+    reqs = skillReqIds(def);
+    for (i = 0; i < reqs.length; i++) if (!hasSkill(reqs[i], who)) return false;
+    return true;
   }
   function canUnlockSkill(id, who) {
     var def = findIn(SKILL_NODES, id);
@@ -1478,23 +1546,34 @@
   }
   function refundSkills() {
     var spent = skillSpent();
+    var bonus;
     if (!spent) return false;
     if ((profile.coins | 0) < SKILL_REFUND_FEE) return false;
     profile.coins -= SKILL_REFUND_FEE;
+    bonus = skillBonusOf();
     profile.skills = emptySkills();
+    profile.skills.bonus = bonus;
     ensureAudio();
     sfxCredit();
     saveProfile();
     return true;
   }
   function grantAllSkills() {
-    var i, keep;
+    var i, keep, bonus;
     if (!profile.skills) profile.skills = emptySkills();
     keep = profile.skills.equipped;
+    bonus = skillBonusOf();
     profile.skills.owned = [];
     for (i = 0; i < SKILL_NODES.length; i++) profile.skills.owned.push(SKILL_NODES[i].id);
+    profile.skills.bonus = bonus;
     if (keep && skillNodeForSpecial(keep) && hasSkill(skillNodeForSpecial(keep).id)) profile.skills.equipped = keep;
     else profile.skills.equipped = "stasis";
+  }
+  function grantSkillBonus(n) {
+    n = n | 0;
+    if (n <= 0) return;
+    if (!profile.skills) profile.skills = emptySkills();
+    profile.skills.bonus = clampSkillBonus((profile.skills.bonus | 0) + n);
   }
   function gemDurationMul(who) {
     return hasSkill("gun-gems", who) ? 1.25 : 1;
@@ -1798,6 +1877,7 @@
       coins = coins || rew.consolation || 40;
       out.coins = scaleCoins(coins, tier, curve.c, cap);
     }
+    if (rew.skill) out.skill = Math.max(0, rew.skill | 0);
     return out;
   }
   function optsDailyCap(def) {
@@ -2701,6 +2781,10 @@
     if (mod === "ascension") m *= 1.10;
     if (hasSkill("gun-rof1", p)) m *= 1.08;
     if (hasSkill("gun-rof2", p)) m *= 1.04;
+    if (hasSkill("gun-cool", p)) m *= 1.03;
+    if (hasSkill("gun-rof3", p)) m *= 1.03;
+    if (p && (p.skillHasteT || 0) > 0) m *= 1.1;
+    if (p && p.speedT > 0 && hasSkill("gun-rapid", p)) m *= 1.06;
     return m;
   }
   function loadoutDmgMul(ship, mod, p) {
@@ -2715,19 +2799,26 @@
     }
     if (hasSkill("gun-dmg1", p)) m *= 1.08;
     if (hasSkill("gun-dmg2", p)) m *= 1.04;
+    if (hasSkill("gun-focus", p)) m *= 1.02;
+    if (hasSkill("gun-caliber", p)) m *= 1.02;
+    if (hasSkill("gun-dmg3", p)) m *= 1.03;
     return m;
   }
-  function loadoutSpeed(ship, mod) {
-    mod = mod === undefined ? equippedMod() : mod;
-    return (ship || shipDef()).speed * (mod === "afterburner" ? 1.12 : 1);
+  function loadoutSpeed(ship, mod, p) {
+    mod = mod === undefined ? equippedMod(p) : mod;
+    var spd = (ship || shipDef(p)).speed * (mod === "afterburner" ? 1.12 : 1);
+    if (hasSkill("hull-speed", p)) spd *= 1.06;
+    return spd;
   }
   function loadoutPickMul(ship, mod) {
     mod = mod === undefined ? equippedMod() : mod;
     return ((ship || shipDef()).pickMul || 1) * (mod === "afterburner" ? 1.5 : 1);
   }
-  function loadoutR(ship, mod) {
-    mod = mod === undefined ? equippedMod() : mod;
-    return (ship || shipDef()).r + (mod === "reactor" ? 1 : 0);
+  function loadoutR(ship, mod, p) {
+    mod = mod === undefined ? equippedMod(p) : mod;
+    var r = (ship || shipDef(p)).r + (mod === "reactor" ? 1 : 0);
+    if (hasSkill("hull-keel", p)) r = Math.max(5.5, r - 1);
+    return r;
   }
   function loadoutLives(ship, who) {
     var n = START_LIVES + ((ship || shipDef(who)).extraLives || 0);
@@ -2739,6 +2830,7 @@
     var n = MAX_LIVES;
     if (hasSkill("hull-life1", who)) n += 1;
     if (hasSkill("hull-life2", who)) n += 1;
+    if (hasSkill("hull-citadel", who)) n += 1;
     return n;
   }
   function lifeCap(who) { return Math.min(maxLivesFor(who), loadoutLives(shipDef(who), who) + 1); }
@@ -3658,11 +3750,15 @@
   }
   function fortuneMul() {
     var i, mul = 1, p, s;
-    if (!players.length) return (hasMod("fortune") ? 1.5 : 1) * (shipDef().coinMul || 1);
+    if (!players.length) {
+      mul = (hasMod("fortune") ? 1.5 : 1) * (shipDef().coinMul || 1);
+      if (hasSkill("hull-coin")) mul *= 1.1;
+      return mul;
+    }
     for (i = 0; i < players.length; i++) {
       p = players[i];
       s = shipDef(p);
-      mul = Math.max(mul, (hasMod("fortune", p) ? 1.5 : 1) * (s.coinMul || 1));
+      mul = Math.max(mul, (hasMod("fortune", p) ? 1.5 : 1) * (s.coinMul || 1) * (hasSkill("hull-coin", p) ? 1.1 : 1));
     }
     return mul;
   }
@@ -3701,16 +3797,18 @@
     return b;
   }
   function pickWeightedPowerup() {
-    var total = 0, i, r, w, luck = anyHasSkill("hull-shield");
+    var total = 0, i, r, w, luck = anyHasSkill("hull-shield"), gemLuck = anyHasSkill("gun-luck");
     for (i = 0; i < POWER_WEIGHTS.length; i++) {
       w = POWER_WEIGHTS[i].w;
       if (luck && POWER_WEIGHTS[i].kind === "shield") w *= 2.2;
+      if (gemLuck && (POWER_WEIGHTS[i].kind === "spread" || POWER_WEIGHTS[i].kind === "double")) w *= 1.4;
       total += w;
     }
     r = Math.random() * total;
     for (i = 0; i < POWER_WEIGHTS.length; i++) {
       w = POWER_WEIGHTS[i].w;
       if (luck && POWER_WEIGHTS[i].kind === "shield") w *= 2.2;
+      if (gemLuck && (POWER_WEIGHTS[i].kind === "spread" || POWER_WEIGHTS[i].kind === "double")) w *= 1.4;
       r -= w;
       if (r <= 0) return POWER_WEIGHTS[i].kind;
     }
@@ -3800,7 +3898,8 @@
     return pk && pk.kind === "revive" ? 1.85 : 1;
   }
   function pickupReach(who, pk) {
-    return ((who && who.r) || PLAYER_R) + PICKUP_PAD + (pk && pk.kind === "revive" ? 12 : 0);
+    var extra = hasSkill("hull-scoop", who) ? 22 : 0;
+    return ((who && who.r) || PLAYER_R) + PICKUP_PAD + extra + (pk && pk.kind === "revive" ? 12 : 0);
   }
   function nearestPicker(pk) {
     var i, pl, d2, reach, best = null, bestD = 1e12;
@@ -4083,6 +4182,7 @@
     for (pi = 0; pi < players.length; pi++) {
       if (players[pi] && players[pi].alive) players[pi].invuln = Math.max(players[pi].invuln, 1.15);
       resetSkinWave(players[pi]);
+      if (players[pi]) players[pi].bulkUsed = false;
     }
     run.maxWave = Math.max(run.maxWave, n);
     if (!run.hits) run.cleanWave = Math.max(run.cleanWave || 0, n);
@@ -4098,6 +4198,7 @@
     var x = spawnXFor(slot, count || 1);
     var y = spawnYFor(slot);
     var who = { loadout: { ship: spec.ship || "wisp", gun: spec.gun || "pulse", mod: spec.mod || null, skin: spec.skin || equippedSkinFor(spec.ship || "wisp"), skills: cloneSkills(spec.skills) } };
+    var baseR = loadoutR(s, spec.mod, who);
     return {
       slot: slot,
       loadout: who.loadout,
@@ -4105,12 +4206,14 @@
       facing: facingForSlot(slot),
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
       weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0, freezeT: 0,
-      r: loadoutR(s, spec.mod), speed: loadoutSpeed(s, spec.mod), invulnDur: s.invuln + (hasSkill("hull-iframes", who) ? 0.45 : 0), regen: s.regen, regenT: 0,
+      r: baseR, baseR: baseR, speed: loadoutSpeed(s, spec.mod, who),
+      invulnDur: s.invuln + (hasSkill("hull-iframes", who) ? 0.45 : 0) + (hasSkill("hull-brace", who) ? 0.25 : 0) + (hasSkill("hull-iron", who) ? 0.3 : 0),
+      regen: s.regen, regenT: 0,
       shotCount: 0,
       lives: loadoutLives(s, who),
       hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, abilityCds: [0, 0, 0, 0, 0, 0], abilityGcd: 0, dash: null, rewind: null, pvpFollow: null,
       leech: 0,
-      skillCd: 0, lastStandUsed: false, skillHeld: false,
+      skillCd: 0, lastStandUsed: false, skillHeld: false, skillHasteT: 0, veilT: 0, bulkUsed: false,
       skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
       skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
       skinSentinelCd: 0, skinUmbraT: 0, skinCarrion: 0, skinCoronaAcc: 0, skinKeepX: false,
@@ -4213,6 +4316,7 @@
       }
       if (sid === "nova-supernova" && fromPerk !== "splash") skinSplash(e.x, e.y, 30, 2, owner.slot, "splash");
       if (sid === "strix-inferno" && burning && fromPerk !== "splash") skinSplash(e.x, e.y, 22, 1.5, owner.slot, "splash");
+      if (hasSkill("gun-haste", owner)) owner.skillHasteT = 1.15;
     }
     if (e.isBoss) {
       run.bosses[e.type] = (run.bosses[e.type] || 0) + 1;
@@ -4230,6 +4334,10 @@
         if (pl && pl.alive && shipDef(pl).passive === "eclipse" && pl.lives < lifeCap(pl)) {
           pl.lives += 1;
           sfxLife();
+        }
+        if (pl && pl.alive && hasSkill("hull-regen", pl)) {
+          pl.shieldHp = Math.max(pl.shieldHp || 0, 1);
+          pl.shieldT = Math.max(pl.shieldT || 0, 4);
         }
       }
       syncLocalPlayer();
@@ -4448,6 +4556,17 @@
       updateHud();
       return;
     }
+    if (hasSkill("hull-bulk", who) && !who.bulkUsed && !isPvpRun()) {
+      who.bulkUsed = true;
+      explode(who.x, who.y, "#5ef0d8", false);
+      who.invuln = Math.max(who.invuln || 0, 0.7);
+      ebul.length = 0;
+      banner = { text: "BULKHEAD", life: 0.7 };
+      skinAfterHit(who, "shield");
+      syncQuestProgress();
+      updateHud();
+      return;
+    }
     explode(who.x, who.y, "#7ef9ff", true);
     sfxHit();
     who.lives -= 1;
@@ -4615,6 +4734,15 @@
         if (!b.hit) b.hit = [];
         if (!b.splash) b.splash = { r: 18, dmg: 0.6 };
         else b.splash = { r: (b.splash.r || 16) + 6, dmg: (b.splash.dmg || 0) + 0.4 };
+        if (hasSkill("gun-wide", who)) b.splash.r += 8;
+      }
+      if (hasSkill("gun-pierce", who)) {
+        b.pierce = (b.pierce || 0) + 1;
+        if (!b.hit) b.hit = [];
+      }
+      if (hasSkill("gun-muzzle", who)) {
+        b.vx *= 1.08;
+        b.vy *= 1.08;
       }
       if (g.helix) {
         b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
@@ -4642,23 +4770,33 @@
     if (id === "stasis") return STASIS_CD;
     if (id === "pulse") return PULSE_CD;
     if (id === "aegis") return AEGIS_CD;
+    if (id === "rift") return RIFT_CD;
+    if (id === "well") return WELL_CD;
+    if (id === "veil") return VEIL_CD;
     return 0;
   }
   function skillFx(who, id) {
-    var col = id === "stasis" ? "#c8a0ff" : id === "pulse" ? "#ffe08a" : "#7ef9ff";
-    rings.push({ x: who.x, y: who.y, r: 6, vr: id === "pulse" ? 320 : 220, life: 0.42, color: col });
+    var col = "#c8a0ff";
+    if (id === "pulse") col = "#ffe08a";
+    else if (id === "aegis") col = "#7ef9ff";
+    else if (id === "rift") col = "#ff9ad6";
+    else if (id === "well") col = "#b07cff";
+    else if (id === "veil") col = "#e8ffff";
+    rings.push({ x: who.x, y: who.y, r: 6, vr: id === "pulse" || id === "well" ? 320 : 220, life: 0.42, color: col });
     if (id === "pulse") {
       rings.push({ x: who.x, y: who.y, r: 2, vr: 420, life: 0.32, color: "#ffffff" });
       sfxArmor();
-    } else if (id === "stasis") {
+    } else if (id === "stasis" || id === "well") {
       flash = Math.max(flash, 0.28);
       sfxPickup();
-    } else if (id === "aegis") {
+    } else if (id === "aegis" || id === "veil") {
       sfxLife();
+    } else if (id === "rift") {
+      sfxShoot(who);
     }
   }
   function tryCastSkill(who) {
-    var id, i, e, b, predict, cd;
+    var id, i, e, b, predict, cd, face, ny, band;
     who = who || player;
     if (!who || !who.alive || who.boss) return false;
     if (pvpS() && pvpS().roundLock) return false;
@@ -4687,9 +4825,48 @@
       }
     } else if (id === "aegis") {
       who.invuln = Math.max(who.invuln || 0, AEGIS_DUR);
+    } else if (id === "rift") {
+      face = pvpFacing(who);
+      ny = who.y + face * RIFT_DIST;
+      band = shipYBand(who, Math.max(10, (who.r || PLAYER_R) + 4));
+      who.y = clamp(ny, band.lo, band.hi);
+      who.targetY = who.y;
+      who.hostY = who.y;
+      who.invuln = Math.max(who.invuln || 0, RIFT_INV);
+    } else if (id === "well") {
+      wellT = Math.max(wellT, WELL_DUR);
+      wellX = who.x;
+      wellY = clamp(who.y + pvpFacing(who) * 70, 36, H - 36);
+    } else if (id === "veil") {
+      who.veilT = VEIL_DUR;
+      who.r = Math.max(3.5, (who.baseR || who.r) * VEIL_R_MUL);
     }
     updateHud();
     return true;
+  }
+
+  function applyWarpWell(dt) {
+    var i, e, b, dx, dy, len, pull;
+    if (wellT <= 0) return;
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive || e.isBoss) continue;
+      dx = wellX - e.x; dy = wellY - e.y;
+      len = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (len > WELL_R) continue;
+      pull = (1 - len / WELL_R) * WELL_PULL * dt;
+      e.x += dx / len * pull;
+      e.y += dy / len * pull;
+    }
+    for (i = 0; i < ebul.length; i++) {
+      b = ebul[i];
+      dx = wellX - b.x; dy = wellY - b.y;
+      len = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (len > WELL_R) continue;
+      pull = (1 - len / WELL_R) * WELL_PULL * 1.35 * dt;
+      b.vx += dx / len * pull;
+      b.vy += dy / len * pull;
+    }
   }
 
   function pvpEbul(x, y, vx, vy, who, opt) {
@@ -7064,13 +7241,24 @@
     if (cat === "ship") grantLevelSkins();
     return 0;
   }
+  function rewardSkillPts(rew) {
+    if (!rew || typeof rew !== "object") return 0;
+    return Math.max(0, rew.skill | 0);
+  }
+  function skillRewardLabel(n) {
+    n = n | 0;
+    if (n <= 0) return "";
+    return "+" + n + " skill point" + (n === 1 ? "" : "s");
+  }
   function applyReward(rew, pick) {
-    var item;
+    var item, sp;
     if (rew == null) return;
     if (typeof rew === "number") {
       profile.coins += rew;
       return;
     }
+    sp = rewardSkillPts(rew);
+    if (sp) grantSkillBonus(sp);
     if (rewardNeedsChoice(rew)) {
       item = rewardItem(rew);
       if (pick === "coins") {
@@ -7912,19 +8100,25 @@
     if (typeof rew === "number") return rew + "c";
     var item = rewardItem(rew);
     var coins = rewardCoinPayout(rew);
-    if (item && coins) return "Choose one: " + item.name + "  or  " + coins + "c";
-    if (item) return item.name;
-    if (rew.coins) return rew.coins + "c";
-    if (rew.consolation) return rew.consolation + "c";
-    return "";
+    var skill = skillRewardLabel(rewardSkillPts(rew));
+    var base;
+    if (item && coins) base = "Choose one: " + item.name + "  or  " + coins + "c";
+    else if (item) base = item.name;
+    else if (rew.coins) base = rew.coins + "c";
+    else if (rew.consolation) base = rew.consolation + "c";
+    else base = "";
+    if (skill) base = base ? (base + "  ·  " + skill) : skill;
+    return base;
   }
   function questClaimControls(q, scope, summary) {
     var item = rewardItem(q.reward);
     var coins = rewardCoinPayout(q.reward);
+    var skill = skillRewardLabel(rewardSkillPts(q.reward));
     var owned, h;
     if (rewardNeedsChoice(q.reward)) {
       owned = isOwned(item.cat, item.id);
       h = '<div class="q-choice">';
+      if (skill) h += '<div class="q-skill">' + skill + "</div>";
       if (owned) {
         h += '<button type="button" class="btn q-pick q-pick-item btn-off" disabled>Already own ' + item.name + '</button>';
       } else {
@@ -7936,7 +8130,10 @@
       return h;
     }
     if (summary) {
-      return '<button type="button" class="btn summary-claim" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Claim ' + rewardText(q.reward) + "</button>";
+      return '<button type="button" class="btn summary-claim" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Take ' + rewardText(q.reward) + "</button>";
+    }
+    if (skill) {
+      return '<button type="button" class="btn btn-mini" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Take ' + rewardText(q.reward) + "</button>";
     }
     return '<button type="button" class="btn btn-mini" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Claim</button>';
   }
@@ -8258,11 +8455,14 @@
     var detail = el("skills-detail");
     var eq = el("skills-equip");
     var refund = el("btn-skills-refund");
-    var lv = skillBudget();
+    var lv = xpLevel(profile.totalXp);
+    var bonus = skillBonusOf();
     var unspent = skillUnspent();
     var spent = skillSpent();
-    var i, d, owned, open, cls, html, lines, px, py, qx, qy, req, special, specName, canBuy, canEq;
-    if (stats) stats.textContent = unspent + " SP  ·  Lv " + lv + "  ·  " + spent + " spent";
+    var i, d, owned, open, cls, html, lines, px, py, qx, qy, reqs, ri, req, special, specName, canBuy, canEq;
+    if (stats) {
+      stats.textContent = unspent + " SP  ·  Lv " + lv + (bonus ? (" +" + bonus + " quest") : "") + "  ·  " + spent + " spent";
+    }
     special = equippedSpecial();
     specName = skillNodeForSpecial(special);
     if (eq) eq.innerHTML = '<span class="eq-lab">Special</span> ' + (specName ? specName.name : "None") + '<span class="eq-dps">E / Skill</span>';
@@ -8274,11 +8474,18 @@
       lines = '<svg viewBox="0 0 100 100" preserveAspectRatio="none">';
       for (i = 0; i < SKILL_NODES.length; i++) {
         d = SKILL_NODES[i];
-        req = d.req ? findIn(SKILL_NODES, d.req) : null;
+        reqs = skillReqIds(d);
         px = d.x; py = d.y;
-        qx = req ? req.x : 50;
-        qy = req ? req.y : 58;
-        lines += '<line x1="' + qx + '" y1="' + qy + '" x2="' + px + '" y2="' + py + '" stroke="' + skillLineColor(d.branch, hasSkill(d.id)) + '" stroke-width="0.7" />';
+        if (!reqs.length) {
+          lines += '<line x1="50" y1="58" x2="' + px + '" y2="' + py + '" stroke="' + skillLineColor(d.branch, hasSkill(d.id)) + '" stroke-width="0.7" />';
+        } else {
+          for (ri = 0; ri < reqs.length; ri++) {
+            req = findIn(SKILL_NODES, reqs[ri]);
+            qx = req ? req.x : 50;
+            qy = req ? req.y : 58;
+            lines += '<line x1="' + qx + '" y1="' + qy + '" x2="' + px + '" y2="' + py + '" stroke="' + skillLineColor(d.branch, hasSkill(d.id)) + '" stroke-width="0.7" />';
+          }
+        }
       }
       lines += "</svg><div class=\"skill-core\" title=\"Core\"></div>";
       html = lines;
@@ -8298,7 +8505,7 @@
     d = skillsPick ? findIn(SKILL_NODES, skillsPick) : null;
     if (detail) {
       if (!d) {
-        detail.innerHTML = "Tap a node. Skill points come from XP level (1 per level, max 100). Spent points do not reduce XP.";
+        detail.innerHTML = "Tap a node. Skill points come from XP level (1 per level, max 100) plus quest bonus. Spent points do not reduce XP. Refund keeps quest bonus.";
       } else {
         owned = hasSkill(d.id);
         canBuy = canUnlockSkill(d.id);
@@ -8517,8 +8724,15 @@
 
   function applyShipPassives(p) {
     var s = shipDef(p);
+    var bonus = 0;
     if (s.startShield) {
       p.shieldHp = s.startShield;
+      p.shieldT = 0;
+    }
+    if (hasSkill("hull-plate", p)) bonus += 1;
+    if (hasSkill("hull-ward2", p)) bonus += 1;
+    if (bonus) {
+      p.shieldHp = Math.max(p.shieldHp || 0, (s.startShield || 0) + bonus);
       p.shieldT = 0;
     }
     if (hasMod("barrier", p)) {
@@ -8589,6 +8803,7 @@
     skinDecoys = [];
     shake = 0; flash = 0; time = 0;
     stasisT = 0;
+    wellT = 0;
     waveHold = 0;
     run = emptyRun();
     runQuestClaims = [];
@@ -9736,7 +9951,7 @@
     if (p.slowT > 0) p.slowT = Math.max(0, p.slowT - dt);
     if (p.jamT > 0) p.jamT = Math.max(0, p.jamT - dt);
     if ((p.freezeT || 0) > 0) p.freezeT = Math.max(0, p.freezeT - dt);
-    spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1) * (p.skinSpdMul || 1);
+    spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1) * (p.skinSpdMul || 1) * ((p.veilT || 0) > 0 ? 1.18 : 1);
     if ((p.freezeT || 0) > 0) {
       spd = 0;
       p.targetX = p.x;
@@ -9784,6 +9999,11 @@
     if (p.weaponT > 0) { p.weaponT -= dt; if (p.weaponT <= 0) p.weapon = "normal"; }
     if (p.speedT > 0) p.speedT = Math.max(0, p.speedT - dt);
     if ((p.skillCd || 0) > 0) p.skillCd = Math.max(0, p.skillCd - dt);
+    if ((p.skillHasteT || 0) > 0) p.skillHasteT = Math.max(0, p.skillHasteT - dt);
+    if ((p.veilT || 0) > 0) {
+      p.veilT = Math.max(0, p.veilT - dt);
+      if (p.veilT <= 0) p.r = p.baseR || p.r;
+    }
     if ((p.skinBoostT || 0) > 0) {
       p.skinBoostT = Math.max(0, p.skinBoostT - dt);
       if (p.skinBoostT <= 0) refreshSkinMuls(p);
@@ -9932,6 +10152,10 @@
     var wallDt = dt;
     var foeDt = stasisT > 0 ? dt * STASIS_SLOW : dt;
     if (stasisT > 0) stasisT = Math.max(0, stasisT - wallDt);
+    if (wellT > 0) {
+      applyWarpWell(wallDt);
+      wellT = Math.max(0, wellT - wallDt);
+    }
     dt = foeDt;
 
     if (enterT > 0 && !isPvpRun()) enterT -= dt;
@@ -10058,10 +10282,14 @@
       var magP = null, magD = 1e12, magLen;
       for (pi = 0; pi < players.length; pi++) {
         pl = players[pi];
-        if (!pl || !pl.alive || !hasMod("magnet", pl)) continue;
+        if (!pl || !pl.alive) continue;
+        var magR = 0;
+        if (hasMod("magnet", pl)) magR = 110;
+        if (hasSkill("hull-magnet", pl)) magR = magR ? magR + 40 : 70;
+        if (!magR) continue;
         dx = pl.x - p.x; dy = pl.y - p.y;
         magLen = Math.sqrt(dx * dx + dy * dy) || 1;
-        if (magLen < 110 && magLen < magD) { magD = magLen; magP = pl; }
+        if (magLen < magR && magLen < magD) { magD = magLen; magP = pl; }
       }
       if (magP) {
         dx = magP.x - p.x; dy = magP.y - p.y;
@@ -13029,6 +13257,8 @@
       skillUnspent: skillUnspent,
       skillSpent: skillSpent,
       skillBudget: skillBudget,
+      skillBonusOf: skillBonusOf,
+      grantSkillBonus: grantSkillBonus,
       canUnlockSkill: canUnlockSkill,
       unlockSkill: unlockSkill,
       equipSkillSpecial: equipSkillSpecial,
