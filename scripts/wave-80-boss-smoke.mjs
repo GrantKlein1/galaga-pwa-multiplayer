@@ -64,6 +64,6 @@ assert(codec.indexOf("p.freezeT") >= 0, "freezeT in player snap");
 assert(pvp.indexOf("pentarch:") >= 0, "pvp kit");
 assert(pvp.indexOf("cenotaph:") >= 0 && pvp.indexOf("helios:") >= 0 && pvp.indexOf("selene:") >= 0, "prior late pvp kits stay");
 
-assert(sw.indexOf("galaga-coop-v45") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v46") >= 0, "PWA cache bump");
 
 console.log("wave-80-boss-smoke: ok");

@@ -385,6 +385,12 @@ html, body {
   opacity: 0.95;
   margin-top: 1px;
 }
+.q-skill {
+  font-size: 10px;
+  font-weight: 800;
+  color: #c8a0ff;
+  margin-bottom: 4px;
+}
 .q-track { height: 3px; background: #0a0a20; border-radius: 99px; overflow: hidden; margin: 3px 0 1px; }
 .q-fill { height: 100%; background: linear-gradient(90deg, #3df0ff, #7ef9ff); }
 .cat-row.ready { border-color: #ffd23d; }
@@ -518,7 +524,7 @@ html, body {
 .skills-map {
   position: relative;
   width: 100%;
-  height: 248px;
+  height: 280px;
   background:
     radial-gradient(circle at 50% 58%, rgba(126, 249, 255, 0.16), transparent 28%),
     #050510;
@@ -548,20 +554,21 @@ html, body {
 }
 .skill-node {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   margin: 0;
   padding: 0;
   border-radius: 50%;
   border: 2px solid #3a4a70;
   background: #101028;
   color: #6a7aa8;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 800;
   letter-spacing: 0.02em;
   cursor: pointer;
   transform: translate(-50%, -50%);
   box-shadow: 0 0 0 1px rgba(5, 5, 16, 0.8);
+  touch-action: manipulation;
 }
 .skill-node.hull { border-color: #2a6a6a; }
 .skill-node.gun { border-color: #6a5a2a; }
