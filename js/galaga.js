@@ -54,7 +54,9 @@
   var FORM_OX_LIMIT = 92;
   var FORM_OY_MIN = -16;
   var FORM_OY_MAX = 110;
-  // Run score used to convert 1:1 into XP. 0.15x (25% below the old 0.2x) makes a ~10k run ~1.5k XP.
+  // Run score used to convert 1:1 into XP, then harder kills add an XP-only
+  // bonus (see enemyXpMul). 0.15x (25% below the old 0.2x) makes a ~10k fodder
+  // run ~1.5k XP; Archon/Juggernaut runs bank more for the same score.
   var XP_SCORE_MUL = 0.15;
   var PICKUP_PAD = 16;
   var PICKUP_CLAIM_R = 96;
@@ -636,6 +638,27 @@
     else if (type === "sower") base = 180;
     return diving ? base * 2 : base;
   }
+  // XP-only weight on kill score. Grunt/sniper/weaver and bosses stay 1 so
+  // early waves and dedicated fights keep the old bank; elites, the wave-40
+  // pack, and Archon pay extra. Displayed score / leaderboard are unchanged.
+  function enemyXpMul(type) {
+    if (type === "juggernaut") return 2.2;
+    if (type === "archon") return 2;
+    if (type === "mirage") return 1.7;
+    if (type === "lancer") return 1.6;
+    if (type === "tether" || type === "bulwark") return 1.5;
+    if (type === "sower") return 1.45;
+    if (type === "hex") return 1.4;
+    if (type === "mortar") return 1.35;
+    if (type === "harrier") return 1.3;
+    if (type === "tank") return 1.25;
+    if (type === "shield") return 1.2;
+    if (type === "kami") return 1.15;
+    return 1;
+  }
+  function enemyXpPts(type, diving) {
+    return Math.round(enemyPts(type, diving) * enemyXpMul(type));
+  }
   function pickupColor(kind) {
     if (kind === "rapid") return "#ff9a3d";
     if (kind === "double") return "#7ef9ff";
@@ -1173,7 +1196,7 @@
 
   function emptyRun() {
     return {
-      coins: 0, killsByType: {}, bosses: {}, maxWave: 1, kills: 0,
+      coins: 0, xpBonus: 0, killsByType: {}, bosses: {}, maxWave: 1, kills: 0,
       hits: 0, livesLost: 0, cleanWave: 1, safeWave: 1, pickups: {}, diveKills: 0,
       bossHits: 0, perfectBosses: 0, leech: 0, clearedWave: 0
     };
@@ -1531,8 +1554,9 @@
     }
     return out;
   }
-  // XP curve, levels 1-100. Banked XP is run score * XP_SCORE_MUL (Ascension still adds +25%).
-  // A ~10k run is ~1.5k XP. Level 100 still needs ~2.5M XP total.
+  // XP curve, levels 1-100. Banked XP is (score + harder-kill bonus) * XP_SCORE_MUL
+  // (Ascension still adds +25%). A ~10k fodder run is ~1.5k XP. Level 100 still
+  // needs ~2.5M XP total.
   function xpForLevel(lvl) {
     var l = Math.max(1, Math.min(MAX_LEVEL, lvl | 0)) - 1;
     return Math.round(100 * Math.pow(l, 2.2) + 400 * l);
@@ -1755,26 +1779,35 @@
     return true;
   }
   function skipCredit(startN) {
-    var n, slots, i, pts = 0, meta, d, plan;
+    var n, slots, i, pts = 0, xpBonus = 0, meta, d, plan, type, add;
     startN = Math.max(1, startN | 0);
     for (n = 1; n < startN; n++) {
       if (isBossWave(n)) {
         meta = bossMeta(n);
         d = bossDef(meta.type);
-        pts += (d ? d.pts : 1500) + 800 * (meta.tier || 0);
+        add = (d ? d.pts : 1500) + 800 * (meta.tier || 0);
+        pts += add;
+        xpBonus += Math.round(add * (enemyXpMul(meta.type) - 1));
       } else {
         slots = buildSlots(formationKind(n), n);
-        for (i = 0; i < slots.length; i++) pts += enemyPts(slots[i].type, false);
+        for (i = 0; i < slots.length; i++) {
+          type = slots[i].type;
+          add = enemyPts(type, false);
+          pts += add;
+          xpBonus += enemyXpPts(type, false) - add;
+        }
         plan = guestBossPlan(n);
         if (plan) {
           for (i = 0; i < plan.bosses.length; i++) {
             d = bossDef(plan.bosses[i]);
-            pts += (d ? d.pts : 1500) + 800 * (plan.tier || 0);
+            add = (d ? d.pts : 1500) + 800 * (plan.tier || 0);
+            pts += add;
+            xpBonus += Math.round(add * (enemyXpMul(plan.bosses[i]) - 1));
           }
         }
       }
     }
-    return { score: pts };
+    return { score: pts, xpBonus: xpBonus };
   }
   function applySkipState(startN, reached) {
     var credit;
@@ -1782,6 +1815,7 @@
     if (startN <= 1) return 1;
     credit = skipCredit(startN);
     score += credit.score;
+    run.xpBonus = (run.xpBonus || 0) + (credit.xpBonus || 0);
     run.maxWave = Math.max(run.maxWave || 1, startN);
     return startN;
   }
@@ -4407,6 +4441,7 @@
     var pts = e.decoy ? 0 : enemyPts(e.type, diving);
     if (e.isBoss) pts += 800 * e.tier;
     score += pts;
+    run.xpBonus = (run.xpBonus || 0) + Math.round(pts * (enemyXpMul(e.type) - 1));
     run.kills = (run.kills || 0) + 1;
     run.killsByType[e.type] = (run.killsByType[e.type] || 0) + 1;
     profile.stats.killsByType[e.type] = (profile.stats.killsByType[e.type] || 0) + 1;
@@ -8942,7 +8977,7 @@
         pickups: run.pickups
       });
     }
-    var xpGain = Math.round(score * XP_SCORE_MUL * (hasMod("ascension") ? 1.25 : 1));
+    var xpGain = Math.round((score + (run.xpBonus || 0)) * XP_SCORE_MUL * (hasMod("ascension") ? 1.25 : 1));
     var oldLv = xpLevel(profile.totalXp);
     profile.totalXp += xpGain;
     var newLv = xpLevel(profile.totalXp);
@@ -13578,6 +13613,9 @@
       startWaveOptions: startWaveOptions,
       startWaveUnlocked: startWaveUnlocked,
       skipCredit: skipCredit,
+      enemyXpMul: enemyXpMul,
+      enemyXpPts: enemyXpPts,
+      enemyPts: enemyPts,
       preferredStartWave: preferredStartWave,
       setPreferredStartWave: setPreferredStartWave,
       lastBeatenStartWave: lastBeatenStartWave,

@@ -59,6 +59,6 @@ assert(pvp.indexOf("myrmidon") < 0 && pvp.indexOf("harrow:") < 0, "old pvp kits 
 
 assert(galaga.indexOf("gear") < 0 && galaga.indexOf("cog") < 0, "no gear/cog art");
 assert(galaga.indexOf("flareA") >= 0 && galaga.indexOf("var shade") >= 0, "sun prominences and moon terminator");
-assert(sw.indexOf("galaga-coop-v49") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v50") >= 0, "PWA cache bump");
 
 console.log("post-55-boss-smoke: ok");
