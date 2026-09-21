@@ -3841,7 +3841,7 @@
       x: W / 2 + offX * 0.2, y: -28 - Math.random() * 18,
       sx: 0, sy: 0, cx: 0, cy: 0, ex: 0, ey: 0, dur: 1,
       shotsLeft: 0, shotAt: 0, shotCd: type === "sniper" ? rand(1.45, 2.85) : (soloEarly() ? rand(0.48, 1.64) : rand(0.85, 2.42)),
-      shieldHp: type === "shield" ? 2 + Math.floor(wave / 20) + extraPlayers() : 0,
+      shieldHp: type === "shield" ? 2 + Math.floor(wave / 20) + extraPlayers() : (type === "juggernaut" ? 3 + Math.floor(wave / 20) + extraPlayers() : 0),
       phase: Math.random() * 6.2,
       isBoss: !!extra.isBoss, tier: extra.tier || 0,
       atkCd: extra.isBoss ? rand(1.65, 2.35) : (type === "archon" ? 1.45 : 0), atk: "", lastAtk: "", tele: null,
@@ -3855,7 +3855,7 @@
     // Wave-40+ regulars open with staggered timers so a fresh formation staggers fire.
     if (type === "juggernaut") e.shotCd = rand(1.4, 2.2);
     else if (type === "lancer") e.shotCd = rand(1.6, 2.6);
-    else if (type === "mirage") { e.shotCd = rand(2.2, 3.2); e.mirageCd = 0; }
+    else if (type === "mirage") { e.shotCd = rand(2.2, 3.2); e.mirageCd = 0; e.mirageHop = rand(0.8, 1.6); }
     else if (type === "tether") e.shotCd = rand(2.0, 3.0);
     else if (type === "sower") e.sowerCd = rand(1.5, 2.5);
     if (e.isBoss) rollBossFight(e);
@@ -4417,7 +4417,9 @@
     dmg = dmg || 1;
     var owner = ownerSlot != null ? players[ownerSlot] : null;
     var burning = (e.burnTicks || 0) > 0 || (e.burnT || 0) > 0;
-    if (e.shieldHp > 0) {
+    // Juggernaut prow: normal shots chip shieldHp first. Pierce (Lance/Rail/etc)
+    // skips the plate and goes into hull HP.
+    if (e.shieldHp > 0 && !(fromPerk === "pierce" && e.type === "juggernaut")) {
       e.shieldHp -= 1;
       e.hitFlash = 0.1;
       shake = Math.min(10, shake + 1);
@@ -5537,7 +5539,7 @@
   }
   // ---- Wave-40+ regulars ---------------------------------------------------------------
   // Juggernaut: slow armored barge that holds formation and fires an aimed 2-shot.
-  // Its prow shield (see the player-bullet loop) blocks shots from below.
+  // Front shieldHp must be broken before hull damage; pierce shots skip the plate.
   function updateJuggernaut(e, dt) {
     var tgt;
     e.shotCd -= dt;
@@ -5553,45 +5555,75 @@
     aimedShot(e, 0.6, 140 + pressureWave() * 6, { color: "#f2f5ff", glow: "#d0ff4d" });
     e.shotCd = Math.max(2.2, (3.4 - pressureWave() * 0.04) / (1 + extraPlayers() * 0.25));
   }
-  // Mirage: blinks a short hop when a player shot closes in, leaving a 1-HP
-  // decoy that cannot shoot and is worth nothing.
+  // Mirage: hops by changing offX (formation snap would otherwise undo e.x),
+  // leaving a 1-HP decoy on the old slot that cannot shoot and is worth nothing.
   function spawnMirageDecoy(e) {
-    var k;
+    var k, i, old;
     if (netReplay) return;
+    for (i = 0; i < enemies.length; i++) {
+      old = enemies[i];
+      if (old.alive && old.decoy && old.sourceId === e.id) killEnemy(old, false, 99);
+    }
     k = makeEnemy(e.offX || 0, e.offY || 0, "mirage");
     k.decoy = true;
+    k.sourceId = e.id;
     k.hp = 1;
     k.maxHp = 1;
-    k.decoyT = 6;
+    k.decoyT = 5;
     k.state = "form";
     k.x = e.x;
     k.y = e.y;
     k.shotCd = 99;
     k.mirageCd = 99;
+    k.mirageHop = 99;
     enemies.push(k);
   }
+  function blinkMirage(e) {
+    var hop, next, fromX, fromY;
+    fromX = e.x;
+    fromY = e.y;
+    hop = 42 * (e.patrolDir || 1);
+    next = e.offX + hop;
+    if (next > FORM_OX_LIMIT || next < -FORM_OX_LIMIT) {
+      e.patrolDir = -(e.patrolDir || 1);
+      hop = 42 * e.patrolDir;
+      next = clamp(e.offX + hop, -FORM_OX_LIMIT, FORM_OX_LIMIT);
+    }
+    if (Math.abs(next - e.offX) < 8) return false;
+    spawnMirageDecoy(e);
+    addTele("glow", fromX, fromY, 0, 0, 0.38, "#c4a0ff");
+    e.offX = next;
+    e.x = formPosX(e);
+    addTele("line", fromX, fromY, e.x, e.y, 0.28, "#e8d0ff");
+    addTele("glow", e.x, e.y, 0, 0, 0.32, "#e8d0ff");
+    e.mirageCd = 2.2;
+    e.mirageHop = 3.4;
+    return true;
+  }
+  function mirageThreatened(e) {
+    var i, b, dx, dy, pl;
+    for (i = 0; i < pbul.length; i++) {
+      b = pbul[i];
+      dx = b.x - e.x;
+      dy = b.y - e.y;
+      if (dx * dx + dy * dy < 96 * 96 && (b.vy || 0) < 0 && b.y > e.y - 90) return true;
+    }
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
+      if (Math.abs(pl.x - e.x) < 22 && pl.y > e.y + 20) return true;
+    }
+    return false;
+  }
   function updateMirage(e, dt) {
-    var i, b, dx, dy, threatened = false;
     if (e.decoy) {
-      e.decoyT = (e.decoyT || 6) - dt;
+      e.decoyT = (e.decoyT || 5) - dt;
       if (e.decoyT <= 0 && e.alive) killEnemy(e, false, 99);
       return;
     }
     e.mirageCd = Math.max(0, (e.mirageCd || 0) - dt);
-    if (e.mirageCd <= 0) {
-      for (i = 0; i < pbul.length; i++) {
-        b = pbul[i];
-        dx = b.x - e.x;
-        dy = b.y - e.y;
-        if (dx * dx + dy * dy < 60 * 60 && (b.vy || 0) < 0 && b.y > e.y - 70) { threatened = true; break; }
-      }
-    }
-    if (threatened) {
-      spawnMirageDecoy(e);
-      addTele("glow", e.x, e.y, 0, 0, 0.3, "#c4a0ff");
-      e.x = clamp(e.x + (e.x < W / 2 ? 34 : -34), e.r + 8, W - e.r - 8);
-      e.mirageCd = 3;
-    }
+    e.mirageHop = (e.mirageHop == null ? rand(1.2, 2.4) : e.mirageHop) - dt;
+    if (e.mirageCd <= 0 && (mirageThreatened(e) || e.mirageHop <= 0)) blinkMirage(e);
     e.shotCd -= dt;
     if (e.shotCd > 0) return;
     aimedShot(e, 0.6, 140 + pressureWave() * 6, { color: "#c4a0ff", glow: "#7a5cff" });
@@ -10655,23 +10687,10 @@
         if (!e.alive) continue;
         if (b.hit && b.hit.indexOf(e) >= 0) continue;
         if (dist2(b.x, b.y, e.x, e.y) < (e.r + br) * (e.r + br)) {
-          if (e.type === "juggernaut" && !e.decoy && (b.vy || 0) < 0 && b.y > e.y) {
-            // Prow shield: shots arriving from below spark off the front plate.
-            rings.push({ x: b.x, y: e.y + e.r * 0.7, r: 3, vr: 120, life: 0.25, color: "#ff3d6e" });
-            sfxArmor();
-            if (b.pierce && b.pierce > 0) {
-              b.pierce -= 1;
-              if (!b.hit) b.hit = [];
-              b.hit.push(e);
-            } else {
-              pbul.splice(i, 1);
-              consumed = true;
-            }
-            break;
-          }
           var own = players[b.owner] || player;
+          var pierceJug = e.type === "juggernaut" && b.pierce > 0;
           skinOnBulletHit(own, e, b);
-          killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", b.dmg || 1, b.owner);
+          killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", b.dmg || 1, b.owner, pierceJug ? "pierce" : undefined);
           if (b.splash) {
             var sj, se;
             for (sj = 0; sj < enemies.length; sj++) {
@@ -12315,7 +12334,8 @@
       context.fillStyle = e.hitFlash > 0 ? "#fff" : (e.phaseIdx >= 1 ? "#ff5c7a" : "#ff8a5c");
       context.beginPath(); context.arc(0, -1, 3.2, 0, Math.PI * 2); context.fill();
     } else if (e.type === "juggernaut") {
-      // Slow armored barge: wide hull, twin prow prongs, glowing front plate.
+      // Slow armored barge: wide hull, twin prow prongs, glowing front plate
+      // while the breakable shield is up.
       context.beginPath();
       context.moveTo(-13, -2); context.lineTo(-8, -10); context.lineTo(8, -10); context.lineTo(13, -2);
       context.lineTo(9, 9); context.lineTo(-9, 9);
@@ -12325,9 +12345,11 @@
       context.fillStyle = e.hitFlash > 0 ? "#fff" : "#ff8a5c";
       context.fillRect(-9, 7, 4, 5);
       context.fillRect(5, 7, 4, 5);
-      context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#ffb84d";
-      context.lineWidth = 2;
-      context.beginPath(); context.arc(0, 8, 12, 0.15, Math.PI - 0.15); context.stroke();
+      if (e.shieldHp > 0) {
+        context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#ffb84d";
+        context.lineWidth = 2 + Math.min(2, e.shieldHp * 0.35);
+        context.beginPath(); context.arc(0, 8, 12, 0.15, Math.PI - 0.15); context.stroke();
+      }
     } else if (e.type === "lancer") {
       // Fast thin diver: pale needle dart.
       context.beginPath();
@@ -12336,12 +12358,13 @@
       context.fillStyle = e.hitFlash > 0 ? "#fff" : "#5c7a2e";
       context.fillRect(-1, -2, 2, 9);
     } else if (e.type === "mirage") {
-      // Flickering twin-diamond; decoys render translucent.
-      if (e.decoy) context.globalAlpha = 0.5;
+      // Flickering twin-diamond; decoys render translucent. Live ones shimmer.
+      if (e.decoy) context.globalAlpha = 0.45;
+      else context.globalAlpha = 0.72 + 0.28 * Math.sin(time * 11 + e.phase);
       context.beginPath();
       context.moveTo(0, -9); context.lineTo(5, 0); context.lineTo(0, 9); context.lineTo(-5, 0);
       context.closePath(); context.fill();
-      context.globalAlpha = e.decoy ? 0.35 : 0.65;
+      context.globalAlpha = e.decoy ? 0.3 : 0.45 + 0.25 * Math.sin(time * 14 + e.phase);
       context.beginPath();
       context.moveTo(0, -5); context.lineTo(9, 0); context.lineTo(0, 5); context.lineTo(-9, 0);
       context.closePath(); context.fill();
