@@ -76,6 +76,6 @@ assert(bossDropsHealth({ isBoss: true, type: "hydra", tier: 0 }, 47) === false, 
 assert(bossDropsHealth({ isBoss: true, type: "grunt", tier: 0 }, 15) === false, "fodder never uses boss health gate");
 assert(bossDebutWave("not-a-boss") === 0, "unknown id has no debut");
 
-assert(sw.indexOf("galaga-coop-v51") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v52") >= 0, "PWA cache bump");
 
 console.log("boss-health-debut-smoke: ok  bosses=" + ids.length);

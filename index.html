@@ -62,11 +62,13 @@
     <div class="hub-stats"><span id="hub-coins">0c</span><span id="hub-lv">Lv 1</span><span id="hub-title" class="hub-title">Cadet</span></div>
     <div class="xp-track"><div id="hub-xp-fill" class="xp-fill"></div></div>
     <div id="hub-xp-label" class="xp-label">0 / 500 XP to Lv 2</div>
+    <div id="hub-boosts" class="xp-boost-lab">XP boosts: 0</div>
     <div id="start-wave-box" class="start-wave-box">
       <div class="start-wave-lab">Start wave</div>
       <div id="start-wave-opts" class="start-wave-opts"></div>
       <div id="start-wave-hint" class="start-wave-hint">Reach level 5 to skip early waves</div>
     </div>
+    <button type="button" class="btn btn-ghost" id="btn-xp-boost" disabled>Arm XP boost</button>
     <button type="button" class="btn" id="btn-play">Play</button>
     <div class="btn-row-2">
       <button type="button" class="btn btn-ghost" id="btn-coop">Co-op</button>
@@ -203,6 +205,9 @@
         <div class="start-wave-lab">Start wave</div>
         <div id="lobby-start-wave-opts" class="start-wave-opts"></div>
         <div id="lobby-start-wave-hint" class="start-wave-hint"></div>
+      </div>
+      <div id="lobby-xp-boost-box" class="start-wave-box">
+        <button type="button" class="btn btn-ghost" id="btn-lobby-xp-boost" disabled>Arm XP boost</button>
       </div>
       <div id="lobby-pvp-box" class="start-wave-box hidden">
         <div class="start-wave-lab">Duel mode</div>

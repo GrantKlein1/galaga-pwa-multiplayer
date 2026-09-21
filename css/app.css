@@ -130,6 +130,21 @@ html, body {
   overflow: hidden;
 }
 .xp-fill { height: 100%; width: 0; background: linear-gradient(90deg, #3df0ff, #7ef9ff); }
+.xp-boost-lab {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c8a0ff;
+  opacity: 1;
+}
+#btn-xp-boost.xp-boost-armed,
+#btn-lobby-xp-boost.xp-boost-armed {
+  color: #c8a0ff;
+  border-color: #c8a0ff;
+  opacity: 1;
+}
+#btn-lobby-xp-boost { width: 100%; }
 .start-wave-box {
   width: 100%;
   display: flex;

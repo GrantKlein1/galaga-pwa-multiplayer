@@ -78,6 +78,6 @@ assert(account.indexOf('error: "busy"') < 0, "no user-facing busy");
 assert(account.indexOf("writeAccount(username, next.acct, null, false)") >= 0, "etag fallback overwrite");
 assert(account.indexOf("displayNameConflict") >= 0, "leaderboard uniqueness");
 assert(account.indexOf("headAccount") >= 0, "get-miss confirmed with head");
-assert(sw.indexOf("galaga-coop-v51") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v52") >= 0, "cache bump");
 
 console.log("account-save-smoke: ok");

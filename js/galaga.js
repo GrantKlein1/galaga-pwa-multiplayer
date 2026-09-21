@@ -21,7 +21,7 @@
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
   var SESSION_KEY = "galaga.session";
-  var PROFILE_VER = 6;
+  var PROFILE_VER = 7;
   var ACCOUNT_PUSH_MS = 900;
   var ACCOUNT_PULL_MS = 5000;
   var ADMIN_CODE = "1234";
@@ -58,6 +58,10 @@
   // bonus (see enemyXpMul). 0.15x (25% below the old 0.2x) makes a ~10k fodder
   // run ~1.5k XP; Archon/Juggernaut runs bank more for the same score.
   var XP_SCORE_MUL = 0.15;
+  var XP_CHARGES_MAX = 99;
+  var XP_BOOST_MUL = 2;
+  var BOSS_XP_BOOST_CHANCE = 0.12;
+  var GUEST_XP_BOOST_CHANCE = 0.07;
   var PICKUP_PAD = 16;
   var PICKUP_CLAIM_R = 96;
   var POWER_WEIGHTS = [
@@ -256,7 +260,7 @@
     { id: "d_weavers", name: "Weave Cutter", desc: "Kill 14 weavers", target: 14, kind: "kills", type: "weaver", reward: { coins: 38 } },
     { id: "d_shields", name: "Breaker", desc: "Kill 8 shield drones", target: 8, kind: "kills", type: "shield", reward: { coins: 42 } },
     { id: "d_kills40", name: "Body Count", desc: "Destroy 50 foes in one run", target: 50, kind: "killsRun", reward: { coins: 38 } },
-    { id: "d_kills90", name: "Massacre", desc: "Destroy 110 foes in one run", target: 110, kind: "killsRun", reward: { coins: 65, skill: 1 } },
+    { id: "d_kills90", name: "Massacre", desc: "Destroy 110 foes in one run", target: 110, kind: "killsRun", reward: { coins: 65, skill: 1, xpBoost: 1 } },
     { id: "d_wave10", name: "First Push", desc: "Reach wave 12", target: 12, kind: "wave", reward: { coins: 30 } },
     { id: "d_wave15", name: "Deep Sortie", desc: "Reach wave 18", target: 18, kind: "wave", reward: { coins: 48 } },
     { id: "d_wave20", name: "Hold the Line", desc: "Reach wave 24", target: 24, kind: "wave", reward: { coins: 65 } },
@@ -264,8 +268,8 @@
     { id: "d_wave30", name: "Into the Deep", desc: "Reach wave 36", target: 36, kind: "wave", reward: { coins: 115, skill: 1 } },
     { id: "d_boss", name: "Boss Breaker", desc: "Defeat a boss", target: 1, kind: "bossAny", reward: { coins: 40 } },
     { id: "d_boss2", name: "Double Ace", desc: "Defeat 3 bosses in one run", target: 3, kind: "bossRun", reward: { coins: 70 } },
-    { id: "d_boss3", name: "Triple Crown", desc: "Defeat 4 bosses in one run", target: 4, kind: "bossRun", reward: { coins: 105, skill: 1 } },
-    { id: "d_flawless", name: "Flawless", desc: "Defeat 2 bosses without taking a hit", target: 2, kind: "noHitBoss", reward: { coins: 82, skill: 1 } },
+    { id: "d_boss3", name: "Triple Crown", desc: "Defeat 4 bosses in one run", target: 4, kind: "bossRun", reward: { coins: 105, skill: 1, xpBoost: 1 } },
+    { id: "d_flawless", name: "Flawless", desc: "Defeat 2 bosses without taking a hit", target: 2, kind: "noHitBoss", reward: { coins: 82, skill: 1, xpBoost: 1 } },
     { id: "d_score", name: "High Score", desc: "Score 10,000 in one run", target: 10000, kind: "score", reward: { coins: 42 } },
     { id: "d_score4k", name: "Warm Guns", desc: "Score 5,000 in one run", target: 5000, kind: "score", reward: { coins: 25 } },
     { id: "d_score12k", name: "Hot Streak", desc: "Score 15,000 in one run", target: 15000, kind: "score", reward: { coins: 60 } },
@@ -278,7 +282,7 @@
     { id: "d_heal", name: "Field Medic", desc: "Collect 2 heal pickups", target: 2, kind: "pickup", type: "heal", reward: { coins: 38 } },
     { id: "d_shieldgem", name: "Bubble Up", desc: "Collect 3 shield gems in one run", target: 3, kind: "pickup", type: "shield", reward: { coins: 38 } },
     { id: "d_nohit8", name: "Ghost Pass", desc: "Reach wave 10 without taking a hit", target: 10, kind: "noHitWave", reward: { coins: 60 } },
-    { id: "d_nohit12", name: "Ghost Patrol", desc: "Reach wave 15 without taking a hit", target: 15, kind: "noHitWave", reward: { coins: 92, skill: 1 } },
+    { id: "d_nohit12", name: "Ghost Patrol", desc: "Reach wave 15 without taking a hit", target: 15, kind: "noHitWave", reward: { coins: 92, skill: 1, xpBoost: 1 } },
     { id: "d_dives", name: "Dive Intercept", desc: "Destroy 10 diving foes", target: 10, kind: "diveKills", reward: { coins: 36 } },
     { id: "d_dives20", name: "Air Superiority", desc: "Destroy 25 diving foes", target: 25, kind: "diveKills", reward: { coins: 60 } },
     { id: "d_enemy_set", name: "Full House", desc: "Destroy a tank, kami, and sniper in one run", target: 1, kind: "enemySet", types: ["tank", "kami", "sniper"], reward: { coins: 55 } },
@@ -287,17 +291,17 @@
   ];
   var LONG_DEFS = [
     { id: "lt_wave20", name: "Wave 25", desc: "Reach wave 25", target: 25, kind: "wave", reward: { coins: 70 } },
-    { id: "lt_wave30", name: "Wave 40", desc: "Reach wave 40", target: 40, kind: "wave", reward: { coins: 120, gun: "twin", consolation: 70, skill: 1 } },
+    { id: "lt_wave30", name: "Wave 40", desc: "Reach wave 40", target: 40, kind: "wave", reward: { coins: 120, gun: "twin", consolation: 70, skill: 1, xpBoost: 1 } },
     { id: "lt_wave40", name: "Wave 55", desc: "Reach wave 55", target: 55, kind: "wave", reward: { gun: "lance", consolation: 180 } },
     { id: "lt_wave50", name: "Wave 70", desc: "Reach wave 70", target: 70, kind: "wave", reward: { gun: "seeker", consolation: 240 } },
     { id: "lt_wave60", name: "Wave 85", desc: "Reach wave 85", target: 85, kind: "wave", reward: { ship: "phantom", consolation: 300, skill: 1 } },
-    { id: "lt_wave80", name: "Wave 110", desc: "Reach wave 110", target: 110, kind: "wave", reward: { coins: 360, gun: "scatter", consolation: 300 } },
-    { id: "lt_wave100", name: "Deep Century", desc: "Reach wave 130", target: 130, kind: "wave", reward: { coins: 700, ship: "nova", consolation: 600, skill: 1 } },
+    { id: "lt_wave80", name: "Wave 110", desc: "Reach wave 110", target: 110, kind: "wave", reward: { coins: 360, gun: "scatter", consolation: 300, xpBoost: 1 } },
+    { id: "lt_wave100", name: "Deep Century", desc: "Reach wave 130", target: 130, kind: "wave", reward: { coins: 700, ship: "nova", consolation: 600, skill: 1, xpBoost: 1 } },
     { id: "lt_lv10", name: "Ensign", desc: "Reach level 15", target: 15, kind: "level", reward: { coins: 120 } },
     { id: "lt_lv25", name: "Lieutenant", desc: "Reach level 35", target: 35, kind: "level", reward: { coins: 300, mod: "magnet", consolation: 180 } },
     { id: "lt_lv50", name: "Commander", desc: "Reach level 60", target: 60, kind: "level", reward: { coins: 700, gun: "volley", consolation: 600, skill: 1 } },
-    { id: "lt_lv75", name: "Admiral", desc: "Reach level 85", target: 85, kind: "level", reward: { coins: 1400, mod: "guardian", consolation: 950 } },
-    { id: "lt_lv100", name: "Eternal", desc: "Reach level 100", target: 100, kind: "level", reward: { coins: 2500, ship: "eclipse", consolation: 2000, skill: 1 } },
+    { id: "lt_lv75", name: "Admiral", desc: "Reach level 85", target: 85, kind: "level", reward: { coins: 1400, mod: "guardian", consolation: 950, xpBoost: 1 } },
+    { id: "lt_lv100", name: "Eternal", desc: "Reach level 100", target: 100, kind: "level", reward: { coins: 2500, ship: "eclipse", consolation: 2000, skill: 1, xpBoost: 1 } },
     { id: "lt_seraph", name: "Seraph Contract", desc: "Defeat Seraph twice", target: 2, kind: "bossCount", type: "seraph", reward: { coins: 50 } },
     { id: "lt_wraith", name: "Wraith Contract", desc: "Defeat Wraith twice", target: 2, kind: "bossCount", type: "wraith", reward: { coins: 60 } },
     { id: "lt_hydra", name: "Hydra Contract", desc: "Defeat Hydra twice", target: 2, kind: "bossCount", type: "hydra", reward: { coins: 72 } },
@@ -307,13 +311,13 @@
     { id: "lt_inferno", name: "Inferno Contract", desc: "Defeat Inferno twice", target: 2, kind: "bossCount", type: "inferno", reward: { coins: 180 } },
     { id: "lt_nullwarden", name: "Nullwarden Contract", desc: "Defeat Nullwarden twice", target: 2, kind: "bossCount", type: "nullwarden", reward: { coins: 215, gun: "railgun", consolation: 180 } },
     { id: "lt_basilisk", name: "Basilisk Contract", desc: "Defeat Basilisk twice", target: 2, kind: "bossCount", type: "basilisk", reward: { coins: 265 } },
-    { id: "lt_overlord", name: "Overlord Contract", desc: "Defeat Overlord twice", target: 2, kind: "bossCount", type: "overlord", reward: { coins: 480, ship: "strix", consolation: 360, skill: 1 } },
+    { id: "lt_overlord", name: "Overlord Contract", desc: "Defeat Overlord twice", target: 2, kind: "bossCount", type: "overlord", reward: { coins: 480, ship: "strix", consolation: 360, skill: 1, xpBoost: 1 } },
     { id: "lt_mandala", name: "Mandala Contract", desc: "Defeat Mandala twice", target: 2, kind: "bossCount", type: "mandala", reward: { coins: 520, consolation: 380 } },
     { id: "lt_cenotaph", name: "Cenotaph Contract", desc: "Defeat Cenotaph twice", target: 2, kind: "bossCount", type: "cenotaph", reward: { coins: 560, consolation: 400 } },
     { id: "lt_kaleido", name: "Kaleido Contract", desc: "Defeat Kaleido twice", target: 2, kind: "bossCount", type: "kaleido", reward: { coins: 600, consolation: 430 } },
-    { id: "lt_helios", name: "Helios Contract", desc: "Defeat Helios twice", target: 2, kind: "bossCount", type: "helios", reward: { coins: 650, consolation: 460 } },
+    { id: "lt_helios", name: "Helios Contract", desc: "Defeat Helios twice", target: 2, kind: "bossCount", type: "helios", reward: { coins: 650, consolation: 460, xpBoost: 1 } },
     { id: "lt_selene", name: "Selene Contract", desc: "Defeat Selene twice", target: 2, kind: "bossCount", type: "selene", reward: { coins: 720, consolation: 500 } },
-    { id: "lt_pentarch", name: "Pentarch Contract", desc: "Defeat Pentarch twice", target: 2, kind: "bossCount", type: "pentarch", reward: { coins: 800, consolation: 560 } },
+    { id: "lt_pentarch", name: "Pentarch Contract", desc: "Defeat Pentarch twice", target: 2, kind: "bossCount", type: "pentarch", reward: { coins: 800, consolation: 560, xpBoost: 1 } },
     { id: "lt_seraph5", name: "Seraph Hunter", desc: "Defeat Seraph 8 times", target: 8, kind: "bossCount", type: "seraph", reward: { coins: 150 } },
     { id: "lt_wraith5", name: "Wraith Hunter", desc: "Defeat Wraith 8 times", target: 8, kind: "bossCount", type: "wraith", reward: { coins: 165 } },
     { id: "lt_hydra5", name: "Hydra Hunter", desc: "Defeat Hydra 8 times", target: 8, kind: "bossCount", type: "hydra", reward: { coins: 190 } },
@@ -329,10 +333,10 @@
     { id: "lt_inferno_t1", name: "Inferno +1", desc: "Defeat Inferno at tier 1 or higher", target: 1, kind: "bossTier", type: "inferno", tier: 1, reward: { coins: 350, gun: "helix", consolation: 300 } },
     { id: "lt_overlord_t1", name: "Overlord +1", desc: "Defeat Overlord at tier 1 or higher", target: 1, kind: "bossTier", type: "overlord", tier: 1, reward: { coins: 600, mod: "salvage", consolation: 400 } },
     { id: "lt_wraith_t2", name: "Wraith +2", desc: "Defeat Wraith at tier 2 or higher", target: 1, kind: "bossTier", type: "wraith", tier: 2, reward: { coins: 700 } },
-    { id: "lt_overlord_t2", name: "Overlord +2", desc: "Defeat Overlord at tier 2 or higher", target: 1, kind: "bossTier", type: "overlord", tier: 2, reward: { coins: 1500, ship: "tempest", consolation: 1000, skill: 2 } },
+    { id: "lt_overlord_t2", name: "Overlord +2", desc: "Defeat Overlord at tier 2 or higher", target: 1, kind: "bossTier", type: "overlord", tier: 2, reward: { coins: 1500, ship: "tempest", consolation: 1000, skill: 2, xpBoost: 1 } },
     { id: "lt_flawless1", name: "Flawless", desc: "Defeat 2 bosses without taking a hit", target: 2, kind: "perfectLife", reward: { coins: 100 } },
     { id: "lt_flawless10", name: "Untouchable", desc: "Defeat 15 bosses without taking a hit", target: 15, kind: "perfectLife", reward: { coins: 360, mod: "afterburner", consolation: 250 } },
-    { id: "lt_flawless30", name: "Ghost of the Fleet", desc: "Defeat 45 bosses without taking a hit", target: 45, kind: "perfectLife", reward: { coins: 950, ship: "warden", consolation: 800, skill: 1 } },
+    { id: "lt_flawless30", name: "Ghost of the Fleet", desc: "Defeat 45 bosses without taking a hit", target: 45, kind: "perfectLife", reward: { coins: 950, ship: "warden", consolation: 800, skill: 1, xpBoost: 1 } },
     { id: "lt_tanks50", name: "Armored Graveyard", desc: "Destroy 80 tanks", target: 80, kind: "killsLife", type: "tank", reward: { gun: "rapid", consolation: 120 } },
     { id: "lt_kami80", name: "Kami Cemetery", desc: "Destroy 120 kami", target: 120, kind: "killsLife", type: "kami", reward: { coins: 140 } },
     { id: "lt_weaver60", name: "Thread Cut", desc: "Destroy 90 weavers", target: 90, kind: "killsLife", type: "weaver", reward: { coins: 140 } },
@@ -342,7 +346,7 @@
     { id: "lt_kills5k", name: "Exterminator", desc: "Destroy 7,500 foes", target: 7500, kind: "killsAllLife", reward: { coins: 750, gun: "storm", consolation: 620, skill: 1 } },
     { id: "lt_nohit15", name: "Untouched 20", desc: "Reach wave 20 without taking a hit", target: 20, kind: "noHitWave", reward: { coins: 130 } },
     { id: "lt_nohit25", name: "Untouched 35", desc: "Reach wave 35 without taking a hit", target: 35, kind: "noHitWave", reward: { coins: 260 } },
-    { id: "lt_nohit40", name: "Perfect Storm", desc: "Reach wave 50 without taking a hit", target: 50, kind: "noHitWave", reward: { coins: 500, mod: "barrier", consolation: 320, skill: 1 } },
+    { id: "lt_nohit40", name: "Perfect Storm", desc: "Reach wave 50 without taking a hit", target: 50, kind: "noHitWave", reward: { coins: 500, mod: "barrier", consolation: 320, skill: 1, xpBoost: 1 } },
     { id: "lt_lives30", name: "Iron Hull", desc: "Reach wave 40 without losing a life", target: 40, kind: "livesOkWave", reward: { coins: 230 } },
     { id: "lt_bosses8", name: "Boss Rush", desc: "Defeat 10 bosses in one run", target: 10, kind: "bossRun", reward: { coins: 310 } },
     { id: "lt_bosses12", name: "Gauntlet", desc: "Defeat 15 bosses in one run", target: 15, kind: "bossRun", reward: { coins: 620, gun: "novacannon", consolation: 540 } },
@@ -351,7 +355,7 @@
     { id: "lt_score25k", name: "Ace Pilot", desc: "Reach a best score of 35,000", target: 35000, kind: "scoreLife", reward: { coins: 165 } },
     { id: "lt_score50k", name: "Legend", desc: "Reach a best score of 70,000", target: 70000, kind: "scoreLife", reward: { coins: 340 } },
     { id: "lt_score80k", name: "Mythic Sortie", desc: "Reach a best score of 110,000", target: 110000, kind: "scoreLife", reward: { coins: 550, mod: "reactor", consolation: 380, skill: 1 } },
-    { id: "lt_score150k", name: "Starbreaker", desc: "Reach a best score of 200,000", target: 200000, kind: "scoreLife", reward: { coins: 1200, gun: "prism", consolation: 1050, skill: 2 } },
+    { id: "lt_score150k", name: "Starbreaker", desc: "Reach a best score of 200,000", target: 200000, kind: "scoreLife", reward: { coins: 1200, gun: "prism", consolation: 1050, skill: 2, xpBoost: 1 } },
     { id: "lt_coins50", name: "Haul", desc: "Collect 75 coins in one run", target: 75, kind: "coinsRun", reward: { coins: 100 } },
     { id: "lt_coins100", name: "Vault Breaker", desc: "Collect 150 coins in one run", target: 150, kind: "coinsRun", reward: { coins: 200 } },
     { id: "lt_coins250", name: "Dragon Hoard", desc: "Collect 350 coins in one run", target: 350, kind: "coinsRun", reward: { coins: 500 } },
@@ -668,6 +672,7 @@
     if (kind === "life") return "#ff4d9a";
     if (kind === "heal") return "#ff3355";
     if (kind === "revive") return "#ffe08a";
+    if (kind === "xpboost") return "#c8a0ff";
     if (kind === "coin") return "#ffd23d";
     return "#fff";
   }
@@ -680,6 +685,7 @@
     if (kind === "life") return "1UP";
     if (kind === "heal") return "HEAL";
     if (kind === "revive") return "REVIVE";
+    if (kind === "xpboost") return "XP BOOST";
     if (kind === "coin") return "COIN";
     return kind.toUpperCase();
   }
@@ -1196,7 +1202,7 @@
 
   function emptyRun() {
     return {
-      coins: 0, xpBonus: 0, killsByType: {}, bosses: {}, maxWave: 1, kills: 0,
+      coins: 0, xpBonus: 0, xpMul: 1, killsByType: {}, bosses: {}, maxWave: 1, kills: 0,
       hits: 0, livesLost: 0, cleanWave: 1, safeWave: 1, pickups: {}, diveKills: 0,
       bossHits: 0, perfectBosses: 0, leech: 0, clearedWave: 0
     };
@@ -1224,6 +1230,8 @@
       equipped: { ship: "wisp", gun: "pulse", mod: null },
       equippedSkins: { wisp: "stock" },
       skills: { owned: [], equipped: null, bonus: 0 },
+      xpCharges: 0,
+      xpBoostArmed: false,
       startWave: 1,
       dailies: { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} },
       dailyTracks: {},
@@ -1340,6 +1348,8 @@
     p.ownedSkins = cloneSkinMap(raw.ownedSkins);
     p.equippedSkins = cloneSkinEquip(raw.equippedSkins);
     p.skills = cloneSkills(raw.skills);
+    p.xpCharges = clampXpCharges(raw.xpCharges);
+    p.xpBoostArmed = !!raw.xpBoostArmed;
     grantLevelSkins(p);
     if (raw.dailies && typeof raw.dailies === "object") {
       p.dailies.date = typeof raw.dailies.date === "string" ? raw.dailies.date : "";
@@ -1541,6 +1551,8 @@
         (cloud.skills && cloud.skills.bonus) | 0
       )
     });
+    out.xpCharges = clampXpCharges(Math.max(local.xpCharges | 0, cloud.xpCharges | 0));
+    out.xpBoostArmed = !!newer.xpBoostArmed;
     out.dailies = mergeDailies(local.dailies, cloud.dailies);
     out.dailyTracks = maxNumMap(local.dailyTracks, cloud.dailyTracks);
     out.longTerm = mergeLongTerm(local.longTerm, cloud.longTerm);
@@ -1692,6 +1704,84 @@
     if (n <= 0) return;
     if (!profile.skills) profile.skills = emptySkills();
     profile.skills.bonus = clampSkillBonus((profile.skills.bonus | 0) + n);
+  }
+  function clampXpCharges(n) {
+    n = n | 0;
+    if (n < 0) return 0;
+    if (n > XP_CHARGES_MAX) return XP_CHARGES_MAX;
+    return n;
+  }
+  function xpChargesOf(who) {
+    if (who && typeof who.xpCharges === "number") return clampXpCharges(who.xpCharges);
+    return clampXpCharges(profile && profile.xpCharges);
+  }
+  function grantXpCharge(n) {
+    n = n | 0;
+    if (n <= 0) return;
+    profile.xpCharges = clampXpCharges((profile.xpCharges | 0) + n);
+    saveProfile();
+  }
+  function grantXpChargeTo(who, n) {
+    n = n | 0;
+    if (n <= 0) return;
+    if (who && who.slot != null && who.slot !== localSlot) {
+      if (netRole === "host") netSend({ t: "xpboost", slot: who.slot, n: n });
+      return;
+    }
+    grantXpCharge(n);
+  }
+  function armXpBoost() {
+    if (profile.xpBoostArmed) return false;
+    if (xpChargesOf() < 1) return false;
+    profile.xpBoostArmed = true;
+    saveProfile();
+    renderXpBoostUi();
+    return true;
+  }
+  function consumeArmedXpBoost(pvp) {
+    if (pvp) {
+      run.xpMul = 1;
+      return;
+    }
+    if (!profile.xpBoostArmed) {
+      run.xpMul = 1;
+      return;
+    }
+    profile.xpBoostArmed = false;
+    if ((profile.xpCharges | 0) > 0) {
+      profile.xpCharges = clampXpCharges((profile.xpCharges | 0) - 1);
+      run.xpMul = XP_BOOST_MUL;
+    } else {
+      run.xpMul = 1;
+    }
+    saveProfile();
+  }
+  function runXpMul() {
+    var n = run && run.xpMul;
+    if (n === XP_BOOST_MUL) return XP_BOOST_MUL;
+    return 1;
+  }
+  function renderXpBoostUi() {
+    var n = xpChargesOf();
+    var armed = !!profile.xpBoostArmed;
+    var lab = el("hub-boosts");
+    var hubBtn = el("btn-xp-boost");
+    var lobbyBtn = el("btn-lobby-xp-boost");
+    var lobbyBox = el("lobby-xp-boost-box");
+    var text;
+    if (lab) {
+      lab.textContent = armed ? ("XP boosts: " + n + "  ·  armed") : ("XP boosts: " + n);
+    }
+    text = armed ? "Armed · 2× XP next run" : (n < 1 ? "Arm XP boost" : "Arm XP boost");
+    function paint(btn) {
+      if (!btn) return;
+      btn.textContent = text;
+      btn.disabled = armed || n < 1;
+      btn.classList.toggle("xp-boost-armed", armed);
+    }
+    paint(hubBtn);
+    paint(lobbyBtn);
+    if (lobbyBox) lobbyBox.classList.toggle("hidden", !!isPvp());
   }
   function gemDurationMul(who) {
     return hasSkill("gun-gems", who) ? 1.25 : 1;
@@ -3963,10 +4053,16 @@
     if ((e.tier || 0) !== 0) return false;
     return wave === bossDebutWave(e.type);
   }
+  function maybeDropXpBoost(e) {
+    if (!e || !e.isBoss) return;
+    var chance = e.guest ? GUEST_XP_BOOST_CHANCE : BOSS_XP_BOOST_CHANCE;
+    if (Math.random() < chance) spawnPickup(e.x + rand(-10, 10), e.y + 18, "xpboost");
+  }
   function maybeDrop(e, guaranteed) {
     if (guaranteed) {
       if (bossDropsHealth(e)) spawnPickup(e.x, e.y, "heal");
       dropCoins(e, true);
+      maybeDropXpBoost(e);
       return;
     }
     var roll = Math.random();
@@ -3998,6 +4094,14 @@
     if (kind === "life") sfxLife();
     else if (kind === "revive") sfxLife();
     else sfxPickup();
+    if (kind === "xpboost") {
+      grantXpChargeTo(who, 1);
+      banner = { text: "XP BOOST +1", life: 0.9 };
+      syncLocalPlayer();
+      syncQuestProgress();
+      updateHud();
+      return;
+    }
     if (kind !== "coin" && kind !== "life" && kind !== "revive" && skinIdOf(who) === "warden-jade") {
       who.invuln = Math.max(who.invuln || 0, 0.4);
     }
@@ -7575,13 +7679,28 @@
     if (!rew || typeof rew !== "object") return 0;
     return Math.max(0, rew.skill | 0);
   }
+  function rewardXpBoosts(rew) {
+    if (!rew || typeof rew !== "object") return 0;
+    return Math.max(0, rew.xpBoost | 0);
+  }
   function skillRewardLabel(n) {
     n = n | 0;
     if (n <= 0) return "";
     return "+" + n + " skill point" + (n === 1 ? "" : "s");
   }
+  function xpBoostRewardLabel(n) {
+    n = n | 0;
+    if (n <= 0) return "";
+    return "+" + n + " XP boost";
+  }
+  function questBonusLabel(rew) {
+    var bits = [], skill = skillRewardLabel(rewardSkillPts(rew)), boost = xpBoostRewardLabel(rewardXpBoosts(rew));
+    if (skill) bits.push(skill);
+    if (boost) bits.push(boost);
+    return bits.join("  ·  ");
+  }
   function applyReward(rew, pick) {
-    var item, sp;
+    var item, sp, boost;
     if (rew == null) return;
     if (typeof rew === "number") {
       profile.coins += rew;
@@ -7589,6 +7708,8 @@
     }
     sp = rewardSkillPts(rew);
     if (sp) grantSkillBonus(sp);
+    boost = rewardXpBoosts(rew);
+    if (boost) grantXpCharge(boost);
     if (rewardNeedsChoice(rew)) {
       item = rewardItem(rew);
       if (pick === "coins") {
@@ -7731,6 +7852,7 @@
     var pct = hi <= lo ? 1 : (profile.totalXp - lo) / (hi - lo);
     if (fill) fill.style.width = Math.round(Math.max(0, Math.min(1, pct)) * 100) + "%";
     if (lab) lab.textContent = lv >= MAX_LEVEL ? "MAX LEVEL  ·  " + profile.totalXp + " XP" : (profile.totalXp - lo) + " / " + (hi - lo) + " XP to Lv " + (lv + 1);
+    renderXpBoostUi();
     renderStartWavePicker("start-wave-opts");
     drawHubPreview();
     var accBtn = el("btn-account");
@@ -8430,25 +8552,25 @@
     if (typeof rew === "number") return rew + "c";
     var item = rewardItem(rew);
     var coins = rewardCoinPayout(rew);
-    var skill = skillRewardLabel(rewardSkillPts(rew));
+    var extra = questBonusLabel(rew);
     var base;
     if (item && coins) base = "Choose one: " + item.name + "  or  " + coins + "c";
     else if (item) base = item.name;
     else if (rew.coins) base = rew.coins + "c";
     else if (rew.consolation) base = rew.consolation + "c";
     else base = "";
-    if (skill) base = base ? (base + "  ·  " + skill) : skill;
+    if (extra) base = base ? (base + "  ·  " + extra) : extra;
     return base;
   }
   function questClaimControls(q, scope, summary) {
     var item = rewardItem(q.reward);
     var coins = rewardCoinPayout(q.reward);
-    var skill = skillRewardLabel(rewardSkillPts(q.reward));
+    var extra = questBonusLabel(q.reward);
     var owned, h;
     if (rewardNeedsChoice(q.reward)) {
       owned = isOwned(item.cat, item.id);
       h = '<div class="q-choice">';
-      if (skill) h += '<div class="q-skill">' + skill + "</div>";
+      if (extra) h += '<div class="q-skill">' + extra + "</div>";
       if (owned) {
         h += '<button type="button" class="btn q-pick q-pick-item btn-off" disabled>Already own ' + item.name + '</button>';
       } else {
@@ -8462,7 +8584,7 @@
     if (summary) {
       return '<button type="button" class="btn summary-claim" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Take ' + rewardText(q.reward) + "</button>";
     }
-    if (skill) {
+    if (extra) {
       return '<button type="button" class="btn btn-mini" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Take ' + rewardText(q.reward) + "</button>";
     }
     return '<button type="button" class="btn btn-mini" data-act="claim" data-scope="' + scope + '" data-id="' + q.id + '">Claim</button>';
@@ -8572,7 +8694,7 @@
     if (sumTitle) sumTitle.textContent = "Run Over";
     parts = [
       '<div class="summary-stats"><div><b>Score</b>' + score + '</div><div><b>Wave</b>' + run.maxWave + '</div><div><b>Enemies</b>' + (run.kills || 0) + '</div><div><b>Hits taken</b>' + (run.hits || 0) + '</div><div><b>Hull losses</b>' + (run.livesLost || 0) + '</div></div>',
-      "+" + data.xpGain + " XP  ·  Lv " + data.newLv + " " + levelTitle(data.newLv),
+      "+" + data.xpGain + " XP" + (data.xpMul === XP_BOOST_MUL ? " (2× boost)" : "") + "  ·  Lv " + data.newLv + " " + levelTitle(data.newLv),
       (playerCount() > 1 ? "Team coins " : "Coins ") + run.coins + " + " + data.bonus + " wave bonus  ·  " + profile.coins + "c total"
     ];
     if (disconnectNote) parts.unshift(disconnectNote);
@@ -8999,6 +9121,7 @@
       netSend({
         t: "over",
         score: score,
+        xpBonus: run.xpBonus || 0,
         maxWave: run.maxWave,
         clearedWave: run.clearedWave || 0,
         coins: run.coins,
@@ -9009,7 +9132,8 @@
         pickups: run.pickups
       });
     }
-    var xpGain = Math.round((score + (run.xpBonus || 0)) * XP_SCORE_MUL * (hasMod("ascension") ? 1.25 : 1));
+    var xpMul = runXpMul();
+    var xpGain = Math.round((score + (run.xpBonus || 0)) * XP_SCORE_MUL * (hasMod("ascension") ? 1.25 : 1) * xpMul);
     var oldLv = xpLevel(profile.totalXp);
     profile.totalXp += xpGain;
     var newLv = xpLevel(profile.totalXp);
@@ -9025,7 +9149,7 @@
     rememberLastBeatenStartWave();
     syncQuestProgress();
     runQuestClaims = completedRunQuests();
-    summaryRun = { xpGain: xpGain, oldLv: oldLv, newLv: newLv, lvCoins: lvCoins, bonus: bonus };
+    summaryRun = { xpGain: xpGain, oldLv: oldLv, newLv: newLv, lvCoins: lvCoins, bonus: bonus, xpMul: xpMul };
     saveProfile();
     updateHud();
     submitLeaderboard();
@@ -9138,6 +9262,7 @@
     run = emptyRun();
     runQuestClaims = [];
     summaryRun = null;
+    consumeArmedXpBoost(!!(opts.pvp || (pvpApi() && pvpApi().isMatch())));
     ensureDailies();
     snapshotDailies();
     resetInput();
@@ -9476,6 +9601,7 @@
     if (startBtn) startBtn.classList.toggle("hidden", netRole !== "host");
     if (waitEl) waitEl.classList.toggle("hidden", netRole === "host" || lobbyMode !== "ready");
     if (!isPvp()) renderStartWavePicker("lobby-start-wave-opts", netRole !== "host");
+    renderXpBoostUi();
     syncPvpLobbyUi();
     setLobbyErr(lobbyErr);
   }
@@ -9961,6 +10087,7 @@
     if (msg.clearedWave != null) run.clearedWave = Math.max(run.clearedWave || 0, msg.clearedWave | 0);
     else if ((run.maxWave | 0) > 1) run.clearedWave = Math.max(run.clearedWave || 0, (run.maxWave | 0) - 1);
     run.coins = msg.coins || 0;
+    if (msg.xpBonus != null) run.xpBonus = msg.xpBonus || 0;
     run.hits = msg.hits || 0;
     run.kills = msg.kills || 0;
     run.perfectBosses = msg.perfectBosses || 0;
@@ -10142,6 +10269,12 @@
     n.on("pick", function (msg) {
       if (netRole !== "host") return;
       hostGrantPickup(msg);
+    });
+    n.on("xpboost", function (msg) {
+      if (netRole !== "client") return;
+      if ((msg.slot == null ? 1 : msg.slot) !== localSlot) return;
+      grantXpCharge(msg.n || 1);
+      banner = { text: "XP BOOST +1", life: 0.9 };
     });
     n.on("snap", function (msg) {
       if (netRole !== "client") return;
@@ -13009,6 +13142,12 @@
   }
 
   el("btn-play").addEventListener("click", function (e) { e.preventDefault(); leaveNet(); if (pvpApi()) pvpApi().reset("coop"); startNewGame(); });
+  function onArmXpBoost(e) {
+    e.preventDefault();
+    armXpBoost();
+  }
+  if (el("btn-xp-boost")) el("btn-xp-boost").addEventListener("click", onArmXpBoost);
+  if (el("btn-lobby-xp-boost")) el("btn-lobby-xp-boost").addEventListener("click", onArmXpBoost);
   el("btn-coop").addEventListener("click", function (e) { e.preventDefault(); openLobby("coop"); });
   el("btn-pvp").addEventListener("click", function (e) { e.preventDefault(); openLobby("pvp"); });
   el("btn-hangar").addEventListener("click", function (e) { e.preventDefault(); showScreen("hangar"); });
@@ -13689,6 +13828,16 @@
       skillBudget: skillBudget,
       skillBonusOf: skillBonusOf,
       grantSkillBonus: grantSkillBonus,
+      clampXpCharges: clampXpCharges,
+      grantXpCharge: grantXpCharge,
+      armXpBoost: armXpBoost,
+      consumeArmedXpBoost: consumeArmedXpBoost,
+      runXpMul: runXpMul,
+      XP_BOOST_MUL: XP_BOOST_MUL,
+      XP_CHARGES_MAX: XP_CHARGES_MAX,
+      BOSS_XP_BOOST_CHANCE: BOSS_XP_BOOST_CHANCE,
+      GUEST_XP_BOOST_CHANCE: GUEST_XP_BOOST_CHANCE,
+      maybeDropXpBoost: maybeDropXpBoost,
       canUnlockSkill: canUnlockSkill,
       unlockSkill: unlockSkill,
       equipSkillSpecial: equipSkillSpecial,

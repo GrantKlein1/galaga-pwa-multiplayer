@@ -23,6 +23,6 @@ assert(galaga.indexOf("k.sourceId = e.id;") >= 0, "one decoy per mirage");
 assert(galaga.indexOf("e.mirageHop") >= 0, "idle hop timer so it blinks without being shot");
 assert(galaga.indexOf('addTele("line", fromX, fromY, e.x, e.y, 0.28, "#e8d0ff")') >= 0, "readable blink telegraph");
 
-assert(sw.indexOf("galaga-coop-v51") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v52") >= 0, "PWA cache bump");
 
 console.log("juggernaut-mirage-fix-smoke: ok");
