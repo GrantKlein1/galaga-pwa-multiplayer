@@ -76,6 +76,6 @@ assert(bank(500, 0) === 75, "old juggernaut XP");
 assert(bank(500, 600) === 165, "new juggernaut XP");
 assert(bank(500, 600) > bank(450, 450), "juggernaut still out-banks archon");
 
-assert(sw.indexOf("galaga-coop-v50") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v51") >= 0, "PWA cache bump");
 
 console.log("harder-enemy-xp-smoke: ok");

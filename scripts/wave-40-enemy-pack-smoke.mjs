@@ -92,7 +92,11 @@ assert(galaga.indexOf("function spawnMirageDecoy(e)") >= 0, "mirage decoy spawne
 assert(galaga.indexOf("function updateTether(e, dt)") >= 0, "tether link aura");
 assert(galaga.indexOf("function updateSower(e, dt)") >= 0, "sower mines");
 assert(galaga.indexOf('addTele("line", e.sx, e.sy, e.ex, e.ey, 0.45, "#d0ff4d");') >= 0, "lancer lane telegraph");
-assert(galaga.indexOf('if (e.type === "juggernaut" && !e.decoy && (b.vy || 0) < 0 && b.y > e.y) {') >= 0, "prow shield blocks shots from below");
+assert(galaga.indexOf('type === "juggernaut" ? 3 + Math.floor(wave / 20) + extraPlayers()') >= 0, "juggernaut breakable shieldHp");
+assert(galaga.indexOf('fromPerk === "pierce" && e.type === "juggernaut"') >= 0, "pierce skips juggernaut shield");
+assert(galaga.indexOf("function blinkMirage(e)") >= 0, "mirage hops offX");
+assert(galaga.indexOf("e.offX = next;") >= 0, "blink persists via offX");
+assert(galaga.indexOf("function mirageThreatened(e)") >= 0, "mirage reacts to aim/shots");
 assert(galaga.indexOf("// Spore mines pop harmlessly when shot") >= 0, "mines pop on shot");
 assert(galaga.indexOf("mine: true, fuse: 2.0, r: 4.5, pellets: 5") >= 0, "short-life spore mine");
 
@@ -107,6 +111,6 @@ assert(galaga.indexOf('e.type === "tether" && e.tetherX != null') >= 0, "tether 
 // Co-op codec + PWA cache.
 assert(codec.indexOf('"juggernaut", "lancer", "mirage", "tether", "sower"') >= 0, "codec enemy ids");
 assert(/var VER = 6;/.test(codec), "codec VER bumped for new ids");
-assert(sw.indexOf("galaga-coop-v50") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v51") >= 0, "PWA cache bump");
 
 console.log("wave-40-enemy-pack-smoke: ok  elites=" + ids.length);

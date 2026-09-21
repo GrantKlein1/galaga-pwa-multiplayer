@@ -48,6 +48,6 @@ assert(Math.abs(guestHpMul("wraith", 36) - 0.75 * 0.65) < 1e-9, "post-35 Wraith 
 assert(galaga.indexOf("if (atk === \"constrict\") return;") >= 0, "constrict never begins");
 assert(galaga.split("if (atk === \"constrict\") return;").length - 1 >= 2, "constrict never fires");
 
-assert(sw.indexOf("galaga-coop-v50") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v51") >= 0, "PWA cache bump");
 
 console.log("wraith-basilisk-nerf-smoke: ok");
