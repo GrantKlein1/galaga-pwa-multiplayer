@@ -8,8 +8,8 @@ var js = fs.readFileSync(new URL("../js/galaga.js", import.meta.url), "utf8");
 var sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 
 function maxStartWave(lv) {
-  if (lv < 10) return 1;
-  return 5 + Math.floor((lv - 10) / 5) * 5;
+  if (lv < 5) return 1;
+  return Math.floor(lv / 5) * 5;
 }
 function startWaveOptions(lv) {
   var max = maxStartWave(lv), out = [1], n;
@@ -41,8 +41,12 @@ assert(lastBeatenStartWave(4, 50, 5) === 1, "beat 4 snaps to 1");
 assert(lastBeatenStartWave(5, 50, 6) === 5, "beat 5 stays 5");
 assert(lastBeatenStartWave(34, 50, 35) === 30, "beat 34 -> 30");
 assert(lastBeatenStartWave(35, 50, 36) === 35, "beat 35 unlocks 35");
-assert(lastBeatenStartWave(32, 8, 33) === 1, "low XP still only shows 1");
-assert(lastBeatenStartWave(32, 15, 33) === 10, "lv15 cap 10");
+assert(lastBeatenStartWave(32, 4, 33) === 1, "lv4 still only shows 1");
+assert(lastBeatenStartWave(32, 8, 33) === 5, "lv8 cap 5");
+assert(lastBeatenStartWave(32, 15, 33) === 15, "lv15 cap 15");
+assert(lastBeatenStartWave(20, 20, 21) === 20, "beat 20 and lv20 start 20");
+assert(lastBeatenStartWave(20, 19, 21) === 15, "lv19 cannot start 20");
+assert(lastBeatenStartWave(20, 25, 21) === 20, "lv25 still needs to beat 25");
 assert(lastBeatenStartWave(40, 50, 30) === 25, "do not land on locked 30");
 assert(adjacentStep(30, 1, 50, 40) === 35, "right step size unchanged");
 assert(adjacentStep(30, -1, 50, 40) === 25, "left step size unchanged");
@@ -71,6 +75,6 @@ assert(js.indexOf("n === wave + 1") >= 0, "spawnWave records clear");
 assert(js.indexOf("sb.w === wave + 1") >= 0, "client snap records clear");
 assert(js.indexOf("clearedWave: run.clearedWave || 0") >= 0, "host over includes clear");
 assert(js.indexOf("startWaveUnlocked") >= 0 && js.indexOf("reachedStartWave(reached) > n") >= 0, "unlock rule unchanged");
-assert(sw.indexOf("galaga-coop-v47") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v48") >= 0, "cache bump");
 
 console.log("start-wave-last-beaten-smoke: ok");

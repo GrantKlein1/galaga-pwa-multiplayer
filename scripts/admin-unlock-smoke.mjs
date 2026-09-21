@@ -41,8 +41,8 @@ function xpForLevel(lvl) {
   return Math.round(100 * Math.pow(l, 2.2) + 400 * l);
 }
 function maxStartWave(lv) {
-  if (lv < 10) return 1;
-  return 5 + Math.floor((lv - 10) / 5) * 5;
+  if (lv < 5) return 1;
+  return Math.floor(lv / 5) * 5;
 }
 
 var ships = ids("SHIPS");
@@ -81,8 +81,8 @@ assert(p.ownedMods.length === mods.length, "all mods owned");
 assert(p.ownedShips.indexOf("needle") === 1, "kept existing ship order");
 assert(p.equipped.ship === "needle", "kept equipped ship");
 assert(p.totalXp >= xpForLevel(100), "max XP");
-assert(p.stats.maxWave > 95, "start-wave gate cleared for late options");
-assert(maxStartWave(100) === 95, "lv100 start options include post-50");
+assert(p.stats.maxWave > 100, "start-wave gate cleared for late options");
+assert(maxStartWave(100) === 100, "lv100 start options include post-50");
 
 assert(js.indexOf('var ADMIN_CODE = "1234"') >= 0, "passcode");
 assert(js.indexOf("resetTapN >= 3") >= 0, "triple tap");
@@ -92,7 +92,7 @@ assert(js.indexOf("grantAllSkills()") >= 0, "admin maxes skill tree");
 assert(js.indexOf("flushAccountPush") >= 0, "account sync");
 assert(html.indexOf("id=\"admin-passcode\"") >= 0, "passcode sheet");
 assert(html.indexOf("Enter passcode") >= 0, "passcode copy");
-assert(sw.indexOf("galaga-coop-v47") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v48") >= 0, "cache bump");
 assert(readme.toLowerCase().indexOf("passcode") < 0, "readme has no passcode");
 assert(readme.indexOf("1234") < 0, "readme has no code");
 assert(readme.toLowerCase().indexOf("admin unlock") < 0, "readme has no admin unlock");

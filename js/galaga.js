@@ -562,11 +562,11 @@
   }
   // Regular enemies gain a little HP deep into a run so upgraded guns stay relevant.
   // Solo also +1s everything except grunt/kami, which stay 1-shot for Pulse (dmg 1).
-  // Mixed-wave guests after wave 30 are 75% of a dedicated fight. Wraith and Basilisk
+  // Mixed-wave guests after wave 35 are 75% of a dedicated fight. Wraith and Basilisk
   // guests take a further 35% cut on top of that (wave 58 mixed fights). Every-5
   // dedicated HP is unchanged.
   function guestHpMul(type, n) {
-    if (!n || n < 31) return 1;
+    if (!n || n < 36) return 1;
     var mul = 0.75;
     if (type === "wraith" || type === "basilisk") mul *= 0.65;
     return mul;
@@ -677,9 +677,10 @@
     if (i % 3 === 1) return savage ? "sniper" : "weaver";
     return hard ? "tank" : "grunt";
   }
-  // Some mid/late non-boss waves mix in a roster boss plus a thin escort.
-  // Seed by wave so co-op skip credit, formation cap, and the live spawn agree;
-  // the roll itself is among every debuted guest-pool boss, not a fixed index.
+  // After wave 35, some non-boss waves mix in a roster boss plus a thin escort.
+  // Earlier mixed waves use a full normal formation (counts/types/HP/fire still
+  // scale). Seed by wave so co-op skip credit, formation cap, and the live spawn
+  // agree; the roll itself is among every debuted guest-pool boss, not a fixed index.
   function guestUnlockedCount(n) {
     return Math.min(GUEST_BOSS_POOL, Math.max(3, Math.floor(n / BOSS_EVERY)));
   }
@@ -741,26 +742,21 @@
     return [pick[0], pick[1]];
   }
   function guestBossPlan(n) {
-    var rng, roll, late, bosses, tier, dual, last, avoid;
-    if (n < 16 || isBossWave(n) || isMiniWave(n)) return null;
+    var rng, roll, bosses, tier, dual, last, avoid;
+    if (n < 36 || isBossWave(n) || isMiniWave(n)) return null;
     rng = seededRand(0xC0FFEE ^ Math.imul(n, 2246822519));
     roll = rng();
-    late = n >= 36;
-    if (roll > (late ? 0.42 : 0.28)) return null;
+    if (roll > 0.42) return null;
     bosses = [];
     tier = 0;
-    if (n < 31) {
-      bosses.push(BOSS_DEFS[Math.floor(rng() * 3)].id);
-    } else {
-      // After wave 30, roll among debuted Seraph–Overlord guests. Skip the
-      // last scheduled every-5 fight. Duals pick a random reasonable pair.
-      dual = late && rng() < 0.45;
-      last = Math.floor(n / BOSS_EVERY) * BOSS_EVERY;
-      avoid = last >= BOSS_EVERY && last < n ? [bossMeta(last).type] : null;
-      bosses = dual ? pickGuestBossPair(rng, n, avoid) : pickGuestBossIds(rng, n, 1, avoid);
-      if (late && bosses.length > 1 && n >= 56) tier = 1;
-      else if (late && bosses.length === 1 && n >= 60) tier = 1;
-    }
+    // After wave 35, roll among debuted Seraph–Overlord guests. Skip the
+    // last scheduled every-5 fight. Duals pick a random reasonable pair.
+    dual = rng() < 0.45;
+    last = Math.floor(n / BOSS_EVERY) * BOSS_EVERY;
+    avoid = last >= BOSS_EVERY && last < n ? [bossMeta(last).type] : null;
+    bosses = dual ? pickGuestBossPair(rng, n, avoid) : pickGuestBossIds(rng, n, 1, avoid);
+    if (bosses.length > 1 && n >= 56) tier = 1;
+    else if (bosses.length === 1 && n >= 60) tier = 1;
     return { bosses: bosses, tier: tier };
   }
   function lateFormationCap(n) {
@@ -1586,15 +1582,16 @@
   function gemDurationMul(who) {
     return hasSkill("gun-gems", who) ? 1.25 : 1;
   }
-  // Lv 10 → start wave 5, lv 15 → 10, then +5 wave every +5 levels.
-  // Level only *shows* later start buttons. Starting there also requires
-  // having *cleared* that wave. stats.maxWave is the highest wave entered,
-  // so clearing N means the next spawn set maxWave to N+1 (maxWave > N).
-  // Reaching N and dying leaves maxWave === N and keeps the button locked.
+  // XP level N shows start-wave N on the stepper (1, then 5, 10, 15, …).
+  // No extra +5 buffer: lv 20 can start at 20, not only 15. Starting there
+  // also requires having *cleared* that wave. stats.maxWave is the highest
+  // wave entered, so clearing N means the next spawn set maxWave to N+1
+  // (maxWave > N). Reaching N and dying leaves maxWave === N and keeps
+  // the button locked. Admin unlock still grants every shown option.
   function maxStartWave(lv) {
     lv = lv == null ? xpLevel(profile.totalXp) : (lv | 0);
-    if (lv < 10) return 1;
-    return 5 + Math.floor((lv - 10) / 5) * 5;
+    if (lv < 5) return 1;
+    return Math.floor(lv / 5) * 5;
   }
   function startWaveOptions(lv) {
     var max = maxStartWave(lv), out = [1], n;
@@ -5720,6 +5717,34 @@
   }
   function queueFollow(e, t, atk) { e.followups.push({ t: t, atk: atk }); }
 
+  // Bastion (r=13) plus Reactor (+1). Curtain gaps must clear that hull plus bullet
+  // radius plus a few pixels of steering room, otherwise wide ships cannot slip through.
+  var CURTAIN_SHIP_R = 14;
+  var CURTAIN_PAD = 6;
+  // Leviathan tidal row: 4-shot accordion (per-bullet phase) that still leaves a
+  // Bastion/Broadwing-wide gap at the squeeze. Slow sway so the wave is readable.
+  var ACCORDION_MAX_N = 4;
+  var ACCORDION_PHASE = 0.7;
+  var ACCORDION_SWAY_F = 1.65;
+  function curtainMinSpacing(bulletR) {
+    return 2 * (CURTAIN_SHIP_R + (bulletR || 2.8) + CURTAIN_PAD);
+  }
+  function curtainCount(maxN, bulletR) {
+    var minSp = curtainMinSpacing(bulletR);
+    var n = maxN < 2 ? 2 : maxN;
+    while (n > 3 && (W - 32) / (n - 1) < minSp) n -= 1;
+    return n;
+  }
+  function accordionSway(n, bulletR) {
+    var spacing, minSp, k;
+    if (n < 2) return 24;
+    spacing = (W - 32) / (n - 1);
+    minSp = curtainMinSpacing(bulletR);
+    k = 2 * Math.abs(Math.sin(ACCORDION_PHASE / 2));
+    if (k < 0.04) return 28;
+    return Math.max(12, (spacing - minSp) / k);
+  }
+
   function beginBossAttack(e, forced) {
     var atk = forced || pickBossAttack(e);
     if (atk === "constrict") return;
@@ -5747,7 +5772,16 @@
       delay = Math.max(0.26, delay - 0.12);
     } else if (atk === "spiral" || atk === "ring" || atk === "ring2" || atk === "halo" || atk === "novaring" || atk === "whirlpool" || atk === "coil" || atk === "corering" || atk === "well" || atk === "clockhands" || atk === "crownfire") {
       addTele("ring", e.x, e.y, 0, 0, delay, col);
-    } else if (atk === "sweep" || atk === "rain" || atk === "shock" || atk === "artillery" || atk === "pendulum" || atk === "surge" || atk === "whip" || atk === "riptide") {
+    } else if (atk === "surge" || atk === "surge2") {
+      teles.push({
+        kind: "wave", x: 16, y: e.y + 24, x2: W - 16, y2: e.y + 24,
+        t: delay + 0.18, max: delay + 0.18, color: col,
+        sway: accordionSway(curtainCount(ACCORDION_MAX_N, 2.8), 2.8),
+        swayF: ACCORDION_SWAY_F
+      });
+      sfxTele();
+      delay += 0.18;
+    } else if (atk === "sweep" || atk === "rain" || atk === "shock" || atk === "artillery" || atk === "pendulum" || atk === "whip" || atk === "riptide") {
       addTele("hline", 12, e.y + (atk === "whip" ? 33 : atk === "shock" ? 28 : 18), W - 12, e.y + (atk === "whip" ? 33 : atk === "shock" ? 28 : 18), delay + (atk === "whip" ? 0.12 : 0), col);
       if (atk === "whip") { e.sweepDir = e.aimX > W / 2 ? 1 : -1; delay += 0.12; }
       if (atk === "riptide") e.sweepDir = Math.random() < 0.5 ? 1 : -1;
@@ -5964,19 +5998,6 @@
     e.tele = { t: delay, atk: atk };
   }
 
-  // Bastion (r=13) plus Reactor (+1). Curtain gaps must clear that hull plus bullet
-  // radius plus a few pixels of steering room, otherwise wide ships cannot slip through.
-  var CURTAIN_SHIP_R = 14;
-  var CURTAIN_PAD = 6;
-  function curtainMinSpacing(bulletR) {
-    return 2 * (CURTAIN_SHIP_R + (bulletR || 2.8) + CURTAIN_PAD);
-  }
-  function curtainCount(maxN, bulletR) {
-    var minSp = curtainMinSpacing(bulletR);
-    var n = maxN < 2 ? 2 : maxN;
-    while (n > 3 && (W - 32) / (n - 1) < minSp) n -= 1;
-    return n;
-  }
   function pickSpreadXs(n, minDist, pad) {
     var xs = [], i, j, x, tries, ok;
     pad = pad || 28;
@@ -6011,6 +6032,29 @@
       if (i === skipA || i === skipB) continue;
       x = 16 + i * ((W - 32) / (n - 1));
       addEbul(x, y, 0, spd, opt);
+    }
+  }
+  // Tidal accordion: same-row shots with staggered sway phase so the line
+  // folds back and forth. Amplitude is clamped so the tightest gap still
+  // clears Bastion/Broadwing (CURTAIN_SHIP_R), not just Needle.
+  function fireAccordionRow(y, maxN, spd, opt, phaseOff) {
+    var i, n, x, bulletR, sway, shot;
+    opt = opt || {};
+    bulletR = opt.r || 2.8;
+    n = curtainCount(maxN, bulletR);
+    sway = accordionSway(n, bulletR);
+    if (n < 2) {
+      addEbul(W / 2, y, 0, spd, opt);
+      return;
+    }
+    for (i = 0; i < n; i++) {
+      x = 16 + i * ((W - 32) / (n - 1));
+      shot = {
+        color: opt.color, glow: opt.glow, r: bulletR,
+        sway: sway, swayF: ACCORDION_SWAY_F,
+        swayPh: i * ACCORDION_PHASE + (phaseOff || 0)
+      };
+      addEbul(x, y, 0, spd, shot);
     }
   }
   function fireCurtain(y, maxN, spd, opt) {
@@ -6468,10 +6512,10 @@
       aimedShot(e, 0.7, spd + 10, opt);
       aimedShot({ x: e.x - 12, y: e.y }, 0.7, spd, opt);
     } else if (atk === "surge" || atk === "surge2") {
-      fireRow(e.y + 24, curtainCount(5, 2.8), 90, -1, -1, { color: col, glow: col, sway: 18, swayF: 3.2, swayPh: 0 });
+      fireAccordionRow(e.y + 24, ACCORDION_MAX_N, 90, { color: col, glow: col, r: 2.8 }, 0);
       if (atk === "surge2") queueFollow(e, 0.32, "surgeB");
     } else if (atk === "surgeB") {
-      fireRow(e.y + 24, curtainCount(5, 2.8), 90, -1, -1, { color: col, glow: col, sway: 18, swayF: 3.2, swayPh: Math.PI });
+      fireAccordionRow(e.y + 24, ACCORDION_MAX_N, 90, { color: col, glow: col, r: 2.8 }, Math.PI);
     } else if (atk === "riptide") {
       for (i = 0; i < 4; i++) {
         addEbul(e.sweepDir > 0 ? 8 : W - 8, 52 + i * 36, (e.sweepDir > 0 ? 1 : -1) * (78 + i * 8), 62 + i * 10, { color: col, glow: col, sway: 16, swayF: 2.6, swayPh: i * 0.9 });
@@ -7768,7 +7812,7 @@
     }
     bindStartWaveStepper(box, id);
     if (hint) {
-      if (lv < 10) hint.textContent = "Reach level 10 to skip early waves";
+      if (lv < 5) hint.textContent = "Reach level 5 to skip early waves";
       else if (hasLocked) hint.textContent = "Beat this wave first to unlock starting at it.";
       else hint.textContent = "Unlocked through wave " + maxStartWave(lv);
     }
@@ -12086,6 +12130,17 @@
       ctx.lineWidth = 1.5;
       if (p.kind === "line" || p.kind === "vline" || p.kind === "hline") {
         ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x2, p.y2); ctx.stroke();
+      } else if (p.kind === "wave") {
+        ctx.beginPath();
+        var ws, wx, wy, wsteps = 16, wspan = ACCORDION_PHASE * (ACCORDION_MAX_N - 1);
+        var wsway = p.sway || 22, wf = p.swayF || ACCORDION_SWAY_F;
+        for (ws = 0; ws <= wsteps; ws++) {
+          wx = p.x + (p.x2 - p.x) * (ws / wsteps);
+          wy = p.y + Math.sin((ws / wsteps) * wspan + time * wf) * wsway * 0.35;
+          if (ws === 0) ctx.moveTo(wx, wy);
+          else ctx.lineTo(wx, wy);
+        }
+        ctx.stroke();
       } else if (p.kind === "ring") {
         ctx.beginPath(); ctx.arc(p.x, p.y, 16 + (1 - p.t / p.max) * 10, 0, Math.PI * 2); ctx.stroke();
       } else if (p.kind === "glow" || p.kind === "flash") {
