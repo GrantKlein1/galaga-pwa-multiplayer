@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 5;
+  var VER = 6;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -11,6 +11,7 @@
   var ENEMY_TYPES = [
     "grunt", "sniper", "tank", "weaver", "kami", "shield",
     "mortar", "hex", "harrier", "bulwark", "archon",
+    "juggernaut", "lancer", "mirage", "tether", "sower",
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
     "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch"

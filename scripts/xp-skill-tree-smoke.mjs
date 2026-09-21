@@ -84,7 +84,7 @@ assert(js.indexOf("hasSkill(\"hull-life1\"") >= 0 && js.indexOf("function maxLiv
 assert(js.indexOf("var MAX_LIVES = 6") >= 0, "base cap still 6");
 assert(js.indexOf("hull-laststand") >= 0 && js.indexOf("LAST STAND") >= 0, "last stand");
 assert(js.indexOf("SKILL_REFUND_FEE") >= 0, "refund coin fee");
-assert(sw.indexOf("galaga-coop-v48") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v49") >= 0, "cache bump");
 assert(js.indexOf("tryCastSkill") >= 0, "manual cast");
 assert(!/auto.?cast/i.test(js), "no auto-cast comments that imply it");
 assert(js.indexOf("skill: 1") >= 0, "daily/long quest SP");

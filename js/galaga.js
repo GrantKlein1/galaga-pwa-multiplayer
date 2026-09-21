@@ -543,6 +543,11 @@
     if (type === "harrier") return "#e8ff6b";
     if (type === "bulwark") return "#7affc4";
     if (type === "archon") return "#ffd6a0";
+    if (type === "juggernaut") return "#ff3d6e";
+    if (type === "lancer") return "#f2f5ff";
+    if (type === "mirage") return "#c4a0ff";
+    if (type === "tether") return "#ffb84d";
+    if (type === "sower") return "#8ad86b";
     var d = bossDef(type);
     return d ? d.color : "#ffffff";
   }
@@ -571,15 +576,28 @@
     if (type === "wraith" || type === "basilisk") mul *= 0.65;
     return mul;
   }
+  // Wave-40+ regulars (never bosses): Juggernaut debuts 41, Lancer 40,
+  // Mirage 44, Tether 47, Sower 50. Returns 0 for anything else.
+  function lateDebutWave(type) {
+    if (type === "lancer") return 40;
+    if (type === "juggernaut") return 41;
+    if (type === "mirage") return 44;
+    if (type === "tether") return 47;
+    if (type === "sower") return 50;
+    return 0;
+  }
+  function isLateElite(type) { return lateDebutWave(type) > 0; }
   function enemyHp(type, tier, n, asGuest) {
     n = n || wave || 1;
     var hp;
     if (isBossType(type)) hp = bossHp(type, tier);
     else if (type === "archon") hp = 16 + 5 * Math.max(0, Math.floor((n - 8) / 5));
-    else if (type === "tank") hp = 3 + Math.floor(n / 12);
+    else if (type === "juggernaut") hp = Math.round((16 + 5 * Math.max(0, Math.floor((n - 8) / 5))) * 1.3);
+    else if (type === "tank" || type === "lancer") hp = 3 + Math.floor(n / 12);
     else if (type === "bulwark") hp = 3 + Math.floor(n / 15);
-    else if (type === "mortar") hp = 2 + Math.floor(n / 20);
-    else if (type === "hex" || type === "harrier") hp = 2;
+    else if (type === "mortar" || type === "tether") hp = 2 + Math.floor(n / 20);
+    else if (type === "mirage") hp = 2 + Math.floor(n / 18);
+    else if (type === "hex" || type === "harrier" || type === "sower") hp = 2;
     else hp = 1 + Math.floor(n / 25);
     if (!isCoop() && type !== "grunt" && type !== "kami") hp += 1;
     hp = scaleHp(hp);
@@ -590,10 +608,12 @@
     var d = bossDef(type);
     if (d) return d.r;
     if (type === "archon") return 15;
+    if (type === "juggernaut") return 14;
     if (type === "tank" || type === "bulwark") return 12;
     if (type === "shield") return 11;
-    if (type === "mortar") return 10;
-    if (type === "sniper") return 8;
+    if (type === "mortar" || type === "tether") return 10;
+    if (type === "sower") return 11;
+    if (type === "sniper" || type === "lancer") return 8;
     return 9;
   }
   function enemyPts(type, diving) {
@@ -609,6 +629,11 @@
     else if (type === "harrier") base = 140;
     else if (type === "bulwark") base = 200;
     else if (type === "archon") base = 450;
+    else if (type === "juggernaut") base = 500;
+    else if (type === "lancer") base = 220;
+    else if (type === "mirage") base = 260;
+    else if (type === "tether") base = 200;
+    else if (type === "sower") base = 180;
     return diving ? base * 2 : base;
   }
   function pickupColor(kind) {
@@ -663,15 +688,19 @@
     var savage = n >= 51;
     if (role === "back") {
       if (i % 3 === 0) return "shield";
+      if (n >= 47 && i % 4 === 1) return "tether";
       if (i % 2 === 0) return "tank";
       return savage ? "tank" : "sniper";
     }
     if (role === "mid") {
+      if (n >= 40 && i % 5 === 4) return "lancer";
+      if (n >= 44 && i % 6 === 5) return "mirage";
       if (denser && i % 4 === 0) return "tank";
       if (i % 2 === 0) return savage ? "sniper" : "weaver";
       if (i % 3 === 0) return "sniper";
       return hard ? "tank" : "weaver";
     }
+    if (n >= 50 && i % 4 === 3) return "sower";
     if (i % 2 === 0) return "kami";
     if (denser && i % 5 === 0) return "kami";
     if (i % 3 === 1) return savage ? "sniper" : "weaver";
@@ -833,6 +862,7 @@
     padFormation(slots, n);
     thinEarlyWave(slots, n);
     injectElites(slots, n);
+    capLateElites(slots, n);
     thinArchonEscorts(slots);
     relaxSlots(slots);
     fitSlotsToScreen(slots, n);
@@ -844,7 +874,7 @@
     return n > 10 && n % (BOSS_EVERY * 2) === 3 && !isBossWave(n);
   }
   function staysInForm(type) {
-    return type === "sniper" || type === "shield" || type === "mortar" || type === "hex" || type === "bulwark" || type === "archon";
+    return type === "sniper" || type === "shield" || type === "mortar" || type === "hex" || type === "bulwark" || type === "archon" || type === "juggernaut" || type === "mirage" || type === "tether" || type === "sower";
   }
   function weaves(type) {
     return type === "weaver" || type === "harrier";
@@ -875,7 +905,7 @@
       best = -1;
       bestD = 1e12;
       for (i = 0; i < slots.length; i++) {
-        if (slots[i].type === "archon" || slots[i].type === "mortar" || slots[i].type === "hex" || slots[i].type === "harrier" || slots[i].type === "bulwark") continue;
+        if (slots[i].type === "archon" || slots[i].type === "mortar" || slots[i].type === "hex" || slots[i].type === "harrier" || slots[i].type === "bulwark" || isLateElite(slots[i].type)) continue;
         escortN += 1;
         d = nearestSlotDist2(slots, i);
         if (d < bestD) { bestD = d; best = i; }
@@ -955,7 +985,7 @@
       if (!dropCrowdedEscorts(slots, 1)) {
         for (i = slots.length - 1; i >= 0 && slots.length > cap; i--) {
           type = slots[i].type;
-          if (type === "archon" || type === "mortar" || type === "hex" || type === "harrier" || type === "bulwark") continue;
+          if (type === "archon" || type === "mortar" || type === "hex" || type === "harrier" || type === "bulwark" || isLateElite(type)) continue;
           slots.splice(i, 1);
         }
         break;
@@ -974,6 +1004,12 @@
       slots[archonIdx].type = "archon";
     }
     types = ["mortar", "hex", "harrier", "bulwark"];
+    // Wave-40+ regulars join the same cap/chance/perType budget, never on top
+    // of it. Juggernaut is placed separately (back row, max 1).
+    if (n >= 40) types.push("lancer");
+    if (n >= 44) types.push("mirage");
+    if (n >= 47) types.push("tether");
+    if (n >= 50) types.push("sower");
     cap = n >= 51 ? 6 : n >= 31 ? 5 : n >= 21 ? 4 : n >= 11 ? 3 : 2;
     chance = n >= 51 ? 36 : n >= 41 ? 32 : n >= 31 ? 28 : n >= 21 ? 22 : n >= 11 ? 14 : 9;
     perType = n >= 11 ? 2 : 1;
@@ -1006,8 +1042,62 @@
     }
     for (i = 0; i < slots.length && added < Math.min(cap, minElites); i++) {
       if (slots[i].type === "archon") continue;
-      if (slots[i].type === "mortar" || slots[i].type === "hex" || slots[i].type === "harrier" || slots[i].type === "bulwark") continue;
+      if (slots[i].type === "mortar" || slots[i].type === "hex" || slots[i].type === "harrier" || slots[i].type === "bulwark" || isLateElite(slots[i].type)) continue;
       takeElite(i);
+    }
+    // Juggernaut: back row only, max 1, inside the same elite cap. Never takes
+    // the Archon centerpiece slot on mini waves.
+    if (n >= 41 && !typeCount.juggernaut && added < cap) {
+      var bi = pickCenteredBack(slots);
+      if (slots[bi].type !== "archon" && ((n * 17 + bi * 31) % 100) < chance) {
+        typeCount.juggernaut = 1;
+        slots[bi].type = "juggernaut";
+        added += 1;
+      }
+    }
+    return slots;
+  }
+  // Defensive pass: wave-40+ regulars never appear before their debut, never on
+  // boss waves, and never above their per-wave caps (Juggernaut 1, others 2).
+  // Over-cap or early slots fall back to a same-row regular.
+  function lateFallback(oy, minOy, maxOy) {
+    if (maxOy <= minOy) return "grunt";
+    if (oy <= minOy + (maxOy - minOy) / 3) return "tank";
+    if (oy <= minOy + (maxOy - minOy) * 2 / 3) return "weaver";
+    return "grunt";
+  }
+  function capLateElites(slots, n) {
+    var counts = {}, i, t, minOy, maxOy, kept;
+    if (!slots.length) return slots;
+    minOy = slots[0].oy;
+    maxOy = slots[0].oy;
+    for (i = 1; i < slots.length; i++) {
+      if (slots[i].oy < minOy) minOy = slots[i].oy;
+      if (slots[i].oy > maxOy) maxOy = slots[i].oy;
+    }
+    for (i = 0; i < slots.length; i++) {
+      t = slots[i].type;
+      if (!isLateElite(t)) continue;
+      if (isBossWave(n) || n < lateDebutWave(t)) {
+        slots[i].type = lateFallback(slots[i].oy, minOy, maxOy);
+        continue;
+      }
+      counts[t] = (counts[t] || 0) + 1;
+      kept = t === "juggernaut" ? 1 : 2;
+      if (counts[t] > kept) slots[i].type = lateFallback(slots[i].oy, minOy, maxOy);
+    }
+    // Juggernaut holds the back row: swap it with the back-most regular if needed.
+    for (i = 0; i < slots.length; i++) {
+      if (slots[i].type !== "juggernaut" || slots[i].oy <= minOy + 1) continue;
+      var j, bj = -1;
+      for (j = 0; j < slots.length; j++) {
+        if (j !== i && slots[j].oy <= minOy + 1 && slots[j].type !== "archon") { bj = j; break; }
+      }
+      if (bj >= 0) {
+        slots[bj].type = "juggernaut";
+        slots[i].type = lateFallback(slots[i].oy, minOy, maxOy);
+      }
+      break;
     }
     return slots;
   }
@@ -3728,6 +3818,12 @@
       archonTurn: 0, archonX: 0, archonY: 0,
       leech: !!extra.leech, leechHp: 0, leechAcc: 0, healFlash: 0
     };
+    // Wave-40+ regulars open with staggered timers so a fresh formation staggers fire.
+    if (type === "juggernaut") e.shotCd = rand(1.4, 2.2);
+    else if (type === "lancer") e.shotCd = rand(1.6, 2.6);
+    else if (type === "mirage") { e.shotCd = rand(2.2, 3.2); e.mirageCd = 0; }
+    else if (type === "tether") e.shotCd = rand(2.0, 3.0);
+    else if (type === "sower") e.sowerCd = rand(1.5, 2.5);
     if (e.isBoss) rollBossFight(e);
     return e;
   }
@@ -3784,7 +3880,7 @@
       spawnPickup(e.x + rand(-6, 6), e.y + 10, "coin", amount);
       return;
     }
-    if (e.type === "tank" || e.type === "shield" || e.type === "mortar" || e.type === "hex" || e.type === "harrier" || e.type === "bulwark") {
+    if (e.type === "tank" || e.type === "shield" || e.type === "mortar" || e.type === "hex" || e.type === "harrier" || e.type === "bulwark" || isLateElite(e.type)) {
       chance = 0.25 * mul * COIN_SPAWN_MUL * pc;
       amount = 1 + Math.floor(wave / 6);
     } else {
@@ -3841,7 +3937,7 @@
     }
     var roll = Math.random();
     var pc = playerCount();
-    var wrate = ((e.type === "tank" || e.type === "shield" || e.type === "mortar" || e.type === "hex" || e.type === "harrier" || e.type === "bulwark") ? 0.07 : 0.05) * pc;
+    var wrate = ((e.type === "tank" || e.type === "shield" || e.type === "mortar" || e.type === "hex" || e.type === "harrier" || e.type === "bulwark" || isLateElite(e.type)) ? 0.07 : 0.05) * pc;
     var healEnd = (lifeDropChance() + healDropChance()) * pc;
     if (roll < lifeDropChance() * pc) spawnPickup(e.x, e.y, "life");
     else if (roll < healEnd) spawnPickup(e.x, e.y, "heal");
@@ -4308,7 +4404,7 @@
     }
     e.alive = false;
     if (e.leech) stripLeechHeal(e);
-    var pts = enemyPts(e.type, diving);
+    var pts = e.decoy ? 0 : enemyPts(e.type, diving);
     if (e.isBoss) pts += 800 * e.tier;
     score += pts;
     run.kills = (run.kills || 0) + 1;
@@ -4354,7 +4450,7 @@
       }
       syncLocalPlayer();
     }
-    explode(e.x, e.y, enemyColor(e.type), e.isBoss || e.type === "tank" || e.type === "archon");
+    explode(e.x, e.y, enemyColor(e.type), e.isBoss || e.type === "tank" || e.type === "archon" || e.type === "juggernaut");
     if (diving) {
       run.diveKills = (run.diveKills || 0) + 1;
       profile.stats.diveKills = (profile.stats.diveKills || 0) + 1;
@@ -4384,6 +4480,8 @@
       explode(e.x - 8, e.y + 4, "#ff5c7a", true);
       dropArchonLoot(e);
       banner = { text: "ARCHON DOWN", life: 1.15 };
+    } else if (e.decoy) {
+      // Mirage decoys pop quietly: no loot, no banner.
     } else {
       maybeDrop(e, false);
     }
@@ -5372,6 +5470,12 @@
     e.ey = H + 40;
     e.shotsLeft = e.type === "kami" ? 0 : ((e.type === "tank" ? 2 : (1 + ((wave > 2 || soloEarly()) && Math.random() < (soloEarly() ? 0.65 : 0.5) ? 1 : 0))) + extraPlayers());
     e.shotAt = rand(0.28, 0.5);
+    if (e.type === "lancer") {
+      // Telegraphed lane dash: faster, at most one shot, visible lane line.
+      e.dur = rand(1.0, 1.45);
+      e.shotsLeft = Math.min(e.shotsLeft, 1);
+      addTele("line", e.sx, e.sy, e.ex, e.ey, 0.45, "#d0ff4d");
+    }
     sfxDive();
   }
 
@@ -5395,6 +5499,106 @@
       bulwarkSupport(e);
       e.shotCd = 3.87;
     }
+  }
+  // ---- Wave-40+ regulars ---------------------------------------------------------------
+  // Juggernaut: slow armored barge that holds formation and fires an aimed 2-shot.
+  // Its prow shield (see the player-bullet loop) blocks shots from below.
+  function updateJuggernaut(e, dt) {
+    var tgt;
+    e.shotCd -= dt;
+    if (e.shotCd > 0) return;
+    tgt = targetPlayer(e.x, e.y);
+    aimedWedge(e.x, e.y + 10, tgt ? tgt.x : W / 2, tgt ? tgt.y : fallbackAimY(), 2, 0.14, 150 + wave * 2, { color: "#ff3d6e", glow: "#ff8a5c" });
+    e.shotCd = 2.6 / (1 + extraPlayers() * 0.2);
+  }
+  // Lancer: fast thin diver with low formation fire; the dive itself is telegraphed in startDive.
+  function updateLancerForm(e, dt) {
+    e.shotCd -= dt;
+    if (e.shotCd > 0) return;
+    aimedShot(e, 0.6, 140 + pressureWave() * 6, { color: "#f2f5ff", glow: "#d0ff4d" });
+    e.shotCd = Math.max(2.2, (3.4 - pressureWave() * 0.04) / (1 + extraPlayers() * 0.25));
+  }
+  // Mirage: blinks a short hop when a player shot closes in, leaving a 1-HP
+  // decoy that cannot shoot and is worth nothing.
+  function spawnMirageDecoy(e) {
+    var k;
+    if (netReplay) return;
+    k = makeEnemy(e.offX || 0, e.offY || 0, "mirage");
+    k.decoy = true;
+    k.hp = 1;
+    k.maxHp = 1;
+    k.decoyT = 6;
+    k.state = "form";
+    k.x = e.x;
+    k.y = e.y;
+    k.shotCd = 99;
+    k.mirageCd = 99;
+    enemies.push(k);
+  }
+  function updateMirage(e, dt) {
+    var i, b, dx, dy, threatened = false;
+    if (e.decoy) {
+      e.decoyT = (e.decoyT || 6) - dt;
+      if (e.decoyT <= 0 && e.alive) killEnemy(e, false, 99);
+      return;
+    }
+    e.mirageCd = Math.max(0, (e.mirageCd || 0) - dt);
+    if (e.mirageCd <= 0) {
+      for (i = 0; i < pbul.length; i++) {
+        b = pbul[i];
+        dx = b.x - e.x;
+        dy = b.y - e.y;
+        if (dx * dx + dy * dy < 60 * 60 && (b.vy || 0) < 0 && b.y > e.y - 70) { threatened = true; break; }
+      }
+    }
+    if (threatened) {
+      spawnMirageDecoy(e);
+      addTele("glow", e.x, e.y, 0, 0, 0.3, "#c4a0ff");
+      e.x = clamp(e.x + (e.x < W / 2 ? 34 : -34), e.r + 8, W - e.r - 8);
+      e.mirageCd = 3;
+    }
+    e.shotCd -= dt;
+    if (e.shotCd > 0) return;
+    aimedShot(e, 0.6, 140 + pressureWave() * 6, { color: "#c4a0ff", glow: "#7a5cff" });
+    e.shotCd = Math.max(2.4, (3.6 - pressureWave() * 0.04) / (1 + extraPlayers() * 0.25));
+  }
+  // Tether: links to the nearest ally for a small fire-rate aura on the pair.
+  // The link is recomputed live, so killing either end breaks it.
+  function updateTether(e, dt) {
+    var i, ally, best = null, bestD = 130 * 130, d, linked;
+    e.tetherId = 0;
+    e.tetherX = null;
+    e.tetherY = null;
+    for (i = 0; i < enemies.length; i++) {
+      ally = enemies[i];
+      if (!ally.alive || ally === e || ally.isBoss || ally.decoy) continue;
+      d = dist2(e.x, e.y, ally.x, ally.y);
+      if (d < bestD) { bestD = d; best = ally; }
+    }
+    linked = !!best;
+    if (linked) {
+      e.tetherId = best.id;
+      e.tetherX = best.x;
+      e.tetherY = best.y;
+      if (best.shotCd > 0) best.shotCd -= dt * 0.6;
+      if (best.atkCd > 0) best.atkCd -= dt * 0.3;
+    }
+    e.shotCd -= dt;
+    if (e.shotCd > 0) return;
+    aimedShot(e, 0.7, 145 + pressureWave() * 6, { color: "#ffb84d", glow: "#ff8a3d" });
+    e.shotCd = (linked ? 2.1 : 3.0) / (1 + extraPlayers() * 0.2);
+  }
+  // Sower: slow drifter with no direct fire; drops short-life spore mines behind it.
+  function updateSower(e, dt) {
+    e.sowerCd = (e.sowerCd == null ? 2 : e.sowerCd) - dt;
+    if (e.sowerCd > 0) return;
+    if (!netReplay) {
+      addEbul(e.x + rand(-4, 4), e.y + 10, rand(-12, 12), 34, {
+        mine: true, fuse: 2.0, r: 4.5, pellets: 5, pelletSpd: 100,
+        color: "#8ad86b", glow: "#4d9a3d"
+      });
+    }
+    e.sowerCd = 3.4;
   }
   function startArchonCharge(e) {
     var tgt = targetPlayer(e.x, e.y), margin = e.r + 18;
@@ -7175,7 +7379,7 @@
       e = enemies[i];
       if (!e.alive || e.state !== "form" || e.isBoss) continue;
       if (staysInForm(e.type)) continue;
-      w = e.type === "kami" ? 5 : e.type === "grunt" ? 3 : weaves(e.type) ? 3 : 1;
+      w = e.type === "kami" ? 5 : e.type === "lancer" ? 4 : e.type === "grunt" ? 3 : weaves(e.type) ? 3 : 1;
       while (w--) pool.push(e);
     }
     if (!pool.length) return null;
@@ -10266,6 +10470,11 @@
               updateArchon(e, dt);
             }
             else if (e.type === "mortar" || e.type === "hex" || e.type === "bulwark") updateEliteForm(e, dt);
+            else if (e.type === "juggernaut") updateJuggernaut(e, dt);
+            else if (e.type === "lancer") updateLancerForm(e, dt);
+            else if (e.type === "mirage") updateMirage(e, dt);
+            else if (e.type === "tether") updateTether(e, dt);
+            else if (e.type === "sower") updateSower(e, dt);
             else if (e.type === "sniper") {
               e.shotCd -= dt;
               if (e.shotCd <= 0) {
@@ -10392,11 +10601,39 @@
       if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
       if (applyBossHazardsToPbul(b, i)) continue;
       var consumed = false, br = (b.r || 2) + 1;
+      var mi, mb;
+      for (mi = ebul.length - 1; mi >= 0; mi--) {
+        mb = ebul[mi];
+        if (!mb.mine) continue;
+        if (dist2(b.x, b.y, mb.x, mb.y) < ((mb.r || 4) + br) * ((mb.r || 4) + br)) {
+          // Spore mines pop harmlessly when shot, before their fuse runs out.
+          explode(mb.x, mb.y, mb.glow || "#8ad86b", false);
+          ebul.splice(mi, 1);
+          if (b.pierce && b.pierce > 0) b.pierce -= 1;
+          else { pbul.splice(i, 1); consumed = true; }
+          break;
+        }
+      }
+      if (consumed) continue;
       for (j = 0; j < enemies.length; j++) {
         e = enemies[j];
         if (!e.alive) continue;
         if (b.hit && b.hit.indexOf(e) >= 0) continue;
         if (dist2(b.x, b.y, e.x, e.y) < (e.r + br) * (e.r + br)) {
+          if (e.type === "juggernaut" && !e.decoy && (b.vy || 0) < 0 && b.y > e.y) {
+            // Prow shield: shots arriving from below spark off the front plate.
+            rings.push({ x: b.x, y: e.y + e.r * 0.7, r: 3, vr: 120, life: 0.25, color: "#ff3d6e" });
+            sfxArmor();
+            if (b.pierce && b.pierce > 0) {
+              b.pierce -= 1;
+              if (!b.hit) b.hit = [];
+              b.hit.push(e);
+            } else {
+              pbul.splice(i, 1);
+              consumed = true;
+            }
+            break;
+          }
           var own = players[b.owner] || player;
           skinOnBulletHit(own, e, b);
           killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", b.dmg || 1, b.owner);
@@ -12042,6 +12279,59 @@
       context.closePath(); context.fill();
       context.fillStyle = e.hitFlash > 0 ? "#fff" : (e.phaseIdx >= 1 ? "#ff5c7a" : "#ff8a5c");
       context.beginPath(); context.arc(0, -1, 3.2, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "juggernaut") {
+      // Slow armored barge: wide hull, twin prow prongs, glowing front plate.
+      context.beginPath();
+      context.moveTo(-13, -2); context.lineTo(-8, -10); context.lineTo(8, -10); context.lineTo(13, -2);
+      context.lineTo(9, 9); context.lineTo(-9, 9);
+      context.closePath(); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#4d0f1e";
+      context.fillRect(-6, -6, 12, 7);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#ff8a5c";
+      context.fillRect(-9, 7, 4, 5);
+      context.fillRect(5, 7, 4, 5);
+      context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#ffb84d";
+      context.lineWidth = 2;
+      context.beginPath(); context.arc(0, 8, 12, 0.15, Math.PI - 0.15); context.stroke();
+    } else if (e.type === "lancer") {
+      // Fast thin diver: pale needle dart.
+      context.beginPath();
+      context.moveTo(0, 11); context.lineTo(2.6, -9); context.lineTo(0, -5); context.lineTo(-2.6, -9);
+      context.closePath(); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#5c7a2e";
+      context.fillRect(-1, -2, 2, 9);
+    } else if (e.type === "mirage") {
+      // Flickering twin-diamond; decoys render translucent.
+      if (e.decoy) context.globalAlpha = 0.5;
+      context.beginPath();
+      context.moveTo(0, -9); context.lineTo(5, 0); context.lineTo(0, 9); context.lineTo(-5, 0);
+      context.closePath(); context.fill();
+      context.globalAlpha = e.decoy ? 0.35 : 0.65;
+      context.beginPath();
+      context.moveTo(0, -5); context.lineTo(9, 0); context.lineTo(0, 5); context.lineTo(-9, 0);
+      context.closePath(); context.fill();
+      context.globalAlpha = 1;
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#3d2a6b";
+      context.beginPath(); context.arc(0, 0, 2, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "tether") {
+      // Linked relay: ringed node with an amber core.
+      context.beginPath(); context.arc(0, 0, 7, 0, Math.PI * 2); context.fill();
+      context.strokeStyle = e.hitFlash > 0 ? "#fff" : "#7a4d1a";
+      context.lineWidth = 2;
+      context.beginPath(); context.arc(0, 0, 7, 0, Math.PI * 2); context.stroke();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#fff0c8";
+      context.beginPath(); context.arc(0, 0, 2.6, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "sower") {
+      // Spore drifter: lopsided pod with seed nubs.
+      context.beginPath();
+      context.moveTo(-9, -3); context.lineTo(-4, -9); context.lineTo(6, -8); context.lineTo(10, 1);
+      context.lineTo(4, 9); context.lineTo(-6, 7);
+      context.closePath(); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#2e4d1a";
+      context.fillRect(-3, -3, 6, 6);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : "#d6ffb0";
+      context.beginPath(); context.arc(-6, 5, 1.6, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.arc(6, 5, 1.6, 0, Math.PI * 2); context.fill();
     }
     if (!e.isBoss && e.type !== "shield" && e.shieldHp > 0) {
       context.globalAlpha = 0.55 + 0.2 * Math.sin(time * 8 + e.phase);
@@ -12078,6 +12368,13 @@
       context.globalAlpha = 1;
     }
     context.restore();
+    if (!e.isBoss && e.type === "tether" && e.tetherX != null && e.tetherY != null) {
+      context.globalAlpha = 0.6 + 0.25 * Math.sin(time * 9 + e.phase);
+      context.strokeStyle = "#ffb84d";
+      context.lineWidth = 1.6;
+      context.beginPath(); context.moveTo(e.x, e.y); context.lineTo(e.tetherX, e.tetherY); context.stroke();
+      context.globalAlpha = 1;
+    }
   }
 
   function draw() {
