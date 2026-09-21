@@ -40,12 +40,14 @@ assert(guestHpMul("hydra", 58) === 0.75, "Hydra guest wave 58 stays 75%");
 assert(Math.abs(guestHpMul("wraith", 58) - 0.75 * 0.65) < 1e-9, "Wraith guest stacks 75% then 35%");
 assert(Math.abs(guestHpMul("basilisk", 58) - 0.75 * 0.65) < 1e-9, "Basilisk guest stacks 75% then 35%");
 assert(guestHpMul("wraith", 10) === 1, "dedicated-wave Wraith mul unused at 1");
-assert(guestHpMul("basilisk", 45) === 0.75 * 0.65, "n>=31 basilisk mul still stacks if marked guest");
-assert(guestHpMul("wraith", 20) === 1, "pre-31 Wraith guests not extra-cut");
+assert(guestHpMul("basilisk", 45) === 0.75 * 0.65, "n>=36 basilisk mul still stacks if marked guest");
+assert(guestHpMul("wraith", 20) === 1, "pre-36 Wraith guests not extra-cut");
+assert(guestHpMul("wraith", 35) === 1, "wave 35 not guest-cut");
+assert(Math.abs(guestHpMul("wraith", 36) - 0.75 * 0.65) < 1e-9, "post-35 Wraith guests extra-cut");
 
 assert(galaga.indexOf("if (atk === \"constrict\") return;") >= 0, "constrict never begins");
 assert(galaga.split("if (atk === \"constrict\") return;").length - 1 >= 2, "constrict never fires");
 
-assert(sw.indexOf("galaga-coop-v47") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v48") >= 0, "PWA cache bump");
 
 console.log("wraith-basilisk-nerf-smoke: ok");

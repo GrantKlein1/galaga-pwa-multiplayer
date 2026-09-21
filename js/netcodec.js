@@ -44,7 +44,7 @@
     "eclipse-umbra", "eclipse-corona"
   ];
   var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive"];
-  var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone"];
+  var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
   var WEAPONS = ["normal", "spread", "double", "rapid", "shield", "speed"];
 
   function idxOf(list, val) {
