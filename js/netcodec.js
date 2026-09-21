@@ -44,7 +44,7 @@
     "warden-jade", "warden-sentinel",
     "eclipse-umbra", "eclipse-corona"
   ];
-  var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive"];
+  var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive", "xpboost"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
   var WEAPONS = ["normal", "spread", "double", "rapid", "shield", "speed"];
 

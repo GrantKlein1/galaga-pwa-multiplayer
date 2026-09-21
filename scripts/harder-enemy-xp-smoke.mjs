@@ -15,7 +15,7 @@ assert(galaga.indexOf("score += pts;") >= 0, "displayed score still uses raw pts
 assert(galaga.indexOf("Math.round((score + (run.xpBonus || 0)) * XP_SCORE_MUL") >= 0, "finishRun banks score + xpBonus");
 assert(galaga.indexOf("return { score: pts, xpBonus: xpBonus };") >= 0, "skip credit carries XP bonus");
 assert(galaga.indexOf("run.xpBonus = (run.xpBonus || 0) + (credit.xpBonus || 0);") >= 0, "skip-start applies XP bonus");
-assert(galaga.indexOf("coins: 0, xpBonus: 0, killsByType:") >= 0, "emptyRun tracks xpBonus");
+assert(galaga.indexOf("coins: 0, xpBonus: 0, xpMul: 1, killsByType:") >= 0, "emptyRun tracks xpBonus");
 assert(galaga.indexOf("enemyXpMul: enemyXpMul") >= 0, "debug export mul");
 
 var mulSrc = galaga.match(/function enemyXpMul\(type\) \{[\s\S]*?\n  \}/);
@@ -76,6 +76,6 @@ assert(bank(500, 0) === 75, "old juggernaut XP");
 assert(bank(500, 600) === 165, "new juggernaut XP");
 assert(bank(500, 600) > bank(450, 450), "juggernaut still out-banks archon");
 
-assert(sw.indexOf("galaga-coop-v51") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v52") >= 0, "PWA cache bump");
 
 console.log("harder-enemy-xp-smoke: ok");

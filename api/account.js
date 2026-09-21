@@ -181,7 +181,7 @@ function sanitizeSkills(raw) {
 
 function defaultCloudProfile() {
   return {
-    v: 6,
+    v: 7,
     coins: 0,
     totalXp: 0,
     best: 0,
@@ -194,6 +194,8 @@ function defaultCloudProfile() {
     equipped: { ship: "wisp", gun: "pulse", mod: null },
     equippedSkins: { wisp: "stock" },
     skills: { owned: [], equipped: null, bonus: 0 },
+    xpCharges: 0,
+    xpBoostArmed: false,
     startWave: 1,
     dailies: { date: "", ids: [], progress: {}, claimed: {}, tier: {}, target: {} },
     dailyTracks: {},
@@ -269,6 +271,8 @@ export function sanitizeProfile(raw) {
   p.equippedSkins = sanitizeStrMap(raw.equippedSkins);
   if (!p.equippedSkins.wisp) p.equippedSkins.wisp = "stock";
   p.skills = sanitizeSkills(raw.skills);
+  p.xpCharges = asInt(raw.xpCharges, 99);
+  p.xpBoostArmed = !!raw.xpBoostArmed;
   p.startWave = asInt(raw.startWave, 100);
   if (p.startWave < 1) p.startWave = 1;
   d = raw.dailies && typeof raw.dailies === "object" ? raw.dailies : {};
@@ -298,7 +302,7 @@ export function sanitizeProfile(raw) {
   p.stats.runs = asInt(st.runs, 9999999);
   p.admin = !!raw.admin;
   p.updatedAt = asTime(raw.updatedAt);
-  p.v = 6;
+  p.v = 7;
   return p;
 }
 

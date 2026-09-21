@@ -60,8 +60,8 @@ assert(js.indexOf("profile.skills.bonus = bonus") >= 0, "refund/admin keep bonus
 assert(!/profile\.totalXp\s*-=/.test(js), "do not deduct totalXp");
 assert(js.indexOf("skills: { owned: [], equipped: null, bonus: 0 }") >= 0, "default profile skills");
 assert(js.indexOf("p.skills = cloneSkills(raw.skills)") >= 0, "migrate skills");
-assert(js.indexOf("var PROFILE_VER = 6") >= 0, "profile ver bump");
-assert(account.indexOf("v: 6") >= 0, "cloud profile ver");
+assert(js.indexOf("var PROFILE_VER = 7") >= 0, "profile ver bump");
+assert(account.indexOf("v: 7") >= 0, "cloud profile ver");
 assert(account.indexOf("function sanitizeSkills") >= 0, "cloud skills sanitize");
 assert(account.indexOf("hull-life1") >= 0 && account.indexOf("warp-veil") >= 0, "cloud skill ids");
 assert(account.indexOf("bonus: asInt(raw.bonus, 80)") >= 0 || account.indexOf("raw.bonus") >= 0, "cloud bonus");
@@ -84,7 +84,7 @@ assert(js.indexOf("hasSkill(\"hull-life1\"") >= 0 && js.indexOf("function maxLiv
 assert(js.indexOf("var MAX_LIVES = 6") >= 0, "base cap still 6");
 assert(js.indexOf("hull-laststand") >= 0 && js.indexOf("LAST STAND") >= 0, "last stand");
 assert(js.indexOf("SKILL_REFUND_FEE") >= 0, "refund coin fee");
-assert(sw.indexOf("galaga-coop-v51") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v52") >= 0, "cache bump");
 assert(js.indexOf("tryCastSkill") >= 0, "manual cast");
 assert(!/auto.?cast/i.test(js), "no auto-cast comments that imply it");
 assert(js.indexOf("skill: 1") >= 0, "daily/long quest SP");
