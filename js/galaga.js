@@ -171,36 +171,36 @@
     { id: "gilded", name: "Gilded", unlockLevel: 22, cost: 0, rarity: "rare", fx: "gilded", hue: -18, sat: 1.22, lit: 1.14, desc: "Engraved gold plates and a traveling shine" },
     { id: "prism", name: "Prism", unlockLevel: 27, cost: 0, rarity: "rare", fx: "prism", hue: 48, sat: 1.24, lit: 1.1, desc: "Chromatic split hull, rainbow edge" },
     { id: "novaflux", name: "Novaflux", unlockLevel: 32, cost: 0, rarity: "epic", fx: "novaflux", hue: 8, sat: 0.5, lit: 1.32, desc: "White-hot core with radiating spokes", perk: "BURST", perkText: "16% of volleys fire an exploding shot" },
-    { id: "frost", name: "Frost", unlockLevel: 37, cost: 0, rarity: "epic", fx: "frost", hue: 28, sat: 0.62, lit: 1.24, desc: "Crystalline overgrowth and ice-shard wings", perk: "FREEZE", perkText: "Hits freeze fodder 1s, bosses 0.4s" },
+    { id: "frost", name: "Frost", unlockLevel: 37, cost: 0, rarity: "epic", fx: "frost", hue: 28, sat: 0.62, lit: 1.24, desc: "Crystalline overgrowth and ice-shard wings", perk: "FREEZE", perkText: "20% of hits freeze fodder 1s; 8% freeze bosses 0.4s" },
     { id: "solar", name: "Solar", unlockLevel: 42, cost: 0, rarity: "epic", fx: "solar", hue: -55, sat: 1.32, lit: 1.16, desc: "Photosphere core and corona prominences", perk: "IGNITE", perkText: "Hits ignite: +1 damage after 0.65s" },
     { id: "nebula", name: "Nebula", unlockLevel: 47, cost: 0, rarity: "legendary", fx: "nebula", hue: 112, sat: 1.2, lit: 0.94, desc: "Living gas-cloud body with embedded stars", perk: "CLOUD", perkText: "Every 7.5s a 1.1s cloud deletes nearby bullets" },
     { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.24, lit: 1.08, desc: "Ceremonial wings and a gold-violet afterimage", perk: "ECHO", perkText: "28% of volleys ghost-fire 0.16s later at 70% damage" }
   ];
   var SHIP_COIN_SKINS = [
-    { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 2500, rarity: "epic", fx: "aurora", hull: "#3dffc8", accent: "#ff9ad6", desc: "Northern-light ribbon wings", perk: "WEAVE", perkText: "Shots weave ±7px (Helix gains extra sweep)" },
-    { id: "wisp-ghostlight", ship: "wisp", name: "Ghostlight", cost: 7000, rarity: "legendary", fx: "ghostlight", hull: "#c8f8ff", accent: "#ffffff", desc: "Scanline hologram with a ghost clone", perk: "DECOY", perkText: "After a hit, a 1.6s decoy draws enemy aim" },
-    { id: "needle-hotstreak", ship: "needle", name: "Hotstreak", cost: 2500, rarity: "epic", fx: "hotstreak", hull: "#ff6b4d", accent: "#ffe08a", desc: "Racing chevrons and speed lines", perk: "STREAK", perkText: "Kills within 1.8s stack +5% ROF, max 4" },
-    { id: "needle-pinkvoid", ship: "needle", name: "Pinkvoid", cost: 7000, rarity: "legendary", fx: "pinkvoid", hull: "#1a0614", accent: "#ff4d9a", desc: "Ultra-thin dark blade, magenta plasma edge", perk: "RIFTSHOT", perkText: "12% of shots gain +1 pierce and +25% damage" },
-    { id: "aegis-chrome", ship: "aegis", name: "Chrome", cost: 2500, rarity: "epic", fx: "chrome", hull: "#d0dcec", accent: "#ffffff", desc: "Mirror plates with a traveling specular", perk: "SHATTER", perkText: "22% chance incoming bullets shatter" },
-    { id: "aegis-ward", ship: "aegis", name: "Ward", cost: 7000, rarity: "legendary", fx: "ward", hull: "#2ae8a8", accent: "#e8fff4", desc: "Hexagonal aegis wings", perk: "REFLECT", perkText: "32% chance to reflect a bullet as a 1.5-damage shot" },
-    { id: "broadwing-goldwing", ship: "broadwing", name: "Goldwing", cost: 2500, rarity: "epic", fx: "goldwing", hull: "#ffd23d", accent: "#fff4c0", desc: "Extra gilt feathers on the span", perk: "RALLY", perkText: "After a hit: 2.4s of +12% ROF and +10% speed" },
-    { id: "broadwing-sunburst", ship: "broadwing", name: "Sunburst", cost: 7000, rarity: "legendary", fx: "sunburst", hull: "#ff9a3d", accent: "#fff0a0", desc: "Sun-ray wing spread", perk: "FLARE", perkText: "After a hit: 3.2s +18% ROF +16% speed and a 4-ray burst" },
-    { id: "phantom-spectral", ship: "phantom", name: "Spectral", cost: 2500, rarity: "epic", fx: "spectral", hull: "#c8a0ff", accent: "#f0e8ff", desc: "Translucent double-outline shimmer", perk: "PHASE", perkText: "20% chance to phase through a ram or dive" },
-    { id: "phantom-rift", ship: "phantom", name: "Rift", cost: 7000, rarity: "legendary", fx: "rift", hull: "#14061e", accent: "#d46bff", desc: "Split hull with a void crack", perk: "BLINK", perkText: "On hull loss, blink toward center and freeze nearby foes 0.8s" },
-    { id: "vulture-acid", ship: "vulture", name: "Acid", cost: 2500, rarity: "epic", fx: "acid", hull: "#b6ff4d", accent: "#5cff8a", desc: "Dripping venom trails", perk: "CORRODE", perkText: "Hits strip an extra shield plate" },
-    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 7000, rarity: "legendary", fx: "carrion", hull: "#6a8a20", accent: "#ff7a5c", desc: "Bone-rib raptor silhouette", perk: "FEAST", perkText: "Dive/kami kills grant 0.55s invuln and +1 damage on the next shot" },
-    { id: "bastion-fortress", ship: "bastion", name: "Fortress", cost: 2500, rarity: "epic", fx: "fortress", hull: "#8aa0d8", accent: "#e0e8ff", desc: "Siege battlements on the prow", perk: "HOLD", perkText: "The first hit each wave is ignored" },
-    { id: "bastion-obsidian", ship: "bastion", name: "Obsidian", cost: 7000, rarity: "legendary", fx: "obsidian", hull: "#101018", accent: "#6b8cff", desc: "Jagged black-glass bunker", perk: "BULWARK", perkText: "The first two hits each wave are ignored" },
-    { id: "strix-bloodglass", ship: "strix", name: "Bloodglass", cost: 2500, rarity: "epic", fx: "bloodglass", hull: "#ff3355", accent: "#ffd0d8", desc: "Cracked ruby canopy", perk: "VENDETTA", perkText: "After a hull hit, the next 5 shots deal double damage" },
-    { id: "strix-inferno", ship: "strix", name: "Inferno", cost: 7000, rarity: "legendary", fx: "inferno", hull: "#ff7a3d", accent: "#ffe08a", desc: "Flame-winged raptor", perk: "WILDFIRE", perkText: "Hits ignite twice; a burn kill splashes nearby foes" },
-    { id: "nova-supernova", ship: "nova", name: "Supernova", cost: 2500, rarity: "epic", fx: "supernova", hull: "#ffe08a", accent: "#ffffff", desc: "Expanding star core going critical", perk: "KILLBURST", perkText: "Kills explode for 2 damage in a small radius" },
-    { id: "nova-starburst", ship: "nova", name: "Starburst", cost: 7000, rarity: "legendary", fx: "starburst", hull: "#ffb060", accent: "#fff4d0", desc: "Eight-point detonation hull", perk: "SPARKS", perkText: "Every 7th shot adds two 0.7-damage sparks" },
-    { id: "tempest-cyclone", ship: "tempest", name: "Cyclone", cost: 2500, rarity: "epic", fx: "cyclone", hull: "#3df0ff", accent: "#ffffff", desc: "Spiral storm-cell body", perk: "SHEAR", perkText: "Nearby enemy bullets are nudged aside" },
-    { id: "tempest-lightning", ship: "tempest", name: "Lightning", cost: 7000, rarity: "legendary", fx: "lightning", hull: "#7ef9ff", accent: "#ffe08a", desc: "Jagged bolt silhouette", perk: "CHAIN", perkText: "20% of hits chain 1.2 damage to the nearest other foe" },
-    { id: "warden-jade", ship: "warden", name: "Jade", cost: 2500, rarity: "epic", fx: "jade", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple-green lattice plates", perk: "GEMWARD", perkText: "Collecting a non-coin gem grants 0.4s invulnerability" },
-    { id: "warden-sentinel", ship: "warden", name: "Sentinel", cost: 7000, rarity: "legendary", fx: "sentinel", hull: "#a8ffe0", accent: "#ffffff", desc: "Honor-guard wings and halo", perk: "HALO", perkText: "Halo eats 1 nearby bullet every 5s" },
-    { id: "eclipse-umbra", ship: "eclipse", name: "Umbra", cost: 2500, rarity: "epic", fx: "umbra", hull: "#120c1c", accent: "#ffd23d", desc: "Black disk with a gold ring", perk: "UMBRA", perkText: "While invulnerable after a hit, shots deal +25% damage" },
-    { id: "eclipse-corona", ship: "eclipse", name: "Corona", cost: 7000, rarity: "legendary", fx: "corona", hull: "#e0c8ff", accent: "#ffd23d", desc: "Full eclipse with fire prominences", perk: "AURA", perkText: "While invulnerable, a 22px aura deals 1 damage every 0.55s" }
+    { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 10000, rarity: "epic", fx: "aurora", hull: "#3dffc8", accent: "#ff9ad6", desc: "Northern-light ribbon wings", perk: "WEAVE", perkText: "Shots weave ±7px (Helix gains extra sweep)" },
+    { id: "wisp-ghostlight", ship: "wisp", name: "Ghostlight", cost: 20000, rarity: "legendary", fx: "ghostlight", hull: "#c8f8ff", accent: "#ffffff", desc: "Scanline hologram with a ghost clone", perk: "DECOY", perkText: "After a hit, a 1.6s decoy draws enemy aim" },
+    { id: "needle-hotstreak", ship: "needle", name: "Hotstreak", cost: 10000, rarity: "epic", fx: "hotstreak", hull: "#ff6b4d", accent: "#ffe08a", desc: "Racing chevrons and speed lines", perk: "STREAK", perkText: "Kills within 1.8s stack +5% ROF, max 4" },
+    { id: "needle-pinkvoid", ship: "needle", name: "Pinkvoid", cost: 20000, rarity: "legendary", fx: "pinkvoid", hull: "#1a0614", accent: "#ff4d9a", desc: "Ultra-thin dark blade, magenta plasma edge", perk: "RIFTSHOT", perkText: "12% of shots gain +1 pierce and +25% damage" },
+    { id: "aegis-chrome", ship: "aegis", name: "Chrome", cost: 10000, rarity: "epic", fx: "chrome", hull: "#d0dcec", accent: "#ffffff", desc: "Mirror plates with a traveling specular", perk: "SHATTER", perkText: "22% chance incoming bullets shatter" },
+    { id: "aegis-ward", ship: "aegis", name: "Ward", cost: 20000, rarity: "legendary", fx: "ward", hull: "#2ae8a8", accent: "#e8fff4", desc: "Hexagonal aegis wings", perk: "REFLECT", perkText: "32% chance to reflect a bullet as a 1.5-damage shot" },
+    { id: "broadwing-goldwing", ship: "broadwing", name: "Goldwing", cost: 10000, rarity: "epic", fx: "goldwing", hull: "#ffd23d", accent: "#fff4c0", desc: "Extra gilt feathers on the span", perk: "RALLY", perkText: "After a hit: 2.4s of +12% ROF and +10% speed" },
+    { id: "broadwing-sunburst", ship: "broadwing", name: "Sunburst", cost: 20000, rarity: "legendary", fx: "sunburst", hull: "#ff9a3d", accent: "#fff0a0", desc: "Sun-ray wing spread", perk: "FLARE", perkText: "After a hit: 3.2s +18% ROF +16% speed and a 4-ray burst" },
+    { id: "phantom-spectral", ship: "phantom", name: "Spectral", cost: 10000, rarity: "epic", fx: "spectral", hull: "#c8a0ff", accent: "#f0e8ff", desc: "Translucent double-outline shimmer", perk: "PHASE", perkText: "20% chance to phase through a ram or dive" },
+    { id: "phantom-rift", ship: "phantom", name: "Rift", cost: 20000, rarity: "legendary", fx: "rift", hull: "#14061e", accent: "#d46bff", desc: "Split hull with a void crack", perk: "BLINK", perkText: "On hull loss, blink toward center and freeze nearby foes 0.8s" },
+    { id: "vulture-acid", ship: "vulture", name: "Acid", cost: 10000, rarity: "epic", fx: "acid", hull: "#b6ff4d", accent: "#5cff8a", desc: "Dripping venom trails", perk: "CORRODE", perkText: "Hits strip an extra shield plate" },
+    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 20000, rarity: "legendary", fx: "carrion", hull: "#6a8a20", accent: "#ff7a5c", desc: "Bone-rib raptor silhouette", perk: "FEAST", perkText: "Dive/kami kills grant 0.55s invuln and +1 damage on the next shot" },
+    { id: "bastion-fortress", ship: "bastion", name: "Fortress", cost: 10000, rarity: "epic", fx: "fortress", hull: "#8aa0d8", accent: "#e0e8ff", desc: "Siege battlements on the prow", perk: "HOLD", perkText: "The first hit each wave is ignored" },
+    { id: "bastion-obsidian", ship: "bastion", name: "Obsidian", cost: 20000, rarity: "legendary", fx: "obsidian", hull: "#101018", accent: "#6b8cff", desc: "Jagged black-glass bunker", perk: "BULWARK", perkText: "The first two hits each wave are ignored" },
+    { id: "strix-bloodglass", ship: "strix", name: "Bloodglass", cost: 10000, rarity: "epic", fx: "bloodglass", hull: "#ff3355", accent: "#ffd0d8", desc: "Cracked ruby canopy", perk: "VENDETTA", perkText: "After a hull hit, the next 5 shots deal double damage" },
+    { id: "strix-inferno", ship: "strix", name: "Inferno", cost: 20000, rarity: "legendary", fx: "inferno", hull: "#ff7a3d", accent: "#ffe08a", desc: "Flame-winged raptor", perk: "WILDFIRE", perkText: "Hits ignite twice; a burn kill splashes nearby foes" },
+    { id: "nova-supernova", ship: "nova", name: "Supernova", cost: 10000, rarity: "epic", fx: "supernova", hull: "#ffe08a", accent: "#ffffff", desc: "Expanding star core going critical", perk: "KILLBURST", perkText: "Kills explode for 2 damage in a small radius" },
+    { id: "nova-starburst", ship: "nova", name: "Starburst", cost: 20000, rarity: "legendary", fx: "starburst", hull: "#ffb060", accent: "#fff4d0", desc: "Eight-point detonation hull", perk: "SPARKS", perkText: "Every 7th shot adds two 0.7-damage sparks" },
+    { id: "tempest-cyclone", ship: "tempest", name: "Cyclone", cost: 10000, rarity: "epic", fx: "cyclone", hull: "#3df0ff", accent: "#ffffff", desc: "Spiral storm-cell body", perk: "GUST", perkText: "Kills grant 0.6s of +20% speed" },
+    { id: "tempest-lightning", ship: "tempest", name: "Lightning", cost: 20000, rarity: "legendary", fx: "lightning", hull: "#7ef9ff", accent: "#ffe08a", desc: "Jagged bolt silhouette", perk: "CHAIN", perkText: "20% of hits chain 1.2 damage to the nearest other foe" },
+    { id: "warden-jade", ship: "warden", name: "Jade", cost: 10000, rarity: "epic", fx: "jade", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple-green lattice plates", perk: "GEMWARD", perkText: "Collecting a non-coin gem grants 0.4s invulnerability" },
+    { id: "warden-sentinel", ship: "warden", name: "Sentinel", cost: 20000, rarity: "legendary", fx: "sentinel", hull: "#a8ffe0", accent: "#ffffff", desc: "Honor-guard wings and halo", perk: "HALO", perkText: "Halo eats 1 nearby bullet every 5s" },
+    { id: "eclipse-umbra", ship: "eclipse", name: "Umbra", cost: 10000, rarity: "epic", fx: "umbra", hull: "#120c1c", accent: "#ffd23d", desc: "Black disk with a gold ring", perk: "UMBRA", perkText: "While invulnerable after a hit, shots deal +25% damage" },
+    { id: "eclipse-corona", ship: "eclipse", name: "Corona", cost: 20000, rarity: "legendary", fx: "corona", hull: "#e0c8ff", accent: "#ffd23d", desc: "Full eclipse with fire prominences", perk: "AURA", perkText: "While invulnerable, a 22px aura deals 1 damage every 0.55s" }
   ];
 
   // Boss roster. Debut wave = (index + 1) * BOSS_EVERY. Kits: base (always), p2 (added below the
@@ -404,6 +404,9 @@
   var runQuestClaims = [];
   var summaryRun = null;
   var runFinished = false;
+  var pendingXpBoost = false;
+  var hubStartMenuOpen = false;
+  var lobbyStartMenuOpen = false;
 
   var score = 0;
   var best = 0;
@@ -1730,58 +1733,75 @@
     }
     grantXpCharge(n);
   }
-  function armXpBoost() {
-    if (profile.xpBoostArmed) return false;
-    if (xpChargesOf() < 1) return false;
-    profile.xpBoostArmed = true;
-    saveProfile();
-    renderXpBoostUi();
+  function clearArmedXpBoostFlag() {
+    if (!profile.xpBoostArmed) return false;
+    profile.xpBoostArmed = false;
     return true;
   }
-  function consumeArmedXpBoost(pvp) {
-    if (pvp) {
+  function consumeArmedXpBoost(pvp, useBoost) {
+    var dirty = clearArmedXpBoostFlag();
+    pendingXpBoost = false;
+    if (pvp || !useBoost) {
       run.xpMul = 1;
+      if (dirty) saveProfile();
       return;
     }
-    if (!profile.xpBoostArmed) {
-      run.xpMul = 1;
-      return;
-    }
-    profile.xpBoostArmed = false;
     if ((profile.xpCharges | 0) > 0) {
       profile.xpCharges = clampXpCharges((profile.xpCharges | 0) - 1);
       run.xpMul = XP_BOOST_MUL;
-    } else {
-      run.xpMul = 1;
+      saveProfile();
+      return;
     }
-    saveProfile();
+    run.xpMul = 1;
+    if (dirty) saveProfile();
   }
   function runXpMul() {
     var n = run && run.xpMul;
     if (n === XP_BOOST_MUL) return XP_BOOST_MUL;
     return 1;
   }
+  function closeStartMenus() {
+    hubStartMenuOpen = false;
+    lobbyStartMenuOpen = false;
+    var hubMenu = el("hub-start-menu");
+    var lobbyMenu = el("lobby-start-menu");
+    if (hubMenu) hubMenu.classList.add("hidden");
+    if (lobbyMenu && (isPvp() || netRole === "host")) lobbyMenu.classList.add("hidden");
+  }
+  function paintStartBoostBtn(btn, n) {
+    if (!btn) return;
+    btn.disabled = n < 1;
+    btn.classList.toggle("xp-boost-armed", n > 0 && pendingXpBoost && netRole === "client");
+  }
   function renderXpBoostUi() {
     var n = xpChargesOf();
-    var armed = !!profile.xpBoostArmed;
     var lab = el("hub-boosts");
-    var hubBtn = el("btn-xp-boost");
-    var lobbyBtn = el("btn-lobby-xp-boost");
     var lobbyBox = el("lobby-xp-boost-box");
-    var text;
-    if (lab) {
-      lab.textContent = armed ? ("XP boosts: " + n + "  ·  armed") : ("XP boosts: " + n);
-    }
-    text = armed ? "Armed · 2× XP next run" : (n < 1 ? "Arm XP boost" : "Arm XP boost");
-    function paint(btn) {
-      if (!btn) return;
-      btn.textContent = text;
-      btn.disabled = armed || n < 1;
-      btn.classList.toggle("xp-boost-armed", armed);
-    }
-    paint(hubBtn);
-    paint(lobbyBtn);
+    var hubMenu = el("hub-start-menu");
+    var lobbyMenu = el("lobby-start-menu");
+    var guestHint = el("lobby-start-menu-hint");
+    var coOpReady = !isPvp() && lobbyMode === "ready";
+    var guestPick = coOpReady && netRole === "client";
+    if (lab) lab.textContent = "XP boosts: " + n;
+    paintStartBoostBtn(el("btn-hub-start-boost"), n);
+    paintStartBoostBtn(el("btn-lobby-start-boost"), n);
+    if (hubMenu) hubMenu.classList.toggle("hidden", !hubStartMenuOpen);
     if (lobbyBox) lobbyBox.classList.toggle("hidden", !!isPvp());
+    if (lobbyMenu) {
+      lobbyMenu.classList.toggle("hidden", !coOpReady || (netRole === "host" && !lobbyStartMenuOpen));
+      if (el("btn-lobby-start-plain")) {
+        el("btn-lobby-start-plain").classList.toggle("start-run-pick", guestPick);
+        el("btn-lobby-start-plain").classList.toggle("active", guestPick && !pendingXpBoost);
+      }
+      if (el("btn-lobby-start-boost")) {
+        el("btn-lobby-start-boost").classList.toggle("start-run-pick", guestPick);
+        el("btn-lobby-start-boost").classList.toggle("active", guestPick && !!pendingXpBoost);
+      }
+    }
+    if (guestHint) {
+      guestHint.classList.toggle("hidden", !guestPick);
+      guestHint.textContent = "Host starts the run. Pick whether you spend a boost.";
+    }
   }
   function gemDurationMul(who) {
     return hasSkill("gun-gems", who) ? 1.25 : 1;
@@ -2377,6 +2397,7 @@
     if ((p.skinBoostT || 0) > 0) {
       if (id === "broadwing-goldwing") { fire *= 1.12; spd *= 1.10; }
       if (id === "broadwing-sunburst") { fire *= 1.18; spd *= 1.16; }
+      if (id === "tempest-cyclone") spd *= 1.20;
     }
     if (id === "needle-hotstreak" && (p.skinHotStacks || 0) > 0) fire *= 1 + 0.05 * p.skinHotStacks;
     p.skinFireMul = fire;
@@ -2459,7 +2480,13 @@
     if (!owner || !e || !e.alive || isPvpRun()) return;
     id = skinIdOf(owner);
     if (id === "vulture-acid" && e.shieldHp > 0) e.shieldHp -= 1;
-    if (id === "frost") e.freezeT = Math.max(e.freezeT || 0, e.isBoss ? 0.4 : 1);
+    if (id === "frost") {
+      if (e.isBoss) {
+        if (Math.random() < 0.08) e.freezeT = Math.max(e.freezeT || 0, 0.4);
+      } else if (Math.random() < 0.2) {
+        e.freezeT = Math.max(e.freezeT || 0, 1);
+      }
+    }
     if (id === "solar") igniteEnemy(e, 1, owner.slot);
     if (id === "strix-inferno") igniteEnemy(e, 2, owner.slot);
     if (id === "tempest-lightning" && Math.random() < 0.2) skinChain(e, owner);
@@ -2592,20 +2619,6 @@
     syncQuestProgress();
     updateHud();
     return true;
-  }
-  function cycloneNudge(pl, b, dt) {
-    var dx, dy, d, nx, ny, px, py, side;
-    if (!pl || !b || skinIdOf(pl) !== "tempest-cyclone") return;
-    dx = b.x - pl.x; dy = b.y - pl.y;
-    d = Math.sqrt(dx * dx + dy * dy);
-    if (d >= 50 || d < 1) return;
-    nx = -(b.vy || 0); ny = b.vx || 0;
-    side = Math.sqrt(nx * nx + ny * ny) || 1;
-    nx /= side; ny /= side;
-    px = pl.x - b.x; py = pl.y - b.y;
-    if (nx * px + ny * py > 0) { nx = -nx; ny = -ny; }
-    b.x += nx * 78 * dt;
-    b.y += ny * 78 * dt;
   }
   function skinDefendShot(pl, b) {
     var id, d2, hitR, pr;
@@ -4558,6 +4571,11 @@
         else owner.skinHotStacks = 1;
         owner.skinHotT = 1.8;
         refreshSkinMuls(owner);
+      }
+      if (sid === "tempest-cyclone") {
+        owner.skinBoostT = 0.6;
+        refreshSkinMuls(owner);
+        rings.push({ x: owner.x, y: owner.y, r: 5, vr: 110, life: 0.2, color: "#3df0ff" });
       }
       if (sid === "vulture-carrion" && (diving || e.type === "kami" || e.state === "kami" || e.state === "dive")) {
         owner.invuln = Math.max(owner.invuln || 0, 0.55);
@@ -7785,16 +7803,16 @@
     drawHubPreview();
     drawHangarPreview();
   }
-  function claimQuest(scope, id, pick) {
+  function claimQuest(scope, id, pick, silent) {
     var q, item, rec, next;
     if (scope === "daily") {
       q = dailyById(id);
-      if (!q || profile.dailies.claimed[id]) return;
-      if ((profile.dailies.progress[id] || 0) < q.target) return;
+      if (!q || profile.dailies.claimed[id]) return false;
+      if ((profile.dailies.progress[id] || 0) < q.target) return false;
       if (rewardNeedsChoice(q.reward)) {
-        if (pick !== "item" && pick !== "coins") return;
+        if (pick !== "item" && pick !== "coins") return false;
         item = rewardItem(q.reward);
-        if (pick === "item" && item && isOwned(item.cat, item.id)) return;
+        if (pick === "item" && item && isOwned(item.cat, item.id)) return false;
       }
       profile.dailies.claimed[id] = true;
       if (!profile.dailyTracks) profile.dailyTracks = {};
@@ -7802,14 +7820,14 @@
       applyReward(q.reward, pick);
     } else {
       q = longById(id);
-      if (!q) return;
+      if (!q) return false;
       if (!profile.longTerm[id]) profile.longTerm[id] = emptyLongRec();
       rec = profile.longTerm[id];
-      if ((rec.progress || 0) < q.target) return;
+      if ((rec.progress || 0) < q.target) return false;
       if (rewardNeedsChoice(q.reward)) {
-        if (pick !== "item" && pick !== "coins") return;
+        if (pick !== "item" && pick !== "coins") return false;
         item = rewardItem(q.reward);
-        if (pick === "item" && item && isOwned(item.cat, item.id)) return;
+        if (pick === "item" && item && isOwned(item.cat, item.id)) return false;
       }
       applyReward(q.reward, pick);
       rec.tier = (rec.tier | 0) + 1;
@@ -7822,6 +7840,7 @@
         rec.mark = longStatRaw(next, profile);
       }
     }
+    if (silent) return true;
     syncQuestProgress();
     ensureAudio();
     sfxCredit();
@@ -7829,6 +7848,32 @@
     renderQuests();
     renderHub();
     if (uiScreen === "summary") renderRunSummary();
+    return true;
+  }
+  function summaryQuestClaimed(item) {
+    var q = item && item.q;
+    if (!q) return true;
+    if (item.scope === "daily") return !!profile.dailies.claimed[q.id];
+    return !!profile.longTerm[q.id] && (profile.longTerm[q.id].tier | 0) > (q.trackTier | 0);
+  }
+  function claimAllSummaryQuests() {
+    var i, item, n = 0, pick;
+    if (uiScreen !== "summary") return 0;
+    for (i = 0; i < runQuestClaims.length; i++) {
+      item = runQuestClaims[i];
+      if (!item || !item.q || summaryQuestClaimed(item)) continue;
+      pick = rewardNeedsChoice(item.q.reward) ? "coins" : undefined;
+      if (claimQuest(item.scope, item.q.id, pick, true)) n += 1;
+    }
+    if (!n) return 0;
+    syncQuestProgress();
+    ensureAudio();
+    sfxCredit();
+    saveProfile();
+    renderQuests();
+    renderHub();
+    renderRunSummary();
+    return n;
   }
 
   function renderHub() {
@@ -8640,22 +8685,25 @@
   }
   function renderSummaryQuests() {
     var list = el("summary-quests");
-    var i, item, q, claimed, h = "";
+    var i, item, claimed, unclaimed = 0, h = "";
     if (!list) return;
     if (!runQuestClaims.length) {
       list.innerHTML = '<div class="summary-quests-empty">No new quest rewards this run. Keep flying to complete the next one.</div>';
       return;
     }
-    h += '<div class="summary-quest-title">Quest rewards ready</div><div class="summary-quest-hint">Item or coins: pick one. Nothing is granted until you choose.</div>';
+    for (i = 0; i < runQuestClaims.length; i++) {
+      if (!summaryQuestClaimed(runQuestClaims[i])) unclaimed += 1;
+    }
+    h += '<div class="summary-quest-title">Quest rewards ready</div><div class="summary-quest-hint">Item or coins: pick one. Claim all takes coins. Nothing is granted until you choose.</div>';
+    if (unclaimed) {
+      h += '<button type="button" class="btn summary-claim-all" data-act="claim-all">Claim all</button>';
+    }
     for (i = 0; i < runQuestClaims.length; i++) {
       item = runQuestClaims[i];
-      q = item.q;
-      claimed = item.scope === "daily"
-        ? !!profile.dailies.claimed[q.id]
-        : !!profile.longTerm[q.id] && (profile.longTerm[q.id].tier | 0) > (q.trackTier | 0);
-      h += '<div class="summary-quest' + (!claimed && rewardNeedsChoice(q.reward) ? " choice" : "") + '"><div class="summary-quest-info"><div class="cat-name">' + q.name + '</div><div class="cat-desc">' + q.desc + '</div><div class="q-reward">' + rewardText(q.reward) + '</div></div>';
+      claimed = summaryQuestClaimed(item);
+      h += '<div class="summary-quest' + (!claimed && rewardNeedsChoice(item.q.reward) ? " choice" : "") + '"><div class="summary-quest-info"><div class="cat-name">' + item.q.name + '</div><div class="cat-desc">' + item.q.desc + '</div><div class="q-reward">' + rewardText(item.q.reward) + '</div></div>';
       if (claimed) h += '<span class="summary-claimed">Claimed</span>';
-      else h += questClaimControls(q, item.scope, true);
+      else h += questClaimControls(item.q, item.scope, true);
       h += "</div>";
     }
     list.innerHTML = h;
@@ -9008,6 +9056,8 @@
 
   function showScreen(name) {
     uiScreen = name;
+    if (name !== "hub") hubStartMenuOpen = false;
+    if (name !== "lobby") lobbyStartMenuOpen = false;
     if (name !== "quests") {
       clearResetTaps();
       var passOpen = el("admin-passcode");
@@ -9262,7 +9312,8 @@
     run = emptyRun();
     runQuestClaims = [];
     summaryRun = null;
-    consumeArmedXpBoost(!!(opts.pvp || (pvpApi() && pvpApi().isMatch())));
+    consumeArmedXpBoost(!!(opts.pvp || (pvpApi() && pvpApi().isMatch())), !!(opts.xpBoost || pendingXpBoost));
+    closeStartMenus();
     ensureDailies();
     snapshotDailies();
     resetInput();
@@ -9626,6 +9677,9 @@
   }
 
   function openLobby(kind) {
+    pendingXpBoost = false;
+    lobbyStartMenuOpen = false;
+    hubStartMenuOpen = false;
     bindNet();
     leaveNet();
     setLobbyErr("");
@@ -9666,10 +9720,38 @@
     if (netRole !== "host" || !lobbyGuest) return;
     if (isPvp()) {
       if (!pvpApi() || !pvpApi().canStart()) return;
+      pendingXpBoost = false;
       startNewGame({ pvp: true, coopPlayers: [pvpLoadoutFor(0), pvpLoadoutFor(1)] });
       return;
     }
+    if (!lobbyStartMenuOpen) {
+      lobbyStartMenuOpen = true;
+      renderLobby();
+      return;
+    }
+    confirmCoopStart(false);
+  }
+  function confirmCoopStart(useBoost) {
+    if (isPvp()) return;
+    if (netRole === "client") {
+      pendingXpBoost = !!useBoost && xpChargesOf() > 0;
+      renderXpBoostUi();
+      return;
+    }
+    if (netRole !== "host" || !lobbyGuest) return;
+    pendingXpBoost = !!useBoost && xpChargesOf() > 0;
     startNewGame({ coopPlayers: [profileLoadoutSpec(), lobbyGuest.loadout] });
+  }
+  function startFromHub(useBoost) {
+    pendingXpBoost = false;
+    leaveNet();
+    if (pvpApi()) pvpApi().reset("coop");
+    pendingXpBoost = !!useBoost && xpChargesOf() > 0;
+    startNewGame();
+  }
+  function toggleHubStartMenu() {
+    hubStartMenuOpen = !hubStartMenuOpen;
+    renderXpBoostUi();
   }
 
   function snapEn(e) {
@@ -10850,7 +10932,6 @@
         for (pi = 0; pi < players.length; pi++) {
           pl = players[pi];
           if (!pl || !pl.alive || pl.slot === b.owner) continue;
-          cycloneNudge(pl, b, dt);
           var def = skinDefendShot(pl, b);
           if (def === "eat") {
             pbul.splice(i, 1);
@@ -10867,7 +10948,7 @@
           pr = pl.r || PLAYER_R;
           if (dist2(b.x, b.y, pl.x, pl.y) < (pr + br) * (pr + br)) {
             var shooter = players[b.owner];
-            if (shooter && skinIdOf(shooter) === "frost") pl.slowT = Math.max(pl.slowT || 0, 0.7);
+            if (shooter && skinIdOf(shooter) === "frost" && Math.random() < 0.2) pl.slowT = Math.max(pl.slowT || 0, 0.5);
             if (b.splash) pvpHurt(pl, (b.dmg || 1) + (b.splash.dmg || 0));
             else pvpHurt(pl, b.dmg || 1);
             if (b.pierce && b.pierce > 0) {
@@ -10972,7 +11053,6 @@
         pl = players[pi];
         if (!pl || !pl.alive) continue;
         if (b.owner != null && b.owner >= 0 && b.owner === pl.slot) continue;
-        cycloneNudge(pl, b, dt);
         var edef = skinDefendShot(pl, b);
         if (edef === "eat") {
           ebul.splice(i, 1);
@@ -13010,9 +13090,15 @@
     if (k === "m" || k === "M") { toggleMute(); return; }
     if (overlayVisible()) {
       if (uiScreen === "hub") {
-        if (k === "Enter" || k === " ") startNewGame();
+        if (k === "Enter" || k === " ") {
+          if (hubStartMenuOpen) startFromHub(false);
+          else toggleHubStartMenu();
+        } else if (k === "Escape" && hubStartMenuOpen) {
+          hubStartMenuOpen = false;
+          renderXpBoostUi();
+        }
       } else if (uiScreen === "lobby") {
-        if (k === "Escape") { leaveNet(); showScreen("hub"); }
+        if (k === "Escape") { pendingXpBoost = false; lobbyStartMenuOpen = false; leaveNet(); showScreen("hub"); }
         else if (lobbyMode === "join" && (k === "Enter" || k === " ")) lobbyJoinGo();
         else if (lobbyMode === "ready" && netRole === "host" && (k === "Enter" || k === " ")) lobbyStart();
       } else if (uiScreen === "hangar" || uiScreen === "skills" || uiScreen === "quests" || uiScreen === "ranks" || uiScreen === "account") {
@@ -13137,17 +13223,27 @@
       return;
     }
     if (netRole === "client") return;
+    pendingXpBoost = false;
     if (netRole === "host" && lastCoopSpecs) startNewGame({ coopPlayers: lastCoopSpecs });
     else startNewGame();
   }
 
-  el("btn-play").addEventListener("click", function (e) { e.preventDefault(); leaveNet(); if (pvpApi()) pvpApi().reset("coop"); startNewGame(); });
-  function onArmXpBoost(e) {
+  el("btn-play").addEventListener("click", function (e) { e.preventDefault(); toggleHubStartMenu(); });
+  if (el("btn-hub-start")) el("btn-hub-start").addEventListener("click", function (e) { e.preventDefault(); startFromHub(false); });
+  if (el("btn-hub-start-boost")) el("btn-hub-start-boost").addEventListener("click", function (e) {
     e.preventDefault();
-    armXpBoost();
-  }
-  if (el("btn-xp-boost")) el("btn-xp-boost").addEventListener("click", onArmXpBoost);
-  if (el("btn-lobby-xp-boost")) el("btn-lobby-xp-boost").addEventListener("click", onArmXpBoost);
+    if (xpChargesOf() < 1) return;
+    startFromHub(true);
+  });
+  if (el("btn-lobby-start-plain")) el("btn-lobby-start-plain").addEventListener("click", function (e) {
+    e.preventDefault();
+    confirmCoopStart(false);
+  });
+  if (el("btn-lobby-start-boost")) el("btn-lobby-start-boost").addEventListener("click", function (e) {
+    e.preventDefault();
+    if (xpChargesOf() < 1) return;
+    confirmCoopStart(true);
+  });
   el("btn-coop").addEventListener("click", function (e) { e.preventDefault(); openLobby("coop"); });
   el("btn-pvp").addEventListener("click", function (e) { e.preventDefault(); openLobby("pvp"); });
   el("btn-hangar").addEventListener("click", function (e) { e.preventDefault(); showScreen("hangar"); });
@@ -13240,9 +13336,10 @@
   el("btn-again").addEventListener("click", function (e) { e.preventDefault(); playAgain(); });
   el("btn-summary-hub").addEventListener("click", function (e) { e.preventDefault(); leaveNet(); showScreen("hub"); });
   el("summary-quests").addEventListener("click", function (e) {
-    var t = e.target && e.target.closest ? e.target.closest("[data-act='claim']") : e.target;
+    var t = e.target && e.target.closest ? e.target.closest("[data-act]") : e.target;
     if (!t || !t.getAttribute) return;
-    if (t.getAttribute("data-act") === "claim") claimQuest(t.getAttribute("data-scope"), t.getAttribute("data-id"), t.getAttribute("data-pick"));
+    if (t.getAttribute("data-act") === "claim-all") claimAllSummaryQuests();
+    else if (t.getAttribute("data-act") === "claim") claimQuest(t.getAttribute("data-scope"), t.getAttribute("data-id"), t.getAttribute("data-pick"));
   });
   function bindLobbyUi() {
     function tap(id, fn) {
@@ -13259,6 +13356,8 @@
       if (inp) { inp.value = ""; }
     });
     tap("btn-lobby-back", function () {
+      pendingXpBoost = false;
+      lobbyStartMenuOpen = false;
       leaveNet();
       if (pvpApi()) pvpApi().reset("coop");
       showScreen("hub");
@@ -13268,6 +13367,8 @@
     tap("btn-lobby-join-go", lobbyJoinGo);
     tap("btn-lobby-start", lobbyStart);
     tap("btn-lobby-leave", function () {
+      pendingXpBoost = false;
+      lobbyStartMenuOpen = false;
       leaveNet();
       showLobbyPanel("pick");
       renderLobby();
@@ -13830,8 +13931,10 @@
       grantSkillBonus: grantSkillBonus,
       clampXpCharges: clampXpCharges,
       grantXpCharge: grantXpCharge,
-      armXpBoost: armXpBoost,
       consumeArmedXpBoost: consumeArmedXpBoost,
+      claimAllSummaryQuests: claimAllSummaryQuests,
+      startFromHub: startFromHub,
+      confirmCoopStart: confirmCoopStart,
       runXpMul: runXpMul,
       XP_BOOST_MUL: XP_BOOST_MUL,
       XP_CHARGES_MAX: XP_CHARGES_MAX,
