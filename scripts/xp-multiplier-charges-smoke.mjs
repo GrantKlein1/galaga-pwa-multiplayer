@@ -75,7 +75,7 @@ assert(account.indexOf("p.xpCharges = asInt(raw.xpCharges, 99)") >= 0, "cloud sa
 assert(account.indexOf("p.xpBoostArmed = !!raw.xpBoostArmed") >= 0, "cloud sanitize armed");
 assert(account.indexOf("v: 7") >= 0, "cloud profile ver");
 assert(codec.indexOf('"xpboost"') >= 0, "snap codec knows the pickup");
-assert(sw.indexOf("galaga-coop-v53") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v54") >= 0, "PWA cache bump");
 
 var empty = sanitizeProfile({});
 assert(empty.xpCharges === 0 && empty.xpBoostArmed === false, "sanitize defaults");

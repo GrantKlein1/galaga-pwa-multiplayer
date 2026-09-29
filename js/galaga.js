@@ -31,21 +31,29 @@
   var STASIS_SLOW = 0.32;
   var STASIS_DUR = 2.8;
   var STASIS_CD = 16;
-  var PULSE_R = 82;
-  var PULSE_DMG = 2;
-  var PULSE_CD = 10;
-  var AEGIS_DUR = 1.65;
-  var AEGIS_CD = 12;
-  var RIFT_DIST = 54;
-  var RIFT_INV = 0.45;
-  var RIFT_CD = 14;
-  var WELL_DUR = 2.1;
-  var WELL_R = 92;
-  var WELL_PULL = 118;
-  var WELL_CD = 18;
-  var VEIL_DUR = 2.2;
-  var VEIL_CD = 16;
-  var VEIL_R_MUL = 0.42;
+  var HAUNT_DUR = 2.5;
+  var HAUNT_CD = 10;
+  var HAUNT_R = 14;
+  var HAUNT_HITS = 5;
+  var HAUNT_LEAD = 48;
+  var SHACKLE_DUR = 2.2;
+  var SHACKLE_CD = 12;
+  var SHACKLE_N = 3;
+  var RAMPART_DUR = 3.0;
+  var RAMPART_CD = 18;
+  var RAMPART_GAP = 10;
+  var RAMPART_DEPTH = 38;
+  var RAMPART_HALF = 30;
+  var FOLD_DUR = 3.2;
+  var FOLD_CD = 20;
+  var FOLD_HALF = 20;
+  var FOLD_DOT = 0.4;
+  var FOLD_BOSS_DOT = 0.85;
+  var HORIZON_DUR = 3.6;
+  var HORIZON_CD = 22;
+  var HORIZON_Y = 204;
+  var HORIZON_DOT = 0.32;
+  var HORIZON_BOSS_DOT = 0.7;
   var COIN_SPAWN_MUL = 0.75;
   var COOP_SPAWN_RATIO = 20 / 15;
   // Playfield is 240x360 with 16px side margins (208px of travel). Formations
@@ -106,12 +114,12 @@
     { id: "gun-rapid", branch: "gun", name: "Afterglow", short: "ag", desc: "Speed gems also grant +6% fire rate.", cost: 3, req: "gun-luck", x: 68, y: 90 },
     { id: "gun-wide", branch: "gun", name: "Burst Chip", short: "w", desc: "Splash chip radius +8 if you have Pierce Chip.", cost: 5, req: "gun-rapid", x: 76, y: 93 },
     { id: "gun-muzzle", branch: "gun", name: "Muzzle", short: "v", desc: "+8% shot speed.", cost: 2, req: "gun-cool", x: 64, y: 68 },
-    { id: "warp-stasis", branch: "warp", name: "Stasis", short: "S", desc: "Slow all enemies and enemy shots. You and your fire stay full speed.", cost: 5, req: null, special: "stasis", x: 50, y: 46 },
-    { id: "warp-pulse", branch: "warp", name: "Pulse", short: "P", desc: "Pop nearby enemy shots and ding close foes.", cost: 8, req: "warp-stasis", special: "pulse", x: 50, y: 36 },
-    { id: "warp-aegis", branch: "warp", name: "Aegis", short: "A", desc: "Brief i-frames.", cost: 11, req: "warp-pulse", special: "aegis", x: 42, y: 27 },
-    { id: "warp-rift", branch: "warp", name: "Rift", short: "R", desc: "Blink forward. Brief i-frames.", cost: 14, req: "warp-aegis", special: "rift", x: 58, y: 22 },
-    { id: "warp-well", branch: "warp", name: "Well", short: "W", desc: "Gravity well pulls fodder and enemy shots toward a point ahead.", cost: 18, req: "warp-rift", special: "well", x: 42, y: 13 },
-    { id: "warp-veil", branch: "warp", name: "Veil", short: "V", desc: "Shrink your hitbox and gain a short speed lift.", cost: 22, req: "warp-well", special: "veil", x: 50, y: 6 }
+    { id: "warp-haunt", branch: "warp", name: "Haunt", short: "H", desc: "A ghost decoy steals aim and soaks a few shots. Leashes one nearby kamikaze.", cost: 5, req: null, special: "haunt", x: 50, y: 46 },
+    { id: "warp-shackle", branch: "warp", name: "Shackle", short: "K", desc: "Warp cages lock the nearest 3 fodder in place. Live shots still kill.", cost: 8, req: "warp-haunt", special: "shackle", x: 50, y: 36 },
+    { id: "warp-stasis", branch: "warp", name: "Stasis", short: "S", desc: "Slow all enemies and enemy shots. You and your fire stay full speed.", cost: 11, req: "warp-shackle", special: "stasis", x: 50, y: 26 },
+    { id: "warp-rampart", branch: "warp", name: "Rampart", short: "R", desc: "A barrier in front of the ship blocks enemy shots and kamikaze bodies.", cost: 14, req: "warp-stasis", special: "rampart", x: 50, y: 18 },
+    { id: "warp-fold", branch: "warp", name: "Fold", short: "F", desc: "A warp seam reflects enemy fire and splats kamikazes that cross it.", cost: 18, req: "warp-rampart", special: "fold", x: 50, y: 11 },
+    { id: "warp-horizon", branch: "warp", name: "Horizon", short: "Z", desc: "Aurora wall across the far field. Shots die, fodder burn and get shoved aside.", cost: 22, req: "warp-fold", special: "horizon", x: 50, y: 5 }
   ];
 
   // Ships. Stats: speed (px/s), r (hitbox radius), invuln (s after a hit), extraLives,
@@ -422,9 +430,10 @@
   var shake = 0;
   var flash = 0;
   var stasisT = 0;
-  var wellT = 0;
-  var wellX = 0;
-  var wellY = 0;
+  var horizonT = 0;
+  var warpHaunts = [];
+  var warpFolds = [];
+  var warpShackles = [];
   var diveCd = 0;
   var enterT = 0;
   var waveHold = 0;
@@ -1301,19 +1310,43 @@
     if (n > SKILL_BONUS_CAP) return SKILL_BONUS_CAP;
     return n;
   }
-  function cloneSkills(raw) {
-    var owned = [], i, id, seen = {}, eq, def, specialOk, bonus;
-    if (!raw || typeof raw !== "object") return emptySkills();
-    if (raw.owned && raw.owned.length) {
-      for (i = 0; i < raw.owned.length; i++) {
-        id = raw.owned[i];
-        if (typeof id !== "string" || seen[id]) continue;
-        if (!findIn(SKILL_NODES, id)) continue;
-        seen[id] = 1;
-        owned.push(id);
-      }
+  function migrateWarpOwnedList(list) {
+    var out = [], seen = {}, i, id, hadAegis = false;
+    list = list || [];
+    for (i = 0; i < list.length; i++) {
+      id = list[i];
+      if (id === "warp-aegis") { hadAegis = true; continue; }
+      if (id === "warp-pulse") id = "warp-shackle";
+      else if (id === "warp-rift") id = "warp-rampart";
+      else if (id === "warp-well") id = "warp-fold";
+      else if (id === "warp-veil") id = "warp-horizon";
+      if (typeof id !== "string" || seen[id]) continue;
+      seen[id] = 1;
+      out.push(id);
     }
-    eq = typeof raw.equipped === "string" ? raw.equipped : null;
+    if (hadAegis && !seen["warp-haunt"]) out.unshift("warp-haunt");
+    return out;
+  }
+  function migrateWarpEquipped(eq) {
+    if (eq === "pulse") return "shackle";
+    if (eq === "aegis") return "stasis";
+    if (eq === "rift") return "rampart";
+    if (eq === "well") return "fold";
+    if (eq === "veil") return "horizon";
+    return eq;
+  }
+  function cloneSkills(raw) {
+    var owned = [], i, id, seen = {}, eq, def, specialOk, bonus, migrated;
+    if (!raw || typeof raw !== "object") return emptySkills();
+    migrated = migrateWarpOwnedList(raw.owned);
+    for (i = 0; i < migrated.length; i++) {
+      id = migrated[i];
+      if (typeof id !== "string" || seen[id]) continue;
+      if (!findIn(SKILL_NODES, id)) continue;
+      seen[id] = 1;
+      owned.push(id);
+    }
+    eq = migrateWarpEquipped(typeof raw.equipped === "string" ? raw.equipped : null);
     specialOk = false;
     for (i = 0; i < SKILL_NODES.length; i++) {
       def = SKILL_NODES[i];
@@ -2930,6 +2963,12 @@
       d = dist2(ex, ey, dec.x, dec.y);
       if (d < decoyD) { decoyD = d; decoyBest = dec; }
     }
+    for (i = 0; i < warpHaunts.length; i++) {
+      dec = warpHaunts[i];
+      if (!dec) continue;
+      d = dist2(ex, ey, dec.x, dec.y);
+      if (d < decoyD) { decoyD = d; decoyBest = dec; }
+    }
     if (decoyBest && Math.random() < 0.7) return { x: decoyBest.x, y: decoyBest.y, alive: true, decoy: true };
     if (!n) return player || null;
     if (n === 1) return only;
@@ -3494,6 +3533,8 @@
       else bits.push(equippedSpecial(player).toUpperCase() + " READY");
     }
     if (stasisT > 0) bits.push("TIME " + pvpAbilityCdText(stasisT));
+    if ((player.rampartT || 0) > 0) bits.push("RAMPART " + pvpAbilityCdText(player.rampartT));
+    if (horizonT > 0) bits.push("HORIZON " + pvpAbilityCdText(horizonT));
     return bits.length ? bits.join("  ·  ") : "None";
   }
   function playerTag(slot) {
@@ -4472,7 +4513,7 @@
       lives: loadoutLives(s, who),
       hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, abilityCds: [0, 0, 0, 0, 0, 0], abilityGcd: 0, dash: null, rewind: null, pvpFollow: null,
       leech: 0,
-      skillCd: 0, lastStandUsed: false, skillHeld: false, skillHasteT: 0, veilT: 0, bulkUsed: false,
+      skillCd: 0, lastStandUsed: false, skillHeld: false, skillHasteT: 0, rampartT: 0, bulkUsed: false,
       skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
       skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
       skinSentinelCd: 0, skinUmbraT: 0, skinCarrion: 0, skinCoronaAcc: 0, skinKeepX: false,
@@ -5036,36 +5077,121 @@
   }
 
   function skillCdFor(id) {
+    if (id === "haunt") return HAUNT_CD;
+    if (id === "shackle") return SHACKLE_CD;
     if (id === "stasis") return STASIS_CD;
-    if (id === "pulse") return PULSE_CD;
-    if (id === "aegis") return AEGIS_CD;
-    if (id === "rift") return RIFT_CD;
-    if (id === "well") return WELL_CD;
-    if (id === "veil") return VEIL_CD;
+    if (id === "rampart") return RAMPART_CD;
+    if (id === "fold") return FOLD_CD;
+    if (id === "horizon") return HORIZON_CD;
     return 0;
   }
+  function warpSplat(x, y, color) {
+    var i, a, sp;
+    for (i = 0; i < 5; i++) {
+      a = Math.random() * Math.PI * 2;
+      sp = rand(30, 90);
+      particles.push({
+        x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+        life: rand(0.12, 0.28), color: color || "#e8d0ff", size: rand(1.2, 2.4)
+      });
+    }
+  }
+  function warpEnemyById(id) {
+    var i, e;
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (e && e.alive && e.id === id) return e;
+    }
+    return null;
+  }
+  function warpRamBody(e) {
+    if (!e || e.isBoss) return false;
+    return e.type === "kami" || e.state === "kami" || e.state === "dive" || e.state === "charge" || e.state === "lunge";
+  }
+  function warpAlong(who, x, y) {
+    return (y - who.y) * pvpFacing(who);
+  }
+  function warpInRampart(who, x, y, r) {
+    var along, pad;
+    if (!who || !who.alive || (who.rampartT || 0) <= 0) return false;
+    pad = r || 0;
+    along = warpAlong(who, x, y);
+    if (along < RAMPART_GAP - pad || along > RAMPART_GAP + RAMPART_DEPTH + pad) return false;
+    if (Math.abs(x - who.x) > RAMPART_HALF + pad) return false;
+    return true;
+  }
+  function warpInFold(x, r) {
+    var i, f, pad = r || 0;
+    for (i = 0; i < warpFolds.length; i++) {
+      f = warpFolds[i];
+      if (Math.abs(x - f.x) <= FOLD_HALF + pad) return f;
+    }
+    return null;
+  }
+  function spawnWarpHaunt(who) {
+    var face = pvpFacing(who);
+    var y = clamp(who.y + face * HAUNT_LEAD, 28, H - 28);
+    warpHaunts.push({
+      x: who.x, y: y, ox: who.x, oy: y, t: HAUNT_DUR, max: HAUNT_DUR,
+      owner: who.slot, hits: HAUNT_HITS, ph: Math.random() * 6.2, leashId: 0
+    });
+  }
+  function spawnWarpFold(who) {
+    warpFolds.push({
+      x: who.x, t: FOLD_DUR, max: FOLD_DUR, owner: who.slot, acc: 0, bossAcc: 0
+    });
+  }
+  function castWarpShackle(who) {
+    var pool = [], i, e, n, pick, d, j, best, bestD, ox, oy;
+    ox = who ? who.x : (player ? player.x : W / 2);
+    oy = who ? who.y : (player ? player.y : H - 34);
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive || e.isBoss || e.state === "enter") continue;
+      pool.push(e);
+    }
+    n = 0;
+    while (n < SHACKLE_N && pool.length) {
+      best = null;
+      bestD = 1e12;
+      pick = 0;
+      for (j = 0; j < pool.length; j++) {
+        e = pool[j];
+        d = dist2(e.x, e.y, ox, oy);
+        if (d < bestD) { bestD = d; best = e; pick = j; }
+      }
+      if (!best) break;
+      pool.splice(pick, 1);
+      best.freezeT = Math.max(best.freezeT || 0, SHACKLE_DUR);
+      warpShackles.push({ id: best.id, t: SHACKLE_DUR, max: SHACKLE_DUR });
+      n += 1;
+    }
+  }
   function skillFx(who, id) {
-    var col = "#c8a0ff";
-    if (id === "pulse") col = "#ffe08a";
-    else if (id === "aegis") col = "#7ef9ff";
-    else if (id === "rift") col = "#ff9ad6";
-    else if (id === "well") col = "#b07cff";
-    else if (id === "veil") col = "#e8ffff";
-    rings.push({ x: who.x, y: who.y, r: 6, vr: id === "pulse" || id === "well" ? 320 : 220, life: 0.42, color: col });
-    if (id === "pulse") {
-      rings.push({ x: who.x, y: who.y, r: 2, vr: 420, life: 0.32, color: "#ffffff" });
-      sfxArmor();
-    } else if (id === "stasis" || id === "well") {
-      flash = Math.max(flash, 0.28);
+    if (id === "haunt") {
+      spawnWarpHaunt(who);
       sfxPickup();
-    } else if (id === "aegis" || id === "veil") {
+    } else if (id === "shackle") {
+      castWarpShackle(who);
+      sfxArmor();
+    } else if (id === "stasis") {
+      stasisT = Math.max(stasisT, STASIS_DUR);
+      flash = Math.max(flash, 0.18);
+      sfxPickup();
+    } else if (id === "rampart") {
+      who.rampartT = RAMPART_DUR;
       sfxLife();
-    } else if (id === "rift") {
-      sfxShoot(who);
+    } else if (id === "fold") {
+      spawnWarpFold(who);
+      sfxArmor();
+    } else if (id === "horizon") {
+      horizonT = Math.max(horizonT, HORIZON_DUR);
+      flash = Math.max(flash, 0.22);
+      sfxPickup();
     }
   }
   function tryCastSkill(who) {
-    var id, i, e, b, predict, cd, face, ny, band;
+    var id, predict, cd;
     who = who || player;
     if (!who || !who.alive || who.boss) return false;
     if (pvpS() && pvpS().roundLock) return false;
@@ -5078,64 +5204,152 @@
     skillFx(who, id);
     banner = { text: id.toUpperCase(), life: 0.7 };
     if (predict) return true;
-    if (id === "stasis") {
-      stasisT = Math.max(stasisT, STASIS_DUR);
-    } else if (id === "pulse") {
-      for (i = ebul.length - 1; i >= 0; i--) {
-        b = ebul[i];
-        if (dist2(b.x, b.y, who.x, who.y) < PULSE_R * PULSE_R) ebul.splice(i, 1);
-      }
-      for (i = 0; i < enemies.length; i++) {
-        e = enemies[i];
-        if (!e.alive) continue;
-        if (dist2(e.x, e.y, who.x, who.y) < (PULSE_R + e.r) * (PULSE_R + e.r)) {
-          killEnemy(e, false, PULSE_DMG, who.slot);
-        }
-      }
-    } else if (id === "aegis") {
-      who.invuln = Math.max(who.invuln || 0, AEGIS_DUR);
-    } else if (id === "rift") {
-      face = pvpFacing(who);
-      ny = who.y + face * RIFT_DIST;
-      band = shipYBand(who, Math.max(10, (who.r || PLAYER_R) + 4));
-      who.y = clamp(ny, band.lo, band.hi);
-      who.targetY = who.y;
-      who.hostY = who.y;
-      who.invuln = Math.max(who.invuln || 0, RIFT_INV);
-    } else if (id === "well") {
-      wellT = Math.max(wellT, WELL_DUR);
-      wellX = who.x;
-      wellY = clamp(who.y + pvpFacing(who) * 70, 36, H - 36);
-    } else if (id === "veil") {
-      who.veilT = VEIL_DUR;
-      who.r = Math.max(3.5, (who.baseR || who.r) * VEIL_R_MUL);
-    }
     updateHud();
     return true;
   }
-
-  function applyWarpWell(dt) {
-    var i, e, b, dx, dy, len, pull;
-    if (wellT <= 0) return;
-    for (i = 0; i < enemies.length; i++) {
-      e = enemies[i];
-      if (!e.alive || e.isBoss) continue;
-      dx = wellX - e.x; dy = wellY - e.y;
-      len = Math.sqrt(dx * dx + dy * dy) || 1;
-      if (len > WELL_R) continue;
-      pull = (1 - len / WELL_R) * WELL_PULL * dt;
-      e.x += dx / len * pull;
-      e.y += dy / len * pull;
+  function tickWarpVisuals(dt) {
+    var i, h, f, p, owner;
+    if (stasisT > 0) stasisT = Math.max(0, stasisT - dt);
+    if (horizonT > 0) horizonT = Math.max(0, horizonT - dt);
+    for (i = 0; i < players.length; i++) {
+      p = players[i];
+      if (p && (p.rampartT || 0) > 0) p.rampartT = Math.max(0, p.rampartT - dt);
     }
-    for (i = 0; i < ebul.length; i++) {
-      b = ebul[i];
-      dx = wellX - b.x; dy = wellY - b.y;
-      len = Math.sqrt(dx * dx + dy * dy) || 1;
-      if (len > WELL_R) continue;
-      pull = (1 - len / WELL_R) * WELL_PULL * 1.35 * dt;
-      b.vx += dx / len * pull;
-      b.vy += dy / len * pull;
+    for (i = warpHaunts.length - 1; i >= 0; i--) {
+      h = warpHaunts[i];
+      h.t -= dt;
+      h.x = h.ox + Math.sin(time * 4.6 + h.ph) * 11;
+      h.y = h.oy + Math.cos(time * 3.1 + h.ph) * 7;
+      if (h.t <= 0 || h.hits <= 0) warpHaunts.splice(i, 1);
     }
+    for (i = warpFolds.length - 1; i >= 0; i--) {
+      f = warpFolds[i];
+      f.t -= dt;
+      owner = players[f.owner];
+      if (owner && owner.alive) f.x += (owner.x - f.x) * (1 - Math.exp(-dt * 7));
+      if (f.t <= 0) warpFolds.splice(i, 1);
+    }
+    for (i = warpShackles.length - 1; i >= 0; i--) {
+      warpShackles[i].t -= dt;
+      if (warpShackles[i].t <= 0 || !warpEnemyById(warpShackles[i].id)) warpShackles.splice(i, 1);
+    }
+  }
+  function applyWarpGameplay(dt) {
+    var i, h, e, f, dx, dy, len, best, bestD, owner;
+    for (i = 0; i < warpHaunts.length; i++) {
+      h = warpHaunts[i];
+      best = null;
+      bestD = 120 * 120;
+      if (h.leashId) {
+        e = warpEnemyById(h.leashId);
+        if (e && warpRamBody(e)) best = e;
+        else h.leashId = 0;
+      }
+      if (!best) {
+        for (len = 0; len < enemies.length; len++) {
+          e = enemies[len];
+          if (!e.alive || !warpRamBody(e)) continue;
+          dx = dist2(e.x, e.y, h.x, h.y);
+          if (dx < bestD) { bestD = dx; best = e; }
+        }
+        if (best) h.leashId = best.id;
+      }
+      if (best) {
+        dx = h.x - best.x;
+        dy = h.y - best.y;
+        len = Math.sqrt(dx * dx + dy * dy) || 1;
+        best.x += dx / len * Math.min(len, 130 * dt);
+        best.y += dy / len * Math.min(len, 130 * dt);
+        if (dist2(best.x, best.y, h.x, h.y) < (HAUNT_R + best.r) * (HAUNT_R + best.r)) {
+          owner = players[h.owner];
+          killEnemy(best, true, 99, owner ? owner.slot : 0);
+          warpSplat(h.x, h.y, "#d8c4ff");
+          h.leashId = 0;
+        }
+      }
+    }
+    for (i = 0; i < warpFolds.length; i++) {
+      f = warpFolds[i];
+      f.acc += dt;
+      f.bossAcc += dt;
+      owner = players[f.owner];
+      for (len = 0; len < enemies.length; len++) {
+        e = enemies[len];
+        if (!e.alive || Math.abs(e.x - f.x) > FOLD_HALF + e.r) continue;
+        if (warpRamBody(e)) {
+          killEnemy(e, true, 99, owner ? owner.slot : 0);
+          warpSplat(e.x, e.y, "#b8f0ff");
+          continue;
+        }
+        if (e.isBoss) {
+          if (f.bossAcc >= FOLD_BOSS_DOT) killEnemy(e, false, 1, owner ? owner.slot : 0);
+        } else if (f.acc >= FOLD_DOT) {
+          killEnemy(e, false, 1, owner ? owner.slot : 0);
+        }
+      }
+      if (f.acc >= FOLD_DOT) f.acc = 0;
+      if (f.bossAcc >= FOLD_BOSS_DOT) f.bossAcc = 0;
+    }
+    if (horizonT > 0) {
+      for (i = 0; i < enemies.length; i++) {
+        e = enemies[i];
+        if (!e.alive || e.y > HORIZON_Y) continue;
+        if (warpRamBody(e)) {
+          killEnemy(e, true, 99, player ? player.slot : 0);
+          warpSplat(e.x, e.y, "#9ad8ff");
+          continue;
+        }
+        if (e.isBoss) {
+          e.horizonBossAcc = (e.horizonBossAcc || 0) + dt;
+          if (e.horizonBossAcc >= HORIZON_BOSS_DOT) {
+            e.horizonBossAcc = 0;
+            killEnemy(e, false, 1, player ? player.slot : 0);
+          }
+        } else {
+          e.horizonAcc = (e.horizonAcc || 0) + dt;
+          e.y -= 36 * dt;
+          e.x += (e.x < W / 2 ? -1 : 1) * 28 * dt;
+          e.x = clamp(e.x, 18, W - 18);
+          if (e.horizonAcc >= HORIZON_DOT) {
+            e.horizonAcc = 0;
+            killEnemy(e, false, 1, player ? player.slot : 0);
+          }
+        }
+      }
+    }
+  }
+  function warpTouchShot(b) {
+    var i, h, f, pi, pl;
+    if (!b) return null;
+    if (horizonT > 0 && b.y < HORIZON_Y) return { kind: "eat", col: "#9ad8ff" };
+    f = warpInFold(b.x, b.r || 2);
+    if (f) return { kind: "reflect", who: players[f.owner] || player, col: "#c8f8ff" };
+    for (i = 0; i < warpHaunts.length; i++) {
+      h = warpHaunts[i];
+      if (dist2(b.x, b.y, h.x, h.y) < (HAUNT_R + (b.r || 2)) * (HAUNT_R + (b.r || 2))) {
+        return { kind: "haunt", haunt: h, col: "#e8d0ff" };
+      }
+    }
+    for (pi = 0; pi < players.length; pi++) {
+      pl = players[pi];
+      if (warpInRampart(pl, b.x, b.y, b.r || 2)) return { kind: "eat", col: "#7ef9ff", who: pl };
+    }
+    return null;
+  }
+  function warpConsumeShot(b) {
+    var hit = warpTouchShot(b);
+    if (!hit) return false;
+    warpSplat(b.x, b.y, hit.col);
+    if (hit.kind === "haunt" && hit.haunt) hit.haunt.hits -= 1;
+    if (hit.kind === "reflect" && hit.who) reflectAsPlayerShot(b, hit.who);
+    return true;
+  }
+  function resetWarpFx() {
+    stasisT = 0;
+    horizonT = 0;
+    warpHaunts = [];
+    warpFolds = [];
+    warpShackles = [];
   }
 
   function pvpEbul(x, y, vx, vy, who, opt) {
@@ -7567,6 +7781,7 @@
     for (i = 0; i < enemies.length; i++) {
       e = enemies[i];
       if (!e.alive || e.state !== "form" || e.isBoss) continue;
+      if ((e.freezeT || 0) > 0) continue;
       if (staysInForm(e.type)) continue;
       w = e.type === "kami" ? 5 : e.type === "lancer" ? 4 : e.type === "grunt" ? 3 : weaves(e.type) ? 3 : 1;
       while (w--) pool.push(e);
@@ -9307,7 +9522,7 @@
     skinDecoys = [];
     shake = 0; flash = 0; time = 0;
     stasisT = 0;
-    wellT = 0;
+    resetWarpFx();
     waveHold = 0;
     run = emptyRun();
     runQuestClaims = [];
@@ -10074,6 +10289,7 @@
   }
   function updateClientFx(dt) {
     var i, p, b, e, j, consumed, br, hid, dx, dy;
+    tickWarpVisuals(dt);
     shake *= Math.exp(-dt * 7);
     if (shake < 0.05) shake = 0;
     flash *= Math.exp(-dt * 8);
@@ -10496,7 +10712,7 @@
     if (p.slowT > 0) p.slowT = Math.max(0, p.slowT - dt);
     if (p.jamT > 0) p.jamT = Math.max(0, p.jamT - dt);
     if ((p.freezeT || 0) > 0) p.freezeT = Math.max(0, p.freezeT - dt);
-    spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1) * (p.skinSpdMul || 1) * ((p.veilT || 0) > 0 ? 1.18 : 1);
+    spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1) * (p.skinSpdMul || 1);
     if ((p.freezeT || 0) > 0) {
       spd = 0;
       p.targetX = p.x;
@@ -10545,10 +10761,6 @@
     if (p.speedT > 0) p.speedT = Math.max(0, p.speedT - dt);
     if ((p.skillCd || 0) > 0) p.skillCd = Math.max(0, p.skillCd - dt);
     if ((p.skillHasteT || 0) > 0) p.skillHasteT = Math.max(0, p.skillHasteT - dt);
-    if ((p.veilT || 0) > 0) {
-      p.veilT = Math.max(0, p.veilT - dt);
-      if (p.veilT <= 0) p.r = p.baseR || p.r;
-    }
     if ((p.skinBoostT || 0) > 0) {
       p.skinBoostT = Math.max(0, p.skinBoostT - dt);
       if (p.skinBoostT <= 0) refreshSkinMuls(p);
@@ -10696,11 +10908,8 @@
 
     var wallDt = dt;
     var foeDt = stasisT > 0 ? dt * STASIS_SLOW : dt;
-    if (stasisT > 0) stasisT = Math.max(0, stasisT - wallDt);
-    if (wellT > 0) {
-      applyWarpWell(wallDt);
-      wellT = Math.max(0, wellT - wallDt);
-    }
+    tickWarpVisuals(wallDt);
+    applyWarpGameplay(wallDt);
     dt = foeDt;
 
     if (enterT > 0 && !isPvpRun()) enterT -= dt;
@@ -10810,6 +11019,15 @@
         pl = players[pi];
         if (!pl || !pl.alive || pl.invuln > 0) continue;
         if (e.state === "form" || e.state === "enter") continue;
+        if (warpInRampart(pl, e.x, e.y, e.r)) {
+          if (e.isBoss) {
+            e.y -= pvpFacing(pl) * 40 * dt;
+            continue;
+          }
+          killEnemy(e, true, 99, pl.slot);
+          warpSplat(e.x, e.y, "#7ef9ff");
+          break;
+        }
         pr = pl.r || PLAYER_R;
         if (dist2(pl.x, pl.y, e.x, e.y) < (pr + e.r * 0.65) * (pr + e.r * 0.65)) {
           if (skinIdOf(pl) === "phantom-spectral" && Math.random() < 0.2) {
@@ -10932,6 +11150,12 @@
         for (pi = 0; pi < players.length; pi++) {
           pl = players[pi];
           if (!pl || !pl.alive || pl.slot === b.owner) continue;
+          if (warpInRampart(pl, b.x, b.y, br)) {
+            warpSplat(b.x, b.y, "#7ef9ff");
+            pbul.splice(i, 1);
+            consumed = true;
+            break;
+          }
           var def = skinDefendShot(pl, b);
           if (def === "eat") {
             pbul.splice(i, 1);
@@ -11048,6 +11272,7 @@
         }
       }
       if (b.y > H + 14 || b.x < -16 || b.x > W + 16 || b.y < -20) { ebul.splice(i, 1); continue; }
+      if (warpConsumeShot(b)) { ebul.splice(i, 1); continue; }
       var hit = false, gone = false;
       for (pi = 0; pi < players.length; pi++) {
         pl = players[pi];
@@ -12648,6 +12873,155 @@
     }
   }
 
+  function drawWarpFx(context) {
+    var i, h, f, p, e, along, face, x0, y0, x1, y1, a, k, sh, pulse;
+    if (stasisT > 0) {
+      a = 0.08 + 0.05 * Math.sin(time * 4.5);
+      context.save();
+      context.globalAlpha = a * Math.min(1, stasisT / 0.35);
+      context.fillStyle = "#6a48c8";
+      context.fillRect(0, 0, W, H);
+      context.globalAlpha = 0.16 + 0.1 * (stasisT / STASIS_DUR);
+      context.strokeStyle = "#d8c4ff";
+      context.lineWidth = 1.4;
+      for (k = 0; k < 6; k++) {
+        y0 = ((time * 22 + k * 62) % (H + 50)) - 24;
+        context.beginPath();
+        context.moveTo(6, y0);
+        context.lineTo(W - 6, y0 + 10);
+        context.stroke();
+      }
+      context.restore();
+    }
+    if (horizonT > 0) {
+      a = 0.16 + 0.08 * Math.sin(time * 3.4);
+      context.save();
+      context.globalAlpha = a * Math.min(1, horizonT / 0.4);
+      context.fillStyle = "#3d88c8";
+      context.fillRect(0, 0, W, HORIZON_Y);
+      context.globalAlpha = 0.45 + 0.2 * Math.sin(time * 6);
+      context.strokeStyle = "#9ad8ff";
+      context.lineWidth = 2.4;
+      context.beginPath();
+      context.moveTo(4, HORIZON_Y + Math.sin(time * 5) * 3);
+      context.lineTo(W - 4, HORIZON_Y + Math.cos(time * 4.2) * 3);
+      context.stroke();
+      context.globalAlpha = 0.22 + 0.12 * Math.sin(time * 7);
+      context.strokeStyle = "#e8ffff";
+      context.lineWidth = 1.2;
+      for (k = 0; k < 4; k++) {
+        y0 = 16 + k * (HORIZON_Y / 4) + Math.sin(time * 2.2 + k) * 6;
+        context.beginPath();
+        context.moveTo(8, y0);
+        context.bezierCurveTo(W * 0.3, y0 + 10, W * 0.7, y0 - 10, W - 8, y0);
+        context.stroke();
+      }
+      context.restore();
+    }
+    for (i = 0; i < warpFolds.length; i++) {
+      f = warpFolds[i];
+      pulse = 0.35 + 0.2 * Math.sin(time * 8);
+      context.save();
+      context.globalAlpha = pulse * Math.min(1, f.t / 0.3);
+      context.fillStyle = "rgba(120, 220, 255, 0.18)";
+      context.fillRect(f.x - FOLD_HALF, 8, FOLD_HALF * 2, H - 16);
+      context.strokeStyle = "#c8f8ff";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(f.x, 10);
+      for (k = 0; k <= 12; k++) {
+        context.lineTo(f.x + Math.sin(time * 9 + k * 0.7) * 5, 10 + k * ((H - 20) / 12));
+      }
+      context.stroke();
+      context.strokeStyle = "#7ef9ff";
+      context.lineWidth = 1.2;
+      context.strokeRect(f.x - FOLD_HALF, 8, FOLD_HALF * 2, H - 16);
+      context.restore();
+    }
+    for (i = 0; i < warpShackles.length; i++) {
+      sh = warpShackles[i];
+      e = warpEnemyById(sh.id);
+      if (!e) continue;
+      context.save();
+      context.globalAlpha = 0.55 + 0.25 * Math.sin(time * 10);
+      context.strokeStyle = "#e0b0ff";
+      context.lineWidth = 1.8;
+      context.beginPath();
+      context.arc(e.x, e.y, e.r + 7, 0, Math.PI * 2);
+      context.stroke();
+      context.lineWidth = 1.1;
+      context.beginPath();
+      context.moveTo(e.x - e.r - 6, e.y);
+      context.lineTo(e.x + e.r + 6, e.y);
+      context.moveTo(e.x, e.y - e.r - 6);
+      context.lineTo(e.x, e.y + e.r + 6);
+      context.stroke();
+      context.restore();
+    }
+    for (i = 0; i < warpHaunts.length; i++) {
+      h = warpHaunts[i];
+      context.save();
+      context.globalAlpha = 0.4 + 0.18 * Math.sin(time * 7 + h.ph);
+      glow(context, "#d8c4ff", 16);
+      context.strokeStyle = "#f0e8ff";
+      context.fillStyle = "rgba(200, 170, 255, 0.28)";
+      context.lineWidth = 1.6;
+      context.beginPath();
+      context.moveTo(h.x, h.y - 10);
+      context.lineTo(h.x + 8, h.y + 8);
+      context.lineTo(h.x - 8, h.y + 8);
+      context.closePath();
+      context.fill();
+      context.stroke();
+      noGlow(context);
+      e = h.leashId ? warpEnemyById(h.leashId) : null;
+      if (e) {
+        context.globalAlpha = 0.5 + 0.2 * Math.sin(time * 11);
+        context.strokeStyle = "#c8a0ff";
+        context.lineWidth = 1.4;
+        context.beginPath();
+        context.moveTo(h.x, h.y);
+        context.lineTo(e.x, e.y);
+        context.stroke();
+      }
+      context.restore();
+    }
+    for (i = 0; i < players.length; i++) {
+      p = players[i];
+      if (!p || !p.alive || (p.rampartT || 0) <= 0) continue;
+      face = pvpFacing(p);
+      along = RAMPART_GAP;
+      x0 = p.x - RAMPART_HALF;
+      x1 = p.x + RAMPART_HALF;
+      y0 = p.y + face * along;
+      y1 = p.y + face * (along + RAMPART_DEPTH);
+      context.save();
+      context.globalAlpha = 0.4 + 0.2 * Math.sin(time * 9);
+      context.fillStyle = "rgba(126, 249, 255, 0.22)";
+      context.beginPath();
+      context.moveTo(x0, y0);
+      context.lineTo(x1, y0);
+      context.lineTo(x1 + 4, y1);
+      context.lineTo(x0 - 4, y1);
+      context.closePath();
+      context.fill();
+      context.strokeStyle = "#e8ffff";
+      context.lineWidth = 2.4;
+      context.beginPath();
+      context.moveTo(x0 - 2, y1);
+      context.lineTo(p.x, y1 + face * 3);
+      context.lineTo(x1 + 2, y1);
+      context.stroke();
+      context.strokeStyle = "#7ef9ff";
+      context.lineWidth = 1.6;
+      context.beginPath();
+      context.moveTo(x0, y0);
+      context.lineTo(x1, y0);
+      context.stroke();
+      context.restore();
+    }
+  }
+
   function draw() {
     if (!ctx) return;
     var i, p, b, sx = 0, sy = 0, alpha, boss, pct;
@@ -12814,6 +13188,8 @@
       ctx.fill();
       noGlow(ctx);
     }
+
+    drawWarpFx(ctx);
 
     for (i = 0; i < rings.length; i++) {
       p = rings[i];
@@ -13951,6 +14327,8 @@
       equippedSpecial: equippedSpecial,
       tryCastSkill: tryCastSkill,
       cloneSkills: cloneSkills,
+      migrateWarpOwnedList: migrateWarpOwnedList,
+      migrateWarpEquipped: migrateWarpEquipped,
       migrateProfile: migrateProfile,
       profileLoadoutSpec: profileLoadoutSpec,
       loadoutLives: loadoutLives,
