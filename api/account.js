@@ -146,32 +146,60 @@ var SKILL_NODE_IDS = [
   "hull-plate", "hull-shield", "hull-magnet", "hull-scoop", "hull-regen", "hull-coin", "hull-ward2", "hull-laststand", "hull-speed",
   "gun-dmg1", "gun-rof1", "gun-dmg2", "gun-rof2", "gun-chip", "gun-focus", "gun-dmg3", "gun-pierce",
   "gun-cool", "gun-gems", "gun-haste", "gun-luck", "gun-caliber", "gun-rof3", "gun-rapid", "gun-wide", "gun-muzzle",
-  "warp-stasis", "warp-pulse", "warp-aegis", "warp-rift", "warp-well", "warp-veil"
+  "warp-haunt", "warp-shackle", "warp-stasis", "warp-rampart", "warp-fold", "warp-horizon"
 ];
 var SKILL_SPECIALS = {
+  haunt: "warp-haunt",
+  shackle: "warp-shackle",
   stasis: "warp-stasis",
-  pulse: "warp-pulse",
-  aegis: "warp-aegis",
-  rift: "warp-rift",
-  well: "warp-well",
-  veil: "warp-veil"
+  rampart: "warp-rampart",
+  fold: "warp-fold",
+  horizon: "warp-horizon"
+};
+var WARP_OWNED_MIGRATE = {
+  "warp-pulse": "warp-shackle",
+  "warp-rift": "warp-rampart",
+  "warp-well": "warp-fold",
+  "warp-veil": "warp-horizon"
+};
+var WARP_EQUIP_MIGRATE = {
+  pulse: "shackle",
+  aegis: "stasis",
+  rift: "rampart",
+  well: "fold",
+  veil: "horizon"
 };
 
+function migrateWarpOwnedList(list) {
+  var out = [], seen = {}, i, id, hadAegis = false;
+  list = list || [];
+  for (i = 0; i < list.length; i++) {
+    id = list[i];
+    if (id === "warp-aegis") { hadAegis = true; continue; }
+    if (WARP_OWNED_MIGRATE[id]) id = WARP_OWNED_MIGRATE[id];
+    if (typeof id !== "string" || seen[id]) continue;
+    seen[id] = 1;
+    out.push(id);
+  }
+  if (hadAegis && !seen["warp-haunt"]) out.unshift("warp-haunt");
+  return out;
+}
+
 function sanitizeSkills(raw) {
-  var owned = [], i, id, seen = {}, eq, bonus, need;
+  var owned = [], i, id, seen = {}, eq, bonus, need, migrated;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     return { owned: [], equipped: null, bonus: 0 };
   }
-  if (Array.isArray(raw.owned)) {
-    for (i = 0; i < raw.owned.length && owned.length < SKILL_NODE_IDS.length; i++) {
-      id = raw.owned[i];
-      if (typeof id !== "string" || seen[id]) continue;
-      if (SKILL_NODE_IDS.indexOf(id) < 0) continue;
-      seen[id] = 1;
-      owned.push(id);
-    }
+  migrated = migrateWarpOwnedList(Array.isArray(raw.owned) ? raw.owned : []);
+  for (i = 0; i < migrated.length && owned.length < SKILL_NODE_IDS.length; i++) {
+    id = migrated[i];
+    if (typeof id !== "string" || seen[id]) continue;
+    if (SKILL_NODE_IDS.indexOf(id) < 0) continue;
+    seen[id] = 1;
+    owned.push(id);
   }
   eq = typeof raw.equipped === "string" ? raw.equipped.slice(0, 16) : null;
+  if (eq && WARP_EQUIP_MIGRATE[eq]) eq = WARP_EQUIP_MIGRATE[eq];
   need = eq ? SKILL_SPECIALS[eq] : null;
   if (!need) eq = null;
   if (eq && owned.indexOf(need) < 0) eq = null;
