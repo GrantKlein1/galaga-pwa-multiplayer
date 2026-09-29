@@ -49,19 +49,22 @@ assert(galaga.indexOf("grantXpChargeTo(who, 1)") >= 0, "picker's profile only");
 assert(galaga.indexOf('netSend({ t: "xpboost"') >= 0, "host tells partner they picked it");
 assert(galaga.indexOf('n.on("xpboost"') >= 0, "client receives own grant");
 
-assert(galaga.indexOf("function armXpBoost") >= 0, "arm control");
-assert(galaga.indexOf("function consumeArmedXpBoost") >= 0, "start consumes armed charge");
+assert(galaga.indexOf("function startFromHub") >= 0, "play menu starts the run");
+assert(galaga.indexOf("function confirmCoopStart") >= 0, "co-op local boost choice");
+assert(galaga.indexOf("function consumeArmedXpBoost") >= 0, "start consumes a charge");
 assert(galaga.indexOf("run.xpMul = XP_BOOST_MUL") >= 0, "one run gets 2x");
 assert(galaga.indexOf("consumeArmedXpBoost(!!(opts.pvp") >= 0, "PvP does not spend the charge");
 assert(galaga.indexOf("* xpMul") >= 0, "finishRun applies mul to XP only");
 assert(galaga.indexOf("score += pts;") >= 0, "displayed score unchanged");
 assert(html.indexOf('id="hub-boosts"') >= 0, "hub banked count");
-assert(html.indexOf('id="btn-xp-boost"') >= 0, "hub arm near Play");
-assert(html.indexOf('id="btn-lobby-xp-boost"') >= 0, "lobby arm for co-op");
+assert(html.indexOf('id="btn-play"') >= 0, "play opens the start menu");
+assert(html.indexOf('id="hub-start-menu"') >= 0, "hub start menu near Play");
+assert(html.indexOf('id="lobby-start-menu"') >= 0, "lobby start menu for co-op");
+assert(html.indexOf("Arm XP boost") < 0, "arm control removed");
 assert(css.indexOf(".xp-boost-lab") >= 0, "hub boost style");
 assert(galaga.indexOf("XP boosts:") >= 0, "banked copy");
-assert(galaga.indexOf("Armed · 2× XP next run") >= 0, "armed copy");
-assert(galaga.indexOf("btn.disabled = armed || n < 1") >= 0, "disabled with none or already armed");
+assert(html.indexOf("Start with XP boost") >= 0, "boost start copy");
+assert(galaga.indexOf("btn.disabled = n < 1") >= 0, "boost option disabled with none");
 
 assert(galaga.indexOf("xpBonus: run.xpBonus || 0") >= 0, "co-op over carries harder-kill bonus");
 assert(galaga.indexOf("if (msg.xpBonus != null) run.xpBonus = msg.xpBonus || 0") >= 0, "client banks host xpBonus");
@@ -72,7 +75,7 @@ assert(account.indexOf("p.xpCharges = asInt(raw.xpCharges, 99)") >= 0, "cloud sa
 assert(account.indexOf("p.xpBoostArmed = !!raw.xpBoostArmed") >= 0, "cloud sanitize armed");
 assert(account.indexOf("v: 7") >= 0, "cloud profile ver");
 assert(codec.indexOf('"xpboost"') >= 0, "snap codec knows the pickup");
-assert(sw.indexOf("galaga-coop-v52") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v53") >= 0, "PWA cache bump");
 
 var empty = sanitizeProfile({});
 assert(empty.xpCharges === 0 && empty.xpBoostArmed === false, "sanitize defaults");

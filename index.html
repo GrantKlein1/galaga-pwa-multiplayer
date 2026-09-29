@@ -68,8 +68,11 @@
       <div id="start-wave-opts" class="start-wave-opts"></div>
       <div id="start-wave-hint" class="start-wave-hint">Reach level 5 to skip early waves</div>
     </div>
-    <button type="button" class="btn btn-ghost" id="btn-xp-boost" disabled>Arm XP boost</button>
     <button type="button" class="btn" id="btn-play">Play</button>
+    <div id="hub-start-menu" class="start-run-menu hidden">
+      <button type="button" class="btn" id="btn-hub-start">Start</button>
+      <button type="button" class="btn btn-ghost" id="btn-hub-start-boost" disabled>Start with XP boost (2× this run)</button>
+    </div>
     <div class="btn-row-2">
       <button type="button" class="btn btn-ghost" id="btn-coop">Co-op</button>
       <button type="button" class="btn btn-ghost" id="btn-pvp">PvP</button>
@@ -207,7 +210,11 @@
         <div id="lobby-start-wave-hint" class="start-wave-hint"></div>
       </div>
       <div id="lobby-xp-boost-box" class="start-wave-box">
-        <button type="button" class="btn btn-ghost" id="btn-lobby-xp-boost" disabled>Arm XP boost</button>
+        <div id="lobby-start-menu-hint" class="start-wave-hint hidden">Host starts the run. Pick whether you spend a boost.</div>
+        <div id="lobby-start-menu" class="start-run-menu hidden">
+          <button type="button" class="btn" id="btn-lobby-start-plain">Start</button>
+          <button type="button" class="btn btn-ghost" id="btn-lobby-start-boost" disabled>Start with XP boost (2× this run)</button>
+        </div>
       </div>
       <div id="lobby-pvp-box" class="start-wave-box hidden">
         <div class="start-wave-lab">Duel mode</div>
