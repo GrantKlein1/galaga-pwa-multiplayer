@@ -36,7 +36,7 @@ assert(galaga.indexOf('text: "YOUR BULLETS BOUNCE"') >= 0, "rule card stays");
 assert(galaga.indexOf("a = AXIOM_RULES[1]") >= 0 && galaga.indexOf("b = AXIOM_RULES[4]") >= 0, "mix still includes bounce");
 
 assert(/var VER = 11;/.test(codec), "codec payload unchanged");
-assert(sw.indexOf("galaga-coop-v68") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v69") >= 0, "PWA cache bump");
 assert(post.indexOf("sliding-puzzle of map panes") >= 0, "docs describe the puzzle");
 assert(post.indexOf("After a bounce they are red and damage the player") >= 0, "docs say bounced shots hurt");
 assert(roster.indexOf("colored wrap edges") >= 0, "roster notes wrap edges");
