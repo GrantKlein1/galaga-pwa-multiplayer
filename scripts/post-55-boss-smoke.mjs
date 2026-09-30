@@ -55,13 +55,13 @@ assert(/never two late-tier[\s\S]{0,80}bosses/.test(galaga), "no late+late pairi
 
 assert(codec.indexOf('"cenotaph", "kaleido", "helios", "selene", "pentarch"') >= 0, "netcodec ids");
 assert(codec.indexOf("myrmidon") < 0 && codec.indexOf("harrow") < 0 && codec.indexOf('"nexus"') < 0, "old codec ids gone");
-assert(/var VER = 9;/.test(codec), "codec VER 9");
+assert(/var VER = 10;/.test(codec), "codec VER 10");
 
 assert(pvp.indexOf("cenotaph:") >= 0 && pvp.indexOf("helios:") >= 0 && pvp.indexOf("selene:") >= 0 && pvp.indexOf("pentarch:") >= 0, "pvp kits");
 assert(pvp.indexOf("myrmidon") < 0 && pvp.indexOf("harrow:") < 0, "old pvp kits gone");
 
 assert(galaga.indexOf("gear") < 0 && galaga.indexOf("cog") < 0, "no gear/cog art");
 assert(galaga.indexOf("flareA") >= 0 && galaga.indexOf("var shade") >= 0, "sun prominences and moon terminator");
-assert(sw.indexOf("galaga-coop-v59") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v60") >= 0, "PWA cache bump");
 
 console.log("post-55-boss-smoke: ok");

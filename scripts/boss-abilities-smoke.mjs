@@ -24,7 +24,8 @@ bosses.forEach(function (b) { byBoss[b] = (byBoss[b] || 0) + 1; });
 [
   "seraph", "wraith", "hydra", "colossus", "chronos", "leviathan", "inferno",
   "nullwarden", "basilisk", "overlord", "mandala", "cenotaph", "kaleido",
-  "helios", "selene", "pentarch", "loom", "tessera", "requiem", "terminus"
+  "helios", "selene", "pentarch", "loom", "tessera", "requiem", "terminus",
+  "hourglass", "lanternmoth", "lodestar", "lernaean", "orrery"
 ].forEach(function (b) {
   assert((byBoss[b] || 0) >= 2 && (byBoss[b] || 0) <= 3, b + " has 2–3 abilities, got " + (byBoss[b] || 0));
 });
@@ -33,6 +34,11 @@ assert(ids.indexOf("levi-surge") >= 0, "leviathan accordion");
 assert(ids.indexOf("loom-warp") >= 0, "loom cut thread");
 assert(ids.indexOf("tess-rook") >= 0, "tessera rook");
 assert(ids.indexOf("req-gap") >= 0, "requiem gap ring");
+assert(ids.indexOf("hour-rewind") >= 0, "hourglass trail rewind");
+assert(galaga.indexOf('case "timeslip"') >= 0 && galaga.indexOf("beginBulletRewind()") >= 0, "timeslip uses Hourglass rewind");
+assert(ids.indexOf("moth-glint") >= 0 && ids.indexOf("lode-pulsar") >= 0, "moth and lodestar");
+assert(ids.indexOf("lern-heads") >= 0 && ids.indexOf("orr-core") >= 0, "lernaean and orrery");
+assert(ids.indexOf("hydra-beam") >= 0, "wave-15 hydra stays");
 
 assert(galaga.indexOf("if (wave < 100) return 0") >= 0, "no pick before 100");
 assert(galaga.indexOf("Math.floor((wave - 100) / 5) + 1") >= 0, "pick every 5 waves from 100");
@@ -67,9 +73,10 @@ assert(css.indexOf("has-boss-ab") >= 0, "pad layout class");
 assert(css.indexOf("pad-cd-ring") >= 0, "cooldown ring");
 assert(pad.indexOf('key: "q"') >= 0, "touchpad Q");
 
-assert(/var VER = 9;/.test(codec), "codec VER 9");
+assert(/var VER = 10;/.test(codec), "codec VER 10");
 assert(codec.indexOf("BOSS_ABILITY_IDS") >= 0, "ability ids on wire");
 assert(codec.indexOf("seraph-fan") >= 0 && codec.indexOf("term-key") >= 0, "library ids in codec");
+assert(codec.indexOf("hour-rewind") >= 0 && codec.indexOf("orr-core") >= 0, "105–125 ids in codec");
 assert(codec.indexOf("msg.q") >= 0, "Q input bit");
 assert(codec.indexOf("b.bossAb") >= 0, "ability shot color flag");
 assert(codec.indexOf("p.bossAbilityId") >= 0, "player ability id");
@@ -79,7 +86,7 @@ ids.forEach(function (id) {
   assert(docs.indexOf("`" + id + "`") >= 0, "docs list " + id);
 });
 
-assert(sw.indexOf("galaga-coop-v59") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v60") >= 0, "PWA cache bump");
 assert(docs.indexOf("Mimic") >= 0, "mimic API documented");
 
 var codecFn = new Function("window", codec + "\nreturn window.__netcodec;");

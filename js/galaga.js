@@ -358,7 +358,22 @@
     { id: "req-canon", boss: "requiem", name: "Canon", short: "CAN", desc: "Two gapped rings, offset, that eat shots.", cd: 14, kind: "clear", vr: 180, life: 0.8, dmg: 1.2, echo: 0.22 },
     { id: "term-echo", boss: "terminus", name: "Echo", short: "ECHO", desc: "A ghost fan fires from where you just were.", cd: 12, kind: "echo", n: 5, spread: 0.55, spd: 420, dmg: 1.3 },
     { id: "term-medley", boss: "terminus", name: "Medley", short: "MDL", desc: "A gold fan plus a shot-clearing pulse.", cd: 14, kind: "medley", n: 5, spread: 0.5, spd: 430, dmg: 1.35 },
-    { id: "term-key", boss: "terminus", name: "Keystone", short: "KEY", desc: "Ordered bursts on the nearest three foes.", cd: 13, kind: "stamp", dmg: 3.2, r: 20, n: 3 }
+    { id: "term-key", boss: "terminus", name: "Keystone", short: "KEY", desc: "Ordered bursts on the nearest three foes.", cd: 13, kind: "stamp", dmg: 3.2, r: 20, n: 3 },
+    { id: "hour-sand", boss: "hourglass", name: "Sand Pour", short: "SAND", desc: "Amber grains spray upward from the hull.", cd: 9, kind: "fan", n: 6, spread: 0.88, spd: 360, dmg: 1.2 },
+    { id: "hour-pile", boss: "hourglass", name: "Dune Slam", short: "DUNE", desc: "A climbing row of sand slams the file.", cd: 11, kind: "curtain", n: 4, spd: 330, dmg: 1.4 },
+    { id: "hour-rewind", boss: "hourglass", name: "Timeslip", short: "SLIP", desc: "Enemy shots fly back along the paths they just took.", cd: 13, kind: "timeslip" },
+    { id: "moth-glint", boss: "lanternmoth", name: "Glint", short: "GLN", desc: "A tight volley of lantern glints.", cd: 8, kind: "fan", n: 5, spread: 0.42, spd: 450, dmg: 1.35 },
+    { id: "moth-swarm", boss: "lanternmoth", name: "Swarm", short: "SWM", desc: "A wide climbing moth swarm.", cd: 10, kind: "fan", n: 8, spread: 1.12, spd: 370, dmg: 1.1 },
+    { id: "moth-lamp", boss: "lanternmoth", name: "Lamp Cone", short: "LAMP", desc: "A pierce cone of lantern light.", cd: 12, kind: "cone", n: 7, spread: 0.92, spd: 430, dmg: 1.35, pierce: 1 },
+    { id: "lode-red", boss: "lodestar", name: "Red Star", short: "RED", desc: "A red polarity fan.", cd: 9, kind: "fan", n: 5, spread: 0.5, spd: 430, dmg: 1.35, color: "#ff4d4d" },
+    { id: "lode-blue", boss: "lodestar", name: "Blue Star", short: "BLU", desc: "A blue polarity fan.", cd: 9, kind: "fan", n: 5, spread: 0.5, spd: 430, dmg: 1.35, color: "#4d88ff" },
+    { id: "lode-pulsar", boss: "lodestar", name: "Pulsar", short: "PSR", desc: "Red and blue fans fire together.", cd: 12, kind: "pulsar", n: 5, spread: 0.48, spd: 420, dmg: 1.25 },
+    { id: "lern-heads", boss: "lernaean", name: "Three Heads", short: "HDS", desc: "Three head-bolts climb from offset necks.", cd: 9, kind: "heads", n: 3, spd: 410, dmg: 1.5 },
+    { id: "lern-beam", boss: "lernaean", name: "Neck Beam", short: "NCK", desc: "A green pierce beam up the file.", cd: 11, kind: "laser", dmg: 5.2, pad: 7 },
+    { id: "lern-fan", boss: "lernaean", name: "Hydra Fan", short: "FAN", desc: "A climbing hydra volley.", cd: 10, kind: "fan", n: 7, spread: 0.72, spd: 400, dmg: 1.2 },
+    { id: "orr-orbit", boss: "orrery", name: "Orbit", short: "ORB", desc: "Brass planet-shots burst from the hull.", cd: 10, kind: "halo", n: 8, spd: 260, dmg: 1.25 },
+    { id: "orr-sling", boss: "orrery", name: "Sling", short: "SLG", desc: "A paired sling shot up the lane.", cd: 9, kind: "fan", n: 2, spread: 0.48, spd: 480, dmg: 1.9, pierce: 1 },
+    { id: "orr-core", boss: "orrery", name: "Core Pull", short: "CORE", desc: "Gravity yanks nearby fodder into a brass well.", cd: 13, kind: "pull", r: 82, life: 0.95 }
   ];
 
   var DAILY_DEFS = [
@@ -5422,7 +5437,9 @@
     return out;
   }
   function bossAbilityColor(def) {
-    var b = def && bossDef(def.boss);
+    var b;
+    if (def && def.color) return def.color;
+    b = def && bossDef(def.boss);
     return (b && b.color) || "#e8f6ff";
   }
   function currentBossAbilityId(who) {
@@ -5705,6 +5722,36 @@
         }
         addTele("ring", who.x, who.y, 24, 24, 0.32, col);
         flash = Math.max(flash, 0.14);
+        break;
+      case "timeslip":
+        beginBulletRewind();
+        addTele("ring", who.x, who.y, 28, 28, 0.4, col);
+        flash = Math.max(flash, 0.2);
+        break;
+      case "pulsar":
+        n = def.n || 5;
+        spd = def.spd || 420;
+        for (i = 0; i < n; i++) {
+          a = n === 1 ? 0 : -(def.spread || 0.48) / 2 + i * ((def.spread || 0.48) / (n - 1));
+          addBossAbShot(who, who.x - 6, y, Math.sin(a) * spd, face * Math.cos(a) * spd, {
+            dmg: def.dmg, r: 2.5, color: "#ff4d4d"
+          });
+          addBossAbShot(who, who.x + 6, y, Math.sin(a) * spd, face * Math.cos(a) * spd, {
+            dmg: def.dmg, r: 2.5, color: "#4d88ff"
+          });
+        }
+        addTele("ring", who.x, who.y, 16, 16, 0.24, "#c8d0ff");
+        break;
+      case "heads":
+        n = def.n || 3;
+        spd = def.spd || 400;
+        for (i = 0; i < n; i++) {
+          x0 = who.x + (i - (n - 1) / 2) * 24;
+          addBossAbShot(who, x0, y, 0, face * spd, {
+            dmg: def.dmg, r: 2.8, color: col, pierce: def.pierce
+          });
+        }
+        addTele("line", who.x - 28, who.y, who.x + 28, who.y, 0.2, col);
         break;
       case "nova":
         for (i = 0; i < enemies.length; i++) {
