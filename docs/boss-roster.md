@@ -27,6 +27,6 @@ Health gems drop only on each id’s first-cycle dedicated debut. Dedicated kill
 | 85 | loom | LOOM | 3 | 740 | 66 / 33 | Warp, weft, cocoon threads |
 | 90 | tessera | TESSERA | 3 | 790 | 66 / 33 | Rook / bishop / knight tiles |
 | 95 | requiem | REQUIEM | 3 | 850 | 66 / 33 | Gold choir, gapped rings |
-| 100 | terminus | TERMINUS | 5 | 1000 | 80 / 60 / 40 / 20 | Echo, invert, keystones, walls, medley |
+| 100 | terminus | TERMINUS | 5 | 1550 | 80 / 60 / 40 / 20 | Echo, invert, keystones, walls, medley |
 
 +1 cycle starts at wave **105** (Seraph +1). Wave 185 is Loom +1, wave 200 is Terminus +1.

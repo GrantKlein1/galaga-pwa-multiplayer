@@ -30,14 +30,14 @@ Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarc
 3 exclusive phases. Base HP 850. HP ticks at 66% and 33%. Cathedral organ with 4 or 5 floating choir satellites.
 
 - Only the satellite glowing gold takes damage; the glow rotates on a beat. Shots on the body do nothing until Crescendo.
-- Sound rings expand with one cyan gap. The gap lines up with the satellite that is currently singing.
+- Sound rings expand with one cyan gap. The gap aims into the player’s half of the field (below the midline) and stays on-screen.
 - **p1:** one ring at a time.
-- **p2 Canon:** overlapping rings with offset gaps.
-- **p3 Crescendo:** satellites merge into the body (now vulnerable) and rings speed up to a heartbeat.
+- **p2 Canon:** overlapping rings share one reachable safe pocket. Expansion and cadence are slower than phase 1.
+- **p3 Crescendo:** satellites merge into the body (now vulnerable). Rings stay slower than the old heartbeat and keep that same lined-up gap.
 
 ## Terminus — wave 100, the finale
 
-5 exclusive phases, Pentarch-style banners and 80/60/40/20 HP ticks. Base HP 1000. Black-and-gold monolith with a core that opens.
+5 exclusive phases, Pentarch-style banners and 80/60/40/20 HP ticks. Base HP 1550. Black-and-gold monolith with a core that opens.
 
 | Phase | Banner | Kit |
 | ---: | --- | --- |
