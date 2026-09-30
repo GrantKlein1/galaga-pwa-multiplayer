@@ -12,10 +12,11 @@ var sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 var ids = [...galaga.matchAll(/\{ id: "([a-z]+)", name: "([A-Z]+)"/g)].map(function (m) {
   return m[1];
 });
-assert(ids.length === 16, "16 roster bosses, got " + ids.length);
+assert(ids.length === 20, "20 roster bosses, got " + ids.length);
 assert(ids[10] === "mandala" && ids[12] === "kaleido", "Mandala 55 and Kaleido 65 stay");
 assert(ids[11] === "cenotaph" && ids[13] === "helios" && ids[14] === "selene", "new 60/70/75 ids");
 assert(ids[15] === "pentarch", "wave 80 Pentarch");
+assert(ids[16] === "loom" && ids[19] === "terminus", "85-100 first-cycle bosses");
 assert(ids.indexOf("myrmidon") < 0 && ids.indexOf("harrow") < 0 && ids.indexOf("nexus") < 0, "old post-55 ids gone");
 
 function meta(n) {
@@ -28,10 +29,10 @@ assert(meta(65).type === "kaleido" && meta(65).tier === 0, "wave 65 Kaleido");
 assert(meta(70).type === "helios" && meta(70).tier === 0, "wave 70 Helios");
 assert(meta(75).type === "selene" && meta(75).tier === 0, "wave 75 Selene");
 assert(meta(80).type === "pentarch" && meta(80).tier === 0, "wave 80 Pentarch");
-assert(meta(85).type === "seraph" && meta(85).tier === 1, "+1 cycle starts at Seraph after Pentarch");
-assert(meta(140).type === "cenotaph" && meta(140).tier === 1, "Cenotaph +1");
-assert(meta(155).type === "selene" && meta(155).tier === 1, "Selene +1");
-assert(meta(160).type === "pentarch" && meta(160).tier === 1, "Pentarch +1");
+assert(meta(85).type === "loom" && meta(85).tier === 0, "wave 85 Loom");
+assert(meta(160).type === "cenotaph" && meta(160).tier === 1, "Cenotaph +1");
+assert(meta(175).type === "selene" && meta(175).tier === 1, "Selene +1");
+assert(meta(180).type === "pentarch" && meta(180).tier === 1, "Pentarch +1");
 
 assert(galaga.indexOf('base: ["seal", "stamp"]') >= 0, "Mandala kit unchanged");
 assert(galaga.indexOf('p3: ["wheel"]') >= 0, "Mandala p3 unchanged");
@@ -52,13 +53,13 @@ assert(/never two late-tier[\s\S]{0,80}bosses/.test(galaga), "no late+late pairi
 
 assert(codec.indexOf('"cenotaph", "kaleido", "helios", "selene", "pentarch"') >= 0, "netcodec ids");
 assert(codec.indexOf("myrmidon") < 0 && codec.indexOf("harrow") < 0 && codec.indexOf('"nexus"') < 0, "old codec ids gone");
-assert(/var VER = 6;/.test(codec), "codec VER bumped for wave-40 enemy ids");
+assert(/var VER = 7;/.test(codec), "codec VER 7");
 
 assert(pvp.indexOf("cenotaph:") >= 0 && pvp.indexOf("helios:") >= 0 && pvp.indexOf("selene:") >= 0 && pvp.indexOf("pentarch:") >= 0, "pvp kits");
 assert(pvp.indexOf("myrmidon") < 0 && pvp.indexOf("harrow:") < 0, "old pvp kits gone");
 
 assert(galaga.indexOf("gear") < 0 && galaga.indexOf("cog") < 0, "no gear/cog art");
 assert(galaga.indexOf("flareA") >= 0 && galaga.indexOf("var shade") >= 0, "sun prominences and moon terminator");
-assert(sw.indexOf("galaga-coop-v54") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v55") >= 0, "PWA cache bump");
 
 console.log("post-55-boss-smoke: ok");

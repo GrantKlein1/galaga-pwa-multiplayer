@@ -33,14 +33,15 @@ var ids = [];
 var m;
 var idRe = /\{ id: "([a-z]+)"/g;
 while ((m = idRe.exec(defs[1]))) ids.push(m[1]);
-assert(ids[0] === "seraph" && ids[ids.length - 1] === "pentarch", "roster ends Seraph…Pentarch");
-assert(ids.length === 16, "16 bosses");
+assert(ids[0] === "seraph" && ids[ids.length - 1] === "terminus", "roster ends Seraph…Terminus");
+assert(ids.length === 20, "20 bosses");
 
 var BOSS_EVERY = 5;
 var expected = {
   seraph: 5, wraith: 10, hydra: 15, colossus: 20, chronos: 25,
   leviathan: 30, inferno: 35, nullwarden: 40, basilisk: 45, overlord: 50,
-  mandala: 55, cenotaph: 60, kaleido: 65, helios: 70, selene: 75, pentarch: 80
+  mandala: 55, cenotaph: 60, kaleido: 65, helios: 70, selene: 75, pentarch: 80,
+  loom: 85, tessera: 90, requiem: 95, terminus: 100
 };
 
 function bossDebutWave(type) {
@@ -76,6 +77,6 @@ assert(bossDropsHealth({ isBoss: true, type: "hydra", tier: 0 }, 47) === false, 
 assert(bossDropsHealth({ isBoss: true, type: "grunt", tier: 0 }, 15) === false, "fodder never uses boss health gate");
 assert(bossDebutWave("not-a-boss") === 0, "unknown id has no debut");
 
-assert(sw.indexOf("galaga-coop-v54") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v55") >= 0, "PWA cache bump");
 
 console.log("boss-health-debut-smoke: ok  bosses=" + ids.length);

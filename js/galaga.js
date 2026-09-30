@@ -70,6 +70,9 @@
   var XP_BOOST_MUL = 2;
   var BOSS_XP_BOOST_CHANCE = 0.12;
   var GUEST_XP_BOOST_CHANCE = 0.07;
+  // Wave-100 Terminus clear: extra banked XP on the same run.xpBonus path as
+  // harder-kill weight. Named Century Clear in the PR / docs.
+  var CENTURY_CLEAR_XP = 8000;
   var PICKUP_PAD = 16;
   var PICKUP_CLAIM_R = 96;
   var POWER_WEIGHTS = [
@@ -212,9 +215,10 @@
   ];
 
   // Boss roster. Debut wave = (index + 1) * BOSS_EVERY. Kits: base (always), p2 (added below the
-  // first HP threshold), p3 (Mandala–Selene, always 3 phases), p4/p5 (Pentarch, 5 exclusive
-  // element phases), t1 (tier 1+), t2 (tier 2+). Seraph–Overlord stay 2-phase on the first cycle;
-  // tier 1+ still get a third phase and tier 2+ still chain attacks into combos.
+  // first HP threshold), p3 (Mandala–Selene and Loom–Requiem, always 3 phases), p4/p5
+  // (Pentarch and Terminus, 5 exclusive phases), t1 (tier 1+), t2 (tier 2+). Seraph–Overlord
+  // stay 2-phase on the first cycle; tier 1+ still get a third phase and tier 2+ still chain
+  // attacks into combos. Guests stay Seraph–Overlord (GUEST_BOSS_POOL).
   var BOSS_DEFS = [
     { id: "seraph", name: "SERAPH", color: "#e8f6ff", dark: "#203044", r: 18, hp: 48, spd: 42, amp: 6, freq: 1.2, cd: 1.39, tele: 0.44, pts: 1500,
       base: ["aimed", "fan", "ram"], p2: ["halo", "fan2"], t1: ["feathers"], t2: ["ramfan"], p2Text: "SERAPH ASCENDS", flavor: "Aimed volleys, fans, dive ram" },
@@ -256,7 +260,28 @@
       base: ["pyre", "cinder"], p2: ["rime", "glacier"], p3: ["bolt", "fork"], p4: ["fault", "spire"], p5: ["shear", "gale"],
       t1: [], t2: [], p2Thresh: 0.8, p3Thresh: 0.6, p4Thresh: 0.4, p5Thresh: 0.2,
       p2Text: "THE FROST TAKES", p3Text: "THE STORM SPEAKS", p4Text: "THE GROUND SPLITS", p5Text: "THE SKY TEARS",
-      flavor: "Fire pyres, ice locks, lightning forks, earth faults, wind shears" }
+      flavor: "Fire pyres, ice locks, lightning forks, earth faults, wind shears" },
+    { id: "loom", name: "LOOM", color: "#c8a070", dark: "#24140c", r: 21, hp: 740, spd: 36, amp: 10, freq: 1.05, cd: 1.24, tele: 0.36, pts: 6900,
+      exclusive: true,
+      base: ["warp"], p2: ["weft"], p3: ["cocoon"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "THE WEFT TIGHTENS", p3Text: "COCOON",
+      flavor: "Wall knots, taut red threads, a closing cocoon" },
+    { id: "tessera", name: "TESSERA", color: "#e8e4dc", dark: "#242028", r: 20, hp: 790, spd: 34, amp: 8, freq: 0.95, cd: 1.26, tele: 0.36, pts: 7400,
+      exclusive: true,
+      base: ["rook", "bishop", "knight"], p2: ["cross"], p3: ["mate"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "TWO PIECES", p3Text: "CHECKMATE",
+      flavor: "Rook files, bishop diagonals, knight jumps, a filling board" },
+    { id: "requiem", name: "REQUIEM", color: "#d0c8e8", dark: "#140c20", r: 22, hp: 850, spd: 32, amp: 7, freq: 0.8, cd: 1.28, tele: 0.36, pts: 8000,
+      exclusive: true,
+      base: ["hymn"], p2: ["canon"], p3: ["crescendo"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "CANON", p3Text: "CRESCENDO",
+      flavor: "Gold choir satellites, gapped sound rings, a heartbeat finale" },
+    { id: "terminus", name: "TERMINUS", color: "#ffd23d", dark: "#0a0a0c", r: 26, hp: 1000, spd: 30, amp: 10, freq: 0.7, cd: 1.18, tele: 0.36, pts: 9000,
+      exclusive: true,
+      base: ["echo"], p2: ["invert"], p3: ["keystones"], p4: ["collapse"], p5: ["medley"],
+      t1: [], t2: [], p2Thresh: 0.8, p3Thresh: 0.6, p4Thresh: 0.4, p5Thresh: 0.2,
+      p2Text: "THE LINE MOVES", p3Text: "BREAK THEM IN ORDER", p4Text: "THE WALLS CLOSE", p5Text: "EVERYTHING ENDS",
+      flavor: "Echo ghost, sliding midline, ordered keystones, closing walls, a last medley" }
   ];
   var GUEST_BOSS_POOL = 10;
 
@@ -465,7 +490,7 @@
   var snapBuf = [];
   var snapAcc = 0;
   var snapSeq = 0;
-  var snapLists = { en: [], pb: [], eb: [], pk: [], te: [], pl: [] };
+  var snapLists = { en: [], pb: [], eb: [], pk: [], te: [], bx: [], pl: [] };
   var viewPb = [];
   var lastSnapN = 0;
   var clientClock = 0;
@@ -497,6 +522,8 @@
   var pickups = [];
   var teles = [];
   var bossFx = [];
+  var fight = emptyFight();
+  var fightView = [];
   var particles = [];
   var rings = [];
   var stars = [];
@@ -536,7 +563,7 @@
     var count = BOSS_DEFS.length;
     return { type: BOSS_DEFS[cycle % count].id, tier: Math.floor(cycle / count) };
   }
-  // First-cycle dedicated debut: (index + 1) * BOSS_EVERY. Seraph 5 … Pentarch 80.
+  // First-cycle dedicated debut: (index + 1) * BOSS_EVERY. Seraph 5 … Terminus 100.
   function bossDebutWave(type) {
     var i;
     for (i = 0; i < BOSS_DEFS.length; i++) {
@@ -1931,6 +1958,7 @@
         add = (d ? d.pts : 1500) + 800 * (meta.tier || 0);
         pts += add;
         xpBonus += Math.round(add * (enemyXpMul(meta.type) - 1));
+        if (n === 100) xpBonus += CENTURY_CLEAR_XP;
       } else {
         slots = buildSlots(formationKind(n), n);
         for (i = 0; i < slots.length; i++) {
@@ -2916,10 +2944,33 @@
   function facingForSlot(slot) {
     return spawnYFor(slot) < H / 2 ? 1 : -1;
   }
+  function emptyFight() {
+    return {
+      on: false, type: "",
+      threads: [], knots: [],
+      cols: 6, rows: 8, tiles: [], pawn: null, piece: "", safeC: -1, safeR: -1, mateT: 0,
+      echo: false, echoTape: [], echoShots: [], ghost: null,
+      invert: false, midY: H / 2, midDir: 1,
+      wallL: 0, wallR: 0, pylons: [],
+      keys: [], keyOrder: [], keyNext: 0, keysNeed: false, rune: 0,
+      sats: [], satGold: 0, satBeat: 0, rings: [], reqMerged: false,
+      despair: false, beamAng: 0, beamGap: 1.2, beamOn: false, beamT: 0,
+      cycle: 0, cycleT: 0
+    };
+  }
+  function resetFight() {
+    fight = emptyFight();
+  }
+  function fightMidY() {
+    return fight.invert ? fight.midY : H / 2;
+  }
   function shipYBand(p, margin) {
-    var mid = H / 2;
+    var mid = fightMidY();
     if (isPvpRun() && p && p.slot === 1) return { lo: margin, hi: mid - margin };
     return { lo: mid + margin, hi: H - margin };
+  }
+  function fightWallPad() {
+    return { l: fight.wallL || 0, r: fight.wallR || 0 };
   }
   function pvpFacing(p) {
     if (p && p.facing) return p.facing;
@@ -4445,6 +4496,7 @@
     ebul = [];
     teles = [];
     bossFx = [];
+    resetFight();
     form.oy = 46;
     form.dir = 1;
     form.speed = (24 + Math.min(22, (pressureWave(n) - 1) * 3.2)) * (1 + extraPlayers() * 0.12);
@@ -4459,7 +4511,9 @@
       banner = { text: label, life: 1.4 };
       form.minOff = -20; form.maxOff = 20; form.ox = W / 2;
       run.bossHits = 0;
-      enemies.push(makeEnemy(0, 0, meta.type, { isBoss: true, tier: meta.tier }));
+      var debut = makeEnemy(0, 0, meta.type, { isBoss: true, tier: meta.tier });
+      enemies.push(debut);
+      setupFightPhase(debut, 0);
     } else {
       banner = { text: isMiniWave(n) ? "ARCHON" : ("WAVE " + n), life: isMiniWave(n) ? 1.4 : 1.1 };
       var slots = buildSlots(waveKind, n);
@@ -4586,6 +4640,16 @@
     }
     e.hp -= dmg;
     e.hitFlash = 0.08;
+    if (e.type === "requiem" && e.isBoss && fight.on && !fight.reqMerged && fromPerk !== "choir") {
+      e.hp += dmg;
+      e.hitFlash = 0.04;
+      return;
+    }
+    if (e.type === "terminus" && e.isBoss && fight.keysNeed) {
+      e.hp += dmg;
+      e.hitFlash = 0.05;
+      return;
+    }
     if (e.hp > 0) {
       shake = Math.min(10, shake + (e.isBoss ? 1.8 : 1.2));
       sfxTick();
@@ -4672,9 +4736,15 @@
       explode(e.x - 12, e.y + 6, "#ffffff", true);
       explode(e.x + 10, e.y - 8, enemyColor(e.type), true);
       maybeDrop(e, true);
-      banner = { text: bossName(e.type) + (run.bossHits ? " DOWN" : " FLAWLESS"), life: 1.2 };
+      if (e.type === "terminus" && wave === 100 && !e.guest && (e.tier || 0) === 0) {
+        run.xpBonus = (run.xpBonus || 0) + CENTURY_CLEAR_XP;
+        banner = { text: "WAVE 100 CLEARED", life: 2.2 };
+      } else {
+        banner = { text: bossName(e.type) + (run.bossHits ? " DOWN" : " FLAWLESS"), life: 1.2 };
+      }
       ebul.length = 0;
       teles.length = 0;
+      resetFight();
       spawnReviveAfterBoss(e);
     } else if (e.type === "archon") {
       explode(e.x - 8, e.y + 4, "#ff5c7a", true);
@@ -5059,6 +5129,9 @@
       }
       if (g.id === "seeker") lockSeekerHome(b);
       pbul.push(b);
+      if (fight.echo && !ghost) {
+        fight.echoShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: b.r || 2 });
+      }
     }
     if (bolt) {
       pbul.push({
@@ -5066,6 +5139,9 @@
         x: who.x, y: y, vx: 0, vy: face * 300, dmg: (g.boltDmg || 2) * loadoutDmgMul(shipDef(who), equippedMod(who), who) * (umbra ? 1.25 : 1), r: 3, age: 0, life: 0,
         pierce: 0, hit: null, homing: true, homeT: 2.2, splash: null, gun: g.id, bolt: true, owner: who.slot, ghost: ghost
       });
+      if (fight.echo && !ghost) {
+        fight.echoShots.push({ t: time, x: who.x, y: y, vx: 0, vy: face * 300, r: 3 });
+      }
     }
     applySkinVolley(who, startIdx, g);
     var cd = gunInterval(g);
@@ -6273,6 +6349,7 @@
     if (kitHas(e, "voidguard") && idx === 1) summonEscorts(e, "shield", 2, 64);
     if (kitHas(e, "core") && idx === 1) summonEscorts(e, "shield", 2, 56);
     if (e.type === "cenotaph" && idx >= 2) e.throne = true;
+    setupFightPhase(e, idx);
     if (idx >= 2) sfxWave(true);
     rebuildBossQueue(e, e.lastAtk);
   }
@@ -6288,7 +6365,7 @@
     return (e.tier || 0) >= 1;
   }
   // Internal HP splits only (phaseCount - 1 ticks). 2-phase debuts: one mark at
-  // the real p2 cut. 3-phase: 100–66 and 66–33. 5-phase Pentarch: 80/60/40/20.
+  // the real p2 cut. 3-phase: 100–66 and 66–33. 5-phase Pentarch/Terminus: 80/60/40/20.
   // Never pad a 2-phase bar with a 2/3 leftover.
   function bossPhaseThresholds(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
@@ -6599,6 +6676,14 @@
       addTele("hline", 12, H - 40, W - 12, H - 40, delay + 0.14, col);
       addTele("hline", 12, H / 2 + 18, W - 12, H / 2 + 18, delay + 0.14, "#c8ffe8");
       delay += 0.16;
+    } else if (atk === "warp" || atk === "weft" || atk === "cocoon") {
+      addTele("glow", e.x, e.y + 8, 0, 0, delay, FIGHT_WHITE);
+    } else if (atk === "rook" || atk === "bishop" || atk === "cross" || atk === "mate" || atk === "knight") {
+      addZone(e.aimX, e.aimY, 18, 16, delay, atk === "cross" ? FIGHT_CYAN : FIGHT_WHITE);
+    } else if (atk === "hymn" || atk === "canon" || atk === "crescendo") {
+      addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+    } else if (atk === "echo" || atk === "invert" || atk === "keystones" || atk === "collapse" || atk === "medley") {
+      addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_GOLD);
     } else {
       addTele("glow", e.x, e.y, 0, 0, delay, col);
     }
@@ -6975,7 +7060,7 @@
   }
 
   function fireBossAttack(e, atk) {
-    var i, spd, opt, px, x0, base, fuse, k, a, ox, oy, aim, drones, f, nx, gx;
+    var i, spd, opt, px, x0, base, fuse, k, a, ox, oy, aim, drones, f, nx, gx, pos;
     if (atk === "constrict") return;
     var col = pentarchColor(e) || enemyColor(e.type);
     opt = { color: col, glow: col };
@@ -7474,6 +7559,56 @@
       queueFollow(e, 0.34, "gale3");
     } else if (atk === "gale3") {
       slamBox(W / 2, H / 2 + 18, W / 2 - 10, 9, "#c8ffe8");
+    } else if (atk === "warp") {
+      spawnLoomWarp(Math.random() < 0.45 ? 3 : 2);
+    } else if (atk === "weft") {
+      spawnLoomWeft();
+    } else if (atk === "cocoon") {
+      spawnLoomCocoon(e);
+    } else if (atk === "rook") {
+      spawnTesseraVolley("rook", false);
+    } else if (atk === "bishop") {
+      spawnTesseraVolley("bishop", false);
+    } else if (atk === "cross") {
+      spawnTesseraVolley(Math.random() < 0.5 ? "rook" : "bishop", true);
+    } else if (atk === "knight") {
+      spawnTesseraVolley("knight", false);
+    } else if (atk === "mate") {
+      spawnTesseraVolley("knight", false);
+      fight.piece = "mate";
+      px = clamp(Math.floor((e.aimX / W) * TILE_COLS), 0, TILE_COLS - 1);
+      base = clamp(Math.floor((e.aimY / H) * TILE_ROWS), 0, TILE_ROWS - 1);
+      markTile(px, base, 1);
+      pos = tileCenter(px, base);
+      e.x += (pos.x - e.x) * 0.65;
+      e.y += (pos.y - 40 - e.y) * 0.4;
+      if (!fight.pawn || !fight.pawn.alive) spawnPawnNear({ x: e.aimX, y: e.aimY });
+    } else if (atk === "hymn") {
+      spawnSoundRing(e, 0);
+    } else if (atk === "canon") {
+      spawnSoundRing(e, 0);
+      spawnSoundRing(e, 0.28);
+      fight.satGold = (fight.satGold + 1) % Math.max(1, fight.sats.length);
+      spawnSoundRing(e, 0.52);
+    } else if (atk === "crescendo") {
+      fight.reqMerged = true;
+      spawnSoundRing(e, 0);
+      spawnSoundRing(e, 0.22);
+    } else if (atk === "echo") {
+      fight.echo = true;
+      aimedShot(e, 0.5, spd, { color: FIGHT_RED, glow: FIGHT_RED });
+    } else if (atk === "invert") {
+      fight.invert = true;
+      slamBox(W / 2, (fight.midY + H) * 0.5, W / 2 - 12, Math.max(16, (H - fight.midY) * 0.42), FIGHT_RED);
+    } else if (atk === "keystones") {
+      if (!fight.keys.length) spawnKeystones(e);
+      aimedShot(e, 0.7, spd, opt);
+    } else if (atk === "collapse") {
+      if (!fight.pylons.length) spawnPylons();
+      aimedShot(e, 0.55, spd + 8, opt);
+    } else if (atk === "medley") {
+      fight.cycleT = 0.1;
+      spawnSoundRing(e, 0);
     }
   }
 
@@ -7498,6 +7633,709 @@
       }
     }
     if (hit) banner = { text: "FROZEN", life: 0.7 };
+  }
+
+  var FIGHT_GOLD = "#ffd23d";
+  var FIGHT_RED = "#ff4d4d";
+  var FIGHT_CYAN = "#7ef9ff";
+  var FIGHT_WHITE = "#ffffff";
+  var KEY_HUES = ["#ff4d4d", "#7ef9ff", "#ffd23d", "#e8e4dc"];
+  var ECHO_LAG = 3;
+  var TILE_COLS = 6;
+  var TILE_ROWS = 8;
+
+  function distToSeg(px, py, ax, ay, bx, by) {
+    var dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy, t;
+    if (l2 < 1) return dist2(px, py, ax, ay);
+    t = ((px - ax) * dx + (py - ay) * dy) / l2;
+    if (t < 0) t = 0;
+    if (t > 1) t = 1;
+    return dist2(px, py, ax + dx * t, ay + dy * t);
+  }
+  function tileW() { return W / TILE_COLS; }
+  function tileH() { return H / TILE_ROWS; }
+  function tileCenter(c, r) {
+    return { x: (c + 0.5) * tileW(), y: (r + 0.5) * tileH() };
+  }
+  function playerTile(pl) {
+    var c = Math.floor((pl.x / W) * TILE_COLS);
+    var r = Math.floor((pl.y / H) * TILE_ROWS);
+    return { c: clamp(c, 0, TILE_COLS - 1), r: clamp(r, 0, TILE_ROWS - 1) };
+  }
+  function clearFightHazards() {
+    fight.threads = [];
+    fight.knots = [];
+    fight.tiles = [];
+    fight.pawn = null;
+    fight.echo = false;
+    fight.echoTape = [];
+    fight.echoShots = [];
+    fight.ghost = null;
+    fight.invert = false;
+    fight.midY = H / 2;
+    fight.wallL = 0;
+    fight.wallR = 0;
+    fight.pylons = [];
+    fight.keys = [];
+    fight.keysNeed = false;
+    fight.sats = [];
+    fight.rings = [];
+    fight.reqMerged = false;
+    fight.despair = false;
+    fight.beamOn = false;
+    fight.cycle = 0;
+    fight.cycleT = 0;
+  }
+  function addKnot(x, y) {
+    var k = { x: x, y: y, alive: true, r: 7 };
+    fight.knots.push(k);
+    return fight.knots.length - 1;
+  }
+  function addThread(ia, ib, delay) {
+    fight.threads.push({
+      a: ia, b: ib, st: 0, t: delay || 0.32, taut: 1.85, drift: 0, spin: 0
+    });
+  }
+  function wallAnchor() {
+    var side = Math.floor(Math.random() * 3);
+    if (side === 0) return { x: 8, y: 28 + Math.random() * (H - 70) };
+    if (side === 1) return { x: W - 8, y: 28 + Math.random() * (H - 70) };
+    return { x: 18 + Math.random() * (W - 36), y: 16 };
+  }
+  function spawnLoomWarp(n) {
+    var i, a, b, ia, ib;
+    n = n || (Math.random() < 0.55 ? 2 : 3);
+    for (i = 0; i < n; i++) {
+      a = wallAnchor();
+      b = wallAnchor();
+      if (dist2(a.x, a.y, b.x, b.y) < 70 * 70) {
+        b.x = W - a.x;
+        b.y = clamp(H - a.y, 20, H - 40);
+      }
+      ia = addKnot(a.x, a.y);
+      ib = addKnot(b.x, b.y);
+      addThread(ia, ib, 0.3);
+    }
+  }
+  function spawnLoomWeft() {
+    var i, xa, xb, y1, y2, ia, ib, gap;
+    gap = 48 + Math.random() * 36;
+    for (i = 0; i < 4; i++) {
+      y1 = 40 + i * 70 + (i % 2) * 18;
+      y2 = y1 + 36;
+      xa = 8;
+      xb = W - 8;
+      ia = addKnot(xa, clamp(y1, 20, H - 30));
+      ib = addKnot(xb, clamp(y2, 20, H - 30));
+      addThread(ia, ib, 0.28);
+      fight.threads[fight.threads.length - 1].drift = (i % 2 ? 1 : -1) * (18 + gap * 0.08);
+    }
+    ia = addKnot(40 + Math.random() * (W - 80), 16);
+    ib = addKnot(40 + Math.random() * (W - 80), H * 0.62);
+    addThread(ia, ib, 0.34);
+  }
+  function spawnLoomCocoon(e) {
+    var i, n = 6, ang, rad, a, b, ia, ib, tgt;
+    tgt = targetPlayer(e.x, e.y) || { x: W / 2, y: H * 0.72 };
+    for (i = 0; i < n; i++) {
+      ang = (i / n) * Math.PI * 2 + time;
+      rad = 88;
+      a = { x: clamp(tgt.x + Math.cos(ang) * rad, 10, W - 10), y: clamp(tgt.y + Math.sin(ang) * rad * 0.72, 18, H - 18) };
+      b = { x: clamp(tgt.x + Math.cos(ang + 0.9) * (rad * 0.45), 10, W - 10), y: clamp(tgt.y + Math.sin(ang + 0.9) * (rad * 0.32), 18, H - 18) };
+      ia = addKnot(a.x, a.y);
+      ib = addKnot(b.x, b.y);
+      addThread(ia, ib, 0.26);
+      fight.threads[fight.threads.length - 1].spin = 0.55;
+    }
+  }
+  function cutKnot(idx) {
+    var i, th;
+    if (!fight.knots[idx] || !fight.knots[idx].alive) return;
+    fight.knots[idx].alive = false;
+    explode(fight.knots[idx].x, fight.knots[idx].y, FIGHT_GOLD, false);
+    for (i = fight.threads.length - 1; i >= 0; i--) {
+      th = fight.threads[i];
+      if (th.a === idx || th.b === idx) fight.threads.splice(i, 1);
+    }
+  }
+  function tileKey(c, r) { return c + r * TILE_COLS; }
+  function markTile(c, r, st) {
+    var k;
+    if (c < 0 || r < 0 || c >= TILE_COLS || r >= TILE_ROWS) return;
+    k = tileKey(c, r);
+    fight.tiles[k] = { c: c, r: r, st: st, t: 0.28 };
+  }
+  function tesseraRook(pl) {
+    var t = playerTile(pl), i;
+    for (i = 0; i < TILE_COLS; i++) markTile(i, t.r, 1);
+    for (i = 0; i < TILE_ROWS; i++) markTile(t.c, i, 1);
+  }
+  function tesseraBishop(pl) {
+    var t = playerTile(pl), i;
+    for (i = -TILE_ROWS; i <= TILE_ROWS; i++) {
+      markTile(t.c + i, t.r + i, 1);
+      markTile(t.c + i, t.r - i, 1);
+    }
+  }
+  function tesseraKnight(pl) {
+    var t = playerTile(pl), d = [[1, 2], [2, 1], [-1, 2], [-2, 1], [1, -2], [2, -1], [-1, -2], [-2, -1]], i;
+    markTile(t.c, t.r, 1);
+    for (i = 0; i < d.length; i++) markTile(t.c + d[i][0], t.r + d[i][1], 1);
+  }
+  function pickSafeTile(avoid) {
+    var c, r, k, n = 0;
+    while (n < 24) {
+      c = Math.floor(Math.random() * TILE_COLS);
+      r = Math.max(3, Math.floor(Math.random() * TILE_ROWS));
+      k = tileKey(c, r);
+      if (!avoid[k] || avoid[k].st !== 1) {
+        fight.safeC = c;
+        fight.safeR = r;
+        markTile(c, r, 3);
+        return;
+      }
+      n += 1;
+    }
+    fight.safeC = 2;
+    fight.safeR = 6;
+    markTile(2, 6, 3);
+  }
+  function spawnTesseraVolley(kind, two) {
+    var pl = targetPlayer(W / 2, H / 2) || { x: W / 2, y: H * 0.75 };
+    fight.tiles = [];
+    fight.piece = kind;
+    if (kind === "rook" || kind === "cross") tesseraRook(pl);
+    if (kind === "bishop" || kind === "cross") tesseraBishop(pl);
+    if (kind === "knight") tesseraKnight(pl);
+    if (two) {
+      if (kind === "rook") tesseraBishop(pl);
+      else tesseraKnight(pl);
+      pickSafeTile(fight.tiles);
+    }
+  }
+  function spawnPawnNear(pl) {
+    var t = playerTile(pl || { x: W / 2, y: H * 0.75 });
+    var c = clamp(t.c + (Math.random() < 0.5 ? -1 : 1), 0, TILE_COLS - 1);
+    var pos = tileCenter(c, Math.max(4, t.r - 1));
+    fight.pawn = { x: pos.x, y: pos.y, r: 8, hp: 3, alive: true };
+  }
+  function spawnChoir(e, n) {
+    var i;
+    fight.sats = [];
+    n = n || (Math.random() < 0.5 ? 4 : 5);
+    for (i = 0; i < n; i++) {
+      fight.sats.push({ ang: (i / n) * Math.PI * 2, rad: 38, x: e.x, y: e.y, r: 8 });
+    }
+    fight.satGold = 0;
+    fight.satBeat = 0.55;
+    fight.reqMerged = false;
+  }
+  function spawnSoundRing(e, delay) {
+    var sat = fight.sats[fight.satGold] || fight.sats[0];
+    var gap = sat ? Math.atan2(sat.y - e.y, sat.x - e.x) : 0;
+    fight.rings.push({
+      x: e.x, y: e.y, r: 10, vr: fight.reqMerged ? 150 : 92, gap: gap, gw: 0.55,
+      t: 2.4, wait: delay || 0, st: delay ? 0 : 1
+    });
+  }
+  function spawnKeystones(e) {
+    var spots = [
+      { x: 36, y: 210 }, { x: W - 36, y: 210 },
+      { x: 70, y: 300 }, { x: W - 70, y: 300 }
+    ];
+    var order = [0, 1, 2, 3], i;
+    shuffleInPlace(order);
+    fight.keys = [];
+    fight.keyOrder = order;
+    fight.keyNext = 0;
+    fight.keysNeed = true;
+    fight.rune = order[0];
+    for (i = 0; i < 4; i++) {
+      fight.keys.push({
+        x: spots[i].x, y: spots[i].y, col: i, alive: true, r: 9, hp: 4
+      });
+    }
+  }
+  function respawnKey(i) {
+    var spots = [
+      { x: 36, y: 210 }, { x: W - 36, y: 210 },
+      { x: 70, y: 300 }, { x: W - 70, y: 300 }
+    ];
+    fight.keys[i] = { x: spots[i].x, y: spots[i].y, col: i, alive: true, r: 9, hp: 4 };
+  }
+  function spawnPylons() {
+    fight.pylons = [
+      { x: 16, y: 140, side: 0, hp: 6, r: 8, alive: true },
+      { x: 16, y: 260, side: 0, hp: 6, r: 8, alive: true },
+      { x: W - 16, y: 140, side: 1, hp: 6, r: 8, alive: true },
+      { x: W - 16, y: 260, side: 1, hp: 6, r: 8, alive: true }
+    ];
+    fight.wallL = 6;
+    fight.wallR = 6;
+  }
+  function setupFightPhase(e, idx) {
+    if (!e || !e.isBoss) return;
+    if (e.type !== "loom" && e.type !== "tessera" && e.type !== "requiem" && e.type !== "terminus") return;
+    fight.on = true;
+    fight.type = e.type;
+    clearFightHazards();
+    if (e.type === "terminus") {
+      if (idx === 0) {
+        fight.echo = true;
+        banner = { text: "IT REMEMBERS YOU", life: 1.35 };
+      } else if (idx === 1) {
+        fight.invert = true;
+        fight.midY = H / 2;
+        fight.midDir = 1;
+      } else if (idx === 2) {
+        spawnKeystones(e);
+      } else if (idx === 3) {
+        spawnPylons();
+      } else {
+        fight.echo = true;
+        spawnChoir(e, 4);
+      }
+    } else if (e.type === "requiem") {
+      spawnChoir(e, idx >= 1 ? 5 : 4);
+      if (idx >= 2) fight.reqMerged = true;
+    }
+  }
+  function updateFight(dt) {
+    var boss = currentBoss(), i, th, ka, kb, pl, tgt, ang, sat, ring, k, pos, tile, tw, thh, cx, cy, beam, gap;
+    if (!fight.on || !boss || !boss.alive) {
+      if (fight.on && (!boss || !boss.alive)) resetFight();
+      return;
+    }
+    tgt = targetPlayer(boss.x, boss.y);
+    if (fight.echo) {
+      if (tgt) fight.echoTape.push({ t: time, x: tgt.x, y: tgt.y });
+      while (fight.echoTape.length && fight.echoTape[0].t < time - ECHO_LAG - 0.6) fight.echoTape.shift();
+      fight.ghost = null;
+      for (i = 0; i < fight.echoTape.length; i++) {
+        if (fight.echoTape[i].t >= time - ECHO_LAG) { fight.ghost = fight.echoTape[i]; break; }
+      }
+      for (i = fight.echoShots.length - 1; i >= 0; i--) {
+        if (time - fight.echoShots[i].t >= ECHO_LAG) {
+          k = fight.echoShots[i];
+          addEbul(k.x, k.y, k.vx, k.vy, { color: "#ffd0d0", glow: FIGHT_RED, r: (k.r || 2) + 0.4, silent: true });
+          fight.echoShots.splice(i, 1);
+        }
+      }
+    }
+    if (fight.invert) {
+      fight.midY += fight.midDir * 22 * dt;
+      if (fight.midY > H * 0.72) { fight.midY = H * 0.72; fight.midDir = -1; }
+      if (fight.midY < H * 0.38) { fight.midY = H * 0.38; fight.midDir = 1; }
+    }
+    if (fight.pylons.length) {
+      fight.wallL = Math.min(54, fight.wallL + 7 * dt);
+      fight.wallR = Math.min(54, fight.wallR + 7 * dt);
+      tryHitPlayersRect(fight.wallL * 0.5, H / 2, fight.wallL * 0.5, H / 2);
+      tryHitPlayersRect(W - fight.wallR * 0.5, H / 2, fight.wallR * 0.5, H / 2);
+    }
+    for (i = 0; i < fight.knots.length; i++) {
+      ka = fight.knots[i];
+      if (!ka.alive) continue;
+      if (fight.type === "loom" && boss.phaseIdx >= 2 && tgt) {
+        ang = Math.atan2(ka.y - tgt.y, ka.x - tgt.x);
+        ka.x += Math.cos(ang + 1.2) * 10 * dt;
+        ka.y += Math.sin(ang + 1.2) * 10 * dt;
+        ka.x += (tgt.x - ka.x) * 0.12 * dt;
+        ka.y += (tgt.y - ka.y) * 0.12 * dt;
+      }
+    }
+    for (i = 0; i < fight.threads.length; i++) {
+      th = fight.threads[i];
+      ka = fight.knots[th.a];
+      kb = fight.knots[th.b];
+      if (!ka || !kb || !ka.alive || !kb.alive) continue;
+      if (th.drift) {
+        ka.y = clamp(ka.y + th.drift * dt, 22, H - 36);
+        kb.y = clamp(kb.y - th.drift * dt, 22, H - 36);
+        if (ka.y <= 24 || ka.y >= H - 40) th.drift *= -1;
+      }
+      if (th.st === 0) {
+        th.t -= dt;
+        if (th.t <= 0) { th.st = 1; th.t = 0.22; }
+      } else if (th.st === 1) {
+        th.t -= dt;
+        if (th.t <= 0) { th.st = 2; th.t = th.taut || 1.7; }
+      } else {
+        th.t -= dt;
+        for (k = 0; k < players.length; k++) {
+          pl = players[k];
+          if (!pl || !pl.alive || pl.invuln > 0) continue;
+          if (distToSeg(pl.x, pl.y, ka.x, ka.y, kb.x, kb.y) < ((pl.r || PLAYER_R) + 3) * ((pl.r || PLAYER_R) + 3)) {
+            if (isPvpRun()) pvpHurt(pl, 8);
+            else playerDie(pl);
+          }
+        }
+        if (th.t <= 0) { th.st = 0; th.t = 0.4; }
+      }
+    }
+    tw = tileW();
+    thh = tileH();
+    for (k in fight.tiles) {
+      if (!Object.prototype.hasOwnProperty.call(fight.tiles, k)) continue;
+      tile = fight.tiles[k];
+      if (!tile) continue;
+      if (tile.st === 1) {
+        tile.t -= dt;
+        if (tile.t <= 0) tile.st = 2;
+      } else if (tile.st === 2) {
+        pos = tileCenter(tile.c, tile.r);
+        tryHitPlayersRect(pos.x, pos.y, tw * 0.46, thh * 0.46);
+        tile.st = 4;
+        tile.t = 0.35;
+      } else if (tile.st === 4) {
+        tile.t -= dt;
+        if (tile.t <= 0 && fight.piece !== "mate") delete fight.tiles[k];
+        else if (tile.st === 4 && fight.piece === "mate") {
+          pos = tileCenter(tile.c, tile.r);
+          tryHitPlayersRect(pos.x, pos.y, tw * 0.42, thh * 0.42);
+        }
+      }
+    }
+    if (fight.pawn && fight.pawn.alive && tgt) {
+      fight.pawn.x += (tgt.x - fight.pawn.x) * Math.min(1, 1.1 * dt);
+      fight.pawn.y += (tgt.y - fight.pawn.y) * Math.min(1, 0.7 * dt);
+    }
+    if (fight.sats.length && !fight.reqMerged) {
+      fight.satBeat -= dt;
+      if (fight.satBeat <= 0) {
+        fight.satGold = (fight.satGold + 1) % fight.sats.length;
+        fight.satBeat = 0.55;
+      }
+      for (i = 0; i < fight.sats.length; i++) {
+        sat = fight.sats[i];
+        sat.ang += dt * 0.7;
+        sat.x = boss.x + Math.cos(sat.ang) * sat.rad;
+        sat.y = boss.y + Math.sin(sat.ang) * sat.rad * 0.72;
+      }
+    } else if (fight.reqMerged) {
+      fight.sats = [];
+    }
+    for (i = fight.rings.length - 1; i >= 0; i--) {
+      ring = fight.rings[i];
+      if (ring.wait > 0) { ring.wait -= dt; continue; }
+      ring.r += ring.vr * dt;
+      ring.t -= dt;
+      for (k = 0; k < players.length; k++) {
+        pl = players[k];
+        if (!pl || !pl.alive || pl.invuln > 0) continue;
+        cx = Math.sqrt(dist2(pl.x, pl.y, ring.x, ring.y));
+        if (Math.abs(cx - ring.r) < (pl.r || PLAYER_R) + 3.2) {
+          ang = Math.atan2(pl.y - ring.y, pl.x - ring.x);
+          if (angAbsDiff(ang, ring.gap) > ring.gw * 0.5) {
+            if (isPvpRun()) pvpHurt(pl, 8);
+            else playerDie(pl);
+          }
+        }
+      }
+      if (ring.r > 240 || ring.t <= 0) fight.rings.splice(i, 1);
+    }
+    if (fight.keysNeed) {
+      fight.rune = fight.keyOrder[fight.keyNext] || 0;
+    }
+    if (boss.type === "terminus" && boss.phaseIdx >= 4) {
+      fight.cycleT -= dt;
+      if (fight.cycleT <= 0) {
+        fight.cycle = (fight.cycle + 1) % 4;
+        fight.cycleT = 1.15;
+        if (fight.cycle === 0) fight.echo = true;
+        if (fight.cycle === 1) { fight.echo = false; spawnLoomWarp(1); }
+        if (fight.cycle === 2) spawnTesseraVolley("rook", false);
+        if (fight.cycle === 3) spawnSoundRing(boss, 0);
+      }
+      if (!fight.despair && boss.hp <= boss.maxHp * 0.05) {
+        fight.despair = true;
+        fight.beamOn = true;
+        fight.beamT = 2.4;
+        fight.beamAng = -0.4;
+        fight.beamGap = Math.atan2((tgt ? tgt.y : H * 0.75) - H / 2, (tgt ? tgt.x : W / 2) - W / 2);
+      }
+    }
+    if (fight.beamOn) {
+      fight.beamT -= dt;
+      fight.beamAng += 0.85 * dt;
+      beam = fight.beamAng;
+      gap = fight.beamGap;
+      for (k = 0; k < players.length; k++) {
+        pl = players[k];
+        if (!pl || !pl.alive || pl.invuln > 0) continue;
+        ang = Math.atan2(pl.y - H / 2, pl.x - W / 2);
+        if (angAbsDiff(ang, beam) < 0.16 && angAbsDiff(ang, gap) > 0.28) {
+          if (isPvpRun()) pvpHurt(pl, 8);
+          else playerDie(pl);
+        }
+      }
+      if (fight.beamT <= 0) fight.beamOn = false;
+    }
+  }
+  function hitFightShot(b, i) {
+    var n, obj, dmg, boss, ok, burst, j;
+    dmg = b.dmg || 1;
+    for (n = 0; n < fight.knots.length; n++) {
+      obj = fight.knots[n];
+      if (!obj.alive) continue;
+      if (dist2(b.x, b.y, obj.x, obj.y) < (obj.r + (b.r || 2) + 1) * (obj.r + (b.r || 2) + 1)) {
+        cutKnot(n);
+        pbul.splice(i, 1);
+        return true;
+      }
+    }
+    if (fight.pawn && fight.pawn.alive && dist2(b.x, b.y, fight.pawn.x, fight.pawn.y) < (fight.pawn.r + (b.r || 2)) * (fight.pawn.r + (b.r || 2))) {
+      fight.pawn.hp -= dmg;
+      if (fight.pawn.hp <= 0) {
+        fight.pawn.alive = false;
+        fight.tiles = [];
+        explode(fight.pawn.x, fight.pawn.y, FIGHT_CYAN, false);
+      }
+      pbul.splice(i, 1);
+      return true;
+    }
+    for (n = 0; n < fight.pylons.length; n++) {
+      obj = fight.pylons[n];
+      if (!obj.alive) continue;
+      if (dist2(b.x, b.y, obj.x, obj.y) < (obj.r + (b.r || 2)) * (obj.r + (b.r || 2))) {
+        obj.hp -= dmg;
+        if (obj.side === 0) fight.wallL = Math.max(0, fight.wallL - 16);
+        else fight.wallR = Math.max(0, fight.wallR - 16);
+        if (obj.hp <= 0) {
+          obj.alive = false;
+          explode(obj.x, obj.y, FIGHT_GOLD, false);
+        }
+        pbul.splice(i, 1);
+        return true;
+      }
+    }
+    for (n = 0; n < fight.keys.length; n++) {
+      obj = fight.keys[n];
+      if (!obj.alive) continue;
+      if (dist2(b.x, b.y, obj.x, obj.y) < (obj.r + (b.r || 2)) * (obj.r + (b.r || 2))) {
+        if (n === fight.keyOrder[fight.keyNext]) {
+          obj.hp -= dmg;
+          if (obj.hp <= 0) {
+            obj.alive = false;
+            explode(obj.x, obj.y, KEY_HUES[obj.col], true);
+            fight.keyNext += 1;
+            if (fight.keyNext >= fight.keyOrder.length) fight.keysNeed = false;
+            else fight.rune = fight.keyOrder[fight.keyNext];
+          }
+        } else {
+          respawnKey(n);
+          boss = currentBoss();
+          burst = boss || { x: W / 2, y: 72 };
+          fanShot(burst.x, burst.y + 8, 7, 1.2, 150, 20, { color: FIGHT_RED, glow: FIGHT_RED });
+        }
+        pbul.splice(i, 1);
+        return true;
+      }
+    }
+    if (fight.sats.length && !fight.reqMerged) {
+      ok = fight.sats[fight.satGold];
+      boss = currentBoss();
+      if (ok && dist2(b.x, b.y, ok.x, ok.y) < (ok.r + (b.r || 2)) * (ok.r + (b.r || 2))) {
+        if (boss) killEnemy(boss, false, dmg, b.owner, "choir");
+        pbul.splice(i, 1);
+        return true;
+      }
+      for (n = 0; n < fight.sats.length; n++) {
+        obj = fight.sats[n];
+        if (dist2(b.x, b.y, obj.x, obj.y) < (obj.r + (b.r || 2) - 1) * (obj.r + (b.r || 2) - 1)) {
+          pbul.splice(i, 1);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  function fightSnap() {
+    var out = [], i, th, ka, kb, k, tile, obj, pos;
+    if (!fight.on) return out;
+    for (i = 0; i < fight.threads.length; i++) {
+      th = fight.threads[i];
+      ka = fight.knots[th.a];
+      kb = fight.knots[th.b];
+      if (!ka || !kb) continue;
+      out.push({ kind: "thread", x: ka.x, y: ka.y, x2: kb.x, y2: kb.y, st: th.st, t: th.t || 0, color: th.st === 2 ? FIGHT_RED : (th.st === 1 ? FIGHT_WHITE : FIGHT_CYAN) });
+    }
+    for (i = 0; i < fight.knots.length; i++) {
+      obj = fight.knots[i];
+      if (!obj.alive) continue;
+      out.push({ kind: "knot", x: obj.x, y: obj.y, x2: 0, y2: 0, st: 1, t: 0, color: FIGHT_GOLD });
+    }
+    for (k in fight.tiles) {
+      if (!Object.prototype.hasOwnProperty.call(fight.tiles, k)) continue;
+      tile = fight.tiles[k];
+      if (!tile) continue;
+      pos = tileCenter(tile.c, tile.r);
+      out.push({
+        kind: "tile", x: pos.x, y: pos.y, x2: tileW() * 0.46, y2: tileH() * 0.46, st: tile.st, t: tile.t || 0,
+        color: tile.st === 3 ? FIGHT_CYAN : (tile.st === 1 ? FIGHT_WHITE : FIGHT_RED)
+      });
+    }
+    if (fight.ghost) out.push({ kind: "ghost", x: fight.ghost.x, y: fight.ghost.y, x2: 0, y2: 0, st: 0, t: 0, color: FIGHT_RED });
+    if (fight.invert) out.push({ kind: "midline", x: 0, y: fight.midY, x2: W, y2: fight.midY, st: 0, t: 0, color: FIGHT_WHITE });
+    if (fight.wallL || fight.wallR) out.push({ kind: "wall", x: fight.wallL, y: 0, x2: fight.wallR, y2: H, st: 0, t: 0, color: FIGHT_RED });
+    for (i = 0; i < fight.pylons.length; i++) {
+      obj = fight.pylons[i];
+      if (!obj.alive) continue;
+      out.push({ kind: "pylon", x: obj.x, y: obj.y, x2: 0, y2: 0, st: obj.side, t: 0, color: FIGHT_GOLD });
+    }
+    for (i = 0; i < fight.keys.length; i++) {
+      obj = fight.keys[i];
+      if (!obj.alive) continue;
+      out.push({ kind: "keystone", x: obj.x, y: obj.y, x2: fight.rune, y2: 0, st: obj.col, t: 0, color: KEY_HUES[obj.col] });
+    }
+    for (i = 0; i < fight.sats.length; i++) {
+      obj = fight.sats[i];
+      out.push({ kind: "sat", x: obj.x, y: obj.y, x2: 0, y2: 0, st: i === fight.satGold ? 1 : 0, t: 0, color: i === fight.satGold ? FIGHT_GOLD : "#a090c8" });
+    }
+    for (i = 0; i < fight.rings.length; i++) {
+      obj = fight.rings[i];
+      if (obj.wait > 0) continue;
+      out.push({ kind: "ring", x: obj.x, y: obj.y, x2: obj.r, y2: obj.gap, st: Math.round(obj.gw * 20), t: obj.t, color: FIGHT_WHITE });
+    }
+    if (fight.pawn && fight.pawn.alive) out.push({ kind: "pawn", x: fight.pawn.x, y: fight.pawn.y, x2: 0, y2: 0, st: 0, t: 0, color: FIGHT_CYAN });
+    if (fight.beamOn) out.push({ kind: "beam", x: W / 2, y: H / 2, x2: fight.beamAng, y2: fight.beamGap, st: 1, t: fight.beamT, color: FIGHT_RED });
+    return out;
+  }
+  function applyFightSnap(list) {
+    var i, it;
+    fightView = list || [];
+    fight.invert = false;
+    fight.midY = H / 2;
+    fight.wallL = 0;
+    fight.wallR = 0;
+    for (i = 0; i < fightView.length; i++) {
+      it = fightView[i];
+      if (it.kind === "midline") { fight.invert = true; fight.midY = it.y; }
+      if (it.kind === "wall") { fight.wallL = it.x || 0; fight.wallR = it.x2 || 0; }
+    }
+  }
+  function drawFight(context) {
+    var list = netRole === "client" ? fightView : fightSnap();
+    var i, f, col, a, gap, tw, thh, showGrid = fight.type === "tessera";
+    tw = tileW();
+    thh = tileH();
+    for (i = 0; i < list.length; i++) if (list[i].kind === "tile" || list[i].kind === "pawn") showGrid = true;
+    if (showGrid) {
+      context.save();
+      context.globalAlpha = 0.08;
+      context.strokeStyle = "#e8e4dc";
+      context.lineWidth = 1;
+      for (i = 1; i < TILE_COLS; i++) {
+        context.beginPath(); context.moveTo(i * tw, 0); context.lineTo(i * tw, H); context.stroke();
+      }
+      for (i = 1; i < TILE_ROWS; i++) {
+        context.beginPath(); context.moveTo(0, i * thh); context.lineTo(W, i * thh); context.stroke();
+      }
+      context.restore();
+    }
+    for (i = 0; i < list.length; i++) {
+      f = list[i];
+      col = f.color || FIGHT_WHITE;
+      context.save();
+      if (f.kind === "thread") {
+        context.strokeStyle = col;
+        context.globalAlpha = f.st === 0 ? 0.35 : (f.st === 1 ? 0.9 : 0.85);
+        context.lineWidth = f.st === 2 ? 2.6 : (f.st === 1 ? 2 : 1);
+        context.beginPath(); context.moveTo(f.x, f.y); context.lineTo(f.x2, f.y2); context.stroke();
+      } else if (f.kind === "knot") {
+        context.fillStyle = FIGHT_GOLD;
+        context.globalAlpha = 0.95;
+        context.beginPath(); context.arc(f.x, f.y, 6, 0, Math.PI * 2); context.fill();
+        context.strokeStyle = FIGHT_WHITE;
+        context.lineWidth = 1;
+        context.stroke();
+      } else if (f.kind === "tile") {
+        context.globalAlpha = f.st === 3 ? 0.28 : (f.st === 1 ? 0.22 : 0.34);
+        context.fillStyle = col;
+        context.fillRect(f.x - f.x2, f.y - f.y2, f.x2 * 2, f.y2 * 2);
+        context.globalAlpha = 0.7;
+        context.strokeStyle = col;
+        context.strokeRect(f.x - f.x2, f.y - f.y2, f.x2 * 2, f.y2 * 2);
+      } else if (f.kind === "ghost") {
+        context.globalAlpha = 0.38;
+        context.strokeStyle = FIGHT_RED;
+        context.fillStyle = "rgba(255,80,80,0.18)";
+        context.lineWidth = 1.4;
+        context.beginPath();
+        context.moveTo(f.x, f.y - 10); context.lineTo(f.x + 7, f.y + 8); context.lineTo(f.x - 7, f.y + 8);
+        context.closePath(); context.fill(); context.stroke();
+      } else if (f.kind === "midline") {
+        context.strokeStyle = FIGHT_WHITE;
+        context.globalAlpha = 0.7;
+        context.lineWidth = 2;
+        context.beginPath(); context.moveTo(0, f.y); context.lineTo(W, f.y); context.stroke();
+        context.globalAlpha = 0.12;
+        context.fillStyle = FIGHT_CYAN;
+        context.fillRect(0, f.y, W, H - f.y);
+      } else if (f.kind === "wall") {
+        context.fillStyle = FIGHT_RED;
+        context.globalAlpha = 0.28;
+        context.fillRect(0, 0, f.x, H);
+        context.fillRect(W - f.x2, 0, f.x2, H);
+      } else if (f.kind === "pylon") {
+        context.fillStyle = FIGHT_GOLD;
+        context.fillRect(f.x - 5, f.y - 8, 10, 16);
+        context.strokeStyle = FIGHT_WHITE;
+        context.strokeRect(f.x - 5, f.y - 8, 10, 16);
+      } else if (f.kind === "keystone") {
+        context.fillStyle = col;
+        context.beginPath();
+        context.moveTo(f.x, f.y - 8); context.lineTo(f.x + 7, f.y); context.lineTo(f.x, f.y + 8); context.lineTo(f.x - 7, f.y);
+        context.closePath(); context.fill();
+      } else if (f.kind === "sat") {
+        context.fillStyle = col;
+        context.globalAlpha = f.st ? 1 : 0.45;
+        context.beginPath(); context.arc(f.x, f.y, f.st ? 7 : 5.5, 0, Math.PI * 2); context.fill();
+      } else if (f.kind === "ring") {
+        context.strokeStyle = FIGHT_RED;
+        context.globalAlpha = 0.7;
+        context.lineWidth = 2.4;
+        a = f.y2;
+        gap = (f.st || 11) / 20;
+        context.beginPath();
+        context.arc(f.x, f.y, f.x2, a + gap * 0.5, a + Math.PI * 2 - gap * 0.5);
+        context.stroke();
+        context.strokeStyle = FIGHT_CYAN;
+        context.globalAlpha = 0.55;
+        context.beginPath();
+        context.arc(f.x, f.y, f.x2, a - gap * 0.5, a + gap * 0.5);
+        context.stroke();
+      } else if (f.kind === "pawn") {
+        context.fillStyle = FIGHT_CYAN;
+        context.beginPath(); context.arc(f.x, f.y - 3, 4, 0, Math.PI * 2); context.fill();
+        context.fillRect(f.x - 4, f.y, 8, 7);
+      } else if (f.kind === "beam") {
+        context.strokeStyle = FIGHT_RED;
+        context.globalAlpha = 0.8;
+        context.lineWidth = 3;
+        context.beginPath();
+        context.moveTo(f.x, f.y);
+        context.lineTo(f.x + Math.cos(f.x2) * 260, f.y + Math.sin(f.x2) * 260);
+        context.stroke();
+        context.strokeStyle = FIGHT_CYAN;
+        context.globalAlpha = 0.7;
+        context.beginPath();
+        context.moveTo(f.x, f.y);
+        context.lineTo(f.x + Math.cos(f.y2) * 260, f.y + Math.sin(f.y2) * 260);
+        context.stroke();
+      }
+      context.restore();
+    }
+    if (fight.keysNeed && currentBoss()) {
+      k = currentBoss();
+      context.save();
+      context.fillStyle = KEY_HUES[fight.rune] || FIGHT_GOLD;
+      context.globalAlpha = 0.9;
+      context.beginPath();
+      context.moveTo(k.x, k.y - 6); context.lineTo(k.x + 5, k.y); context.lineTo(k.x, k.y + 6); context.lineTo(k.x - 5, k.y);
+      context.closePath(); context.fill();
+      context.restore();
+    }
   }
 
   function burialBar(y, gapX, col) {
@@ -7579,7 +8417,7 @@
       e.y += (fy - e.y) * Math.min(1, 4 * dt);
       return;
     }
-    if (e.type === "pentarch") {
+    if (e.type === "pentarch" || e.type === "loom" || e.type === "tessera" || e.type === "requiem" || e.type === "terminus") {
       e.x += e.patrolDir * spd * 0.92 * dt;
       if (e.x < 34) { e.x = 34; e.patrolDir = 1; }
       if (e.x > W - 34) { e.x = W - 34; e.patrolDir = -1; }
@@ -10080,6 +10918,7 @@
       eb: fillLive(snapLists.eb, ebul, null),
       pk: fillLive(snapLists.pk, pickups, null),
       te: fillLive(snapLists.te, teles, null),
+      bx: fillLive(snapLists.bx, fightSnap(), null),
       pl: fillLive(snapLists.pl, players, null)
     };
   }
@@ -10189,6 +11028,7 @@
     ebul = interpKeyed(ebul, sa && sa.eb, sb.eb, t, extra, -1, false);
     pickups = interpKeyed(pickups, sa && sa.pk, sb.pk, t, 0, -1, false);
     teles = adoptList(teles, sb.te || []);
+    applyFightSnap(sb.bx || []);
     for (i = 0; i < (sb.pl || []).length; i++) applyPlayerSnap(sb.pl[i]);
     syncLocalPlayer();
     if (netRole === "client") hideClaimedPickups();
@@ -10738,7 +11578,7 @@
       p.targetX += steerDelta(inp, inp.left, "holdL", -1, spd, dt);
       p.targetX += steerDelta(inp, inp.right, "holdR", 1, spd, dt);
     }
-    p.targetX = clamp(p.targetX, margin, W - margin);
+    p.targetX = clamp(p.targetX, margin + fightWallPad().l, W - margin - fightWallPad().r);
     }
     p.x += (p.targetX - p.x) * (1 - Math.exp(-STEER_FOLLOW * dt));
     if (!p.dash) {
@@ -10880,6 +11720,7 @@
       }
     }
     updateBossFx(dt);
+    updateFight(dt);
 
     for (i = 0; i < stars.length; i++) {
       stars[i].y += stars[i].v * dt;
@@ -11100,6 +11941,7 @@
       b.y += b.vy * dt;
       if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
       if (applyBossHazardsToPbul(b, i)) continue;
+      if (fight.on && hitFightShot(b, i)) continue;
       var consumed = false, br = (b.r || 2) + 1;
       var mi, mb;
       for (mi = ebul.length - 1; mi >= 0; mi--) {
@@ -12690,6 +13532,60 @@
       }
       context.closePath();
       context.stroke();
+    } else if (e.type === "loom") {
+      context.fillStyle = col;
+      context.beginPath(); context.ellipse(0, 2, 13, 9, 0, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.arc(0, -8, 7, 0, Math.PI * 2); context.fill();
+      context.strokeStyle = e.hitFlash > 0 ? "#fff" : col;
+      context.lineWidth = 1.4;
+      for (i = -1; i <= 1; i += 2) {
+        context.beginPath(); context.moveTo(i * 10, -2); context.lineTo(i * 18, -12); context.stroke();
+        context.beginPath(); context.moveTo(i * 10, 4); context.lineTo(i * 18, 12); context.stroke();
+        context.beginPath(); context.moveTo(i * 8, 8); context.lineTo(i * 14, 16); context.stroke();
+      }
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.beginPath(); context.arc(-4, 8, 2.2 + Math.sin(t * 8) * 0.4, 0, Math.PI * 2); context.fill();
+      context.beginPath(); context.arc(4, 8, 2.2 + Math.cos(t * 8) * 0.4, 0, Math.PI * 2); context.fill();
+      context.fillStyle = dark;
+      context.beginPath(); context.arc(-3, -9, 1.6, 0, Math.PI * 2); context.arc(3, -9, 1.6, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "tessera") {
+      context.fillStyle = col;
+      context.fillRect(-12, -10, 24, 22);
+      context.fillStyle = dark;
+      context.fillRect(-8, -6, 16, 12);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.fillRect(-6, -16, 12, 6);
+      context.beginPath(); context.moveTo(-4, -16); context.lineTo(0, -22); context.lineTo(4, -16); context.closePath(); context.fill();
+      context.fillStyle = dark;
+      context.fillRect(-3, -2, 6, 6);
+    } else if (e.type === "requiem") {
+      context.fillStyle = col;
+      context.fillRect(-14, -6, 28, 16);
+      context.fillRect(-10, -18, 20, 14);
+      for (i = -2; i <= 2; i++) {
+        context.fillRect(i * 5 - 1.4, -20, 2.8, 8 + Math.abs(i));
+      }
+      context.fillStyle = dark;
+      context.fillRect(-6, -4, 12, 10);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : (fight.reqMerged ? FIGHT_GOLD : "#c8b8ff");
+      context.beginPath(); context.arc(0, 0, 3.4 + Math.sin(t * 8) * 0.6, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "terminus") {
+      context.fillStyle = dark;
+      context.fillRect(-16, -18, 32, 36);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : col;
+      context.fillRect(-16, -18, 32, 4);
+      context.fillRect(-16, 14, 32, 4);
+      context.strokeStyle = col;
+      context.lineWidth = 1.3;
+      context.strokeRect(-12, -10, 24, 22);
+      context.fillStyle = fight.keysNeed ? dark : (e.hitFlash > 0 ? "#fff" : col);
+      context.beginPath(); context.arc(0, 0, fight.keysNeed ? 4 : (6 + Math.sin(t * 9) * 1.2), 0, Math.PI * 2); context.fill();
+      if (!fight.keysNeed) {
+        context.strokeStyle = FIGHT_WHITE;
+        context.globalAlpha = 0.8;
+        context.beginPath(); context.arc(0, 0, 8, 0, Math.PI * 2); context.stroke();
+        context.globalAlpha = 1;
+      }
     } else {
       context.beginPath(); context.arc(0, 0, e.r, 0, Math.PI * 2); context.fill();
     }
@@ -13097,6 +13993,7 @@
     }
 
     drawBossFx(ctx);
+    drawFight(ctx);
     drawHydraLeech(ctx);
     for (i = 0; i < enemies.length; i++) if (enemies[i].alive) drawEnemy(ctx, enemies[i]);
 
@@ -14154,6 +15051,7 @@
       },
       spawnBoss: function (type, tier) {
         enemies = []; ebul = []; teles = []; bossFx = []; pickups = [];
+        resetFight();
         var idx = 0, i;
         for (i = 0; i < BOSS_DEFS.length; i++) if (BOSS_DEFS[i].id === type) idx = i;
         wave = (idx + 1) * BOSS_EVERY + (tier || 0) * BOSS_DEFS.length * BOSS_EVERY;
@@ -14162,6 +15060,7 @@
         run.bossHits = 0;
         var b = makeEnemy(0, 0, type, { isBoss: true, tier: tier || 0 });
         enemies.push(b);
+        setupFightPhase(b, 0);
         updateHud();
         return b;
       },
@@ -14315,6 +15214,7 @@
       XP_BOOST_MUL: XP_BOOST_MUL,
       XP_CHARGES_MAX: XP_CHARGES_MAX,
       BOSS_XP_BOOST_CHANCE: BOSS_XP_BOOST_CHANCE,
+      CENTURY_CLEAR_XP: CENTURY_CLEAR_XP,
       GUEST_XP_BOOST_CHANCE: GUEST_XP_BOOST_CHANCE,
       maybeDropXpBoost: maybeDropXpBoost,
       canUnlockSkill: canUnlockSkill,

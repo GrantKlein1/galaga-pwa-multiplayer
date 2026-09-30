@@ -4,7 +4,8 @@
   var BOSS_IDS = [
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
-    "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch"
+    "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch",
+    "loom", "tessera", "requiem", "terminus"
   ];
   var DRAFT_STEPS = ["ship", "mod", "skin", "gun"];
   // Insane duel only (not co-op / PvE bosses).
@@ -201,6 +202,46 @@
         { id: "shear", key: "4", name: "Wind shear", cd: 7.6 },
         { id: "gale", key: "5", name: "Gale", cd: 8.4 },
         { id: "glacier", key: "6", name: "Glacier", cd: 8.2 }
+      ]
+    },
+    loom: {
+      fire: "warp", ability: "weft",
+      fireHint: "SPACE / FIRE — warp threads",
+      abilityHint: "1 — weft net",
+      abilities: [
+        { id: "weft", key: "1", name: "Weft", cd: 6.2 },
+        { id: "cocoon", key: "2", name: "Cocoon", cd: 7.4 }
+      ]
+    },
+    tessera: {
+      fire: "rook", ability: "bishop",
+      fireHint: "SPACE / FIRE — rook files",
+      abilityHint: "1 — bishop diagonals",
+      abilities: [
+        { id: "bishop", key: "1", name: "Bishop", cd: 6.0 },
+        { id: "knight", key: "2", name: "Knight", cd: 6.4 },
+        { id: "cross", key: "3", name: "Two pieces", cd: 7.2 },
+        { id: "mate", key: "4", name: "Checkmate", cd: 8.0 }
+      ]
+    },
+    requiem: {
+      fire: "hymn", ability: "canon",
+      fireHint: "SPACE / FIRE — choir ring",
+      abilityHint: "1 — canon",
+      abilities: [
+        { id: "canon", key: "1", name: "Canon", cd: 6.6 },
+        { id: "crescendo", key: "2", name: "Crescendo", cd: 8.0 }
+      ]
+    },
+    terminus: {
+      fire: "echo", ability: "invert",
+      fireHint: "SPACE / FIRE — echo volley",
+      abilityHint: "1 — invert line",
+      abilities: [
+        { id: "invert", key: "1", name: "Inversion", cd: 6.8 },
+        { id: "keystones", key: "2", name: "Keystones", cd: 7.4 },
+        { id: "collapse", key: "3", name: "Collapse", cd: 7.8 },
+        { id: "medley", key: "4", name: "Terminus", cd: 8.6 }
       ]
     }
   };

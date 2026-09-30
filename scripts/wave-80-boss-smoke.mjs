@@ -12,10 +12,11 @@ var sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 var ids = [...galaga.matchAll(/\{ id: "([a-z]+)", name: "([A-Z]+)"/g)].map(function (m) {
   return m[1];
 });
-assert(ids.length === 16, "16 roster bosses, got " + ids.length);
+assert(ids.length === 20, "20 roster bosses, got " + ids.length);
 assert(ids[10] === "mandala" && ids[12] === "kaleido", "Mandala 55 and Kaleido 65 stay");
 assert(ids[11] === "cenotaph" && ids[13] === "helios" && ids[14] === "selene", "60/70/75 ids stay");
 assert(ids[15] === "pentarch", "wave 80 is Pentarch");
+assert(ids[16] === "loom" && ids[19] === "terminus", "waves 85-100 continue the roster");
 
 function meta(n) {
   var cycle = Math.max(0, Math.round(n / 5) - 1);
@@ -27,9 +28,10 @@ assert(meta(65).type === "kaleido" && meta(65).tier === 0, "wave 65 Kaleido");
 assert(meta(70).type === "helios" && meta(70).tier === 0, "wave 70 Helios");
 assert(meta(75).type === "selene" && meta(75).tier === 0, "wave 75 Selene");
 assert(meta(80).type === "pentarch" && meta(80).tier === 0, "wave 80 Pentarch");
-assert(meta(85).type === "seraph" && meta(85).tier === 1, "+1 cycle starts at Seraph after Pentarch");
-assert(meta(155).type === "selene" && meta(155).tier === 1, "Selene +1");
-assert(meta(160).type === "pentarch" && meta(160).tier === 1, "Pentarch +1");
+assert(meta(85).type === "loom" && meta(85).tier === 0, "wave 85 Loom");
+assert(meta(105).type === "seraph" && meta(105).tier === 1, "+1 cycle starts at Seraph after Terminus");
+assert(meta(175).type === "selene" && meta(175).tier === 1, "Selene +1");
+assert(meta(180).type === "pentarch" && meta(180).tier === 1, "Pentarch +1");
 
 assert(galaga.indexOf('base: ["seal", "stamp"]') >= 0, "Mandala kit unchanged");
 assert(galaga.indexOf('p3: ["wheel"]') >= 0, "Mandala p3 unchanged");
@@ -58,12 +60,12 @@ assert(galaga.indexOf("guestPairOk") >= 0, "pairing helper present");
 assert(/never two late-tier[\s\S]{0,80}bosses/.test(galaga), "no late+late pairing");
 
 assert(codec.indexOf('"helios", "selene", "pentarch"') >= 0, "netcodec pentarch id");
-assert(/var VER = 6;/.test(codec), "codec VER bumped for wave-40 enemy ids");
+assert(/var VER = 7;/.test(codec), "codec VER 7");
 assert(codec.indexOf("p.freezeT") >= 0, "freezeT in player snap");
 
 assert(pvp.indexOf("pentarch:") >= 0, "pvp kit");
 assert(pvp.indexOf("cenotaph:") >= 0 && pvp.indexOf("helios:") >= 0 && pvp.indexOf("selene:") >= 0, "prior late pvp kits stay");
 
-assert(sw.indexOf("galaga-coop-v54") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v55") >= 0, "PWA cache bump");
 
 console.log("wave-80-boss-smoke: ok");
