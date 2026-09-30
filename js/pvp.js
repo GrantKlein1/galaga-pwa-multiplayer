@@ -265,12 +265,12 @@
       ]
     },
     lodestar: {
-      fire: "starred", ability: "pulsar",
+      fire: "starred", ability: "pulsarrow",
       fireHint: "SPACE / FIRE — red star",
-      abilityHint: "1 — pulsar",
+      abilityHint: "1 — color row",
       abilities: [
         { id: "starblue", key: "1", name: "Blue star", cd: 5.8 },
-        { id: "pulsar", key: "2", name: "Pulsar", cd: 7.2 }
+        { id: "pulsarrow", key: "2", name: "Color row", cd: 7.4 }
       ]
     },
     lernaean: {

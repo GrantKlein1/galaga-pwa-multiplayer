@@ -298,9 +298,9 @@
       flavor: "A dark field, a player lamp, gold lanterns, shots that only glint" },
     { id: "lodestar", name: "LODESTAR", color: "#c8d0ff", dark: "#080818", r: 21, hp: 1900, spd: 34, amp: 10, freq: 0.95, cd: 1.12, tele: 0.28, pts: 10800,
       exclusive: true,
-      base: ["starred"], p2: ["starblue"], p3: ["pulsar"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      base: ["starred", "redrow"], p2: ["starblue", "bluerow"], p3: ["pulsar", "pulsarrow"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "BINARY", p3Text: "PULSAR",
-      flavor: "Red/blue polarity, a countdown ring, matching shots pass through" },
+      flavor: "Red/blue polarity, a countdown ring, matching shots pass through; some rows span the field" },
     { id: "lernaean", name: "HYDRA", color: "#b8ff70", dark: "#142008", r: 24, hp: 2000, spd: 30, amp: 8, freq: 0.8, cd: 1.18, tele: 0.28, pts: 11400,
       exclusive: true,
       base: ["heads"], p2: ["neckbeam"], p3: ["hydrafan"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
@@ -3172,7 +3172,7 @@
       sandH: 0, sandMax: 88, glass: null, rewindT: 0,
       dark: false, coneR: 52, lanterns: [],
       polar: 0, polarT: 0, polarMax: 4.2,
-      heads: [], headCap: 7,
+      heads: [], headCap: 7, coreOpen: false,
       planets: [],
       prisms: [], beams: [],
       flow: 0, flowX: 120, flowY: 150,
@@ -4908,7 +4908,7 @@
       e.hitFlash = 0.05;
       return;
     }
-    if (e.type === "lernaean" && e.isBoss && fight.on && fromPerk !== "stump") {
+    if (e.type === "lernaean" && e.isBoss && fight.on && fromPerk !== "stump" && !lernaeanCoreOpen()) {
       e.hp += dmg;
       e.hitFlash = 0.04;
       return;
@@ -7578,6 +7578,16 @@
     } else if (atk === "pulsar") {
       addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
       addTele("line", e.x, e.y + 6, e.aimX, e.aimY, delay, FIGHT_WHITE);
+    } else if (atk === "redrow") {
+      addTele("hline", 6, e.y + 16, W - 6, e.y + 16, delay, FIGHT_RED);
+      addTele("flash", W / 2, e.y + 16, 0, 0, delay, FIGHT_WHITE);
+    } else if (atk === "bluerow") {
+      addTele("hline", 6, e.y + 16, W - 6, e.y + 16, delay, "#4d88ff");
+      addTele("flash", W / 2, e.y + 16, 0, 0, delay, FIGHT_WHITE);
+    } else if (atk === "pulsarrow") {
+      addTele("hline", 6, e.y + 14, W - 6, e.y + 14, delay, FIGHT_RED);
+      addTele("hline", 6, e.y + 22, W - 6, e.y + 22, delay, "#4d88ff");
+      addTele("flash", W / 2, e.y + 18, 0, 0, delay, FIGHT_WHITE);
     } else if (atk === "heads" || atk === "neckbeam" || atk === "hydrafan") {
       addTele("flash", e.x, e.y + 16, e.aimX, e.aimY, delay, FIGHT_WHITE);
       addTele("line", e.x, e.y + 16, e.aimX, e.aimY, delay, FIGHT_RED);
@@ -8551,6 +8561,14 @@
     } else if (atk === "pulsar") {
       lodestarVolley(e, 0, spd);
       lodestarVolley(e, 1, spd + 10);
+    } else if (atk === "redrow") {
+      lodestarRow(e, 0, spd);
+    } else if (atk === "bluerow") {
+      lodestarRow(e, 1, spd);
+    } else if (atk === "pulsarrow") {
+      lodestarRow(e, 0, spd);
+      addTele("hline", 6, e.y + 18, W - 6, e.y + 18, 0.42, "#4d88ff");
+      queueFollow(e, 0.42, "bluerow");
     } else if (atk === "heads") {
       lernaeanHeadShot(e, "aimed", spd);
     } else if (atk === "neckbeam") {
@@ -8699,6 +8717,7 @@
     fight.polarMax = 4.2;
     fight.heads = [];
     fight.headCap = 7;
+    fight.coreOpen = false;
     fight.planets = [];
     fight.prisms = [];
     fight.beams = [];
@@ -9032,32 +9051,87 @@
       });
     }
   }
+  function lodestarColor(polar) {
+    return polar ? "#4d88ff" : FIGHT_RED;
+  }
+  function lodestarShotOpt(polar, extra) {
+    extra = extra || {};
+    extra.color = lodestarColor(polar);
+    extra.glow = extra.color;
+    extra.polar = polar ? 1 : 0;
+    extra.r = extra.r || 3.3;
+    return extra;
+  }
   function lodestarVolley(e, polar, spd) {
-    var i, a, col, n = 5;
-    col = polar ? "#4d88ff" : FIGHT_RED;
+    var i, a, n = 5, opt;
     a = Math.atan2(e.aimY - e.y, e.aimX - e.x);
     for (i = 0; i < n; i++) {
-      addEbul(e.x, e.y + 6, Math.cos(a + (i - 2) * 0.16) * spd, Math.sin(a + (i - 2) * 0.16) * spd, {
-        color: col, glow: col, r: 2.7, silent: i > 0, polar: polar
-      });
+      opt = lodestarShotOpt(polar, { silent: i > 0, r: 3.1 });
+      addEbul(e.x, e.y + 6, Math.cos(a + (i - 2) * 0.16) * spd, Math.sin(a + (i - 2) * 0.16) * spd, opt);
     }
   }
+  function lodestarRow(e, polar, spd) {
+    var i, x, n = 16, opt, y;
+    y = e.y + 12;
+    spd = (spd || 140) * 0.92;
+    for (i = 0; i < n; i++) {
+      x = 8 + i * ((W - 16) / (n - 1));
+      opt = lodestarShotOpt(polar, { silent: i > 0, r: 3.6 });
+      addEbul(x, y, 0, spd, opt);
+    }
+  }
+  function lernaeanLivingHeads() {
+    var n = 0, i, h;
+    for (i = 0; i < fight.heads.length; i++) {
+      h = fight.heads[i];
+      if (h.sealed || h.stump) continue;
+      if (h.alive) n += 1;
+    }
+    return n;
+  }
+  function lernaeanPendingStump() {
+    var i, h;
+    for (i = 0; i < fight.heads.length; i++) {
+      h = fight.heads[i];
+      if (!h.sealed && h.stump) return true;
+    }
+    return false;
+  }
+  function lernaeanCoreOpen() {
+    return fight.type === "lernaean" && lernaeanLivingHeads() === 0 && !lernaeanPendingStump();
+  }
+  function placeLernaeanHead(boss, h) {
+    var a, rad;
+    if (!boss || !h) return;
+    a = h.ang + Math.sin(time * 2.2 + h.ang * 4) * (h.sealed || h.stump ? 0.04 : 0.12);
+    rad = h.sealed ? 16 : (h.stump ? (h.rad || 36) * 0.72 : (h.rad || 36));
+    h.nx = boss.x + Math.sin(h.ang) * 10;
+    h.ny = boss.y + 7;
+    h.x = boss.x + Math.sin(a) * rad;
+    h.y = boss.y + 16 + Math.abs(Math.cos(a)) * (rad * 0.38);
+  }
   function spawnLernaeanHeads(e, n) {
-    var i;
+    var i, span;
     fight.heads = [];
+    fight.coreOpen = false;
     n = n || 3;
+    span = n === 1 ? 0 : 2.0;
     for (i = 0; i < n; i++) {
       fight.heads.push({
-        ang: -0.9 + i * 0.9, rad: 28, x: e.x, y: e.y + 20, r: 9,
-        hp: 5, alive: true, stump: false, stumpT: 0, kind: i % 3, atkT: 0.4 + i * 0.25
+        ang: n === 1 ? 0 : -span / 2 + i * (span / (n - 1)),
+        rad: 36 + (i % 2) * 8, x: e.x, y: e.y + 28, r: 10,
+        nx: e.x, ny: e.y + 8,
+        hp: 5, alive: true, stump: false, stumpT: 0, sealed: false,
+        kind: i % 3, atkT: 0.4 + i * 0.25
       });
+      placeLernaeanHead(e, fight.heads[i]);
     }
   }
   function lernaeanHeadShot(e, kind, spd) {
     var i, h, a, tgt = { x: e.aimX, y: e.aimY };
     for (i = 0; i < fight.heads.length; i++) {
       h = fight.heads[i];
-      if (!h.alive || h.stump) continue;
+      if (!h.alive || h.stump || h.sealed) continue;
       a = Math.atan2(tgt.y - h.y, tgt.x - h.x);
       if (kind === "beam" || h.kind === 1) {
         addEbul(h.x, h.y, Math.cos(a) * (spd + 20), Math.sin(a) * (spd + 20), {
@@ -9073,14 +9147,17 @@
     }
   }
   function growLernaeanHeads(from, n) {
-    var i, h, cap = fight.headCap || 7, extra = 0;
+    var i, cap = fight.headCap || 7, extra = 0, living;
     n = n || 2;
+    living = lernaeanLivingHeads();
     for (i = 0; i < n; i++) {
-      if (fight.heads.length >= cap) break;
+      if (living + extra >= cap) break;
       extra += 1;
       fight.heads.push({
-        ang: from.ang + (i ? 0.45 : -0.45), rad: 28, x: from.x, y: from.y, r: 8,
-        hp: 6, alive: true, stump: false, stumpT: 0, kind: (from.kind + 1 + i) % 3, atkT: 0.3
+        ang: from.ang + (i ? 0.42 : -0.42), rad: (from.rad || 36) + (i ? 6 : 0),
+        x: from.x, y: from.y, r: 9, nx: from.nx, ny: from.ny,
+        hp: 6, alive: true, stump: false, stumpT: 0, sealed: false,
+        kind: (from.kind + 1 + i) % 3, atkT: 0.3
       });
     }
     if (extra) banner = { text: extra === 1 ? "IT GROWS" : "TWO FROM ONE", life: 0.7 };
@@ -9613,7 +9690,8 @@
       placeLanterns(e, 2 + idx);
       if (idx === 0) banner = { text: "THE LAMP GOES OUT", life: 1.2 };
     } else if (e.type === "lodestar") {
-      fight.polar = idx % 2;
+      // Start opposite the phase's main color so the first volley hurts until the ring matches.
+      fight.polar = idx === 1 ? 0 : 1;
       fight.polarMax = idx >= 2 ? 2.2 : (idx >= 1 ? 3.2 : 4.2);
       fight.polarT = fight.polarMax;
       if (idx === 0) banner = { text: "CHOOSE A STAR", life: 1.2 };
@@ -9854,8 +9932,9 @@
     if (fight.heads && fight.heads.length) {
       for (i = 0; i < fight.heads.length; i++) {
         k = fight.heads[i];
-        if (k.stump) {
+        if (k.stump && !k.sealed) {
           k.stumpT -= dt;
+          placeLernaeanHead(boss, k);
           if (k.stumpT <= 0) {
             k.stump = false;
             k.alive = false;
@@ -9865,10 +9944,8 @@
           }
           continue;
         }
-        if (!k.alive) continue;
-        k.ang += dt * (0.7 + (k.kind || 0) * 0.15);
-        k.x = boss.x + Math.sin(k.ang) * k.rad;
-        k.y = boss.y + 16 + Math.cos(k.ang) * (k.rad * 0.45);
+        placeLernaeanHead(boss, k);
+        if (k.sealed || !k.alive) continue;
         k.atkT -= dt;
         if (k.atkT <= 0 && tgt) {
           k.atkT = 1.15 - boss.phaseIdx * 0.12;
@@ -9877,6 +9954,10 @@
             color: FIGHT_RED, glow: FIGHT_RED, r: 2.4, silent: true
           });
         }
+      }
+      if (lernaeanCoreOpen() && !fight.coreOpen) {
+        fight.coreOpen = true;
+        banner = { text: "THE HEART", life: 1.1 };
       }
     }
     if (fight.planets && fight.planets.length) {
@@ -10046,10 +10127,12 @@
     }
     for (n = 0; n < fight.heads.length; n++) {
       obj = fight.heads[n];
+      if (obj.sealed) continue;
       if (obj.stump) {
         if (dist2(b.x, b.y, obj.x, obj.y) < (obj.r + 1 + (b.r || 2)) * (obj.r + 1 + (b.r || 2))) {
           obj.stump = false;
           obj.alive = false;
+          obj.sealed = true;
           explode(obj.x, obj.y, FIGHT_GOLD, true);
           boss = currentBoss();
           if (boss) killEnemy(boss, false, Math.max(12, Math.round((boss.maxHp || 2000) * 0.07)), b.owner, "stump");
@@ -10063,7 +10146,7 @@
         obj.hp -= dmg;
         if (obj.hp <= 0) {
           obj.stump = true;
-          obj.stumpT = 0.95;
+          obj.stumpT = 1.05;
           explode(obj.x, obj.y, FIGHT_WHITE, false);
         }
         pbul.splice(i, 1);
@@ -10112,6 +10195,58 @@
       }
     }
     return false;
+  }
+  function drawLernaeanNeck(context, x0, y0, x1, y1, gold) {
+    var mx, my;
+    if (x0 == null || y0 == null) return;
+    mx = (x0 + x1) * 0.5 + (y1 - y0) * 0.1;
+    my = (y0 + y1) * 0.42;
+    context.strokeStyle = gold ? FIGHT_GOLD : "#6ad040";
+    context.lineWidth = gold ? 3.4 : 4.4;
+    context.lineCap = "round";
+    context.beginPath();
+    context.moveTo(x0, y0);
+    context.quadraticCurveTo(mx, my, x1, y1);
+    context.stroke();
+    context.strokeStyle = gold ? FIGHT_WHITE : "#142008";
+    context.lineWidth = 1.5;
+    context.beginPath();
+    context.moveTo(x0, y0);
+    context.quadraticCurveTo(mx, my, x1, y1);
+    context.stroke();
+  }
+  function drawLernaeanHeadSprite(context, x, y, ang, kind) {
+    context.save();
+    context.translate(x, y);
+    context.rotate(ang);
+    context.fillStyle = "#b8ff70";
+    context.beginPath();
+    context.ellipse(0, 0, 7.2, 5.4, 0, 0, Math.PI * 2);
+    context.fill();
+    context.beginPath();
+    context.moveTo(4, -3.2);
+    context.lineTo(13, -0.4);
+    context.lineTo(4, 2.4);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#3d8818";
+    context.beginPath();
+    context.moveTo(5, 1.2);
+    context.lineTo(12, 3.4);
+    context.lineTo(4, 4.4);
+    context.closePath();
+    context.fill();
+    context.fillStyle = kind === 1 ? FIGHT_WHITE : FIGHT_RED;
+    context.beginPath();
+    context.arc(1.2, -2.2, 1.6, 0, Math.PI * 2);
+    context.arc(1.2, 1.7, 1.4, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "#081008";
+    context.beginPath();
+    context.arc(1.7, -2.2, 0.7, 0, Math.PI * 2);
+    context.arc(1.7, 1.7, 0.6, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
   }
   function fightSnap() {
     var out = [], i, th, ka, kb, k, tile, obj, pos, pl, a;
@@ -10194,8 +10329,13 @@
     }
     for (i = 0; i < fight.heads.length; i++) {
       obj = fight.heads[i];
-      if (obj.stump) out.push({ kind: "stump", x: obj.x, y: obj.y, x2: 0, y2: 0, st: 1, t: obj.stumpT || 0, color: FIGHT_GOLD });
-      else if (obj.alive) out.push({ kind: "head", x: obj.x, y: obj.y, x2: 0, y2: 0, st: obj.kind || 0, t: 0, color: FIGHT_RED });
+      if (obj.sealed) {
+        out.push({ kind: "stump", x: obj.x, y: obj.y, x2: obj.nx || obj.x, y2: obj.ny || obj.y, st: 2, t: 0, color: FIGHT_GOLD });
+      } else if (obj.stump) {
+        out.push({ kind: "stump", x: obj.x, y: obj.y, x2: obj.nx || obj.x, y2: obj.ny || obj.y, st: 1, t: obj.stumpT || 0, color: FIGHT_GOLD });
+      } else if (obj.alive) {
+        out.push({ kind: "head", x: obj.x, y: obj.y, x2: obj.nx || obj.x, y2: obj.ny || obj.y, st: obj.kind || 0, t: 0, color: FIGHT_RED });
+      }
     }
     for (i = 0; i < fight.planets.length; i++) {
       obj = fight.planets[i];
@@ -10254,6 +10394,12 @@
       if (it.kind === "wall") { fight.wallL = it.x || 0; fight.wallR = it.x2 || 0; }
       if (it.kind === "sand") fight.sandH = it.y || 0;
       if (it.kind === "flow") fight.flow = it.t || fight.flow;
+      if (it.kind === "polar") {
+        fight.polar = it.st ? 1 : 0;
+        fight.polarT = it.t;
+        fight.polarMax = it.x2 || fight.polarMax || 4.2;
+        fight.type = "lodestar";
+      }
       if (it.kind === "rule") {
         fight.fallUp = !!(it.st & 1);
         fight.bounce = !!(it.st & 2);
@@ -10432,26 +10578,35 @@
         }
       } else if (f.kind === "polar") {
         context.strokeStyle = col;
-        context.globalAlpha = 0.85;
-        context.lineWidth = 2;
+        context.globalAlpha = 0.9;
+        context.lineWidth = 3;
         a = -Math.PI / 2;
         gap = (f.t / (f.x2 || 4.2)) * Math.PI * 2;
         context.beginPath();
-        context.arc(f.x, f.y, 14, a, a + gap);
+        context.arc(f.x, f.y, 16, a, a + gap);
         context.stroke();
-        context.globalAlpha = 0.25;
-        context.beginPath(); context.arc(f.x, f.y, 14, 0, Math.PI * 2); context.stroke();
+        context.globalAlpha = 0.22;
+        context.fillStyle = col;
+        context.beginPath(); context.arc(f.x, f.y, 13, 0, Math.PI * 2); context.fill();
+        context.globalAlpha = 0.35;
+        context.beginPath(); context.arc(f.x, f.y, 16, 0, Math.PI * 2); context.stroke();
       } else if (f.kind === "head") {
-        context.fillStyle = FIGHT_RED;
-        context.beginPath(); context.ellipse(f.x, f.y, 8, 6, 0, 0, Math.PI * 2); context.fill();
-        context.fillStyle = FIGHT_GOLD;
-        context.beginPath(); context.arc(f.x, f.y - 1, 1.6, 0, Math.PI * 2); context.fill();
+        drawLernaeanNeck(context, f.x2, f.y2, f.x, f.y, false);
+        drawLernaeanHeadSprite(context, f.x, f.y, Math.atan2((H * 0.72) - f.y, (W / 2) - f.x), f.st);
       } else if (f.kind === "stump") {
+        drawLernaeanNeck(context, f.x2, f.y2, f.x, f.y, true);
         context.fillStyle = FIGHT_GOLD;
         context.globalAlpha = 0.95;
-        context.beginPath(); context.arc(f.x, f.y, 7, 0, Math.PI * 2); context.fill();
+        context.beginPath(); context.arc(f.x, f.y, f.st === 2 ? 5 : 7, 0, Math.PI * 2); context.fill();
         context.strokeStyle = FIGHT_WHITE;
+        context.lineWidth = 1.4;
         context.stroke();
+        if (f.st !== 2 && f.t > 0) {
+          context.globalAlpha = 0.75;
+          context.beginPath();
+          context.arc(f.x, f.y, 6 + f.t * 12, 0, Math.PI * 2);
+          context.stroke();
+        }
       } else if (f.kind === "planet") {
         context.strokeStyle = FIGHT_CYAN;
         context.globalAlpha = 0.28;
@@ -14475,7 +14630,7 @@
           }
         }
         if (dist2(b.x, b.y, pl.x, pl.y) < (pr + (b.r || 2) - 1.5) * (pr + (b.r || 2) - 1.5)) {
-          if (b.polar != null && fight.type === "lodestar" && b.polar === fight.polar) continue;
+          if (b.polar != null && fight.type === "lodestar" && (b.polar | 0) === (fight.polar | 0)) continue;
           ebul.splice(i, 1);
           if (isPvpRun()) pvpHurt(pl, 8);
           else playerDie(pl);
@@ -14900,6 +15055,12 @@
     applySkinFill(context, fx, hull, accent);
     tracePoly(context, pts);
     context.fill();
+    if (fight.on && fight.type === "lodestar") {
+      context.globalAlpha = 0.48;
+      context.fillStyle = fight.polar ? "#4d88ff" : FIGHT_RED;
+      fillPoly(context, pts);
+      context.globalAlpha = 1;
+    }
     context.globalAlpha = 1;
     drawSkinExtras(context, fx, hull, accent, pts);
     drawCanopy(context, fx, accent);
@@ -15971,12 +16132,25 @@
     } else if (e.type === "lernaean") {
       context.fillStyle = col;
       context.beginPath();
-      context.moveTo(-16, 6); context.quadraticCurveTo(0, -8, 16, 6); context.quadraticCurveTo(0, 14, -16, 6);
+      context.moveTo(-18, 2);
+      context.quadraticCurveTo(-8, -14, 0, -12);
+      context.quadraticCurveTo(8, -14, 18, 2);
+      context.quadraticCurveTo(10, 16, 0, 14);
+      context.quadraticCurveTo(-10, 16, -18, 2);
       context.fill();
       context.fillStyle = dark;
-      context.fillRect(-6, -2, 12, 8);
-      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
-      context.beginPath(); context.arc(0, 2, 3, 0, Math.PI * 2); context.fill();
+      context.fillRect(-7, -4, 14, 10);
+      context.fillStyle = col;
+      context.fillRect(-13, 10, 6, 5);
+      context.fillRect(-3, 12, 6, 5);
+      context.fillRect(8, 10, 6, 5);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : (lernaeanCoreOpen() ? FIGHT_GOLD : "#3d8818");
+      context.beginPath(); context.arc(0, 2, lernaeanCoreOpen() ? 5.4 + Math.sin(t * 8) * 1.1 : 3.2, 0, Math.PI * 2); context.fill();
+      if (lernaeanCoreOpen()) {
+        context.strokeStyle = FIGHT_WHITE;
+        context.lineWidth = 1.2;
+        context.stroke();
+      }
     } else if (e.type === "orrery") {
       context.fillStyle = dark;
       context.beginPath(); context.arc(0, 0, 16, 0, Math.PI * 2); context.fill();
@@ -16555,6 +16729,19 @@
     for (i = 0; i < ebul.length; i++) {
       b = ebul[i];
       if (fight.dark && !(b.glintT > 0) && !inFightLight(b.x, b.y)) continue;
+      if (b.polar != null) {
+        glow(ctx, b.color || lodestarColor(b.polar), 12);
+        ctx.fillStyle = b.color || lodestarColor(b.polar);
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, (b.r || 3.2) + 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 1.15, 0, Math.PI * 2);
+        ctx.fill();
+        noGlow(ctx);
+        continue;
+      }
       glow(ctx, (b.glintT > 0) ? FIGHT_WHITE : (b.glow || "#ff6b9a"), b.mine ? 12 : 8);
       ctx.fillStyle = (b.glintT > 0) ? FIGHT_WHITE : (b.color || "#ffd0e0");
       ctx.beginPath();
@@ -16645,6 +16832,23 @@
         drawShip(ctx, p.x, p.y, p.invuln > 0, currentLoadout(p));
       }
       ctx.restore();
+      if (fight.on && fight.type === "lodestar") {
+        var pcol = fight.polar ? "#4d88ff" : FIGHT_RED;
+        var pmax = fight.polarMax || 4.2;
+        var pgap = ((fight.polarT || 0) / pmax) * Math.PI * 2;
+        ctx.save();
+        ctx.strokeStyle = pcol;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.95;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 17, -Math.PI / 2, -Math.PI / 2 + pgap);
+        ctx.stroke();
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 17, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
       if ((p.freezeT || 0) > 0) {
         ctx.save();
         ctx.globalAlpha = 0.45 + 0.2 * Math.sin(time * 14);

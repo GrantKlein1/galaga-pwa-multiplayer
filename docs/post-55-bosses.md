@@ -77,16 +77,16 @@ Telegraphs are 0.28s, shorter than Terminus.
 3 exclusive phases. Base HP 1900. HP ticks at 66% and 33%. Star body whose core matches the current polarity.
 
 - The ship wears a red or blue countdown ring. Shots that match the ring pass through; opposite-color shots hurt.
-- **Red (p1):** CHOOSE A STAR. Slow swap, red volleys.
-- **Binary (p2):** BINARY. Blue volleys, faster swap.
-- **Pulsar (p3):** PULSAR. Both colors at once, fastest ring.
+- **Red (p1):** CHOOSE A STAR. Slow swap, dodgeable red fans plus a full-width red row you cannot sidestep.
+- **Binary (p2):** BINARY. Blue fans plus a full-width blue row, faster swap.
+- **Pulsar (p3):** PULSAR. Both-color fans, then a red row followed by a blue row. Fastest ring.
 
 ## Hydra — wave 120, the heads (id `lernaean`)
 
-3 exclusive phases. Base HP 2000. HP ticks at 66% and 33%. Distinct from wave-15 Hydra. The body ignores shots; only heads and gold stumps count.
+3 exclusive phases. Base HP 2000. HP ticks at 66% and 33%. Distinct from wave-15 Hydra. Heads sit on necks attached to the body. The body ignores shots until every remaining neck is cauterized (or nothing is left to shoot); then the gold heart can be killed.
 
 - Each living head fires its own aimed attack at the live player.
-- Cutting a head leaves a gold stump for about a second. Hit the stump to wound the boss. Miss it, and two more heads grow (capped at 7).
+- Cutting a head leaves a gold stump on that neck for about a second. Hit the stump to cauterize it and wound the boss. Miss it, and two more heads grow (capped at 7).
 - **Heads (p1):** HEADS WILL GROW. Three heads.
 - **Neck (p2):** TWO FROM ONE. Four heads, beam shots.
 - **Hydra (p3):** THE HYDRA. Five heads, fans.
