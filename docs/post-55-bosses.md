@@ -121,13 +121,14 @@ Telegraphs are 0.28s, shorter than Terminus.
 
 ## Cartographer — wave 140, the map
 
-4 exclusive phases. Base HP 2600. HP ticks at 75 / 50 / 25. Sliding 2×2 panes.
+4 exclusive phases. Base HP 2600. HP ticks at 75 / 50 / 25. The field is a 2×2 sliding-puzzle of map panes. The body stays damageable; gold pins are extra weak points.
 
-- Matching-color pane edges wrap the ship. Gold pins are weak points.
-- **Chart (p1):** THE MAP OPENS. Slow slide, three-shot volleys.
-- **Remap (p2):** THE MAP SLIDES. Panes shift; four-shot volleys.
-- **Fold (p3):** EDGES AGREE. Faster wrap, denser volleys.
-- **Atlas (p4):** THE ATLAS. Hardest slide and a slam.
+- Linked pane edges share a color (red / cyan / gold / white). Fly off a colored edge and you wrap to the matching edge on its linked pane. Unlinked edges are walls.
+- Panes slide into adjacent slots. Telegraphs stay short. Attacks aim at the live player.
+- **Chart (p1):** THE MAP OPENS. Slow slides, three-shot red volleys.
+- **Remap (p2):** THE MAP SLIDES. Panes shift and wrap pairs scramble; four-shot volleys.
+- **Fold (p3):** EDGES AGREE. Faster slides, denser volleys.
+- **Atlas (p4):** THE ATLAS. Hardest slide, a red slam, densest volleys.
 
 ## Mimic — wave 145, the copy
 
@@ -147,11 +148,11 @@ Telegraphs are 0.28s, shorter than Terminus.
 | Phase | Banner | Kit |
 | ---: | --- | --- |
 | 1 Fall up | SHOTS FALL UP | The ship is locked to the top band. Shots fall "up." |
-| 2 Bounce | YOUR BULLETS BOUNCE | Player bullets reverse on walls (max 4). |
+| 2 Bounce | YOUR BULLETS BOUNCE | Player bullets reverse on walls (max 4). After a bounce they are red and damage the player, including the owner, if they come back. The rule card stays. Bounce turns off when the phase ends. |
 | 3 Graze | GRAZING HEALS | A 0.35s near-miss then +1 life or shield (1.15s lock). |
 | 4 Turn | THE SCREEN TURNS | The playfield rotates 90°. Keys and pointer remap. |
 | 5 Gravity | GRAVITY PULLS DOWN | Extra downward velocity on the ship and shots. |
-| 6 Mix | TWO RULES | Bounce plus gravity together. |
+| 6 Mix | TWO RULES | Bounce plus gravity together. Bounced player shots still hurt the owner. Both rules clear when the fight ends. |
 
 **Victory:** banner `WAVE 150 CLEARED` and an **Axiom Clear** XP bonus (`AXIOM_CLEAR_XP = 12000`) on the existing `run.xpBonus` path. First-cycle dedicated wave 150 only, not guests or later rematches. Skip-start past 150 also credits Axiom Clear.
 

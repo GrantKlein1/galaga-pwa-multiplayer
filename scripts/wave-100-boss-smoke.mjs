@@ -92,6 +92,6 @@ assert(codec.indexOf('"thread"') >= 0 && codec.indexOf('"midline"') >= 0, "threa
 assert(codec.indexOf('"keystone"') >= 0 && codec.indexOf('"pylon"') >= 0 && codec.indexOf('"ghost"') >= 0, "keystone/pylon/ghost kinds");
 
 assert(pvp.indexOf("loom:") >= 0 && pvp.indexOf("terminus:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v67") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v68") >= 0, "PWA cache bump");
 
 console.log("wave-100-boss-smoke: ok");

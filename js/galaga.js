@@ -3195,6 +3195,7 @@
     var sand = fight.sandH || 0;
     if (isPvpRun() && p && p.slot === 1) return { lo: margin, hi: mid - margin };
     if (fight.fallUp) return { lo: margin, hi: mid - margin };
+    if (fight.panes && fight.panes.length) return { lo: margin, hi: H - margin - sand };
     return { lo: mid + margin, hi: H - margin - sand };
   }
   function fightWallPad() {
@@ -9516,29 +9517,96 @@
     obj.vy += (-dy / d) * str * 0.12 * dt;
   }
   var PANE_COLS = ["#ff4d4d", "#7ef9ff", "#ffd23d", "#e8e4dc"];
+  var PANE_EDGE_COLS = ["#ff4d4d", "#7ef9ff", "#ffd23d", "#ffffff"];
+  var PANE_DIRS = ["L", "R", "U", "D"];
+  function cartSlotRect(slot) {
+    var col = slot % 2, row = (slot / 2) | 0;
+    return { x: col * (W / 2), y: row * (H / 2), w: W / 2, h: H / 2 };
+  }
+  function paneInSlot(slot) {
+    var i;
+    for (i = 0; i < fight.panes.length; i++) {
+      if (fight.panes[i].slot === slot) return fight.panes[i];
+    }
+    return null;
+  }
+  function linkCartEdges(a, da, b, db, color) {
+    if (!fight.panes[a] || !fight.panes[b]) return;
+    fight.panes[a].links[da] = { id: b, edge: db, color: color };
+    fight.panes[b].links[db] = { id: a, edge: da, color: color };
+  }
+  function scrambleCartographerLinks() {
+    var i, h, v, cols;
+    if (!fight.panes.length) return;
+    cols = PANE_EDGE_COLS.slice();
+    for (i = 0; i < fight.panes.length; i++) {
+      fight.panes[i].links = { L: null, R: null, U: null, D: null };
+    }
+    h = [0, 1, 2, 3];
+    shuffleInPlace(h);
+    linkCartEdges(h[0], "R", h[1], "L", cols[0]);
+    linkCartEdges(h[2], "R", h[3], "L", cols[1]);
+    v = [0, 1, 2, 3];
+    shuffleInPlace(v);
+    linkCartEdges(v[0], "D", v[1], "U", cols[2]);
+    linkCartEdges(v[2], "D", v[3], "U", cols[3]);
+  }
+  function applyCartographerSlot(p, slot, snap) {
+    var r = cartSlotRect(slot);
+    p.slot = slot;
+    if (snap) {
+      p.x = r.x;
+      p.y = r.y;
+    }
+    p.w = r.w;
+    p.h = r.h;
+    p.ox = 0;
+    p.oy = 0;
+  }
   function spawnCartographerPanes(e, n) {
-    var pw = W / 2, ph = H / 2, i, row, col;
+    var i, r;
     n = n || 4;
     fight.panes = [];
     fight.pins = [];
+    fight.paneSlide = 0;
+    fight.paneSlideT = 0;
+    fight.paneSlideDur = 0.42;
+    fight.paneNext = 0.7;
     for (i = 0; i < n; i++) {
-      col = i % 2;
-      row = Math.floor(i / 2);
+      r = cartSlotRect(i);
       fight.panes.push({
-        id: i, x: col * pw, y: row * ph, w: pw, h: ph,
-        ox: 0, oy: 0, col: i,
-        linkR: col === 0 ? i + 1 : i - 1,
-        linkD: row === 0 ? i + 2 : i - 2
+        id: i, slot: i, x: r.x, y: r.y, w: r.w, h: r.h,
+        ox: 0, oy: 0, col: i, links: { L: null, R: null, U: null, D: null },
+        fromSlot: i, toSlot: i
       });
       fight.pins.push({
-        x: col * pw + pw * 0.5, y: row * ph + ph * 0.5, r: 7, hp: 5, alive: true, col: i
+        x: r.x + r.w * 0.5, y: r.y + r.h * 0.5, r: 7, hp: 5, alive: true, col: i
       });
     }
+    scrambleCartographerLinks();
     fight.paneT = 0;
   }
+  function startCartographerSlide() {
+    var adj = [[0, 1], [0, 2], [1, 3], [2, 3]], pick, a, b, pa, pb, boss;
+    if (!fight.panes.length || fight.paneSlide > 0) return;
+    pick = adj[Math.floor(Math.random() * adj.length)];
+    a = pick[0];
+    b = pick[1];
+    pa = paneInSlot(a);
+    pb = paneInSlot(b);
+    if (!pa || !pb) return;
+    pa.fromSlot = pa.slot;
+    pa.toSlot = b;
+    pb.fromSlot = pb.slot;
+    pb.toSlot = a;
+    fight.paneSlide = 1;
+    fight.paneSlideT = 0;
+    boss = currentBoss();
+    fight.paneSlideDur = boss && (boss.phaseIdx || 0) >= 3 ? 0.28 : (boss && (boss.phaseIdx || 0) >= 2 ? 0.34 : 0.42);
+  }
   function slideCartographerPanes(amp) {
-    fight.paneAmp = amp || 0.35;
-    fight.paneT = 0;
+    startCartographerSlide();
+    if ((amp || 0) >= 0.45) scrambleCartographerLinks();
   }
   function paneWorld(p) {
     return { x: p.x + (p.ox || 0), y: p.y + (p.oy || 0), w: p.w, h: p.h };
@@ -9552,79 +9620,68 @@
     }
     return null;
   }
-  function wrapCartographer(pl) {
-    var pane, linked, w, lw, nx, ny, i;
-    if (!fight.panes.length || !pl) return;
-    pane = paneContaining(pl.x, pl.y);
-    if (pane) return;
-    nx = pl.x;
-    ny = pl.y;
-    if (nx < 0) nx += W;
-    if (nx >= W) nx -= W;
-    if (ny < 0) ny += H;
-    if (ny >= H) ny -= H;
-    for (i = 0; i < fight.panes.length; i++) {
-      pane = fight.panes[i];
-      w = paneWorld(pane);
-      if (pl.x < w.x && pane.linkR != null) {
-        linked = fight.panes[pane.linkR];
-        if (linked) {
-          lw = paneWorld(linked);
-          pl.x = lw.x + lw.w - 8;
-          pl.y = lw.y + ((pl.y - w.y) / w.h) * lw.h;
-          pl.targetX = pl.x;
-          pl.targetY = pl.y;
-          return;
-        }
-      }
-      if (pl.x > w.x + w.w && pane.linkR != null) {
-        linked = fight.panes[pane.linkR];
-        if (linked) {
-          lw = paneWorld(linked);
-          pl.x = lw.x + 8;
-          pl.y = lw.y + ((pl.y - w.y) / w.h) * lw.h;
-          pl.targetX = pl.x;
-          pl.targetY = pl.y;
-          return;
-        }
-      }
-      if (pl.y < w.y && pane.linkD != null) {
-        linked = fight.panes[pane.linkD];
-        if (linked) {
-          lw = paneWorld(linked);
-          pl.y = lw.y + lw.h - 8;
-          pl.x = lw.x + ((pl.x - w.x) / w.w) * lw.w;
-          pl.targetX = pl.x;
-          pl.targetY = pl.y;
-          return;
-        }
-      }
-      if (pl.y > w.y + w.h && pane.linkD != null) {
-        linked = fight.panes[pane.linkD];
-        if (linked) {
-          lw = paneWorld(linked);
-          pl.y = lw.y + 8;
-          pl.x = lw.x + ((pl.x - w.x) / w.w) * lw.w;
-          pl.targetX = pl.x;
-          pl.targetY = pl.y;
-          return;
-        }
-      }
-    }
-    pl.x = clamp(nx, 12, W - 12);
-    pl.y = clamp(ny, 12, H - 12);
+  function paneCrossDir(pl, w) {
+    if (pl.x < w.x) return "L";
+    if (pl.x >= w.x + w.w) return "R";
+    if (pl.y < w.y) return "U";
+    if (pl.y >= w.y + w.h) return "D";
+    return "";
+  }
+  function paneEdgeFrac(pl, w, dir) {
+    if (dir === "L" || dir === "R") return (pl.y - w.y) / (w.h || 1);
+    return (pl.x - w.x) / (w.w || 1);
+  }
+  function placeOnPaneEdge(pl, w, dir, frac) {
+    frac = clamp(frac, 0.08, 0.92);
+    if (dir === "L") { pl.x = w.x + 8; pl.y = w.y + frac * w.h; }
+    else if (dir === "R") { pl.x = w.x + w.w - 8; pl.y = w.y + frac * w.h; }
+    else if (dir === "U") { pl.y = w.y + 8; pl.x = w.x + frac * w.w; }
+    else { pl.y = w.y + w.h - 8; pl.x = w.x + frac * w.w; }
     pl.targetX = pl.x;
     pl.targetY = pl.y;
   }
-  function cartographerVolley(e, spd, n) {
-    var i, a, tgt = { x: e.aimX, y: e.aimY };
-    n = n || 3;
-    a = Math.atan2(tgt.y - e.y, tgt.x - e.x);
-    for (i = 0; i < n; i++) {
-      addEbul(e.x, e.y + 8, Math.cos(a + (i - (n - 1) / 2) * 0.2) * spd, Math.sin(a + (i - (n - 1) / 2) * 0.2) * spd, {
-        color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: i > 0
-      });
+  function wrapCartographer(pl) {
+    var pane, inside, w, dir, link, dest, dw, frac;
+    if (!fight.panes.length || !pl) return;
+    inside = paneContaining(pl.x, pl.y);
+    if (inside) {
+      pl.mapPane = inside.id;
+      return;
     }
+    pane = fight.panes[pl.mapPane];
+    if (!pane) pane = fight.panes[0];
+    if (!pane) return;
+    w = paneWorld(pane);
+    dir = paneCrossDir(pl, w);
+    link = dir && pane.links ? pane.links[dir] : null;
+    if (!link) {
+      pl.x = clamp(pl.x, w.x + 8, w.x + w.w - 8);
+      pl.y = clamp(pl.y, w.y + 8, w.y + w.h - 8);
+      pl.targetX = pl.x;
+      pl.targetY = pl.y;
+      pl.mapPane = pane.id;
+      return;
+    }
+    dest = fight.panes[link.id];
+    if (!dest) return;
+    dw = paneWorld(dest);
+    frac = paneEdgeFrac(pl, w, dir);
+    placeOnPaneEdge(pl, dw, link.edge, frac);
+    pl.mapPane = dest.id;
+  }
+  function cartographerVolley(e, spd, n) {
+    var tgt = targetPlayer(e.x, e.y) || { x: e.aimX, y: e.aimY };
+    n = n || 3;
+    aimedWedge(e.x, e.y + 8, tgt.x, tgt.y, n, 0.18 + n * 0.02, spd, {
+      color: FIGHT_RED, glow: FIGHT_RED, r: 2.5
+    });
+  }
+  function paneEdgeStrip(pos, dir) {
+    var pad = 3, thick = 6;
+    if (dir === "L") return { x: pos.x + pad, y: pos.y + pad, w: thick, h: pos.h - pad * 2 };
+    if (dir === "R") return { x: pos.x + pos.w - pad - thick, y: pos.y + pad, w: thick, h: pos.h - pad * 2 };
+    if (dir === "U") return { x: pos.x + pad, y: pos.y + pad, w: pos.w - pad * 2, h: thick };
+    return { x: pos.x + pad, y: pos.y + pos.h - pad - thick, w: pos.w - pad * 2, h: thick };
   }
   // Mimic copies the player's current boss ability via currentBossAbilityId +
   // bossAbilityDef, then fires a red enemy-bullet version of that pattern.
@@ -9905,7 +9962,6 @@
       if (idx === 0) banner = { text: "THE WATER TURNS", life: 1.2 };
     } else if (e.type === "cartographer") {
       spawnCartographerPanes(e, 4);
-      fight.paneAmp = 0.12 + idx * 0.12;
       if (idx === 0) banner = { text: "THE MAP OPENS", life: 1.2 };
     } else if (e.type === "mimic") {
       fight.mimic = true;
@@ -9925,7 +9981,7 @@
     }
   }
   function updateFight(dt) {
-    var boss = currentBoss(), i, th, ka, kb, pl, tgt, ang, sat, ring, k, pos, tile, tw, thh, cx, cy, beam, gap;
+    var boss = currentBoss(), i, th, ka, kb, pl, tgt, ang, sat, ring, k, pos, tile, tw, thh, cx, cy, beam, gap, pi;
     if (!fight.on || !boss || !boss.alive) {
       if (fight.on && (!boss || !boss.alive)) resetFight();
       return;
@@ -10182,10 +10238,43 @@
     }
     if (fight.panes && fight.panes.length) {
       fight.paneT += dt;
-      for (i = 0; i < fight.panes.length; i++) {
-        k = fight.panes[i];
-        k.ox = Math.sin(fight.paneT * 0.8 + i) * 18 * (fight.paneAmp || 0.2);
-        k.oy = Math.cos(fight.paneT * 0.55 + i * 0.7) * 12 * (fight.paneAmp || 0.2);
+      if (fight.paneSlide > 0) {
+        fight.paneSlideT += dt;
+        var slideU = Math.min(1, fight.paneSlideT / (fight.paneSlideDur || 0.42));
+        slideU = slideU * slideU * (3 - 2 * slideU);
+        for (i = 0; i < fight.panes.length; i++) {
+          k = fight.panes[i];
+          if (k.toSlot == null || k.toSlot === k.fromSlot) continue;
+          var fromR = cartSlotRect(k.fromSlot);
+          var toR = cartSlotRect(k.toSlot);
+          var px0 = k.x, py0 = k.y;
+          k.x = fromR.x + (toR.x - fromR.x) * slideU;
+          k.y = fromR.y + (toR.y - fromR.y) * slideU;
+          for (pi = 0; pi < players.length; pi++) {
+            pl = players[pi];
+            if (!pl || !pl.alive || pl.mapPane !== k.id) continue;
+            pl.x += k.x - px0;
+            pl.y += k.y - py0;
+            pl.targetX = pl.x;
+            pl.targetY = pl.y;
+          }
+        }
+        if (slideU >= 1) {
+          for (i = 0; i < fight.panes.length; i++) {
+            k = fight.panes[i];
+            if (k.toSlot == null) continue;
+            applyCartographerSlot(k, k.toSlot, true);
+            k.fromSlot = k.slot;
+          }
+          fight.paneSlide = 0;
+        }
+      } else {
+        fight.paneNext = (fight.paneNext == null ? 0.7 : fight.paneNext) - dt;
+        if (fight.paneNext <= 0) {
+          var bossPh = boss.phaseIdx || 0;
+          fight.paneNext = bossPh >= 3 ? 0.48 : (bossPh >= 2 ? 0.62 : (bossPh >= 1 ? 0.82 : 1.05));
+          startCartographerSlide();
+        }
       }
       for (i = 0; i < fight.pins.length; i++) {
         k = fight.pins[i];
@@ -10552,6 +10641,14 @@
       obj = fight.panes[i];
       pos = paneWorld(obj);
       out.push({ kind: "pane", x: pos.x, y: pos.y, x2: pos.w, y2: pos.h, st: obj.col, t: 0, color: PANE_COLS[obj.col] || FIGHT_CYAN });
+      for (k = 0; k < PANE_DIRS.length; k++) {
+        var edir = PANE_DIRS[k];
+        var elink = obj.links && obj.links[edir];
+        var strip;
+        if (!elink) continue;
+        strip = paneEdgeStrip(pos, edir);
+        out.push({ kind: "pane", x: strip.x, y: strip.y, x2: strip.w, y2: strip.h, st: 8, t: 1, color: elink.color || FIGHT_WHITE });
+      }
     }
     for (i = 0; i < fight.pins.length; i++) {
       obj = fight.pins[i];
@@ -10834,10 +10931,10 @@
         context.closePath(); context.fill();
       } else if (f.kind === "pane") {
         context.strokeStyle = col;
-        context.globalAlpha = 0.7;
-        context.lineWidth = 2;
+        context.globalAlpha = f.t ? 0.95 : 0.55;
+        context.lineWidth = f.t ? 3.4 : 2;
         context.strokeRect(f.x + 2, f.y + 2, (f.x2 || 40) - 4, (f.y2 || 40) - 4);
-        context.globalAlpha = 0.12;
+        context.globalAlpha = f.t ? 0.55 : 0.12;
         context.fillStyle = col;
         context.fillRect(f.x + 2, f.y + 2, (f.x2 || 40) - 4, (f.y2 || 40) - 4);
       } else if (f.kind === "pin") {
@@ -14604,6 +14701,7 @@
         if (b.x > W - 4 && b.vx > 0) { b.x = W - 4; b.vx *= -1; b.bounces += 1; }
         if (b.y < 4 && b.vy < 0) { b.y = 4; b.vy *= -1; b.bounces += 1; }
         if (b.y > H - 4 && b.vy > 0) { b.y = H - 4; b.vy *= -1; b.bounces += 1; }
+        if (b.bounces > 0) { b.color = FIGHT_RED; b.glow = FIGHT_RED; }
         if (b.bounces > 4) { pbul.splice(i, 1); continue; }
       }
       if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
@@ -14691,6 +14789,20 @@
               pbul.splice(i, 1);
               consumed = true;
             }
+            break;
+          }
+        }
+      }
+      if (!consumed && fight.bounce && (b.bounces || 0) > 0) {
+        for (pi = 0; pi < players.length; pi++) {
+          pl = players[pi];
+          if (!pl || !pl.alive || pl.invuln > 0) continue;
+          pr = pl.r || PLAYER_R;
+          if (dist2(b.x, b.y, pl.x, pl.y) < (pr + br) * (pr + br)) {
+            if (isPvpRun()) pvpHurt(pl, b.dmg || 1);
+            else playerDie(pl);
+            pbul.splice(i, 1);
+            consumed = true;
             break;
           }
         }

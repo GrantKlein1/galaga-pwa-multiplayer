@@ -35,7 +35,7 @@ Health gems drop only on each id’s first-cycle dedicated debut. Dedicated kill
 | 125 | orrery | ORRERY | 3 | 2150 | 66 / 33 | Gravity planets, curved shots |
 | 130 | prism | PRISM | 3 | 2300 | 66 / 33 | Beams split through gold prisms that stay until the next set |
 | 135 | maelstrom | MAELSTROM | 3 | 2450 | 66 / 33 | Whirlpool current, cyan flow arrows |
-| 140 | cartographer | CARTOGRAPHER | 4 | 2600 | 75 / 50 / 25 | Sliding 2×2 panes, gold pins |
+| 140 | cartographer | CARTOGRAPHER | 4 | 2600 | 75 / 50 / 25 | Sliding-puzzle panes, colored wrap edges, gold pins |
 | 145 | mimic | MIMIC | 4 | 2800 | 75 / 50 / 25 | Copies dodge, shots, and the equipped boss ability |
 | 150 | axiom | AXIOM | 6 | 3000 | 83 / 67 / 50 / 33 / 17 | Phase rules on a gold card; mix on the last |
 
