@@ -60,12 +60,12 @@ assert(galaga.indexOf("guestPairOk") >= 0, "pairing helper present");
 assert(/never two late-tier[\s\S]{0,80}bosses/.test(galaga), "no late+late pairing");
 
 assert(codec.indexOf('"helios", "selene", "pentarch"') >= 0, "netcodec pentarch id");
-assert(/var VER = 8;/.test(codec), "codec VER 8");
+assert(/var VER = 9;/.test(codec), "codec VER 9");
 assert(codec.indexOf("p.freezeT") >= 0, "freezeT in player snap");
 
 assert(pvp.indexOf("pentarch:") >= 0, "pvp kit");
 assert(pvp.indexOf("cenotaph:") >= 0 && pvp.indexOf("helios:") >= 0 && pvp.indexOf("selene:") >= 0, "prior late pvp kits stay");
 
-assert(sw.indexOf("galaga-coop-v58") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v59") >= 0, "PWA cache bump");
 
 console.log("wave-80-boss-smoke: ok");

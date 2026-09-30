@@ -49,7 +49,7 @@ Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarc
 
 **Victory:** banner `WAVE 100 CLEARED` and a **Century Clear** XP bonus (`CENTURY_CLEAR_XP = 8000`) on the existing `run.xpBonus` path (same bank that skip-start and harder-kill XP use). First-cycle dedicated wave 100 only, not guests or later rematches. Skip-start past 100 also credits Century Clear.
 
-Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, and Orrery planets on netcodec VER 8 (`bx` extras).
+Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, and Orrery planets on netcodec VER 9 (`bx` extras).
 
 ## Hourglass — wave 105, the glass
 

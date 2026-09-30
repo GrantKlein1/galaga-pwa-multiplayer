@@ -309,6 +309,57 @@
       flavor: "Orbiting planets, gravity rings, curve a shot into the gold core" }
   ];
   var GUEST_BOSS_POOL = 10;
+  // Player versions of boss attacks. 2–3 per roster boss. Each run rolls one
+  // per boss so pick cards differ between runs. Not saved to the profile.
+  var BOSS_ABILITY_DEFS = [
+    { id: "seraph-fan", boss: "seraph", name: "Feather Fan", short: "FAN", desc: "Five white feathers spray upward.", cd: 8, kind: "fan", n: 5, spread: 0.72, spd: 430, dmg: 1.35 },
+    { id: "seraph-halo", boss: "seraph", name: "Halo", short: "HALO", desc: "A ring of feathers bursts from the hull.", cd: 10, kind: "halo", n: 8, spd: 280, dmg: 1.2 },
+    { id: "seraph-dive", boss: "seraph", name: "Dive Bolt", short: "RAM", desc: "A piercing ram-bolt up your file.", cd: 12, kind: "laser", dmg: 4.5, pad: 8 },
+    { id: "wraith-spiral", boss: "wraith", name: "Spiral", short: "SPR", desc: "Violet shards spiral out, then climb.", cd: 9, kind: "halo", n: 10, spd: 260, dmg: 1.15 },
+    { id: "wraith-sweep", boss: "wraith", name: "Sweep", short: "SWP", desc: "A wide violet curtain climbs the field.", cd: 10, kind: "curtain", n: 5, spd: 360, dmg: 1.2 },
+    { id: "hydra-beam", boss: "hydra", name: "Siphon Beam", short: "BEAM", desc: "A green pierce laser up the lane.", cd: 11, kind: "laser", dmg: 5, pad: 7 },
+    { id: "hydra-rain", boss: "hydra", name: "Venom Rain", short: "RAIN", desc: "A climbing rain of siphon bolts.", cd: 9, kind: "fan", n: 7, spread: 0.95, spd: 390, dmg: 1.1 },
+    { id: "colossus-ring", boss: "colossus", name: "Shock Ring", short: "RING", desc: "An expanding gold ring that chips foes.", cd: 12, kind: "shock", dmg: 2.2, vr: 210, life: 0.55 },
+    { id: "colossus-missiles", boss: "colossus", name: "Missiles", short: "MSL", desc: "Three homing gold missiles.", cd: 10, kind: "homing", n: 3, spd: 240, dmg: 1.8 },
+    { id: "chronos-tick", boss: "chronos", name: "Rewind Tick", short: "TICK", desc: "Nearby enemy shots fly back along their paths.", cd: 12, kind: "rewind", r: 92 },
+    { id: "chronos-pendulum", boss: "chronos", name: "Pendulum", short: "PDL", desc: "Two arcs sweep up either side.", cd: 9, kind: "fan", n: 2, spread: 1.1, spd: 400, dmg: 1.8, pierce: 1 },
+    { id: "levi-surge", boss: "leviathan", name: "Accordion Sweep", short: "ACC", desc: "A wavy tidal row climbs the field.", cd: 10, kind: "curtain", n: 4, spd: 340, dmg: 1.35, helix: 1 },
+    { id: "levi-whip", boss: "leviathan", name: "Tail Whip", short: "WHIP", desc: "Twin helix bolts weave upward.", cd: 8, kind: "helix", n: 2, spd: 410, dmg: 1.5 },
+    { id: "levi-depth", boss: "leviathan", name: "Depth Charge", short: "DPT", desc: "Three mines hang, then rocket up.", cd: 12, kind: "mines", n: 3, dmg: 2.2 },
+    { id: "inferno-flare", boss: "inferno", name: "Flare", short: "FLR", desc: "Three heavy fire lances.", cd: 9, kind: "fan", n: 3, spread: 0.34, spd: 480, dmg: 2.1, pierce: 1 },
+    { id: "inferno-embers", boss: "inferno", name: "Embers", short: "EMB", desc: "A spray of climbing embers.", cd: 8, kind: "fan", n: 8, spread: 1.05, spd: 360, dmg: 1.05 },
+    { id: "null-well", boss: "nullwarden", name: "Gravity Well", short: "WELL", desc: "Pull nearby fodder into a void.", cd: 14, kind: "pull", r: 78, life: 0.9 },
+    { id: "null-gates", boss: "nullwarden", name: "Void Gates", short: "GATE", desc: "Two side lasers cut the field.", cd: 12, kind: "gates", dmg: 3.4, pad: 6 },
+    { id: "basil-venom", boss: "basilisk", name: "Venom Arc", short: "VNM", desc: "Arcing venom bolts climb and spread.", cd: 8, kind: "fan", n: 5, spread: 0.86, spd: 380, dmg: 1.25 },
+    { id: "basil-gaze", boss: "basilisk", name: "Gaze", short: "GZE", desc: "A wide cone of petrifying light.", cd: 11, kind: "cone", n: 6, spread: 1.15, spd: 420, dmg: 1.4, pierce: 1 },
+    { id: "over-barrage", boss: "overlord", name: "Barrage", short: "BRG", desc: "A dense gold volley.", cd: 10, kind: "fan", n: 7, spread: 0.55, spd: 440, dmg: 1.25 },
+    { id: "over-decree", boss: "overlord", name: "Decree", short: "DEC", desc: "A gold smash on the nearest foe.", cd: 12, kind: "stamp", dmg: 6, r: 28 },
+    { id: "mandala-seal", boss: "mandala", name: "Seal", short: "SEAL", desc: "A petal ring of copper shots.", cd: 10, kind: "halo", n: 8, spd: 270, dmg: 1.25 },
+    { id: "mandala-wheel", boss: "mandala", name: "Wheel", short: "WHL", desc: "A spinning spray of seals.", cd: 12, kind: "fan", n: 9, spread: 1.35, spd: 400, dmg: 1.15 },
+    { id: "ceno-slab", boss: "cenotaph", name: "Slab", short: "SLB", desc: "A heavy marble column up the file.", cd: 11, kind: "laser", dmg: 5.2, pad: 10 },
+    { id: "ceno-crypt", boss: "cenotaph", name: "Crypt", short: "CRY", desc: "A box burst of crypt shards.", cd: 10, kind: "halo", n: 6, spd: 300, dmg: 1.5, r: 3.2 },
+    { id: "kale-shatter", boss: "kaleido", name: "Shatter", short: "SHT", desc: "Glass shards fan upward.", cd: 8, kind: "fan", n: 6, spread: 0.8, spd: 430, dmg: 1.2 },
+    { id: "kale-pane", boss: "kaleido", name: "Pane", short: "PANE", desc: "A glass lane cuts the field.", cd: 12, kind: "laser", dmg: 4.2, pad: 9 },
+    { id: "helios-glare", boss: "helios", name: "Glare", short: "GLR", desc: "A flash that chips every foe.", cd: 14, kind: "nova", dmg: 1.6 },
+    { id: "helios-sear", boss: "helios", name: "Sear", short: "SEAR", desc: "A noon pillar laser.", cd: 11, kind: "laser", dmg: 5.5, pad: 7 },
+    { id: "selene-crescent", boss: "selene", name: "Crescent", short: "CRS", desc: "Two curved moon blades.", cd: 8, kind: "helix", n: 2, spd: 400, dmg: 1.7 },
+    { id: "selene-tide", boss: "selene", name: "Tide", short: "TIDE", desc: "A side-to-side lunar wave.", cd: 11, kind: "curtain", n: 5, spd: 350, dmg: 1.25 },
+    { id: "pent-pyre", boss: "pentarch", name: "Pyre", short: "PYR", desc: "A fire fan from the pentarch.", cd: 9, kind: "fan", n: 5, spread: 0.62, spd: 430, dmg: 1.45 },
+    { id: "pent-bolt", boss: "pentarch", name: "Storm Bolt", short: "BLT", desc: "A lightning pierce up the file.", cd: 10, kind: "laser", dmg: 4.8, pad: 6 },
+    { id: "pent-rime", boss: "pentarch", name: "Rime", short: "RIME", desc: "Ice shards that freeze fodder.", cd: 12, kind: "fan", n: 4, spread: 0.5, spd: 390, dmg: 1.3, freeze: 1 },
+    { id: "loom-warp", boss: "loom", name: "Cut Thread", short: "CUT", desc: "A taut red laser up the file.", cd: 10, kind: "laser", dmg: 5, pad: 5 },
+    { id: "loom-weft", boss: "loom", name: "Weft Net", short: "WFT", desc: "Two crossing threads cut the field.", cd: 12, kind: "gates", dmg: 3.2, pad: 5, spread: 22 },
+    { id: "loom-cocoon", boss: "loom", name: "Cocoon", short: "COC", desc: "A spiral of gold threads climbs out.", cd: 14, kind: "halo", n: 12, spd: 240, dmg: 1.1 },
+    { id: "tess-rook", boss: "tessera", name: "Rook File", short: "ROOK", desc: "The file and rank through your ship detonate.", cd: 11, kind: "cross", dmg: 3.6, pad: 10 },
+    { id: "tess-bishop", boss: "tessera", name: "Bishop", short: "BSH", desc: "Both diagonals through the hull.", cd: 11, kind: "diag", dmg: 3.4, pad: 9 },
+    { id: "tess-knight", boss: "tessera", name: "Knight", short: "KNT", desc: "L-shaped bursts around the ship.", cd: 10, kind: "knight", dmg: 2.4, r: 16 },
+    { id: "req-hymn", boss: "requiem", name: "Hymn", short: "HYM", desc: "Gold choir bolts climb in a tight fan.", cd: 9, kind: "fan", n: 5, spread: 0.4, spd: 420, dmg: 1.4 },
+    { id: "req-gap", boss: "requiem", name: "Gap Ring", short: "GAP", desc: "An expanding ring that clears enemy shots.", cd: 12, kind: "clear", vr: 220, life: 0.62, dmg: 1.4 },
+    { id: "req-canon", boss: "requiem", name: "Canon", short: "CAN", desc: "Two gapped rings, offset, that eat shots.", cd: 14, kind: "clear", vr: 180, life: 0.8, dmg: 1.2, echo: 0.22 },
+    { id: "term-echo", boss: "terminus", name: "Echo", short: "ECHO", desc: "A ghost fan fires from where you just were.", cd: 12, kind: "echo", n: 5, spread: 0.55, spd: 420, dmg: 1.3 },
+    { id: "term-medley", boss: "terminus", name: "Medley", short: "MDL", desc: "A gold fan plus a shot-clearing pulse.", cd: 14, kind: "medley", n: 5, spread: 0.5, spd: 430, dmg: 1.35 },
+    { id: "term-key", boss: "terminus", name: "Keystone", short: "KEY", desc: "Ordered bursts on the nearest three foes.", cd: 13, kind: "stamp", dmg: 3.2, r: 20, n: 3 }
+  ];
 
   var DAILY_DEFS = [
     { id: "d_tanks", name: "Tank Buster", desc: "Kill 14 tanks", target: 14, kind: "kills", type: "tank", reward: { coins: 35 } },
@@ -484,6 +535,8 @@
   var warpHaunts = [];
   var warpFolds = [];
   var warpShackles = [];
+  var bossAbFx = [];
+  var bossPick = { open: false, wave: 0, pendingSpawn: 0, ready: [false, false], skipStart: false, localPicked: false };
   var diveCd = 0;
   var enterT = 0;
   var waveHold = 0;
@@ -504,7 +557,7 @@
   var VOL_MUSIC = 0.16;
   var waveKind = "line";
 
-  var input = { left: false, right: false, up: false, down: false, fire: false, ability: false, ab: 0, holdL: 0, holdR: 0, holdU: 0, holdD: 0 };
+  var input = { left: false, right: false, up: false, down: false, fire: false, ability: false, ab: 0, bossAb: false, holdL: 0, holdR: 0, holdU: 0, holdD: 0 };
   var pointerSteer = { id: 0, aimX: null, aimY: null, fire: false };
   var player = null;
   var players = [];
@@ -1268,7 +1321,7 @@
     return {
       coins: 0, xpBonus: 0, xpMul: 1, killsByType: {}, bosses: {}, maxWave: 1, kills: 0,
       hits: 0, livesLost: 0, cleanWave: 1, safeWave: 1, pickups: {}, diveKills: 0,
-      bossHits: 0, perfectBosses: 0, leech: 0, clearedWave: 0
+      bossHits: 0, perfectBosses: 0, leech: 0, clearedWave: 0, abilityRoll: {}
     };
   }
   function emptyStats() {
@@ -3614,6 +3667,12 @@
       if ((player.skillCd || 0) > 0) bits.push(equippedSpecial(player).toUpperCase() + " " + pvpAbilityCdText(player.skillCd));
       else bits.push(equippedSpecial(player).toUpperCase() + " READY");
     }
+    if (currentBossAbilityId(player)) {
+      var baDef = bossAbilityDef(currentBossAbilityId(player));
+      var baName = baDef ? baDef.short : "BOSS";
+      if ((player.bossAbCd || 0) > 0) bits.push(baName + " " + pvpAbilityCdText(player.bossAbCd));
+      else bits.push(baName + " READY");
+    }
     if (stasisT > 0) bits.push("TIME " + pvpAbilityCdText(stasisT));
     if ((player.rampartT || 0) > 0) bits.push("RAMPART " + pvpAbilityCdText(player.rampartT));
     if (horizonT > 0) bits.push("HORIZON " + pvpAbilityCdText(horizonT));
@@ -3723,8 +3782,10 @@
     var app = el("app");
     var hint = el("pvp-hint");
     var padAb = el("pad-ability");
+    var padBa = el("pad-bossab");
     var sess = pvpS();
     var kit, localBoss, abs, i, spec, cd, cds, key, fireEl, fireCd, abBox, html, ready, padLab, fireName;
+    var specId, specDef, showSkill, baId, baDef, showBa, skillFrac, baFrac;
     localBoss = player && player.boss;
     kit = isPvpRun() && localBoss && pvpApi() ? pvpApi().kitFor(localBoss) : null;
     abs = kit && pvpApi() && pvpApi().kitAbilities ? pvpApi().kitAbilities(localBoss) : [];
@@ -3732,6 +3793,7 @@
     fireCd = (player && player.fireCd) || 0;
     key = (isPvpRun() ? "1" : "0") + "|" + ((sess && sess.mode) || "") + "|" + (localBoss || "") + "|" + (kit ? kit.fireHint : "") + "|f:" + pvpAbilityCdText(fireCd);
     key += "|sk:" + (equippedSpecial(player) || "") + ":" + pvpAbilityCdText(player && player.skillCd) + ":" + (started && player && player.alive ? "1" : "0");
+    key += "|ba:" + (currentBossAbilityId(player) || "") + ":" + pvpAbilityCdText(player && player.bossAbCd);
     for (i = 0; i < abs.length; i++) {
       spec = abs[i];
       cd = cds[i] || 0;
@@ -3743,6 +3805,7 @@
       app.classList.toggle("is-pvp", isPvpRun());
       app.classList.toggle("is-pvp-insane", !!(isPvpRun() && sess && sess.mode === "insane"));
       app.classList.toggle("has-skill", !!(started && !isPvpRun() && player && player.alive && equippedSpecial(player)));
+      app.classList.toggle("has-boss-ab", !!(started && !isPvpRun() && player && player.alive && currentBossAbilityId(player)));
     }
     if (hint) {
       hint.classList.toggle("hidden", !kit);
@@ -3782,9 +3845,9 @@
       }
     }
     if (padAb) {
-      var specId = player && equippedSpecial(player);
-      var specDef = specId ? skillNodeForSpecial(specId) : null;
-      var showSkill = !!(started && !isPvpRun() && specDef && player && player.alive);
+      specId = player && equippedSpecial(player);
+      specDef = specId ? skillNodeForSpecial(specId) : null;
+      showSkill = !!(started && !isPvpRun() && specDef && player && player.alive);
       padAb.classList.toggle("hidden", !showSkill);
       if (showSkill) {
         padLab = specDef.name.toUpperCase();
@@ -3792,9 +3855,24 @@
         else padLab += " READY";
         if (padAb.textContent !== padLab) padAb.textContent = padLab;
         padAb.setAttribute("aria-label", specDef.name);
+        skillFrac = skillCdFor(specId) ? 1 - Math.min(1, (player.skillCd || 0) / skillCdFor(specId)) : 1;
+        paintPadCd(padAb, skillFrac);
       } else if (kit && abs[0]) {
         padLab = abs[0].key + " " + (abs[0].name || "ABILITY");
         if (padAb.textContent !== padLab) padAb.textContent = padLab;
+      }
+    }
+    if (padBa) {
+      baId = currentBossAbilityId(player);
+      baDef = bossAbilityDef(baId);
+      showBa = !!(started && !isPvpRun() && baDef && player && player.alive);
+      padBa.classList.toggle("hidden", !showBa);
+      if (showBa) {
+        padLab = bossAbilityPadLabel(baDef, player.bossAbCd || 0);
+        if (padBa.textContent !== padLab) padBa.textContent = padLab;
+        padBa.setAttribute("aria-label", baDef.name);
+        baFrac = baDef.cd ? 1 - Math.min(1, (player.bossAbCd || 0) / baDef.cd) : 1;
+        paintPadCd(padBa, baFrac);
       }
     }
   }
@@ -4605,10 +4683,11 @@
       hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, abilityCds: [0, 0, 0, 0, 0, 0], abilityGcd: 0, dash: null, rewind: null, pvpFollow: null,
       leech: 0,
       skillCd: 0, lastStandUsed: false, skillHeld: false, skillHasteT: 0, rampartT: 0, bulkUsed: false,
+      bossAbilityId: "", bossAbCd: 0, bossAbHeld: false,
       skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
       skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
       skinSentinelCd: 0, skinUmbraT: 0, skinCarrion: 0, skinCoronaAcc: 0, skinKeepX: false,
-      input: { left: false, right: false, up: false, down: false, fire: false, ability: false, ab: 0, holdL: 0, holdR: 0, holdU: 0, holdD: 0, aimX: null, aimY: null },
+      input: { left: false, right: false, up: false, down: false, fire: false, ability: false, ab: 0, bossAb: false, holdL: 0, holdR: 0, holdU: 0, holdD: 0, aimX: null, aimY: null },
       hostX: x, hostY: y
     };
   }
@@ -5325,6 +5404,564 @@
     updateHud();
     return true;
   }
+
+  function bossAbilityDef(id) {
+    var i;
+    if (!id) return null;
+    for (i = 0; i < BOSS_ABILITY_DEFS.length; i++) {
+      if (BOSS_ABILITY_DEFS[i].id === id) return BOSS_ABILITY_DEFS[i];
+    }
+    return null;
+  }
+  function abilitiesForBoss(bossId) {
+    var out = [], i, d;
+    for (i = 0; i < BOSS_ABILITY_DEFS.length; i++) {
+      d = BOSS_ABILITY_DEFS[i];
+      if (d.boss === bossId) out.push(d);
+    }
+    return out;
+  }
+  function bossAbilityColor(def) {
+    var b = def && bossDef(def.boss);
+    return (b && b.color) || "#e8f6ff";
+  }
+  function currentBossAbilityId(who) {
+    who = who || player;
+    return (who && who.bossAbilityId) || "";
+  }
+  function bossAbilityUnlockCount(wave) {
+    var picks;
+    wave = wave | 0;
+    if (wave < 100) return 0;
+    picks = Math.floor((wave - 100) / 5) + 1;
+    return Math.min(BOSS_DEFS.length, picks * 3);
+  }
+  function shouldOfferBossAbility(clearedWave) {
+    clearedWave = clearedWave | 0;
+    return clearedWave >= 100 && clearedWave % 5 === 0;
+  }
+  function unlockedBossAbilityBosses(wave) {
+    var n = bossAbilityUnlockCount(wave), out = [], i, id, list;
+    for (i = 0; i < BOSS_DEFS.length && out.length < n; i++) {
+      id = BOSS_DEFS[i].id;
+      list = abilitiesForBoss(id);
+      if (!list.length) continue;
+      out.push(id);
+    }
+    return out;
+  }
+  function emptyAbilityRoll() {
+    var roll = {}, i;
+    for (i = 0; i < BOSS_DEFS.length; i++) roll[BOSS_DEFS[i].id] = "";
+    return roll;
+  }
+  function rollBossAbilities(preset) {
+    var roll = emptyAbilityRoll(), i, id, list, pick;
+    if (preset && typeof preset === "object") {
+      if (Array.isArray(preset)) {
+        for (i = 0; i < BOSS_DEFS.length; i++) {
+          id = BOSS_DEFS[i].id;
+          roll[id] = preset[i] || "";
+        }
+      } else {
+        for (i = 0; i < BOSS_DEFS.length; i++) {
+          id = BOSS_DEFS[i].id;
+          roll[id] = preset[id] || "";
+        }
+      }
+      run.abilityRoll = roll;
+      return roll;
+    }
+    for (i = 0; i < BOSS_DEFS.length; i++) {
+      id = BOSS_DEFS[i].id;
+      list = abilitiesForBoss(id);
+      if (!list.length) continue;
+      pick = list[Math.floor(Math.random() * list.length)];
+      roll[id] = pick.id;
+    }
+    run.abilityRoll = roll;
+    return roll;
+  }
+  function serializeAbilityRoll() {
+    var out = [], i, id, roll = run.abilityRoll || {};
+    for (i = 0; i < BOSS_DEFS.length; i++) {
+      id = BOSS_DEFS[i].id;
+      out.push(roll[id] || "");
+    }
+    return out;
+  }
+  function rolledAbilityForBoss(bossId) {
+    var roll = run.abilityRoll || {};
+    var id = roll[bossId];
+    var list, i;
+    if (id && bossAbilityDef(id)) return bossAbilityDef(id);
+    list = abilitiesForBoss(bossId);
+    for (i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return list[0] || null;
+  }
+  function resetBossAbFx() { bossAbFx = []; }
+  function addBossAbShot(who, x, y, vx, vy, opt) {
+    var ghost, b, face;
+    opt = opt || {};
+    who = who || player;
+    if (!who) return null;
+    ghost = netRole === "client";
+    face = pvpFacing(who);
+    if (face > 0 && vy < 0) { vy = -vy; vx = -vx; }
+    b = {
+      id: allocId(),
+      x: x, y: y, vx: vx, vy: vy,
+      dmg: opt.dmg == null ? 1.2 : opt.dmg,
+      r: opt.r || 2.4,
+      age: 0, life: opt.life || 0,
+      pierce: opt.pierce || 0,
+      hit: opt.pierce ? [] : null,
+      homing: !!opt.homing,
+      homeT: opt.homeT || 1.8,
+      hsp: opt.hsp || 150,
+      hturn: opt.hturn || 1.5,
+      splash: opt.splash || null,
+      gun: "pulse",
+      bossAb: true,
+      color: opt.color || "#e8f6ff",
+      owner: who.slot,
+      ghost: ghost,
+      freeze: !!opt.freeze,
+      boostAt: opt.boostAt || 0,
+      boostVy: opt.boostVy || 0,
+      boostVx: opt.boostVx || 0
+    };
+    if (opt.helix) {
+      b.helix = true;
+      b.bx = b.x;
+      b.ha = opt.ha || 11;
+      b.hf = opt.hf || 12;
+      b.hp0 = opt.ph || 0;
+    }
+    pbul.push(b);
+    return b;
+  }
+  function bossAbSegHit(x0, y0, x1, y1, px, py, pad) {
+    var dx = x1 - x0, dy = y1 - y0, len2 = dx * dx + dy * dy, t, nx, ny;
+    if (len2 < 1) return dist2(px, py, x0, y0) <= pad * pad;
+    t = ((px - x0) * dx + (py - y0) * dy) / len2;
+    if (t < 0) t = 0;
+    if (t > 1) t = 1;
+    nx = x0 + dx * t;
+    ny = y0 + dy * t;
+    return dist2(px, py, nx, ny) <= pad * pad;
+  }
+  function bossAbHitLine(who, x0, y0, x1, y1, pad, dmg) {
+    var i, e, hit = 0;
+    pad = pad || 8;
+    dmg = dmg || 3;
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive || e.state === "enter") continue;
+      if (bossAbSegHit(x0, y0, x1, y1, e.x, e.y, pad + (e.r || 8))) {
+        killEnemy(e, false, dmg, who ? who.slot : 0);
+        hit += 1;
+      }
+    }
+    return hit;
+  }
+  function bossAbNearest(n, ox, oy) {
+    var pool = [], i, e, out = [], best, bestD, j, pick;
+    n = n || 1;
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive || e.state === "enter") continue;
+      pool.push(e);
+    }
+    while (out.length < n && pool.length) {
+      best = null;
+      bestD = 1e12;
+      pick = 0;
+      for (j = 0; j < pool.length; j++) {
+        e = pool[j];
+        i = dist2(e.x, e.y, ox, oy);
+        if (i < bestD) { bestD = i; best = e; pick = j; }
+      }
+      if (!best) break;
+      pool.splice(pick, 1);
+      out.push(best);
+    }
+    return out;
+  }
+  function bossAbFan(who, def, ox, oy) {
+    var i, n, spread, ang, spd, col, face, y;
+    n = def.n || 5;
+    spread = def.spread || 0.6;
+    spd = def.spd || 400;
+    col = bossAbilityColor(def);
+    face = pvpFacing(who);
+    y = oy == null ? who.y + face * 8 : oy;
+    ox = ox == null ? who.x : ox;
+    for (i = 0; i < n; i++) {
+      ang = n === 1 ? 0 : -spread / 2 + i * (spread / (n - 1));
+      addBossAbShot(who, ox, y, Math.sin(ang) * spd, face * Math.cos(ang) * spd, {
+        dmg: def.dmg, r: def.r, pierce: def.pierce, color: col, freeze: def.freeze, helix: def.helix
+      });
+    }
+  }
+  function fireBossAbilityFx(who, def) {
+    var col, face, i, n, a, spd, y, x0, x1, list, e, pad, k, ox, oy;
+    if (!who || !def) return false;
+    col = bossAbilityColor(def);
+    face = pvpFacing(who);
+    y = who.y + face * 8;
+    switch (def.kind) {
+      case "fan":
+      case "cone":
+        bossAbFan(who, def, who.x, y);
+        addTele("line", who.x, who.y, who.x, who.y + face * 40, 0.18, col);
+        break;
+      case "halo":
+        n = def.n || 8;
+        spd = def.spd || 260;
+        for (i = 0; i < n; i++) {
+          a = (i / n) * Math.PI * 2 + time;
+          addBossAbShot(who, who.x, who.y, Math.cos(a) * spd, Math.sin(a) * spd + face * 40, {
+            dmg: def.dmg, r: def.r || 2.6, color: col
+          });
+        }
+        addTele("ring", who.x, who.y, 18, 18, 0.28, col);
+        break;
+      case "laser":
+        pad = def.pad || 7;
+        addTele("vline", who.x, who.y, who.x, who.y + face * (H + 20), 0.32, col);
+        bossAbHitLine(who, who.x, who.y, who.x, who.y + face * H, pad, def.dmg);
+        flash = Math.max(flash, 0.12);
+        break;
+      case "gates":
+        pad = def.pad || 6;
+        x0 = clamp(who.x - (def.spread || 36), 16, W - 16);
+        x1 = clamp(who.x + (def.spread || 36), 16, W - 16);
+        addTele("vline", x0, who.y, x0, who.y + face * H, 0.3, col);
+        addTele("vline", x1, who.y, x1, who.y + face * H, 0.3, col);
+        bossAbHitLine(who, x0, who.y, x0, who.y + face * H, pad, def.dmg);
+        bossAbHitLine(who, x1, who.y, x1, who.y + face * H, pad, def.dmg);
+        break;
+      case "curtain":
+        n = def.n || 4;
+        spd = def.spd || 340;
+        for (i = 0; i < n; i++) {
+          x0 = who.x + (i - (n - 1) / 2) * 22;
+          addBossAbShot(who, x0, y, 0, face * spd, {
+            dmg: def.dmg, r: 2.8, color: col, helix: def.helix, ph: i * 0.7, ha: 10
+          });
+        }
+        addTele("wave", who.x - 48, y, who.x + 48, y, 0.28, col);
+        break;
+      case "helix":
+        addBossAbShot(who, who.x, y, 0, face * (def.spd || 400), {
+          dmg: def.dmg, r: 2.6, color: col, helix: true, ph: 0, pierce: 1
+        });
+        addBossAbShot(who, who.x, y, 0, face * (def.spd || 400), {
+          dmg: def.dmg, r: 2.6, color: col, helix: true, ph: Math.PI, pierce: 1
+        });
+        break;
+      case "homing":
+        n = def.n || 3;
+        for (i = 0; i < n; i++) {
+          a = (i - (n - 1) / 2) * 0.28;
+          addBossAbShot(who, who.x + a * 18, y, Math.sin(a) * 80, face * (def.spd || 240), {
+            dmg: def.dmg, r: 3.2, color: col, homing: true, homeT: 2.2, hsp: 160, hturn: 1.6
+          });
+        }
+        break;
+      case "mines":
+        n = def.n || 3;
+        for (i = 0; i < n; i++) {
+          addBossAbShot(who, who.x + (i - (n - 1) / 2) * 18, who.y, (i - 1) * 12, face * 20, {
+            dmg: def.dmg, r: 4.2, color: col, boostAt: 0.55, boostVy: face * 320, life: 2.4, pierce: 1
+          });
+        }
+        break;
+      case "shock":
+        bossAbFx.push({ kind: "shock", x: who.x, y: who.y, r: 10, vr: def.vr || 200, t: def.life || 0.55, max: def.life || 0.55, dmg: def.dmg || 2, owner: who.slot, color: col });
+        addTele("ring", who.x, who.y, 20, 20, def.life || 0.55, col);
+        break;
+      case "clear":
+        bossAbFx.push({ kind: "clear", x: who.x, y: who.y, r: 12, vr: def.vr || 220, t: def.life || 0.6, max: def.life || 0.6, dmg: def.dmg || 1.2, owner: who.slot, color: col, gap: true });
+        addTele("ring", who.x, who.y, 22, 22, def.life || 0.6, col);
+        if (def.echo) {
+          bossAbFx.push({ kind: "delay", t: def.echo, owner: who.slot, id: def.id, x: who.x, y: who.y, skipEcho: true });
+        }
+        break;
+      case "pull":
+        bossAbFx.push({ kind: "pull", x: who.x, y: who.y + face * 36, r: def.r || 70, t: def.life || 0.85, owner: who.slot, color: col });
+        addTele("glow", who.x, who.y + face * 36, 16, 16, def.life || 0.85, col);
+        break;
+      case "rewind":
+        for (i = ebul.length - 1; i >= 0; i--) {
+          e = ebul[i];
+          if (dist2(e.x, e.y, who.x, who.y) < (def.r || 90) * (def.r || 90)) {
+            e.vx = -(e.vx || 0);
+            e.vy = -(e.vy || 0);
+          }
+        }
+        addTele("ring", who.x, who.y, 24, 24, 0.32, col);
+        flash = Math.max(flash, 0.14);
+        break;
+      case "nova":
+        for (i = 0; i < enemies.length; i++) {
+          e = enemies[i];
+          if (!e.alive || e.state === "enter") continue;
+          killEnemy(e, false, def.dmg || 1.5, who.slot);
+        }
+        rings.push({ x: who.x, y: who.y, r: 8, vr: 220, life: 0.4, color: col });
+        flash = Math.max(flash, 0.18);
+        break;
+      case "stamp":
+        list = bossAbNearest(def.n || 1, who.x, who.y);
+        for (i = 0; i < list.length; i++) {
+          e = list[i];
+          explode(e.x, e.y, col, false);
+          killEnemy(e, false, def.dmg || 4, who.slot);
+          addTele("flash", e.x, e.y, 12, 12, 0.22, col);
+        }
+        break;
+      case "cross":
+        pad = def.pad || 10;
+        addTele("vline", who.x, 4, who.x, H - 4, 0.28, col);
+        addTele("hline", 8, who.y, W - 8, who.y, 0.28, col);
+        bossAbHitLine(who, who.x, 0, who.x, H, pad, def.dmg);
+        bossAbHitLine(who, 0, who.y, W, who.y, pad, def.dmg);
+        break;
+      case "diag":
+        pad = def.pad || 9;
+        addTele("line", who.x - 160, who.y - 160 * face, who.x + 160, who.y + 160 * face, 0.28, col);
+        addTele("line", who.x + 160, who.y - 160 * face, who.x - 160, who.y + 160 * face, 0.28, col);
+        bossAbHitLine(who, who.x - 200, who.y - 200 * face, who.x + 200, who.y + 200 * face, pad, def.dmg);
+        bossAbHitLine(who, who.x + 200, who.y - 200 * face, who.x - 200, who.y + 200 * face, pad, def.dmg);
+        break;
+      case "knight":
+        k = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
+        pad = def.r || 16;
+        for (i = 0; i < k.length; i++) {
+          ox = who.x + k[i][0] * 28;
+          oy = who.y + k[i][1] * 28 * face;
+          if (ox < 8 || ox > W - 8 || oy < 8 || oy > H - 8) continue;
+          addTele("flash", ox, oy, 10, 10, 0.2, col);
+          explode(ox, oy, col, false);
+          for (n = 0; n < enemies.length; n++) {
+            e = enemies[n];
+            if (!e.alive) continue;
+            if (dist2(e.x, e.y, ox, oy) < (pad + e.r) * (pad + e.r)) killEnemy(e, false, def.dmg || 2.4, who.slot);
+          }
+        }
+        break;
+      case "echo":
+        bossAbFan(who, def, who.x, y);
+        bossAbFx.push({ kind: "delay", t: 0.28, owner: who.slot, id: def.id, x: who.x, y: who.y, echoFan: true });
+        addTele("glow", who.x, who.y, 14, 14, 0.28, col);
+        break;
+      case "medley":
+        bossAbFan(who, def, who.x, y);
+        bossAbFx.push({ kind: "clear", x: who.x, y: who.y, r: 10, vr: 200, t: 0.5, max: 0.5, dmg: 1.1, owner: who.slot, color: col, gap: true });
+        addTele("ring", who.x, who.y, 20, 20, 0.5, col);
+        break;
+      default:
+        bossAbFan(who, def, who.x, y);
+        break;
+    }
+    return true;
+  }
+  function tickBossAbFx(dt) {
+    var i, f, j, e, owner, def, gone, dmg;
+    for (i = bossAbFx.length - 1; i >= 0; i--) {
+      f = bossAbFx[i];
+      f.t -= dt;
+      owner = players[f.owner];
+      if (f.kind === "clear" || f.kind === "shock") {
+        f.r += (f.vr || 200) * dt;
+        if (f.kind === "clear") {
+          for (j = ebul.length - 1; j >= 0; j--) {
+            e = ebul[j];
+            if (dist2(e.x, e.y, f.x, f.y) < (f.r + (e.r || 2)) * (f.r + (e.r || 2))) ebul.splice(j, 1);
+          }
+        }
+        dmg = f.dmg || 1.2;
+        for (j = 0; j < enemies.length; j++) {
+          e = enemies[j];
+          if (!e.alive) continue;
+          if (dist2(e.x, e.y, f.x, f.y) < (f.r + e.r) * (f.r + e.r)) {
+            killEnemy(e, false, dmg * dt * 3.2, owner ? owner.slot : 0);
+          }
+        }
+        if (f.t <= 0) bossAbFx.splice(i, 1);
+      } else if (f.kind === "pull") {
+        for (j = 0; j < enemies.length; j++) {
+          e = enemies[j];
+          if (!e.alive || e.isBoss || e.state === "enter") continue;
+          if (dist2(e.x, e.y, f.x, f.y) < f.r * f.r) {
+            e.x += (f.x - e.x) * Math.min(1, 5.5 * dt);
+            e.y += (f.y - e.y) * Math.min(1, 5.5 * dt);
+          }
+        }
+        if (f.t <= 0) bossAbFx.splice(i, 1);
+      } else if (f.kind === "delay") {
+        if (f.t > 0) continue;
+        def = bossAbilityDef(f.id);
+        gone = players[f.owner];
+        if (def && gone) {
+          if (f.echoFan) bossAbFan(gone, def, f.x, f.y);
+          else if (def.kind === "clear") {
+            bossAbFx.push({ kind: "clear", x: f.x, y: f.y, r: 14, vr: def.vr || 180, t: 0.5, max: 0.5, dmg: def.dmg, owner: f.owner, color: bossAbilityColor(def), gap: true });
+            addTele("ring", f.x, f.y, 22, 22, 0.5, bossAbilityColor(def));
+          }
+        }
+        bossAbFx.splice(i, 1);
+      } else if (f.t <= 0) {
+        bossAbFx.splice(i, 1);
+      }
+    }
+  }
+  function tryCastBossAbility(who, id, force) {
+    var def, predict;
+    who = who || player;
+    if (!who || !who.alive || who.boss) return false;
+    if (pvpS() && pvpS().roundLock) return false;
+    id = id || currentBossAbilityId(who);
+    def = bossAbilityDef(id);
+    if (!def) return false;
+    if (!force && (who.bossAbCd || 0) > 0) return false;
+    predict = netRole === "client";
+    who.bossAbCd = def.cd;
+    who.bossAbilityId = id;
+    fireBossAbilityFx(who, def);
+    banner = { text: def.name.toUpperCase(), life: 0.7 };
+    if (predict) return true;
+    updateHud();
+    syncPvpHudChrome();
+    return true;
+  }
+  function paintPadCd(btn, readyFrac) {
+    if (!btn) return;
+    if (readyFrac == null || readyFrac >= 0.995) readyFrac = 1;
+    if (readyFrac < 0) readyFrac = 0;
+    btn.style.setProperty("--cd-pct", String(Math.round(readyFrac * 100)));
+    btn.classList.toggle("cooling", readyFrac < 1);
+    btn.classList.toggle("ready", readyFrac >= 1);
+  }
+  function bossAbilityPadLabel(def, cd) {
+    var lab;
+    if (!def) return "BOSS";
+    lab = def.short || def.name;
+    if (cd > 0) lab += " " + pvpAbilityCdText(cd);
+    else lab += " READY";
+    return lab;
+  }
+  function renderBossAbilityPick() {
+    var box = el("bossab-cards");
+    var sub = el("bossab-sub");
+    var wait = el("bossab-wait");
+    var keep = el("btn-bossab-keep");
+    var bosses, i, def, html, col, cur;
+    if (!box) return;
+    bosses = unlockedBossAbilityBosses(bossPick.wave);
+    cur = currentBossAbilityId(player);
+    html = "";
+    for (i = 0; i < bosses.length; i++) {
+      def = rolledAbilityForBoss(bosses[i]);
+      if (!def) continue;
+      col = bossAbilityColor(def);
+      html += '<button type="button" class="bossab-card" data-ba="' + def.id + '" style="border-color:' + col + '">' +
+        '<span class="ba-boss" style="color:' + col + '">' + (bossDef(def.boss) ? bossDef(def.boss).name : def.boss) + "</span>" +
+        '<span class="ba-name" style="color:' + col + '">' + def.name + "</span>" +
+        '<span class="ba-desc">' + def.desc + "</span>" +
+        '<span class="ba-cd">' + def.cd + "s · Q</span></button>";
+    }
+    box.innerHTML = html;
+    if (sub) {
+      sub.textContent = bossPick.skipStart
+        ? ("Start wave " + (bossPick.pendingSpawn || bossPick.wave) + " · pick a boss ability")
+        : ("Wave " + bossPick.wave + " cleared · pick a boss ability");
+    }
+    if (keep) keep.textContent = cur ? "Keep current · " + ((bossAbilityDef(cur) && bossAbilityDef(cur).name) || cur) : "Skip (no ability)";
+    if (wait) wait.classList.toggle("hidden", !bossPick.localPicked || !netRole);
+  }
+  function openBossAbilityPick(unlockWave, pendingSpawn, skipStart) {
+    var i;
+    if (isPvpRun()) return false;
+    bossPick.open = true;
+    bossPick.wave = unlockWave | 0;
+    bossPick.pendingSpawn = pendingSpawn | 0;
+    bossPick.skipStart = !!skipStart;
+    bossPick.localPicked = false;
+    bossPick.ready = [];
+    for (i = 0; i < players.length; i++) bossPick.ready[i] = !(players[i] && players[i].alive);
+    paused = true;
+    stopLoop();
+    resetInput();
+    showScreen("bossab");
+    renderBossAbilityPick();
+    return true;
+  }
+  function allBossAbilityPicked() {
+    var i;
+    for (i = 0; i < players.length; i++) {
+      if (players[i] && players[i].alive && !bossPick.ready[i]) return false;
+    }
+    return true;
+  }
+  function finishBossAbilityPick() {
+    var spawn;
+    if (!bossPick.open) return;
+    spawn = bossPick.pendingSpawn;
+    if (netRole === "host") {
+      netSend({
+        t: "abgo",
+        ids: players.map(function (p) { return p ? (p.bossAbilityId || "") : ""; }),
+        spawn: spawn
+      });
+    }
+    bossPick.open = false;
+    bossPick.pendingSpawn = 0;
+    bossPick.localPicked = false;
+    showScreen("play");
+    paused = false;
+    lastTs = 0;
+    startLoop();
+    syncPvpHudChrome();
+    updateHud();
+    focusGame();
+    if (spawn && netRole !== "client") spawnWave(spawn);
+  }
+  function applyRemoteBossAbilityPick(slot, id) {
+    var p = players[slot];
+    if (!p) return;
+    if (id) p.bossAbilityId = id;
+    bossPick.ready[slot] = true;
+    if (netRole === "host" && allBossAbilityPicked()) finishBossAbilityPick();
+  }
+  function pickBossAbility(id) {
+    var p = player;
+    if (!bossPick.open || bossPick.localPicked) return;
+    if (id && id !== "keep") {
+      if (!bossAbilityDef(id)) return;
+      if (p) p.bossAbilityId = id;
+    }
+    bossPick.localPicked = true;
+    if (p) bossPick.ready[p.slot] = true;
+    if (netRole) netSend({ t: "abpick", slot: localSlot, id: (p && p.bossAbilityId) || "" });
+    if (netRole === "client") {
+      renderBossAbilityPick();
+      return;
+    }
+    if (allBossAbilityPicked()) finishBossAbilityPick();
+    else renderBossAbilityPick();
+  }
+  function maybeOfferBossAbility(clearedWave, nextWave) {
+    if (isPvpRun()) return false;
+    if (!shouldOfferBossAbility(clearedWave)) return false;
+    if (netRole === "host") netSend({ t: "abopen", wave: clearedWave, spawn: nextWave, roll: serializeAbilityRoll() });
+    return openBossAbilityPick(clearedWave, nextWave, false);
+  }
+
   function tickWarpVisuals(dt) {
     var i, h, f, p, owner;
     if (stasisT > 0) stasisT = Math.max(0, stasisT - dt);
@@ -5468,6 +6105,7 @@
     warpHaunts = [];
     warpFolds = [];
     warpShackles = [];
+    resetBossAbFx();
   }
 
   function pvpEbul(x, y, vx, vy, who, opt) {
@@ -10755,7 +11393,7 @@
       return;
     }
     overlay.classList.remove("hidden");
-    var ids = ["hub", "hangar", "skills", "quests", "ranks", "account", "lobby", "pause", "summary"];
+    var ids = ["hub", "hangar", "skills", "quests", "ranks", "account", "lobby", "pause", "summary", "bossab"];
     var i;
     for (i = 0; i < ids.length; i++) {
       var node = el("screen-" + ids[i]);
@@ -10777,6 +11415,7 @@
         renderAccount();
       }
       if (name === "lobby") renderLobby();
+      if (name === "bossab") renderBossAbilityPick();
     }
   }
   function overlayVisible() { return !overlay.classList.contains("hidden"); }
@@ -10899,12 +11538,12 @@
   function stopLoop() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
   function startLoop() { stopLoop(); lastTs = 0; rafId = requestAnimationFrame(tick); }
   function resetInput() {
-    input.left = false; input.right = false; input.up = false; input.down = false; input.fire = false; input.ability = false; input.ab = 0; input.holdL = 0; input.holdR = 0; input.holdU = 0; input.holdD = 0;
+    input.left = false; input.right = false; input.up = false; input.down = false; input.fire = false; input.ability = false; input.ab = 0; input.bossAb = false; input.holdL = 0; input.holdR = 0; input.holdU = 0; input.holdD = 0;
     pointerSteer.id = 0; pointerSteer.aimX = null; pointerSteer.aimY = null; pointerSteer.fire = false;
     var i;
     for (i = 0; i < players.length; i++) {
       if (!players[i] || players[i].slot !== localSlot) continue;
-      players[i].input.left = false; players[i].input.right = false; players[i].input.up = false; players[i].input.down = false; players[i].input.fire = false; players[i].input.ability = false; players[i].input.ab = 0;
+      players[i].input.left = false; players[i].input.right = false; players[i].input.up = false; players[i].input.down = false; players[i].input.fire = false; players[i].input.ability = false; players[i].input.ab = 0; players[i].input.bossAb = false;
       players[i].input.holdL = 0; players[i].input.holdR = 0; players[i].input.holdU = 0; players[i].input.holdD = 0; players[i].input.aimX = null; players[i].input.aimY = null;
     }
   }
@@ -10991,8 +11630,10 @@
     shake = 0; flash = 0; time = 0;
     stasisT = 0;
     resetWarpFx();
+    resetBossAbFx();
     waveHold = 0;
     run = emptyRun();
+    bossPick = { open: false, wave: 0, pendingSpawn: 0, ready: [false, false], skipStart: false, localPicked: false };
     runQuestClaims = [];
     summaryRun = null;
     consumeArmedXpBoost(!!(opts.pvp || (pvpApi() && pvpApi().isMatch())), !!(opts.xpBoost || pendingXpBoost));
@@ -11024,10 +11665,22 @@
       }
     } else {
       startN = applySkipState(startN, skipReached);
-      if (netRole === "host" && specs.length > 1) netSend({ t: "start", players: specs, startWave: startN });
-      if (netRole !== "client") spawnWave(startN);
+      rollBossAbilities(opts.abilityRoll);
+      if (netRole === "host" && specs.length > 1) {
+        netSend({ t: "start", players: specs, startWave: startN, abilityRoll: serializeAbilityRoll() });
+      }
+      if (startN >= 105 && !isPvpRun()) {
+        wave = startN;
+        openBossAbilityPick(startN, startN, true);
+      } else if (netRole !== "client") {
+        spawnWave(startN);
+      }
     }
     startMusic();
+    if (bossPick.open) {
+      updateHud();
+      return;
+    }
     showScreen("play");
     startLoop();
     updateHud();
@@ -11451,7 +12104,7 @@
       id: b.id, x: b.x, y: b.y, vx: b.vx || 0, vy: b.vy || 0, r: b.r || 2,
       gun: b.gun || "pulse", pierce: b.pierce || 0, homing: b.homing ? 1 : 0,
       bolt: b.bolt ? 1 : 0, splash: b.splash ? 1 : 0, helix: b.helix ? 1 : 0,
-      owner: b.owner || 0
+      owner: b.owner || 0, bossAb: b.bossAb ? 1 : 0, color: b.color || ""
     };
   }
   function snapEb(b) {
@@ -11476,7 +12129,8 @@
       slowT: p.slowT || 0, jamT: p.jamT || 0, freezeT: p.freezeT || 0, ship: lo.ship || "wisp", gun: lo.gun || "pulse",
       mod: lo.mod || null, skin: lo.skin || "stock", targetX: p.targetX != null ? p.targetX : p.x,
       targetY: p.targetY != null ? p.targetY : p.y,
-      hp: p.hp || 0, maxHp: p.maxHp || 0, facing: p.facing || -1, boss: p.boss || ""
+      hp: p.hp || 0, maxHp: p.maxHp || 0, facing: p.facing || -1, boss: p.boss || "",
+      bossAbilityId: p.bossAbilityId || ""
     };
   }
   function applyPlayerSnap(row) {
@@ -11519,6 +12173,7 @@
       p.boss = row.boss;
       p.loadout.boss = row.boss;
     }
+    if (row.bossAbilityId != null && slot !== localSlot) p.bossAbilityId = row.bossAbilityId;
   }
   function fillLive(dest, src, keep) {
     var i, n = 0;
@@ -11741,7 +12396,7 @@
     p = players[localSlot];
     inputAcc += dt;
     hz = netTransport() === "mqtt" ? 12 : 60;
-    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + (input.up ? "1" : "0") + (input.down ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (input.ability ? "1" : "0") + (input.ab || 0) + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX)) + (pointerSteer.aimY == null ? "" : "y" + Math.round(pointerSteer.aimY));
+    key = String(localSlot) + (input.left ? "1" : "0") + (input.right ? "1" : "0") + (input.up ? "1" : "0") + (input.down ? "1" : "0") + ((input.fire || pointerSteer.fire) ? "1" : "0") + (input.ability ? "1" : "0") + (input.bossAb ? "1" : "0") + (input.ab || 0) + (pointerSteer.aimX == null ? "" : Math.round(pointerSteer.aimX)) + (pointerSteer.aimY == null ? "" : "y" + Math.round(pointerSteer.aimY));
     if (key !== lastInputKey || inputAcc >= 1 / hz) {
       lastInputKey = key;
       inputAcc = 0;
@@ -11751,6 +12406,7 @@
         l: !!(p && p.input.left), r: !!(p && p.input.right),
         u: !!(p && p.input.up), d: !!(p && p.input.down),
         f: !!(p && p.input.fire), a: !!(p && p.input.ability), ab: p ? (p.input.ab | 0) : 0,
+        q: !!(p && p.input.bossAb),
         aimX: p ? p.input.aimX : null, aimY: p ? p.input.aimY : null,
         x: p ? p.x : null, targetX: p ? p.targetX : null,
         y: p ? p.y : null, targetY: p ? p.targetY : null
@@ -11760,6 +12416,7 @@
   function updateClientFx(dt) {
     var i, p, b, e, j, consumed, br, hid, dx, dy;
     tickWarpVisuals(dt);
+    tickBossAbFx(dt);
     shake *= Math.exp(-dt * 7);
     if (shake < 0.05) shake = 0;
     flash *= Math.exp(-dt * 8);
@@ -11966,7 +12623,7 @@
     });
     n.on("start", function (msg) {
       if (netRole === "host") return;
-      startNewGame({ coopPlayers: msg.players, fromNet: true, localSlot: 1, startWave: msg.startWave || 1 });
+      startNewGame({ coopPlayers: msg.players, fromNet: true, localSlot: 1, startWave: msg.startWave || 1, abilityRoll: msg.abilityRoll });
     });
     n.on("pvpstart", function (msg) {
       if (netRole === "host") return;
@@ -12022,6 +12679,7 @@
       p.input.fire = !!msg.f;
       p.input.ability = !!msg.a;
       p.input.ab = (msg.ab | 0) || (msg.a ? 1 : 0);
+      p.input.bossAb = !!msg.q;
       p.input.aimX = msg.aimX == null ? null : msg.aimX;
       p.input.aimY = msg.aimY == null ? null : msg.aimY;
       if (msg.x != null && isFinite(msg.x)) {
@@ -12037,6 +12695,28 @@
     n.on("pick", function (msg) {
       if (netRole !== "host") return;
       hostGrantPickup(msg);
+    });
+    n.on("abpick", function (msg) {
+      var slot = msg.slot == null ? (netRole === "host" ? 1 : 0) : msg.slot;
+      if (slot === localSlot) return;
+      applyRemoteBossAbilityPick(slot, msg.id || "");
+      if (netRole === "host") netSend({ t: "abpick", slot: slot, id: msg.id || "" });
+    });
+    n.on("abopen", function (msg) {
+      if (netRole === "host") return;
+      if (msg.roll) rollBossAbilities(msg.roll);
+      openBossAbilityPick(msg.wave || 100, msg.spawn || 0, false);
+    });
+    n.on("abgo", function (msg) {
+      var i, ids;
+      if (netRole === "host") return;
+      ids = msg.ids || [];
+      for (i = 0; i < players.length; i++) {
+        if (players[i] && ids[i]) players[i].bossAbilityId = ids[i];
+        bossPick.ready[i] = true;
+      }
+      if (msg.spawn != null) bossPick.pendingSpawn = msg.spawn | 0;
+      finishBossAbilityPick();
     });
     n.on("xpboost", function (msg) {
       if (netRole !== "client") return;
@@ -12166,6 +12846,7 @@
     p.input.fire = input.fire || pointerSteer.fire;
     p.input.ability = !!input.ability;
     p.input.ab = input.ab | 0;
+    p.input.bossAb = !!input.bossAb;
   }
 
   function updateOneShip(p, dt, fire) {
@@ -12230,6 +12911,7 @@
     if (p.weaponT > 0) { p.weaponT -= dt; if (p.weaponT <= 0) p.weapon = "normal"; }
     if (p.speedT > 0) p.speedT = Math.max(0, p.speedT - dt);
     if ((p.skillCd || 0) > 0) p.skillCd = Math.max(0, p.skillCd - dt);
+    if ((p.bossAbCd || 0) > 0) p.bossAbCd = Math.max(0, p.bossAbCd - dt);
     if ((p.skillHasteT || 0) > 0) p.skillHasteT = Math.max(0, p.skillHasteT - dt);
     if ((p.skinBoostT || 0) > 0) {
       p.skinBoostT = Math.max(0, p.skinBoostT - dt);
@@ -12327,7 +13009,11 @@
     } else if (fire && inp.ability && !p.skillHeld && !p.boss && !(pvpS() && pvpS().roundLock)) {
       tryCastSkill(p);
     }
+    if (fire && inp.bossAb && !p.bossAbHeld && !p.boss && !(pvpS() && pvpS().roundLock)) {
+      tryCastBossAbility(p);
+    }
     p.skillHeld = !!inp.ability;
+    p.bossAbHeld = !!inp.bossAb;
   }
 
   function update(dt) {
@@ -12380,6 +13066,7 @@
     var wallDt = dt;
     var foeDt = stasisT > 0 ? dt * STASIS_SLOW : dt;
     tickWarpVisuals(wallDt);
+    tickBossAbFx(wallDt);
     applyWarpGameplay(wallDt);
     dt = foeDt;
 
@@ -12552,6 +13239,8 @@
         /* hold the next wave until the revive gem reaches the ships or is gone */
       } else if (waveHold > 0) {
         waveHold -= dt;
+      } else if (maybeOfferBossAbility(wave, wave + 1)) {
+        /* pick screen between waves 100, 105, … */
       } else {
         spawnWave(wave + 1);
       }
@@ -12561,6 +13250,11 @@
       b = pbul[i];
       steerPlayerHoming(b, dt);
       b.age = (b.age || 0) + dt;
+      if (b.boostAt && !b.boosted && b.age >= b.boostAt) {
+        b.boosted = true;
+        b.vy = b.boostVy || b.vy;
+        b.vx = b.boostVx || b.vx;
+      }
       if (b.life && b.age > b.life) { pbul.splice(i, 1); continue; }
       if (fight.on && fight.planets && fight.planets.length) applyOrreryGravity(b, dt);
       if (b.helix) {
@@ -12596,6 +13290,7 @@
           var own = players[b.owner] || player;
           var pierceJug = e.type === "juggernaut" && b.pierce > 0;
           skinOnBulletHit(own, e, b);
+          if (b.freeze && !e.isBoss) e.freezeT = Math.max(e.freezeT || 0, 1.1);
           killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", b.dmg || 1, b.owner, pierceJug ? "pierce" : undefined);
           if (b.splash) {
             var sj, se;
@@ -14746,6 +15441,21 @@
     ctx.save();
     for (i = 0; i < pbul.length; i++) {
       b = pbul[i];
+      if (b.bossAb && b.color) {
+        glow(ctx, b.color, 12);
+        ctx.fillStyle = b.color;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r || 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x - (b.vx || 0) * 0.018, b.y - (b.vy || 0) * 0.018);
+        ctx.stroke();
+        noGlow(ctx);
+        continue;
+      }
       if (b.bolt || b.gun === "seeker" || b.homing) {
         glow(ctx, b.bolt ? "#ffd23d" : "#d46bff", 10);
         ctx.fillStyle = b.bolt ? "#fff0c0" : "#f0c8ff";
@@ -14794,6 +15504,23 @@
     }
 
     drawWarpFx(ctx);
+    for (i = 0; i < bossAbFx.length; i++) {
+      p = bossAbFx[i];
+      ctx.save();
+      ctx.globalAlpha = 0.28 + 0.22 * Math.max(0, p.t / (p.max || 0.6));
+      ctx.strokeStyle = p.color || "#e8f6ff";
+      ctx.lineWidth = p.kind === "clear" ? 2.4 : 1.8;
+      if (p.kind === "clear" || p.kind === "shock") {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r || 12, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (p.kind === "pull") {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r || 40, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
 
     for (i = 0; i < rings.length; i++) {
       p = rings[i];
@@ -14998,7 +15725,7 @@
     var hint = document.getElementById("hint");
     var help = document.getElementById("hub-help");
     if (!coarse) {
-      if (hint) hint.textContent = "WASD / arrows move · Space fire · Hangar between runs · P pause · M mute";
+      if (hint) hint.textContent = "WASD / arrows move · Space fire · E skill · Q boss ability · P pause · M mute";
       if (help) help.innerHTML = "&larr; &rarr; &uarr; &darr; / WASD &mdash; move &nbsp;&middot;&nbsp; Space / click &mdash; fire<br>P / Esc &mdash; pause &nbsp;&middot;&nbsp; M &mdash; mute";
     }
   }
@@ -15041,7 +15768,7 @@
       k === "a" || k === "A" || k === "d" || k === "D" ||
       k === "w" || k === "W" || k === "s" || k === "S" ||
       k === "p" || k === "P" || k === "m" || k === "M" ||
-      k === "e" || k === "E" || k === "Shift" ||
+      k === "e" || k === "E" || k === "q" || k === "Q" || k === "Shift" ||
       !!(player && player.boss && pvpAbilitySlotFromKey(k));
   }
   function toggleMute() {
@@ -15087,6 +15814,16 @@
         if (k === "Escape" || k === "Backspace") showScreen("hub");
       } else if (uiScreen === "pause") {
         if (k === "Enter" || k === " " || k === "p" || k === "P" || k === "Escape") resumeGame();
+      } else if (uiScreen === "bossab") {
+        if (k === "Escape" || k === "0") pickBossAbility("keep");
+        else if (k === "Enter" || k === " ") {
+          var first = el("bossab-cards") && el("bossab-cards").querySelector("[data-ba]");
+          if (first) pickBossAbility(first.getAttribute("data-ba"));
+        } else if (k.length === 1 && k >= "1" && k <= "9") {
+          var cards = el("bossab-cards") ? el("bossab-cards").querySelectorAll("[data-ba]") : [];
+          var idx = (k.charCodeAt(0) - 49);
+          if (cards[idx]) pickBossAbility(cards[idx].getAttribute("data-ba"));
+        }
       } else if (uiScreen === "summary") {
         if (k === "Enter" || k === " ") startNewGame();
         else if (k === "Escape") showScreen("hub");
@@ -15103,6 +15840,10 @@
       input.ability = true;
       tryCastSkill(player);
     }
+    else if ((k === "q" || k === "Q") && !(player && player.boss)) {
+      input.bossAb = true;
+      tryCastBossAbility(player);
+    }
     else if (k === "p" || k === "P" || k === "Escape") pauseGame();
   }
   function onKeyUp(e) {
@@ -15114,6 +15855,7 @@
     else if (k === "ArrowDown" || k === "s" || k === "S") input.down = false;
     else if (k === " ") input.fire = false;
     else if ((k === "e" || k === "E") && !(player && player.boss)) input.ability = false;
+    else if ((k === "q" || k === "Q") && !(player && player.boss)) input.bossAb = false;
     else if (player && player.boss && pvpAbilitySlotFromKey(k)) {
       if ((input.ab | 0) === pvpAbilitySlotFromKey(k)) {
         input.ability = false;
@@ -15314,6 +16056,20 @@
     });
   })();
   el("btn-resume").addEventListener("click", function (e) { e.preventDefault(); resumeGame(); });
+  if (el("btn-bossab-keep")) {
+    el("btn-bossab-keep").addEventListener("click", function (e) {
+      e.preventDefault();
+      pickBossAbility("keep");
+    });
+  }
+  if (el("bossab-cards")) {
+    el("bossab-cards").addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-ba]") : null;
+      if (!btn) return;
+      e.preventDefault();
+      pickBossAbility(btn.getAttribute("data-ba"));
+    });
+  }
   el("btn-quit").addEventListener("click", function (e) { e.preventDefault(); quitToHub(); });
   el("btn-again").addEventListener("click", function (e) { e.preventDefault(); playAgain(); });
   el("btn-summary-hub").addEventListener("click", function (e) { e.preventDefault(); leaveNet(); showScreen("hub"); });
@@ -15716,7 +16472,8 @@
             slot: p.slot, x: +p.x.toFixed(1), y: +p.y.toFixed(1),
             lives: p.lives, alive: p.alive, facing: p.facing || -1,
             hp: p.hp || 0, maxHp: p.maxHp || 0, boss: p.boss || null,
-            weapon: p.weapon, weaponT: p.weaponT, jamT: +(p.jamT || 0).toFixed(2)
+            weapon: p.weapon, weaponT: p.weaponT, jamT: +(p.jamT || 0).toFixed(2),
+            bossAbilityId: p.bossAbilityId || "", bossAbCd: +(p.bossAbCd || 0).toFixed(2)
           });
         }
         return out;
@@ -15832,7 +16589,7 @@
         updateHud();
       },
       step: function (dt, n) { var i; for (i = 0; i < (n || 1); i++) update(dt || 1 / 60); draw(); return { ebul: ebul.length, pbul: pbul.length, enemies: aliveCount(), wave: wave, lives: lives, score: score }; },
-      setInput: function (l, r, f, a, ab, u, d) {
+      setInput: function (l, r, f, a, ab, u, d, q) {
         if (l != null) input.left = !!l;
         if (r != null) input.right = !!r;
         if (f != null) input.fire = !!f;
@@ -15841,6 +16598,7 @@
         else if (a) input.ab = 1;
         if (u != null) input.up = !!u;
         if (d != null) input.down = !!d;
+        if (q != null) input.bossAb = !!q;
       },
       pauseGame: pauseGame,
       resumeGame: resumeGame,
@@ -15935,6 +16693,16 @@
       hasSkill: hasSkill,
       equippedSpecial: equippedSpecial,
       tryCastSkill: tryCastSkill,
+      tryCastBossAbility: tryCastBossAbility,
+      currentBossAbilityId: currentBossAbilityId,
+      castBossAbility: tryCastBossAbility,
+      bossAbilityDef: bossAbilityDef,
+      bossAbilityUnlockCount: bossAbilityUnlockCount,
+      unlockedBossAbilityBosses: unlockedBossAbilityBosses,
+      rollBossAbilities: rollBossAbilities,
+      BOSS_ABILITY_DEFS: BOSS_ABILITY_DEFS,
+      pickBossAbility: pickBossAbility,
+      openBossAbilityPick: openBossAbilityPick,
       cloneSkills: cloneSkills,
       migrateWarpOwnedList: migrateWarpOwnedList,
       migrateWarpEquipped: migrateWarpEquipped,
