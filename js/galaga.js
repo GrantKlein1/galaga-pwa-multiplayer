@@ -2948,7 +2948,7 @@
     return {
       on: false, type: "",
       threads: [], knots: [],
-      cols: 6, rows: 8, tiles: [], pawn: null, piece: "", safeC: -1, safeR: -1, mateT: 0,
+      cols: 6, rows: 8, tiles: [], pawn: null, piece: "", tiled: false, safeC: -1, safeR: -1, mateT: 0,
       echo: false, echoTape: [], echoShots: [], ghost: null,
       invert: false, midY: H / 2, midDir: 1,
       wallL: 0, wallR: 0, pylons: [],
@@ -6231,6 +6231,7 @@
   function bossTeleDelay(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
     var t = d.tele - Math.min(0.08, e.tier * 0.03) - (e.phaseIdx >= 2 ? 0.04 : 0);
+    if (e.type === "tessera" && (e.phaseIdx || 0) <= 0) t = 0.8;
     return Math.max(0.34, t);
   }
   function bossCooldown(e) {
@@ -6680,6 +6681,7 @@
       addTele("glow", e.x, e.y + 8, 0, 0, delay, FIGHT_WHITE);
     } else if (atk === "rook" || atk === "bishop" || atk === "cross" || atk === "mate" || atk === "knight") {
       addZone(e.aimX, e.aimY, 18, 16, delay, atk === "cross" ? FIGHT_CYAN : FIGHT_WHITE);
+      if (e.type === "tessera" && (e.phaseIdx || 0) <= 0) armTesseraVolley(atk);
     } else if (atk === "hymn" || atk === "canon" || atk === "crescendo") {
       addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
     } else if (atk === "echo" || atk === "invert" || atk === "keystones" || atk === "collapse" || atk === "medley") {
@@ -7566,15 +7568,15 @@
     } else if (atk === "cocoon") {
       spawnLoomCocoon(e);
     } else if (atk === "rook") {
-      spawnTesseraVolley("rook", false);
+      fireTesseraVolley("rook", false);
     } else if (atk === "bishop") {
-      spawnTesseraVolley("bishop", false);
+      fireTesseraVolley("bishop", false);
     } else if (atk === "cross") {
-      spawnTesseraVolley(Math.random() < 0.5 ? "rook" : "bishop", true);
+      fireTesseraVolley(Math.random() < 0.5 ? "rook" : "bishop", true);
     } else if (atk === "knight") {
-      spawnTesseraVolley("knight", false);
+      fireTesseraVolley("knight", false);
     } else if (atk === "mate") {
-      spawnTesseraVolley("knight", false);
+      fireTesseraVolley("knight", false);
       fight.piece = "mate";
       px = clamp(Math.floor((e.aimX / W) * TILE_COLS), 0, TILE_COLS - 1);
       base = clamp(Math.floor((e.aimY / H) * TILE_ROWS), 0, TILE_ROWS - 1);
@@ -7667,6 +7669,7 @@
     fight.knots = [];
     fight.tiles = [];
     fight.pawn = null;
+    fight.tiled = false;
     fight.echo = false;
     fight.echoTape = [];
     fight.echoShots = [];
@@ -7759,11 +7762,21 @@
     }
   }
   function tileKey(c, r) { return c + r * TILE_COLS; }
+  function tesseraBoardLive() {
+    if (fight.type === "tessera") return true;
+    var boss = currentBoss();
+    return !!(boss && boss.type === "tessera");
+  }
+  function tesseraTileTele() {
+    var boss = currentBoss();
+    if (fight.type === "tessera" && boss && (boss.phaseIdx || 0) <= 0) return 1.05;
+    return 0.28;
+  }
   function markTile(c, r, st) {
     var k;
     if (c < 0 || r < 0 || c >= TILE_COLS || r >= TILE_ROWS) return;
     k = tileKey(c, r);
-    fight.tiles[k] = { c: c, r: r, st: st, t: 0.28 };
+    fight.tiles[k] = { c: c, r: r, st: st, t: st === 1 ? tesseraTileTele() : 0.28 };
   }
   function tesseraRook(pl) {
     var t = playerTile(pl), i;
@@ -7812,6 +7825,20 @@
       else tesseraKnight(pl);
       pickSafeTile(fight.tiles);
     }
+  }
+  function armTesseraVolley(atk) {
+    if (atk === "rook") spawnTesseraVolley("rook", false);
+    else if (atk === "bishop") spawnTesseraVolley("bishop", false);
+    else if (atk === "cross") spawnTesseraVolley(Math.random() < 0.5 ? "rook" : "bishop", true);
+    else if (atk === "knight" || atk === "mate") spawnTesseraVolley("knight", false);
+    fight.tiled = true;
+  }
+  function fireTesseraVolley(kind, two) {
+    if (fight.tiled) {
+      fight.tiled = false;
+      return;
+    }
+    spawnTesseraVolley(kind, two);
   }
   function spawnPawnNear(pl) {
     var t = playerTile(pl || { x: W / 2, y: H * 0.75 });
@@ -8214,13 +8241,41 @@
       if (it.kind === "wall") { fight.wallL = it.x || 0; fight.wallR = it.x2 || 0; }
     }
   }
+  function drawTesseraBoard(context) {
+    var c, r, tw = tileW(), thh = tileH(), light;
+    context.save();
+    for (r = 0; r < TILE_ROWS; r++) {
+      for (c = 0; c < TILE_COLS; c++) {
+        light = (c + r) % 2 === 0;
+        context.globalAlpha = light ? 0.18 : 0.26;
+        context.fillStyle = light ? "#e8e4dc" : "#242028";
+        context.fillRect(c * tw, r * thh, tw, thh);
+      }
+    }
+    context.globalAlpha = 0.28;
+    context.strokeStyle = "#ffd23d";
+    context.lineWidth = 1.2;
+    context.strokeRect(0.5, 0.5, W - 1, H - 1);
+    context.globalAlpha = 0.2;
+    context.strokeStyle = "#e8e4dc";
+    context.lineWidth = 1;
+    for (c = 1; c < TILE_COLS; c++) {
+      context.beginPath(); context.moveTo(c * tw, 0); context.lineTo(c * tw, H); context.stroke();
+    }
+    for (r = 1; r < TILE_ROWS; r++) {
+      context.beginPath(); context.moveTo(0, r * thh); context.lineTo(W, r * thh); context.stroke();
+    }
+    context.restore();
+  }
   function drawFight(context) {
     var list = netRole === "client" ? fightView : fightSnap();
-    var i, f, col, a, gap, tw, thh, showGrid = fight.type === "tessera";
+    var i, f, col, a, gap, tw, thh, showBoard = tesseraBoardLive(), showGrid = showBoard;
     tw = tileW();
     thh = tileH();
     for (i = 0; i < list.length; i++) if (list[i].kind === "tile" || list[i].kind === "pawn") showGrid = true;
-    if (showGrid) {
+    if (showBoard) {
+      drawTesseraBoard(context);
+    } else if (showGrid) {
       context.save();
       context.globalAlpha = 0.08;
       context.strokeStyle = "#e8e4dc";
@@ -13551,8 +13606,14 @@
     } else if (e.type === "tessera") {
       context.fillStyle = col;
       context.fillRect(-12, -10, 24, 22);
-      context.fillStyle = dark;
-      context.fillRect(-8, -6, 16, 12);
+      for (i = 0; i < 2; i++) {
+        for (a = 0; a < 2; a++) {
+          context.fillStyle = ((i + a) % 2) ? dark : (e.hitFlash > 0 ? "#fff" : "#e8e4dc");
+          context.globalAlpha = 0.9;
+          context.fillRect(-8 + a * 8, -6 + i * 6, 8, 6);
+        }
+      }
+      context.globalAlpha = 1;
       context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
       context.fillRect(-6, -16, 12, 6);
       context.beginPath(); context.moveTo(-4, -16); context.lineTo(0, -22); context.lineTo(4, -16); context.closePath(); context.fill();

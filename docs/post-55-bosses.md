@@ -2,7 +2,7 @@
 
 Playfield is 240×360. Red hurts, cyan is safe, white flashes before an attack, gold is a weak point. Attacks aim at the live player, including forward/back movement toward the midline `y = H/2`.
 
-Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarch (80) already shipped. Kits below are the wave 85–100 first-cycle bosses. Telegraphs on these four are shorter than Pentarch’s (0.36s vs 0.5s).
+Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarch (80) already shipped. Kits below are the wave 85–100 first-cycle bosses. Telegraphs on Loom, Requiem, and Terminus are shorter than Pentarch’s (0.36s vs 0.5s). Tessera phase 1 is slower so the full board stays readable; later Tessera phases stay quicker.
 
 ## Loom — wave 85, the weaver
 
@@ -15,13 +15,13 @@ Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarc
 
 ## Tessera — wave 90, the chessboard
 
-3 exclusive phases. Base HP 790. HP ticks at 66% and 33%. Crowned marble body. Faint tile grid on the field.
+3 exclusive phases. Base HP 790. HP ticks at 66% and 33%. Crowned marble body. The full chessboard is on the field from phase 1.
 
 - Tiles light white, then detonate red.
 - **Rook:** full row and column through the player.
 - **Bishop:** both diagonals.
 - **Knight:** L-shaped jumps aimed at the player.
-- **p1:** one piece type per volley.
+- **p1:** one piece type per volley. The pattern lights during the telegraph and stays readable before tiles detonate.
 - **p2 Two pieces:** two types at once, with one cyan safe tile.
 - **p3 Checkmate:** the boss moves onto a landing tile that detonates. The grid fills with red taken tiles until a pawn minion is killed, which clears them.
 

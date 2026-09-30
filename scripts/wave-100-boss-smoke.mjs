@@ -61,6 +61,14 @@ assert(galaga.indexOf('fromPerk !== "choir"') >= 0, "Requiem body ignores shots 
 
 assert(/hp: 740, spd:[\s\S]*?tele: 0\.36/.test(galaga), "Loom tele shorter than Pentarch");
 assert(galaga.indexOf("tele: 0.5") >= 0, "Pentarch tele stays 0.5");
+assert(galaga.indexOf("function tesseraBoardLive") >= 0, "Tessera board from phase 1");
+assert(galaga.indexOf("function drawTesseraBoard") >= 0, "full chessboard draw");
+assert(galaga.indexOf("function tesseraTileTele") >= 0 && galaga.indexOf("return 1.05") >= 0, "phase 1 tiles stay readable");
+assert(galaga.indexOf('e.type === "tessera" && (e.phaseIdx || 0) <= 0) t = 0.8') >= 0, "phase 1 telegraph is slower");
+assert(galaga.indexOf("function armTesseraVolley") >= 0, "phase 1 lights tiles during telegraph");
+assert(galaga.indexOf("function fireTesseraVolley") >= 0, "later phases still spawn at fire");
+assert(galaga.indexOf("t: st === 1 ? tesseraTileTele() : 0.28") >= 0, "later-phase fuse stays 0.28");
+assert(galaga.indexOf("pickSafeTile") >= 0 && galaga.indexOf('fight.piece = "mate"') >= 0, "p2 safe tile and p3 mate stay");
 
 assert(codec.indexOf('"loom", "tessera", "requiem", "terminus"') >= 0, "netcodec boss ids");
 assert(/var VER = 7;/.test(codec), "codec VER 7");
@@ -69,6 +77,6 @@ assert(codec.indexOf('"thread"') >= 0 && codec.indexOf('"midline"') >= 0, "threa
 assert(codec.indexOf('"keystone"') >= 0 && codec.indexOf('"pylon"') >= 0 && codec.indexOf('"ghost"') >= 0, "keystone/pylon/ghost kinds");
 
 assert(pvp.indexOf("loom:") >= 0 && pvp.indexOf("terminus:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v55") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v56") >= 0, "PWA cache bump");
 
 console.log("wave-100-boss-smoke: ok");
