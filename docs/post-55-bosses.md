@@ -104,10 +104,10 @@ Telegraphs are 0.28s, shorter than Terminus.
 
 3 exclusive phases. Base HP 2300. HP ticks at 66% and 33%. Crystal body with gold prisms.
 
-- Beams split through gold prisms. Rotate a prism (shoot it) so a split returns into the boss (~3.5% max HP).
-- **Split (p1):** LIGHT SPLITS. Two prisms, split beams aimed at the live player.
-- **Refract (p2):** THE SPLIT. Three prisms, denser refraction.
-- **Crystal (p3):** RETURN FIRE. Four prisms; a returning beam can hit the body.
+- Beams split through gold prisms. Rotate a prism (shoot it) so a split returns into the boss (~3.5% max HP). Prisms stay on the field until the next set spawns; shooting them only rotates them.
+- **Split (p1):** LIGHT SPLITS. Two prisms, split beams, a shard fan from each prism, and a red lattice through the live player with cyan gaps.
+- **Refract (p2):** THE SPLIT. Three prisms, denser refraction, plus bouncing ricochets aimed at the player.
+- **Crystal (p3):** RETURN FIRE. Four prisms; a returning beam can hit the body. Adds a gapped ring (cyan pocket toward the player) on top of the fan, lattice, and ricochet.
 
 ## Maelstrom — wave 135, the whirlpool
 

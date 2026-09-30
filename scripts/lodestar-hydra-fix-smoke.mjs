@@ -32,7 +32,7 @@ assert(galaga.indexOf('banner = { text: "THE HEART"') >= 0, "core-open banner");
 assert(galaga.indexOf("function placeLernaeanHead") >= 0, "heads stay attached to the body");
 
 assert(/var VER = 11;/.test(codec), "codec payload unchanged");
-assert(sw.indexOf("galaga-coop-v64") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v65") >= 0, "PWA cache bump");
 assert(post.indexOf("full-width red row") >= 0, "Lodestar kit mentions unsidesteppable rows");
 assert(post.indexOf("gold heart can be killed") >= 0, "Hydra kit mentions a finishable core");
 

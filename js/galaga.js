@@ -313,9 +313,9 @@
       flavor: "Orbiting planets, gravity rings, curve a shot into the gold core" },
     { id: "prism", name: "PRISM", color: "#e8f0ff", dark: "#101828", r: 21, hp: 2300, spd: 32, amp: 8, freq: 0.8, cd: 1.18, tele: 0.28, pts: 12600,
       exclusive: true,
-      base: ["splitbeam"], p2: ["refract"], p3: ["crystal"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      base: ["splitbeam", "shardfan", "lattice"], p2: ["refract", "shardfan", "lattice", "ricochet"], p3: ["crystal", "shardfan", "lattice", "ricochet", "gapring"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "THE SPLIT", p3Text: "RETURN FIRE",
-      flavor: "Beams split through gold prisms; rotate a prism to send a beam home" },
+      flavor: "Beams split through gold prisms that stay until the next set; rotate a prism to send a beam home" },
     { id: "maelstrom", name: "MAELSTROM", color: "#4d88ff", dark: "#061018", r: 24, hp: 2450, spd: 30, amp: 10, freq: 0.75, cd: 1.16, tele: 0.28, pts: 13200,
       exclusive: true,
       base: ["current"], p2: ["gyre"], p3: ["maw"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
@@ -4612,6 +4612,9 @@
       glow: opt.glow || "#ff6b9a",
       owner: opt.owner == null ? -1 : opt.owner,
       polar: opt.polar,
+      bounce: !!opt.bounce,
+      bounceMax: opt.bounceMax || 3,
+      bounces: 0,
       glintT: opt.glintT || (fight.dark ? 0.16 : 0),
       trail: [],
       rewinding: false,
@@ -4625,7 +4628,7 @@
         swayPh: opt.swayPh, pauseAt: opt.pauseAt, pauseT: opt.pauseT, pauseAfter: opt.pauseAfter, resumeSpd: opt.resumeSpd,
         splitOnResume: opt.splitOnResume, splitAt: opt.splitAt, splitT: opt.splitT,
         seed: opt.seed, color: opt.color, glow: opt.glow, owner: opt.owner,
-        polar: opt.polar, glintT: opt.glintT,
+        polar: opt.polar, glintT: opt.glintT, bounce: opt.bounce, bounceMax: opt.bounceMax,
         silent: true, noTwin: true
       });
     }
@@ -7311,7 +7314,7 @@
     if (atk === "constrict") return;
     var col = pentarchColor(e) || enemyColor(e.type);
     var delay = bossTeleDelay(e);
-    var px, i, gx;
+    var px, i, gx, p;
     e.atk = atk;
     e.lastAtk = atk;
     var aim = targetPlayer(e.x, e.y);
@@ -7597,6 +7600,32 @@
     } else if (atk === "splitbeam" || atk === "refract" || atk === "crystal") {
       addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
       addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
+    } else if (atk === "shardfan") {
+      addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+      for (i = 0; i < fight.prisms.length; i++) {
+        p = fight.prisms[i];
+        if (p && p.alive !== false) addTele("line", p.x, p.y, e.aimX, e.aimY, delay, FIGHT_RED);
+      }
+    } else if (atk === "lattice") {
+      e.slamX = clamp(e.aimX, 22, W - 22);
+      e.slamY = clampAimY(e.aimY);
+      e.gapX = clamp(e.slamX + (e.slamX < W / 2 ? 30 : -30), 28, W - 28);
+      e.gapY = clamp(e.slamY + (e.slamY < (H / 2 + H - 40) * 0.5 ? -28 : 28), H / 2 + 18, H - 34);
+      addTele("hline", 6, e.slamY, W - 6, e.slamY, delay, FIGHT_RED);
+      addTele("vline", e.slamX, 12, e.slamX, H - 8, delay, FIGHT_RED);
+      addZone(e.gapX, e.slamY, 14, 10, delay, FIGHT_CYAN);
+      addZone(e.slamX, e.gapY, 10, 14, delay, FIGHT_CYAN);
+      addTele("flash", e.slamX, e.slamY, 0, 0, delay, FIGHT_WHITE);
+    } else if (atk === "ricochet") {
+      addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+      for (i = 0; i < fight.prisms.length; i++) {
+        p = fight.prisms[i];
+        if (p && p.alive !== false) addTele("line", p.x, p.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
+      }
+    } else if (atk === "gapring") {
+      addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+      addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_CYAN);
+      addZone(e.aimX, e.aimY, 16, 16, delay, FIGHT_CYAN);
     } else if (atk === "current" || atk === "gyre" || atk === "maw") {
       addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
       addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_CYAN);
@@ -8590,6 +8619,14 @@
     } else if (atk === "crystal") {
       firePrismBeams(e, spd + 8, 4);
       aimedShot(e, 0.5, spd, opt);
+    } else if (atk === "shardfan") {
+      prismShardFan(e, spd + 18);
+    } else if (atk === "lattice") {
+      prismLattice(e);
+    } else if (atk === "ricochet") {
+      prismRicochet(e, spd + 24);
+    } else if (atk === "gapring") {
+      prismGapRing(e, spd + 10);
     } else if (atk === "current") {
       fight.flow = 48;
       aimedShot(e, 0.55, spd, opt);
@@ -9297,6 +9334,67 @@
       killEnemy(e, false, Math.max(8, Math.round((e.maxHp || 2300) * 0.035)), null, "prism");
       explode(e.x, e.y, FIGHT_GOLD, true);
       banner = { text: "RETURNED", life: 0.55 };
+    }
+  }
+  function livingPrisms(e) {
+    var out = [], i, p;
+    for (i = 0; i < fight.prisms.length; i++) {
+      p = fight.prisms[i];
+      if (p && p.alive !== false) out.push(p);
+    }
+    if (!out.length && e) out.push({ x: e.x, y: e.y + 8, ang: 0 });
+    return out;
+  }
+  function prismShardFan(e, spd) {
+    var list = livingPrisms(e), i, tgt = targetPlayer(e.x, e.y);
+    if (!tgt) return;
+    for (i = 0; i < list.length; i++) {
+      aimedWedge(list[i].x, list[i].y, tgt.x, tgt.y, 7, 0.62, spd, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: i > 0
+      });
+    }
+  }
+  function prismLattice(e) {
+    var gx = e.gapX != null ? e.gapX : W / 2;
+    var gy = e.gapY != null ? e.gapY : H * 0.72;
+    var y = e.slamY != null ? e.slamY : gy;
+    var x = e.slamX != null ? e.slamX : gx;
+    var gap = 20;
+    slamBox((gx - gap) * 0.5, y, Math.max(8, (gx - gap) * 0.5), 8, FIGHT_RED);
+    slamBox((W + gx + gap) * 0.5, y, Math.max(8, (W - (gx + gap)) * 0.5), 8, FIGHT_RED);
+    slamBox(x, (gy - gap) * 0.5, 8, Math.max(8, (gy - gap) * 0.5), FIGHT_RED);
+    slamBox(x, (H + gy + gap) * 0.5, 8, Math.max(8, (H - (gy + gap)) * 0.5), FIGHT_RED);
+  }
+  function prismRicochet(e, spd) {
+    var list = livingPrisms(e), i, k, p, a, tgt = targetPlayer(e.x, e.y);
+    if (!tgt) return;
+    for (i = 0; i < list.length; i++) {
+      p = list[i];
+      a = Math.atan2(tgt.y - p.y, tgt.x - p.x);
+      for (k = -1; k <= 1; k++) {
+        addEbul(p.x, p.y, Math.cos(a + k * 0.55) * spd, Math.sin(a + k * 0.55) * spd, {
+          color: FIGHT_RED, glow: FIGHT_RED, r: 2.7, bounce: true, bounceMax: 3, life: 2.4, silent: i + k > -1
+        });
+      }
+    }
+  }
+  function prismGapRing(e, spd) {
+    var tgt = targetPlayer(e.x, e.y), i, a, skip, n = 16, list, p;
+    if (!tgt) return;
+    skip = Math.atan2(tgt.y - e.y, tgt.x - e.x);
+    for (i = 0; i < n; i++) {
+      a = (i / n) * Math.PI * 2;
+      if (Math.abs(Math.atan2(Math.sin(a - skip), Math.cos(a - skip))) < 0.42) continue;
+      addEbul(e.x, e.y, Math.cos(a) * spd, Math.sin(a) * spd, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, silent: i > 0
+      });
+    }
+    list = livingPrisms(e);
+    for (i = 0; i < list.length; i++) {
+      p = list[i];
+      aimedWedge(p.x, p.y, tgt.x, tgt.y, 5, 0.5, spd + 10, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.4, silent: true
+      });
     }
   }
   function applyMaelstromFlow(obj, dt, mul) {
@@ -10168,13 +10266,7 @@
       if (!obj.alive) continue;
       if (dist2(b.x, b.y, obj.x, obj.y) < (obj.r + (b.r || 2)) * (obj.r + (b.r || 2))) {
         obj.ang += Math.PI / 4;
-        obj.hp -= dmg;
         explode(obj.x, obj.y, FIGHT_GOLD, false);
-        if (obj.hp <= 0) {
-          obj.alive = false;
-          boss = currentBoss();
-          if (boss) killEnemy(boss, false, Math.max(6, Math.round((boss.maxHp || 2300) * 0.02)), b.owner, "prism");
-        }
         pbul.splice(i, 1);
         return true;
       }
@@ -14590,7 +14682,13 @@
           continue;
         }
       }
-      if (b.y > H + 14 || b.x < -16 || b.x > W + 16 || b.y < -20) { ebul.splice(i, 1); continue; }
+      if (b.bounce) {
+        if (b.x < 4 && b.vx < 0) { b.x = 4; b.vx *= -1; b.bounces = (b.bounces || 0) + 1; }
+        if (b.x > W - 4 && b.vx > 0) { b.x = W - 4; b.vx *= -1; b.bounces = (b.bounces || 0) + 1; }
+        if (b.y < 4 && b.vy < 0) { b.y = 4; b.vy *= -1; b.bounces = (b.bounces || 0) + 1; }
+        if (b.y > H - 4 && b.vy > 0) { b.y = H - 4; b.vy *= -1; b.bounces = (b.bounces || 0) + 1; }
+        if ((b.bounces || 0) > (b.bounceMax || 3)) { ebul.splice(i, 1); continue; }
+      } else if (b.y > H + 14 || b.x < -16 || b.x > W + 16 || b.y < -20) { ebul.splice(i, 1); continue; }
       if (warpConsumeShot(b)) { ebul.splice(i, 1); continue; }
       var hit = false, gone = false;
       for (pi = 0; pi < players.length; pi++) {

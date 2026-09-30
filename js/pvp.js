@@ -297,7 +297,11 @@
       abilityHint: "1 — refract",
       abilities: [
         { id: "refract", key: "1", name: "Refract", cd: 6.4 },
-        { id: "crystal", key: "2", name: "Crystal", cd: 7.4 }
+        { id: "crystal", key: "2", name: "Crystal", cd: 7.4 },
+        { id: "shardfan", key: "3", name: "Shard fan", cd: 6.8 },
+        { id: "lattice", key: "4", name: "Lattice", cd: 7.2 },
+        { id: "ricochet", key: "5", name: "Ricochet", cd: 7.0 },
+        { id: "gapring", key: "6", name: "Gap ring", cd: 7.6 }
       ]
     },
     maelstrom: {
