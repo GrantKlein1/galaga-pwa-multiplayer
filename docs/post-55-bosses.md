@@ -9,6 +9,7 @@ Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarc
 3 exclusive phases. Base HP 740. HP ticks at 66% and 33%. Spider body with glowing spinnerets.
 
 - Shoots gold anchor knots onto the walls and ceiling. A thin cyan thread links each pair, flickers white, then pulls taut into a red laser. Shoot a gold knot to cut its thread.
+- Periodically fires a red shuttle dart at the live player's x,y, including the bottom of the 240×360 field. A white flash and line telegraph it. Sitting at the bottom is not safe.
 - **Warp (p1):** 2 or 3 threads.
 - **Weft (p2):** Crossing threads form a net with moving gaps.
 - **Cocoon (p3):** Threads spiral inward toward the player; cut a way out.

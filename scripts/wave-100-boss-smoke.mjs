@@ -49,7 +49,7 @@ assert(galaga.indexOf("var CENTURY_CLEAR_XP = 8000") >= 0, "Century Clear XP bon
 assert(galaga.indexOf("run.xpBonus = (run.xpBonus || 0) + CENTURY_CLEAR_XP") >= 0, "bonus uses xpBonus path");
 assert(galaga.indexOf("if (n === 100) xpBonus += CENTURY_CLEAR_XP") >= 0, "skip-start credits Century Clear");
 
-["warp", "weft", "cocoon", "rook", "bishop", "knight", "cross", "mate", "hymn", "canon", "crescendo", "echo", "invert", "keystones", "collapse", "medley"].forEach(function (atk) {
+["warp", "weft", "cocoon", "shuttle", "rook", "bishop", "knight", "cross", "mate", "hymn", "canon", "crescendo", "echo", "invert", "keystones", "collapse", "medley"].forEach(function (atk) {
   assert(galaga.indexOf('atk === "' + atk + '"') >= 0, "attack wired: " + atk);
 });
 
@@ -92,6 +92,6 @@ assert(codec.indexOf('"thread"') >= 0 && codec.indexOf('"midline"') >= 0, "threa
 assert(codec.indexOf('"keystone"') >= 0 && codec.indexOf('"pylon"') >= 0 && codec.indexOf('"ghost"') >= 0, "keystone/pylon/ghost kinds");
 
 assert(pvp.indexOf("loom:") >= 0 && pvp.indexOf("terminus:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v66") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v67") >= 0, "PWA cache bump");
 
 console.log("wave-100-boss-smoke: ok");

@@ -269,7 +269,7 @@
       exclusive: true,
       base: ["warp"], p2: ["weft"], p3: ["cocoon"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "THE WEFT TIGHTENS", p3Text: "COCOON",
-      flavor: "Wall knots, taut red threads, a closing cocoon" },
+      flavor: "Wall knots, taut red threads, a closing cocoon, aimed shuttle darts" },
     { id: "tessera", name: "TESSERA", color: "#e8e4dc", dark: "#242028", r: 20, hp: 790, spd: 34, amp: 8, freq: 0.95, cd: 1.26, tele: 0.36, pts: 7400,
       exclusive: true,
       base: ["rook", "bishop", "knight"], p2: ["cross"], p3: ["mate"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
@@ -7275,6 +7275,7 @@
     e.afterReturn = "";
     e.atkCd = e.type === "helios" ? 0.52 : 0.9;
     e.hitFlash = 0.3;
+    if (e.type === "loom") e.loomShotT = 0.4;
     if (kitHas(e, "regrow")) { e.shieldHp = Math.max(e.shieldHp, 2 + e.tier); }
     if (kitHas(e, "voidguard") && idx === 1) summonEscorts(e, "shield", 2, 64);
     if (kitHas(e, "core") && idx === 1) summonEscorts(e, "shield", 2, 56);
@@ -7616,6 +7617,11 @@
       delay += 0.16;
     } else if (atk === "warp" || atk === "weft" || atk === "cocoon") {
       addTele("glow", e.x, e.y + 8, 0, 0, delay, FIGHT_WHITE);
+    } else if (atk === "shuttle") {
+      addTele("flash", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
+      if (teles.length) teles[teles.length - 1].follow = true;
+      addTele("line", e.x, e.y + 8, e.aimX, e.aimY, delay, FIGHT_WHITE);
+      if (teles.length) teles[teles.length - 1].follow = true;
     } else if (atk === "rook" || atk === "bishop" || atk === "cross" || atk === "mate" || atk === "knight") {
       addZone(e.aimX, e.aimY, 18, 16, delay, atk === "cross" ? FIGHT_CYAN : FIGHT_WHITE);
       if (e.type === "tessera" && (e.phaseIdx || 0) <= 0) armTesseraVolley(atk);
@@ -8579,6 +8585,8 @@
       spawnLoomWeft();
     } else if (atk === "cocoon") {
       spawnLoomCocoon(e);
+    } else if (atk === "shuttle") {
+      fireLoomShuttle(e, spd);
     } else if (atk === "rook") {
       fireTesseraVolley("rook", false);
     } else if (atk === "bishop") {
@@ -8891,6 +8899,36 @@
       addThread(ia, ib, 0.26);
       fight.threads[fight.threads.length - 1].spin = 0.55;
     }
+  }
+  function loomHasShuttleFollow(e) {
+    var i;
+    for (i = 0; i < e.followups.length; i++) {
+      if (e.followups[i].atk === "shuttle") return true;
+    }
+    return false;
+  }
+  function armLoomShuttle(e) {
+    var aim, delay, tel;
+    if (!e || loomHasShuttleFollow(e)) return;
+    aim = targetPlayer(e.x, e.y);
+    delay = 0.32;
+    e.aimX = aim ? aim.x : W / 2;
+    e.aimY = aim ? aim.y : fallbackAimY();
+    addTele("flash", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
+    tel = teles[teles.length - 1];
+    if (tel) tel.follow = true;
+    addTele("line", e.x, e.y + 8, e.aimX, e.aimY, delay, FIGHT_WHITE);
+    tel = teles[teles.length - 1];
+    if (tel) tel.follow = true;
+    queueFollow(e, delay, "shuttle");
+  }
+  function fireLoomShuttle(e, spd) {
+    var aim = targetPlayer(e.x, e.y);
+    var tx = aim ? aim.x : (e.aimX || W / 2);
+    var ty = aim ? aim.y : (e.aimY || fallbackAimY());
+    aimedWedge(e.x, e.y + 8, tx, ty, 1, 0, Math.max((spd || 160) + 100, 260), {
+      color: FIGHT_RED, glow: FIGHT_RED, r: 3.1
+    });
   }
   function cutKnot(idx) {
     var i, th;
@@ -10984,7 +11022,7 @@
   }
 
   function updateBoss(e, dt) {
-    var t, fy, spd, i, f, d, ang, cx, cy, amp;
+    var t, fy, spd, i, f, d, ang, cx, cy, amp, loomAim;
     d = bossDef(e.type) || BOSS_DEFS[0];
     e.shotCd = Math.max(0, e.shotCd - dt);
     for (i = e.followups.length - 1; i >= 0; i--) {
@@ -11090,6 +11128,23 @@
       return;
     }
     updateBossFormMove(e, dt, d);
+    if (e.type === "loom" && enterT <= 0) {
+      loomAim = targetPlayer(e.x, e.y);
+      if (loomAim) {
+        for (i = 0; i < teles.length; i++) {
+          if (!teles[i].follow) continue;
+          teles[i].x = e.x;
+          teles[i].y = teles[i].kind === "line" ? e.y + 8 : e.y;
+          teles[i].x2 = loomAim.x;
+          teles[i].y2 = loomAim.y;
+        }
+      }
+      e.loomShotT = (e.loomShotT == null ? 0.4 : e.loomShotT) - dt;
+      if (e.loomShotT <= 0) {
+        e.loomShotT = 1.22;
+        armLoomShuttle(e);
+      }
+    }
     if (e.tele) {
       if (e.type === "colossus" && (e.tele.atk === "charge" || e.tele.atk === "charge2" || e.tele.atk === "homing")) {
         var liveAim = targetPlayer(e.x, e.y);

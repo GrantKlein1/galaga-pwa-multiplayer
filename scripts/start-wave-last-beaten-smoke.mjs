@@ -104,6 +104,6 @@ assert(js.indexOf("var MAX_LEVEL = 150") >= 0, "level cap 150");
 assert(js.indexOf("var ADMIN_MAX_START_WAVE = 9999") >= 0, "admin any-wave cap");
 assert(js.indexOf("Admin: any wave") >= 0, "admin picker copy");
 assert(js.indexOf("opts.fromNet || (profile && profile.admin)") >= 0, "coop honors host non-5 start");
-assert(sw.indexOf("galaga-coop-v66") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v67") >= 0, "cache bump");
 
 console.log("start-wave-last-beaten-smoke: ok");
