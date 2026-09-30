@@ -23,7 +23,7 @@ Skip-start at **wave 105 or later** opens the pick immediately, covering every b
 
 ## Mimic API
 
-`window.__galaga.currentBossAbilityId(player)` and `window.__galaga.castBossAbility(who, id)` so Mimic (wave 145) can copy the current pick.
+`window.__galaga.currentBossAbilityId(player)` and `window.__galaga.castBossAbility(who, id)` so Mimic (wave 145) can copy the current pick. Mimic reads the id and `bossAbilityDef`, then fires a **red enemy-bullet** version of that pattern. It does not call `castBossAbility` (that would spend the player's cooldown and spawn player shots).
 
 ## Library (waves 5–100)
 
@@ -79,7 +79,7 @@ Colors match each boss. Shots fire **up** from the player.
 | | | `term-medley` | Gold fan plus a clear pulse | 14s |
 | | | `term-key` | Bursts on the nearest three foes | 13s |
 
-Co-op replicates the ability id, Q input, and colored ability shots on netcodec VER 10.
+Co-op replicates the ability id, Q input, and colored ability shots on netcodec VER 11.
 
 ## Library (waves 105–125)
 
@@ -102,3 +102,26 @@ Hourglass through Orrery. Wave-120 Hydra is id `lernaean` (heads), distinct from
 | Orrery | 125 | `orr-orbit` | Brass planet burst | 10s |
 | | | `orr-sling` | Paired sling shot | 9s |
 | | | `orr-core` | Gravity well yank | 13s |
+
+## Library (waves 130–150)
+
+Prism through Axiom. Wave 145 unlocks the full 30-boss roster.
+
+| Boss | Wave | Ability ids | What it does | CD |
+| --- | ---: | --- | --- | ---: |
+| Prism | 130 | `prism-split` | Three chromatic lances | 9s |
+| | | `prism-refract` | Split fan through gold glass | 10s |
+| | | `prism-crystal` | Returning shard ring | 12s |
+| Maelstrom | 135 | `mael-current` | Climbing tidal row | 9s |
+| | | `mael-gyre` | Spinning whirl of shots | 11s |
+| | | `mael-maw` | Smash on the nearest foe | 12s |
+| Cartographer | 140 | `cart-chart` | Three mapped bolts | 9s |
+| | | `cart-remap` | File and rank through the hull | 11s |
+| | | `cart-atlas` | Bursts on the nearest two foes | 13s |
+| Mimic | 145 | `mimic-copy` | Ghost fan from where you just were | 10s |
+| | | `mimic-shadow` | Red curtain climbs the field | 11s |
+| | | `mimic-doppel` | Twin fans from offset ghosts | 13s |
+| Axiom | 150 | `axiom-up` | Climbing row that inverts the lane | 10s |
+| | | `axiom-bounce` | Twin helix bolts | 9s |
+| | | `axiom-mix` | Gold fan plus a shot-clearing pulse | 14s |
+

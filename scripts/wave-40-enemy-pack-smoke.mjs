@@ -110,7 +110,7 @@ assert(galaga.indexOf('e.type === "tether" && e.tetherX != null') >= 0, "tether 
 
 // Co-op codec + PWA cache.
 assert(codec.indexOf('"juggernaut", "lancer", "mirage", "tether", "sower"') >= 0, "codec enemy ids");
-assert(/var VER = 10;/.test(codec), "codec VER 10");
-assert(sw.indexOf("galaga-coop-v60") >= 0, "PWA cache bump");
+assert(/var VER = 11;/.test(codec), "codec VER 11");
+assert(sw.indexOf("galaga-coop-v61") >= 0, "PWA cache bump");
 
 console.log("wave-40-enemy-pack-smoke: ok  elites=" + ids.length);
