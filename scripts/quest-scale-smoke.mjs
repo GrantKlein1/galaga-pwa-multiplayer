@@ -26,7 +26,7 @@ var raw = {
 };
 
 var p = sanitizeProfile(raw);
-assert(p.v === 8, "profile version 8");
+assert(p.v === 9, "profile version 9");
 assert(p.admin === false, "guest admin off");
 assert(p.coins === 1200, "coins kept");
 assert(p.dailies.tier.d_tanks === 2, "frozen daily tier kept");

@@ -22,7 +22,7 @@
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
   var SESSION_KEY = "galaga.session";
-  var PROFILE_VER = 8;
+  var PROFILE_VER = 9;
   var ACCOUNT_PUSH_MS = 900;
   var ACCOUNT_PULL_MS = 5000;
   var ADMIN_CODE = "1234";
@@ -341,6 +341,41 @@
       flavor: "Each phase rewrites a rule on a gold card; the last mixes two. Rules revert when the phase or fight ends" }
   ];
   var GUEST_BOSS_POOL = 10;
+  // Hangar Bosses menu. Builds use hangar kit a player could own the first time
+  // they reach that debut wave (unlockLevel <= wave). Admin unlock does not
+  // fill this in; only a reached wave does.
+  var BOSS_CODEX = {
+    seraph: { desc: "The first dedicated boss. Strafes the top lane and dumps aimed shots, then fans, then dives the hull.", abilities: ["Aimed volleys at the ship", "Spreading shot fans", "A closing dive ram"], ship: "wisp", gun: "twin", mod: "barrier", skills: ["hull-life1", "gun-dmg1"] },
+    wraith: { desc: "A blinker. Spirals and mines cover the lane, then it teleports and sweeps the bottom.", abilities: ["Spiral burst", "Mines that sit in the lane", "Wide sweeps", "Blink to a new perch"], ship: "needle", gun: "rapid", mod: "magnet", skills: ["hull-life1", "gun-dmg1", "gun-rof1"] },
+    hydra: { desc: "Three heads. Beams and rain while escorts siphon, then it lunges. Shoot the body, not only the adds.", abilities: ["Head beams", "Rain from above", "Siphoning escorts", "A lunge through the lane"], ship: "aegis", gun: "spread", mod: "fortune", skills: ["hull-life1", "hull-plate", "gun-dmg1", "gun-rof1"] },
+    colossus: { desc: "A slow bunker. Rings and shockwaves own the middle; missiles track. Stay off the charge line.", abilities: ["Expanding rings", "A body charge", "Homing missiles", "Shockwaves off the hull"], ship: "aegis", gun: "lance", mod: "overdrive", skills: ["hull-life1", "hull-plate", "gun-dmg1", "gun-rof1"] },
+    chronos: { desc: "Time tricks. Frozen ticks hang, then drop; pendulums sweep; a rewind throws old shots back.", abilities: ["Frozen ticks that later fire", "Pendulum sweeps", "A rewind that sends shots home"], ship: "phantom", gun: "lance", mod: "overdrive", skills: ["hull-life1", "hull-iframes", "gun-dmg1", "warp-haunt"] },
+    leviathan: { desc: "A tide. Surges shove the ship, depth charges bloom, the tail whips the bottom.", abilities: ["Tidal surges that shove the ship", "Depth charges", "Tail whips across the lane"], ship: "phantom", gun: "seeker", mod: "reactor", skills: ["hull-life1", "hull-iframes", "gun-dmg1", "warp-haunt"] },
+    inferno: { desc: "A moving furnace. Flares and ember rain fill the field; twin lances punch a lane.", abilities: ["Flares", "Ember rain", "Twin lances"], ship: "vulture", gun: "seeker", mod: "afterburner", skills: ["hull-life1", "hull-plate", "gun-dmg1", "warp-haunt"] },
+    nullwarden: { desc: "Gravity and holes. Wells pull shots and the ship, void gates slice, a collapse deletes the middle.", abilities: ["Gravity wells", "Void gates", "A collapse in the middle"], ship: "vulture", gun: "scatter", mod: "afterburner", skills: ["hull-life1", "gun-dmg1", "gun-rof1", "warp-haunt"] },
+    basilisk: { desc: "Venom and a stare. Arcing spit, a sweeping gaze that wants you still, then a coil ram.", abilities: ["Arcing venom", "A sweeping gaze", "A coil ram"], ship: "bastion", gun: "railgun", mod: "afterburner", skills: ["hull-life1", "hull-plate", "gun-dmg1", "warp-shackle"] },
+    overlord: { desc: "The guest-pool closer. Barrage and edicts, kami escorts, then the core opens and rings.", abilities: ["Heavy barrages", "Edicts that pin a lane", "Kamikaze escorts", "An exposed core that rings"], ship: "bastion", gun: "railgun", mod: "salvage", skills: ["hull-life1", "hull-plate", "gun-dmg1", "warp-haunt"] },
+    mandala: { desc: "Seals and a wheel. Petal rings and glyph stamps, then a spinning singularity.", abilities: ["Petal seal rings", "Glyph stamps on the field", "A spinning singularity wheel"], ship: "strix", gun: "volley", mod: "salvage", skills: ["gun-dmg1", "gun-rof1", "gun-dmg2", "warp-haunt"] },
+    cenotaph: { desc: "A tomb. Aimed slabs, crypt boxes you have to respect, then a still vigil that owns the middle.", abilities: ["Aimed slabs", "Crypt boxes", "A still vigil down the middle"], ship: "strix", gun: "volley", mod: "guardian", skills: ["hull-life1", "hull-iframes", "gun-dmg1", "warp-stasis"] },
+    kaleido: { desc: "Glass. Shards split, panes drop as walls, then a fracture that mirrors the lane.", abilities: ["Splitting shards", "Glass panes as walls", "A fracture that mirrors the lane"], ship: "nova", gun: "helix", mod: "guardian", skills: ["gun-dmg1", "gun-rof1", "gun-chip", "warp-haunt"] },
+    helios: { desc: "Heat. Glare plates the field, sear burns a strip, then a noon pillar down the center.", abilities: ["Heat glare", "Sear plates", "A noon pillar down the center"], ship: "nova", gun: "helix", mod: "berserk", skills: ["hull-life1", "gun-dmg1", "gun-rof1", "warp-stasis"] },
+    selene: { desc: "Moon phases. Crescents and dark limbs, a tide that shoves, then an occult veil.", abilities: ["Crescent shots", "Dark limbs", "A tide that shoves the ship", "An occult veil"], ship: "tempest", gun: "storm", mod: "berserk", skills: ["gun-dmg1", "gun-rof1", "gun-chip", "warp-stasis"] },
+    pentarch: { desc: "Five courts. Fire, ice, lightning, earth, then wind — each phase is a different color of hurt.", abilities: ["Fire pyres", "Ice locks", "Lightning forks", "Earth faults", "Wind shears"], ship: "warden", gun: "novacannon", mod: "ascension", skills: ["hull-life1", "hull-plate", "gun-dmg1", "warp-rampart"] },
+    loom: { desc: "A weaver. Wall knots pull taut into red threads, a shuttle dart hunts the hull, then a cocoon closes.", abilities: ["Gold knots that pull taut into red threads", "Periodic aimed shuttle darts, including the bottom", "A closing cocoon"], ship: "warden", gun: "novacannon", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-rof1", "warp-rampart"] },
+    tessera: { desc: "A chessboard from the first volley. Rook files, bishop diagonals, knight jumps; later the board fills.", abilities: ["Rook files through the ship", "Bishop diagonals", "Knight jumps", "A filling board you clear with a pawn"], ship: "warden", gun: "storm", mod: "ascension", skills: ["gun-dmg1", "gun-chip", "gun-focus", "warp-stasis"] },
+    requiem: { desc: "A choir. Gold satellites sing, gapped rings pulse, then a heartbeat finale.", abilities: ["Gold choir satellites", "Gapped sound rings", "A heartbeat crescendo"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-rof1", "gun-chip", "warp-fold"] },
+    terminus: { desc: "The century gate. An echo ghost, a sliding midline, ordered keystones, closing walls, then everything at once.", abilities: ["An echo ghost of your shots", "A sliding midline", "Keystones that must break in order", "Closing walls", "A last medley"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-pierce", "warp-fold"] },
+    hourglass: { desc: "Sand and rewind. Falling sand piles a floor, then time runs back and your own shots come home.", abilities: ["Falling sand", "A rising floor", "A rewind that sends shots home"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-iframes", "gun-dmg1", "warp-haunt", "warp-fold"] },
+    lanternmoth: { desc: "A dark field. Your lamp is the only light; gold lanterns glint; shots only show in the cone.", abilities: ["A dark field with a player lamp", "Gold lanterns", "Shots that only glint in the light"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "warp-stasis", "warp-fold"] },
+    lodestar: { desc: "Red and blue polarity. Matching shots pass; the wrong color hurts. Full-width rows mix red and blue so a polarity swap is not an auto-hit.", abilities: ["Red or blue polarity on the ship", "Matching shots pass through", "Full-width rows split red and blue at the same time", "A countdown pulsar ring"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-rof1", "gun-pierce", "warp-fold"] },
+    lernaean: { desc: "Heads on necks. Cut a head and hit the gold stump or two more grow. The body is safe until the heads are gone.", abilities: ["Each head shoots a different pattern", "Needle chase, a fork, and a swaying spray", "A gold stump you must finish", "Two heads grow if the stump lives"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-chip", "gun-pierce", "warp-horizon"] },
+    orrery: { desc: "A clockwork sky. Planets orbit, gravity rings curve shots; send one into the gold core.", abilities: ["Orbiting planets", "Gravity rings that curve shots", "A gold core you sling a shot into"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-focus", "warp-stasis", "warp-horizon"] },
+    prism: { desc: "Beams split through gold prisms that stay until the next set. Rotate a prism to send a beam home.", abilities: ["Beams that split through gold prisms", "Prisms that stay until the next set", "Rotate a prism to send a beam home", "Shard fans and ricochets"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-pierce", "warp-fold", "warp-horizon"] },
+    maelstrom: { desc: "A whirlpool. Cyan arrows show the flow; it drags the ship and shots, then the maw opens.", abilities: ["A current that drags the ship and shots", "Cyan arrows that show the flow", "A tightening gyre", "A maw in the center"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-speed", "gun-dmg1", "warp-stasis", "warp-horizon"] },
+    cartographer: { desc: "A sliding map. Panes swap; matching edge colors wrap the ship. Gold pins still chip the body.", abilities: ["Sliding map panes", "Matching edge colors that wrap the ship", "Unlinked edges that are walls", "Gold pins that chip the body"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-speed", "gun-dmg1", "warp-fold", "warp-horizon"] },
+    mimic: { desc: "It copies you. Red dodge paths, red shots, then the equipped boss ability as enemy fire, then two of you.", abilities: ["Copies your dodge path in red", "Copies your shots in red", "Copies the equipped boss ability", "A doppelganger"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "warp-haunt", "warp-horizon"] },
+    axiom: { desc: "The last gate. Each phase writes a rule on a gold card — fall up, bounce, graze-heal, screen turn, pull down — then two at once. Bounced shots hurt you.", abilities: ["Fall up", "Your bullets bounce and hurt you on the way back", "Grazing heals the boss", "The screen turns", "Gravity pulls down", "The last phase mixes two rules"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-laststand", "gun-pierce", "warp-fold", "warp-horizon"] }
+  };
   // Player versions of boss attacks. Same shot count, size, and pattern as the
   // boss kit, aimed from the player at enemies. Damage is boss-weight (clears
   // fodder, chunks bosses) — not pulse-chip. 2–3 per roster boss; each run
@@ -560,6 +595,7 @@
   var ctx = null;
   var viewScale = 1;
   var uiScreen = "hub";
+  var bossesBackTo = "hub";
   var hubRaf = 0;
   var profile = defaultProfile();
   var accountSession = null;
@@ -712,6 +748,19 @@
       if (BOSS_DEFS[i].id === type) return (i + 1) * BOSS_EVERY;
     }
     return 0;
+  }
+  function facedWaveOf() {
+    return (profile && profile.stats && profile.stats.facedWave) | 0;
+  }
+  function noteFacedWave(n) {
+    n = n | 0;
+    if (n < 1 || !profile) return;
+    if (!profile.stats) profile.stats = emptyStats();
+    if ((profile.stats.facedWave | 0) < n) profile.stats.facedWave = n;
+  }
+  function bossFaced(type) {
+    var debut = bossDebutWave(type);
+    return debut > 0 && facedWaveOf() >= debut;
   }
   function bossName(type) {
     var d = bossDef(type);
@@ -1390,7 +1439,7 @@
   }
   function emptyStats() {
     return {
-      killsByType: {}, maxWave: 0, bosses: {}, bossBest: {}, pickups: {},
+      killsByType: {}, maxWave: 0, facedWave: 0, bosses: {}, bossBest: {}, pickups: {},
       diveKills: 0, cleanWave: 0, safeWave: 0, maxBossesRun: 0, maxRunCoins: 0, coinsEarned: 0,
       perfectBosses: 0, maxKillsRun: 0, maxCleanRunKills: 0, runs: 0
     };
@@ -1585,6 +1634,7 @@
     if (raw.stats && typeof raw.stats === "object") {
       if (raw.stats.killsByType && typeof raw.stats.killsByType === "object") p.stats.killsByType = raw.stats.killsByType;
       if (typeof raw.stats.maxWave === "number") p.stats.maxWave = raw.stats.maxWave | 0;
+      if (typeof raw.stats.facedWave === "number") p.stats.facedWave = raw.stats.facedWave | 0;
       if (raw.stats.bosses && typeof raw.stats.bosses === "object") p.stats.bosses = raw.stats.bosses;
       if (raw.stats.pickups && typeof raw.stats.pickups === "object") p.stats.pickups = raw.stats.pickups;
       if (typeof raw.stats.diveKills === "number") p.stats.diveKills = raw.stats.diveKills | 0;
@@ -1600,6 +1650,14 @@
       if (typeof raw.stats.runs === "number") p.stats.runs = raw.stats.runs | 0;
     }
     p.admin = !!raw.admin;
+    // facedWave is the highest wave actually entered. stats.maxWave is also that
+    // for normal play, but grantAllUnlocks inflates maxWave to 9999 so the
+    // start-wave stepper unlocks. Do not copy that admin cap into the Bosses menu.
+    if (typeof raw.stats !== "object" || raw.stats === null || typeof raw.stats.facedWave !== "number") {
+      if (p.admin && (p.stats.maxWave | 0) >= ADMIN_MAX_START_WAVE) p.stats.facedWave = 0;
+      else p.stats.facedWave = p.stats.maxWave | 0;
+    }
+    if ((p.stats.facedWave | 0) < 0) p.stats.facedWave = 0;
     if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp), p.stats.maxWave, p.admin);
     if (typeof raw.updatedAt === "number" && isFinite(raw.updatedAt) && raw.updatedAt > 0) p.updatedAt = Math.floor(raw.updatedAt);
     // Profiles saved before the boss roster grew never recorded tiers: assume tier 0 kills.
@@ -1722,6 +1780,7 @@
     return {
       killsByType: maxNumMap(a.killsByType, b.killsByType),
       maxWave: Math.max(a.maxWave | 0, b.maxWave | 0),
+      facedWave: Math.max(a.facedWave | 0, b.facedWave | 0),
       bosses: maxNumMap(a.bosses, b.bosses),
       bossBest: maxNumMap(a.bossBest, b.bossBest),
       pickups: maxNumMap(a.pickups, b.pickups),
@@ -2203,6 +2262,7 @@
     score += credit.score;
     run.xpBonus = (run.xpBonus || 0) + (credit.xpBonus || 0);
     run.maxWave = Math.max(run.maxWave || 1, startN);
+    noteFacedWave(startN);
     return startN;
   }
   function levelTitle(lv) {
@@ -3581,6 +3641,7 @@
     else if (uiScreen === "account") renderAccount();
     else if (uiScreen === "hub") renderHub();
     else if (uiScreen === "skills") renderSkills();
+    else if (uiScreen === "bosses") renderBosses();
   }
   function applyProfile(raw) {
     var prevVer = raw && typeof raw === "object" ? raw.v : 0;
@@ -3697,6 +3758,7 @@
     if (!profile.stats) profile.stats = emptyStats();
     profile.admin = true;
     profile.stats.maxWave = Math.max(profile.stats.maxWave | 0, ADMIN_MAX_START_WAVE);
+    // Do not raise facedWave. Admin unlock does not reveal unreached bosses.
     if (!profile.equipped) profile.equipped = { ship: "wisp", gun: "pulse", mod: null };
     if (profile.ownedShips.indexOf(keepShip) >= 0) profile.equipped.ship = keepShip;
     else profile.equipped.ship = "wisp";
@@ -4805,6 +4867,7 @@
     if (!run.hits) run.cleanWave = Math.max(run.cleanWave || 0, n);
     if (!run.livesLost) run.safeWave = Math.max(run.safeWave || 0, n);
     profile.stats.maxWave = Math.max(profile.stats.maxWave || 0, n);
+    noteFacedWave(n);
     syncQuestProgress();
     updateHud();
   }
@@ -12365,6 +12428,108 @@
       lists.innerHTML = sectionHtml(mods, "mod");
     }
   }
+  function closeBosses() {
+    showScreen(bossesBackTo === "hangar" ? "hangar" : "hub");
+  }
+  function bossBuildLine(codex) {
+    var ship, gun, mod, skills = [], i, n;
+    codex = codex || {};
+    ship = findShip(codex.ship);
+    gun = findGun(codex.gun);
+    mod = findMod(codex.mod);
+    for (i = 0; i < (codex.skills || []).length; i++) {
+      n = findIn(SKILL_NODES, codex.skills[i]);
+      skills.push(n ? n.name : codex.skills[i]);
+    }
+    return ship.name + " · " + gun.name + " · " + (mod ? mod.name : "No mod") +
+      (skills.length ? " · " + skills.join(", ") : "");
+  }
+  function drawBossPortraitLocked(canvas) {
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#050510";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#4a5a80";
+    ctx.font = "700 18px ui-sans-serif, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("???", canvas.width / 2, canvas.height / 2 + 1);
+  }
+  function drawBossPortrait(canvas, type) {
+    var ctx = canvas.getContext("2d");
+    var d = bossDef(type);
+    var stub, col, heads, hi;
+    if (!ctx) return;
+    stub = {
+      type: type,
+      r: d ? d.r : 18,
+      hitFlash: 0,
+      phaseIdx: 0,
+      shieldHp: 0,
+      healFlash: 0
+    };
+    col = enemyColor(type);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#050510";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2 + 2);
+    ctx.scale(1.12, 1.12);
+    glow(ctx, col, 10);
+    ctx.fillStyle = col;
+    drawBoss(ctx, stub, col);
+    noGlow(ctx);
+    if (type === "lernaean") {
+      heads = [
+        { x: -18, y: 16, a: 0.55 },
+        { x: 0, y: 22, a: 1.57 },
+        { x: 18, y: 16, a: 2.6 }
+      ];
+      for (hi = 0; hi < heads.length; hi++) {
+        drawLernaeanNeck(ctx, 0, 8, heads[hi].x, heads[hi].y, false);
+        drawLernaeanHeadSprite(ctx, heads[hi].x, heads[hi].y, heads[hi].a, hi);
+      }
+    }
+    ctx.restore();
+  }
+  function renderBosses() {
+    var list = el("bosses-list");
+    var i, d, debut, faced, codex, html, canvases, canvas, art;
+    if (!list) return;
+    html = "";
+    for (i = 0; i < BOSS_DEFS.length; i++) {
+      d = BOSS_DEFS[i];
+      debut = (i + 1) * BOSS_EVERY;
+      faced = bossFaced(d.id);
+      codex = BOSS_CODEX[d.id] || {};
+      html += '<div class="boss-row' + (faced ? "" : " locked") + '" data-boss="' + escHtml(d.id) + '">';
+      if (faced) {
+        html += '<canvas class="boss-port" width="72" height="72" data-boss-art="' + escHtml(d.id) + '"></canvas>';
+        html += '<div class="boss-info">';
+        html += '<div class="boss-name">' + escHtml(d.name) + '<span class="boss-lv">Level ' + debut + "</span></div>";
+        html += '<div class="boss-desc">' + escHtml(codex.desc || d.flavor || "") + "</div>";
+        html += '<div class="boss-abs"><b>Abilities</b> ' + escHtml((codex.abilities || []).join(" · ")) + "</div>";
+        html += '<div class="boss-build"><b>Build</b> ' + escHtml(bossBuildLine(codex)) + "</div>";
+      } else {
+        html += '<canvas class="boss-port" width="72" height="72" data-boss-locked="1"></canvas>';
+        html += '<div class="boss-info">';
+        html += '<div class="boss-name">?????<span class="boss-lv">Level ' + debut + "</span></div>";
+        html += '<div class="boss-desc">?????</div>';
+        html += '<div class="boss-abs"><b>Abilities</b> ?????</div>';
+        html += '<div class="boss-build"><b>Build</b> ?????</div>';
+      }
+      html += "</div></div>";
+    }
+    list.innerHTML = html;
+    canvases = list.querySelectorAll("canvas.boss-port");
+    for (i = 0; i < canvases.length; i++) {
+      canvas = canvases[i];
+      art = canvas.getAttribute("data-boss-art");
+      if (art) drawBossPortrait(canvas, art);
+      else drawBossPortraitLocked(canvas);
+    }
+  }
   function selectHangarItem(cat, id) {
     var def = catalogDef(cat, id);
     var st;
@@ -12880,7 +13045,7 @@
       return;
     }
     overlay.classList.remove("hidden");
-    var ids = ["hub", "hangar", "skills", "quests", "ranks", "account", "lobby", "pause", "summary", "bossab"];
+    var ids = ["hub", "hangar", "skills", "quests", "ranks", "account", "lobby", "pause", "summary", "bossab", "bosses"];
     var i;
     for (i = 0; i < ids.length; i++) {
       var node = el("screen-" + ids[i]);
@@ -12891,6 +13056,7 @@
     else if (name === "skills") { renderSkills(); }
     else {
       stopHubAnim();
+      if (name === "bosses") renderBosses();
       if (name === "quests") { setResetConfirm(false); renderQuests(); }
       if (name === "ranks") refreshRanks();
       if (name === "account") {
@@ -13792,6 +13958,7 @@
     if (sb.rc != null) run.coins = sb.rc;
     if (sb.w === wave + 1) recordClearedWave(wave);
     wave = sb.w;
+    noteFacedWave(sb.w);
     shake = sa ? lerp(sa.sh, sb.sh, t) : sb.sh;
     flash = sa ? lerp(sa.fl, sb.fl, t) : sb.fl;
     time = sa ? lerp(sa.tm, sb.tm, t) : sb.tm;
@@ -17475,6 +17642,8 @@
         else if (lobbyMode === "ready" && netRole === "host" && (k === "Enter" || k === " ")) lobbyStart();
       } else if (uiScreen === "hangar" || uiScreen === "skills" || uiScreen === "quests" || uiScreen === "ranks" || uiScreen === "account") {
         if (k === "Escape" || k === "Backspace") showScreen("hub");
+      } else if (uiScreen === "bosses") {
+        if (k === "Escape" || k === "Backspace") closeBosses();
       } else if (uiScreen === "pause") {
         if (k === "Enter" || k === " " || k === "p" || k === "P" || k === "Escape") resumeGame();
       } else if (uiScreen === "bossab") {
@@ -17634,6 +17803,20 @@
   el("btn-coop").addEventListener("click", function (e) { e.preventDefault(); openLobby("coop"); });
   el("btn-pvp").addEventListener("click", function (e) { e.preventDefault(); openLobby("pvp"); });
   el("btn-hangar").addEventListener("click", function (e) { e.preventDefault(); showScreen("hangar"); });
+  el("btn-bosses").addEventListener("click", function (e) {
+    e.preventDefault();
+    bossesBackTo = "hub";
+    showScreen("bosses");
+  });
+  el("btn-hangar-bosses").addEventListener("click", function (e) {
+    e.preventDefault();
+    bossesBackTo = "hangar";
+    showScreen("bosses");
+  });
+  el("btn-bosses-back").addEventListener("click", function (e) {
+    e.preventDefault();
+    closeBosses();
+  });
   el("btn-skills").addEventListener("click", function (e) { e.preventDefault(); showScreen("skills"); });
   el("btn-quests").addEventListener("click", function (e) { e.preventDefault(); showScreen("quests"); });
   el("btn-board").addEventListener("click", function (e) { e.preventDefault(); showScreen("ranks"); });
@@ -18164,7 +18347,7 @@
       getProfile: function () { return profile; },
       resetAllProgress: resetAllProgress,
       COIN_SPAWN_MUL: COIN_SPAWN_MUL,
-      setXp: function (xp) { profile.totalXp = Math.max(0, xp | 0); profile.startWave = clampStartWave(profile.startWave || 1); saveProfile(); if (uiScreen === "hub") renderHub(); else if (uiScreen === "hangar") renderHangar(); else if (uiScreen === "skills") renderSkills(); else if (uiScreen === "quests") renderQuests(); return xpLevel(profile.totalXp); },
+      setXp: function (xp) { profile.totalXp = Math.max(0, xp | 0); profile.startWave = clampStartWave(profile.startWave || 1); saveProfile(); if (uiScreen === "hub") renderHub(); else if (uiScreen === "hangar") renderHangar(); else if (uiScreen === "skills") renderSkills(); else if (uiScreen === "quests") renderQuests(); else if (uiScreen === "bosses") renderBosses(); return xpLevel(profile.totalXp); },
       setCoins: function (c) { profile.coins = Math.max(0, c | 0); saveProfile(); if (uiScreen === "hangar") renderHangar(); else renderHub(); },
       equip: function (cat, id) {
         if (cat === "skin") {
@@ -18323,6 +18506,11 @@
       SKIN_TIERS: SKIN_TIERS,
       SHIP_COIN_SKINS: SHIP_COIN_SKINS,
       BOSS_DEFS: BOSS_DEFS,
+      BOSS_CODEX: BOSS_CODEX,
+      facedWaveOf: facedWaveOf,
+      noteFacedWave: noteFacedWave,
+      bossFaced: bossFaced,
+      renderBosses: renderBosses,
       DAILY_DEFS: DAILY_DEFS,
       LONG_DEFS: LONG_DEFS,
       instantiateQuest: instantiateQuest,

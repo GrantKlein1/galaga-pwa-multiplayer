@@ -228,7 +228,7 @@ function sanitizeSkills(raw) {
 
 function defaultCloudProfile() {
   return {
-    v: 8,
+    v: 9,
     coins: 0,
     totalXp: 0,
     best: 0,
@@ -248,7 +248,7 @@ function defaultCloudProfile() {
     dailyTracks: {},
     longTerm: {},
     stats: {
-      killsByType: {}, maxWave: 0, bosses: {}, bossBest: {}, pickups: {},
+      killsByType: {}, maxWave: 0, facedWave: 0, bosses: {}, bossBest: {}, pickups: {},
       diveKills: 0, cleanWave: 0, safeWave: 0, maxBossesRun: 0, maxRunCoins: 0, coinsEarned: 0,
       perfectBosses: 0, maxKillsRun: 0, maxCleanRunKills: 0, runs: 0
     },
@@ -348,8 +348,15 @@ export function sanitizeProfile(raw) {
   p.stats.maxCleanRunKills = asInt(st.maxCleanRunKills, 9999999);
   p.stats.runs = asInt(st.runs, 9999999);
   p.admin = !!raw.admin;
+  if (st && Object.prototype.hasOwnProperty.call(st, "facedWave")) {
+    p.stats.facedWave = asInt(st.facedWave, 9999);
+  } else if (p.admin && (p.stats.maxWave | 0) >= 9999) {
+    p.stats.facedWave = 0;
+  } else {
+    p.stats.facedWave = p.stats.maxWave | 0;
+  }
   p.updatedAt = asTime(raw.updatedAt);
-  p.v = 8;
+  p.v = 9;
   return p;
 }
 
