@@ -376,6 +376,58 @@ html, body {
   overflow-y: auto;
   text-align: left;
 }
+.bosses-list { max-height: 68vh; gap: 6px; }
+.boss-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #101028;
+  border: 1px solid #2a3a66;
+  border-radius: 6px;
+  padding: 6px 7px;
+}
+.boss-row.locked { opacity: 0.72; }
+.boss-port {
+  width: 72px;
+  height: 72px;
+  flex: none;
+  display: block;
+  background: #050510;
+  border: 1px solid #2a3a66;
+  border-radius: 4px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.boss-info { flex: 1; min-width: 0; text-align: left; }
+.boss-name {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e8f6ff;
+}
+.boss-lv {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9ab8ff;
+  margin-left: 6px;
+}
+.boss-desc, .boss-abs, .boss-build {
+  font-size: 9px;
+  line-height: 1.45;
+  opacity: 0.72;
+  margin-top: 3px;
+}
+.boss-abs b, .boss-build b {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7ef9ff;
+  opacity: 0.9;
+}
+.boss-build { color: #ffd23d; opacity: 0.95; }
 .cat-title {
   font-size: 9px;
   letter-spacing: 0.12em;

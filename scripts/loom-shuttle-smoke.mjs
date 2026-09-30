@@ -28,7 +28,7 @@ assert(galaga.indexOf("fallbackAimY()") >= 0 && galaga.indexOf("function fallbac
 assert(galaga.indexOf("function addKnot") >= 0 && galaga.indexOf("function addThread") >= 0, "knots and threads stay");
 
 assert(/var VER = 11;/.test(codec), "codec payload unchanged");
-assert(sw.indexOf("galaga-coop-v69") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v70") >= 0, "PWA cache bump");
 assert(post.indexOf("Periodically fires a red shuttle dart") >= 0, "docs mention the shuttle");
 assert(post.indexOf("Sitting at the bottom is not safe") >= 0, "docs say bottom camping is unsafe");
 assert(roster.indexOf("periodic aimed shuttle") >= 0, "roster notes the shuttle");
