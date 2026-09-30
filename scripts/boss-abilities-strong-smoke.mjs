@@ -23,7 +23,7 @@ assert(galaga.indexOf('cd: 8, kind: "fan"') < 0 || galaga.indexOf('id: "seraph-f
 assert(galaga.indexOf("dmg: opt.dmg == null ? 1.2") < 0, "chip default is gone");
 assert(galaga.indexOf("dmg: opt.dmg == null ? 8") >= 0, "boss-weight default");
 assert(galaga.indexOf("killEnemy(e, false, dmg * dt * 2.2") >= 0, "gravity wells now damage");
-assert(sw.indexOf("galaga-coop-v66") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v67") >= 0, "PWA cache bump");
 assert(docs.indexOf("Damage is boss-weight") >= 0, "docs match");
 assert(docs.indexOf("`seraph-fan`") >= 0 && docs.indexOf("`axiom-mix`") >= 0, "ids still listed");
 

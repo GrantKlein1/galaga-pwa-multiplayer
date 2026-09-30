@@ -24,7 +24,7 @@ Health gems drop only on each id’s first-cycle dedicated debut. Dedicated kill
 | 70 | helios | HELIOS | 3 | 576 | 66 / 33 | Glare, sear, noon |
 | 75 | selene | SELENE | 3 | 628 | 66 / 33 | Crescents, tide, occult |
 | 80 | pentarch | PENTARCH | 5 | 692 | 80 / 60 / 40 / 20 | Fire, ice, storm, earth, wind |
-| 85 | loom | LOOM | 3 | 740 | 66 / 33 | Warp, weft, cocoon threads |
+| 85 | loom | LOOM | 3 | 740 | 66 / 33 | Warp, weft, cocoon threads; periodic aimed shuttle |
 | 90 | tessera | TESSERA | 3 | 790 | 66 / 33 | Rook / bishop / knight tiles |
 | 95 | requiem | REQUIEM | 3 | 850 | 66 / 33 | Gold choir, gapped rings |
 | 100 | terminus | TERMINUS | 5 | 1550 | 80 / 60 / 40 / 20 | Echo, invert, keystones, walls, medley |

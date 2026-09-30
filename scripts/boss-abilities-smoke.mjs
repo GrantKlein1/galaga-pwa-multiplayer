@@ -92,7 +92,7 @@ ids.forEach(function (id) {
   assert(docs.indexOf("`" + id + "`") >= 0, "docs list " + id);
 });
 
-assert(sw.indexOf("galaga-coop-v66") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v67") >= 0, "PWA cache bump");
 assert(docs.indexOf("Mimic") >= 0, "mimic API documented");
 assert(galaga.indexOf("function bossAbAim") >= 0, "casts aim at the nearest enemy");
 assert(galaga.indexOf('id: "seraph-fan"') >= 0 && /id: "seraph-fan"[\s\S]{0,220}dmg: 8/.test(galaga), "Seraph fan is boss-weight damage");
