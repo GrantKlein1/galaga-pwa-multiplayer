@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 8;
+  var VER = 9;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -50,6 +50,29 @@
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
   var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam", "sand", "glass", "lantern", "cone", "polar", "head", "stump", "planet"];
   var WEAPONS = ["normal", "spread", "double", "rapid", "shield", "speed"];
+  var BOSS_ABILITY_IDS = [
+    "",
+    "seraph-fan", "seraph-halo", "seraph-dive",
+    "wraith-spiral", "wraith-sweep",
+    "hydra-beam", "hydra-rain",
+    "colossus-ring", "colossus-missiles",
+    "chronos-tick", "chronos-pendulum",
+    "levi-surge", "levi-whip", "levi-depth",
+    "inferno-flare", "inferno-embers",
+    "null-well", "null-gates",
+    "basil-venom", "basil-gaze",
+    "over-barrage", "over-decree",
+    "mandala-seal", "mandala-wheel",
+    "ceno-slab", "ceno-crypt",
+    "kale-shatter", "kale-pane",
+    "helios-glare", "helios-sear",
+    "selene-crescent", "selene-tide",
+    "pent-pyre", "pent-bolt", "pent-rime",
+    "loom-warp", "loom-weft", "loom-cocoon",
+    "tess-rook", "tess-bishop", "tess-knight",
+    "req-hymn", "req-gap", "req-canon",
+    "term-echo", "term-medley", "term-key"
+  ];
 
   function idxOf(list, val) {
     var i = list.indexOf(val == null ? "" : val);
@@ -250,7 +273,7 @@
   }
 
   function writePb(w, b) {
-    var flags = (b.homing ? 1 : 0) | (b.bolt ? 2 : 0) | (b.splash ? 4 : 0) | (b.helix ? 8 : 0);
+    var flags = (b.homing ? 1 : 0) | (b.bolt ? 2 : 0) | (b.splash ? 4 : 0) | (b.helix ? 8 : 0) | (b.bossAb ? 16 : 0);
     w.u16(b.id || 0);
     w.coord(b.x);
     w.coord(b.y);
@@ -261,6 +284,7 @@
     w.u8w(b.pierce || 0);
     w.u8w(flags);
     w.u8w(b.owner || 0);
+    if (flags & 16) w.rgb(b.color || "#e8f6ff");
   }
 
   function readPb(r) {
@@ -274,7 +298,9 @@
     b.bolt = !!(flags & 2);
     b.splash = (flags & 4) ? { r: 34, dmg: 2 } : null;
     b.helix = !!(flags & 8);
+    b.bossAb = !!(flags & 16);
     b.owner = r.u8r();
+    if (b.bossAb) b.color = r.rgb();
     return b;
   }
 
@@ -397,6 +423,7 @@
     w.u8w(p.facing && p.facing > 0 ? 1 : 0);
     w.u8w((p.boss || lo.boss) ? idxOf(ENEMY_TYPES, p.boss || lo.boss) : 255);
     w.u8frac(p.freezeT, 10);
+    w.u8w(idxOf(BOSS_ABILITY_IDS, p.bossAbilityId || ""));
   }
 
   function readPl(r) {
@@ -429,6 +456,7 @@
     bi = r.u8r();
     p.boss = bi === 255 ? "" : (ENEMY_TYPES[bi] || "");
     p.freezeT = r.u8frac(10);
+    p.bossAbilityId = BOSS_ABILITY_IDS[r.u8r()] || "";
     if (!p.mod) p.mod = null;
     if (!p.skin) p.skin = "stock";
     return p;
@@ -488,7 +516,7 @@
     var flags, flags2;
     msg = msg || {};
     flags = (msg.l ? 1 : 0) | (msg.r ? 2 : 0) | (msg.f ? 4 : 0) | (msg.a ? 8 : 0) | (msg.aimX == null ? 0 : 16) | ((msg.a ? ((msg.ab | 0) & 7) : 0) << 5);
-    flags2 = (msg.u ? 1 : 0) | (msg.d ? 2 : 0) | (msg.aimY == null ? 0 : 4);
+    flags2 = (msg.u ? 1 : 0) | (msg.d ? 2 : 0) | (msg.aimY == null ? 0 : 4) | (msg.q ? 8 : 0);
     w.u8w(MAGIC);
     w.u8w(VER);
     w.u8w(TYPE_INPUT);
@@ -518,6 +546,7 @@
       f: false,
       a: false,
       ab: 0,
+      q: false,
       aimX: null,
       aimY: null,
       x: 0,
@@ -535,6 +564,7 @@
     if (msg.a && !msg.ab) msg.ab = 1;
     msg.u = !!(flags2 & 1);
     msg.d = !!(flags2 & 2);
+    msg.q = !!(flags2 & 8);
     if (flags & 16) msg.aimX = r.coord();
     if (flags2 & 4) msg.aimY = r.coord();
     msg.x = r.coord();
@@ -652,7 +682,16 @@
     if (!(out && out.t === "input" && out.n === 11 && out.slot === 1 && out.l && out.u && out.f && !out.a && !out.d && out.aimX === 80.4 && out.aimY === 200.5 && out.x === 120.5 && out.y === 300 && out.targetY === 290)) return false;
     buf = encodeInput({ t: "input", n: 12, slot: 0, l: 0, r: 0, f: 0, a: 1, ab: 3, x: 10, targetX: 10, y: 326, targetY: 326 });
     out = decode(buf);
-    return !!(out && out.t === "input" && out.a && out.ab === 3 && out.y === 326);
+    if (!(out && out.t === "input" && out.a && out.ab === 3 && out.y === 326 && !out.q)) return false;
+    buf = encodeInput({ t: "input", n: 13, slot: 0, l: 0, r: 0, f: 0, a: 0, q: 1, x: 10, targetX: 10, y: 326, targetY: 326 });
+    out = decode(buf);
+    if (!(out && out.t === "input" && out.q && !out.a && out.y === 326)) return false;
+    s.pl[0].bossAbilityId = "seraph-fan";
+    s.pb[0].bossAb = 1;
+    s.pb[0].color = "#e8f6ff";
+    buf = encodeSnap(5, s);
+    out = decode(buf);
+    return !!(out && out.s.pl[0].bossAbilityId === "seraph-fan" && out.s.pb[0].bossAb && out.s.pb[0].color === "#e8f6ff");
   }
 
   window.__netcodec = {
@@ -660,6 +699,7 @@
     encodeInput: encodeInput,
     decode: decode,
     isBinaryFrame: isBinaryFrame,
-    selfCheck: selfCheck
+    selfCheck: selfCheck,
+    BOSS_ABILITY_IDS: BOSS_ABILITY_IDS
   };
 })();

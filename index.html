@@ -49,7 +49,8 @@
   <div id="touchpad" aria-label="Game controls">
     <button type="button" class="pad-btn pad-move" id="pad-left" data-dir="left" aria-label="Move left">&#9664;</button>
     <button type="button" class="pad-btn pad-fire" id="pad-fire" data-dir="fire" aria-label="Fire">FIRE</button>
-    <button type="button" class="pad-btn pad-ability hidden" id="pad-ability" data-dir="ability" aria-label="Skill">SKILL</button>
+    <button type="button" class="pad-btn pad-ability pad-cd-ring hidden" id="pad-ability" data-dir="ability" aria-label="Skill">SKILL</button>
+    <button type="button" class="pad-btn pad-bossab pad-cd-ring hidden" id="pad-bossab" data-dir="bossab" aria-label="Boss ability">BOSS</button>
     <button type="button" class="pad-btn pad-move" id="pad-right" data-dir="right" aria-label="Move right">&#9654;</button>
   </div>
   <div id="hint">Drag / hold field to move &middot; tap / hold to fire &middot; or use the pad</div>
@@ -257,6 +258,13 @@
       <div id="lobby-wait-start" class="lobby-status hidden">Waiting for host to start…</div>
       <button type="button" class="btn btn-ghost" id="btn-lobby-leave">Leave</button>
     </div>
+  </div>
+  <div id="screen-bossab" class="screen hidden">
+    <div class="screen-title">Boss Ability</div>
+    <div id="bossab-sub" class="screen-sub">One card per unlocked boss. Each run rolls a different attack. Q to fire.</div>
+    <div id="bossab-cards" class="bossab-cards"></div>
+    <button type="button" class="btn btn-ghost" id="btn-bossab-keep">Keep current</button>
+    <div id="bossab-wait" class="help hidden">Waiting for co-op partner…</div>
   </div>
   <div id="screen-pause" class="screen hidden">
     <div class="screen-title">Paused</div>
