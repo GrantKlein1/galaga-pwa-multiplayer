@@ -10,7 +10,8 @@
   var START_LIVES = 3;
   var MAX_LIVES = 6;
   var BOSS_EVERY = 5;
-  var MAX_LEVEL = 100;
+  var MAX_LEVEL = 150;
+  var ADMIN_MAX_START_WAVE = 9999;
   var WEAPON_T = 8;
   var SPEED_T = 7;
   var SHIELD_T = 12;
@@ -21,7 +22,7 @@
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
   var SESSION_KEY = "galaga.session";
-  var PROFILE_VER = 7;
+  var PROFILE_VER = 8;
   var ACCOUNT_PUSH_MS = 900;
   var ACCOUNT_PULL_MS = 5000;
   var ADMIN_CODE = "1234";
@@ -1407,7 +1408,7 @@
       ownedSkins: { wisp: ["stock"] },
       equipped: { ship: "wisp", gun: "pulse", mod: null },
       equippedSkins: { wisp: "stock" },
-      skills: { owned: [], equipped: null, bonus: 0 },
+      skills: { owned: [], equipped: null, bonus: 0, waveSp: [] },
       xpCharges: 0,
       xpBoostArmed: false,
       startWave: 1,
@@ -1469,7 +1470,24 @@
     if (!out.wisp) out.wisp = "stock";
     return out;
   }
-  function emptySkills() { return { owned: [], equipped: null, bonus: 0 }; }
+  function emptySkills() { return { owned: [], equipped: null, bonus: 0, waveSp: [] }; }
+  // First clears of waves 101+ that have already paid 1 SP. No cap on wave number.
+  function cloneWaveSp(raw) {
+    var out = [], seen = {}, i, n;
+    if (!raw || !raw.length) return out;
+    for (i = 0; i < raw.length; i++) {
+      n = raw[i];
+      if (typeof n !== "number" || !isFinite(n)) n = parseInt(n, 10);
+      n = n | 0;
+      if (n <= 100 || seen[n]) continue;
+      seen[n] = 1;
+      out.push(n);
+    }
+    return out;
+  }
+  function unionWaveSp(a, b) {
+    return cloneWaveSp([].concat(a || [], b || []));
+  }
   function clampSkillBonus(n) {
     n = n | 0;
     if (n < 0) return 0;
@@ -1520,7 +1538,7 @@
     }
     if (!specialOk) eq = null;
     bonus = clampSkillBonus(raw.bonus);
-    return { owned: owned, equipped: eq, bonus: bonus };
+    return { owned: owned, equipped: eq, bonus: bonus, waveSp: cloneWaveSp(raw.waveSp) };
   }
   function migrateProfile(raw) {
     var p = defaultProfile();
@@ -1579,8 +1597,8 @@
       if (typeof raw.stats.maxCleanRunKills === "number") p.stats.maxCleanRunKills = raw.stats.maxCleanRunKills | 0;
       if (typeof raw.stats.runs === "number") p.stats.runs = raw.stats.runs | 0;
     }
-    if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp), p.stats.maxWave);
     p.admin = !!raw.admin;
+    if (typeof raw.startWave === "number") p.startWave = clampStartWave(raw.startWave, xpLevel(p.totalXp), p.stats.maxWave, p.admin);
     if (typeof raw.updatedAt === "number" && isFinite(raw.updatedAt) && raw.updatedAt > 0) p.updatedAt = Math.floor(raw.updatedAt);
     // Profiles saved before the boss roster grew never recorded tiers: assume tier 0 kills.
     var k;
@@ -1751,7 +1769,8 @@
       bonus: Math.max(
         (local.skills && local.skills.bonus) | 0,
         (cloud.skills && cloud.skills.bonus) | 0
-      )
+      ),
+      waveSp: unionWaveSp(local.skills && local.skills.waveSp, cloud.skills && cloud.skills.waveSp)
     });
     out.xpCharges = clampXpCharges(Math.max(local.xpCharges | 0, cloud.xpCharges | 0));
     out.xpBoostArmed = !!newer.xpBoostArmed;
@@ -1759,8 +1778,8 @@
     out.dailyTracks = maxNumMap(local.dailyTracks, cloud.dailyTracks);
     out.longTerm = mergeLongTerm(local.longTerm, cloud.longTerm);
     out.stats = mergeStats(local.stats, cloud.stats);
-    out.startWave = clampStartWave(Math.max(local.startWave | 0, cloud.startWave | 0), xpLevel(out.totalXp), out.stats.maxWave);
     out.admin = !!(local.admin || cloud.admin);
+    out.startWave = clampStartWave(Math.max(local.startWave | 0, cloud.startWave | 0), xpLevel(out.totalXp), out.stats.maxWave, out.admin);
     out.updatedAt = Math.max(localAt, cloudAt);
     grantLevelSkins(out);
     if (!out.equippedSkins[out.equipped.ship] || (out.ownedSkins[out.equipped.ship] || []).indexOf(out.equippedSkins[out.equipped.ship]) < 0) {
@@ -1768,9 +1787,9 @@
     }
     return out;
   }
-  // XP curve, levels 1-100. Banked XP is (score + harder-kill bonus) * XP_SCORE_MUL
+  // XP curve, levels 1-150. Banked XP is (score + harder-kill bonus) * XP_SCORE_MUL
   // (Ascension still adds +25%). A ~10k fodder run is ~1.5k XP. Level 100 still
-  // needs ~2.5M XP total.
+  // needs ~2.5M XP total; the same curve continues to 150.
   function xpForLevel(lvl) {
     var l = Math.max(1, Math.min(MAX_LEVEL, lvl | 0)) - 1;
     return Math.round(100 * Math.pow(l, 2.2) + 400 * l);
@@ -1815,11 +1834,17 @@
     }
     return null;
   }
-  function skillBonusOf(who) {
+  function skillsBag(who) {
     var sk;
     if (who && who.skills && typeof who.skills === "object" && who.skills.owned) sk = who.skills;
     else sk = skillsOf(who);
-    return clampSkillBonus(sk && sk.bonus);
+    return sk || emptySkills();
+  }
+  function skillBonusOf(who) {
+    return clampSkillBonus(skillsBag(who).bonus);
+  }
+  function skillWaveSpOf(who) {
+    return cloneWaveSp(skillsBag(who).waveSp).length;
   }
   function skillSpent(who) {
     var owned = skillOwnedList(who), n = 0, i, def;
@@ -1831,7 +1856,7 @@
   }
   function skillBudget(who) {
     var xp = who && who.totalXp != null ? who.totalXp : profile.totalXp;
-    return Math.min(MAX_LEVEL, xpLevel(xp)) + skillBonusOf(who);
+    return Math.min(MAX_LEVEL, xpLevel(xp)) + skillBonusOf(who) + skillWaveSpOf(who);
   }
   function skillUnspent(who) {
     return Math.max(0, skillBudget(who) - skillSpent(who));
@@ -1878,26 +1903,30 @@
   }
   function refundSkills() {
     var spent = skillSpent();
-    var bonus;
+    var bonus, waveSp;
     if (!spent) return false;
     if ((profile.coins | 0) < SKILL_REFUND_FEE) return false;
     profile.coins -= SKILL_REFUND_FEE;
     bonus = skillBonusOf();
+    waveSp = cloneWaveSp(profile.skills && profile.skills.waveSp);
     profile.skills = emptySkills();
     profile.skills.bonus = bonus;
+    profile.skills.waveSp = waveSp;
     ensureAudio();
     sfxCredit();
     saveProfile();
     return true;
   }
   function grantAllSkills() {
-    var i, keep, bonus;
+    var i, keep, bonus, waveSp;
     if (!profile.skills) profile.skills = emptySkills();
     keep = profile.skills.equipped;
     bonus = skillBonusOf();
+    waveSp = cloneWaveSp(profile.skills.waveSp);
     profile.skills.owned = [];
     for (i = 0; i < SKILL_NODES.length; i++) profile.skills.owned.push(SKILL_NODES[i].id);
     profile.skills.bonus = bonus;
+    profile.skills.waveSp = waveSp;
     if (keep && skillNodeForSpecial(keep) && hasSkill(skillNodeForSpecial(keep).id)) profile.skills.equipped = keep;
     else profile.skills.equipped = "stasis";
   }
@@ -1906,6 +1935,28 @@
     if (n <= 0) return;
     if (!profile.skills) profile.skills = emptySkills();
     profile.skills.bonus = clampSkillBonus((profile.skills.bonus | 0) + n);
+  }
+  function grantPost100WaveSkillPoint(n) {
+    var list, i;
+    n = n | 0;
+    if (n <= 100) return false;
+    if (isPvpRun()) return false;
+    if (!profile.skills) profile.skills = emptySkills();
+    list = profile.skills.waveSp;
+    if (!list) {
+      list = [];
+      profile.skills.waveSp = list;
+    }
+    for (i = 0; i < list.length; i++) if ((list[i] | 0) === n) return false;
+    list.push(n);
+    saveProfile();
+    return true;
+  }
+  function recordClearedWave(n) {
+    n = n | 0;
+    if (n < 1) return;
+    if (run) run.clearedWave = Math.max(run.clearedWave || 0, n);
+    grantPost100WaveSkillPoint(n);
   }
   function clampXpCharges(n) {
     n = n | 0;
@@ -2010,14 +2061,21 @@
   // also requires having *cleared* that wave. stats.maxWave is the highest
   // wave entered, so clearing N means the next spawn set maxWave to N+1
   // (maxWave > N). Reaching N and dying leaves maxWave === N and keeps
-  // the button locked. Admin unlock still grants every shown option.
-  function maxStartWave(lv) {
+  // the button locked. The same step-of-5 menu continues past 100 up to
+  // MAX_LEVEL. Admin (everything unlocked) may start on every integer wave,
+  // including past 100, not only multiples of 5.
+  function isStartAdmin(admin) {
+    if (admin != null) return !!admin;
+    return !!(profile && profile.admin);
+  }
+  function maxStartWave(lv, admin) {
+    if (isStartAdmin(admin)) return ADMIN_MAX_START_WAVE;
     lv = lv == null ? xpLevel(profile.totalXp) : (lv | 0);
     if (lv < 5) return 1;
     return Math.floor(lv / 5) * 5;
   }
   function startWaveOptions(lv) {
-    var max = maxStartWave(lv), out = [1], n;
+    var max = maxStartWave(lv, false), out = [1], n;
     for (n = 5; n <= max; n += 5) out.push(n);
     return out;
   }
@@ -2025,16 +2083,23 @@
     if (reached != null) return reached | 0;
     return (profile && profile.stats && profile.stats.maxWave) || 0;
   }
-  function startWaveUnlocked(n, reached) {
+  function startWaveUnlocked(n, reached, admin) {
     n = n | 0;
     if (n <= 1) return true;
+    if (isStartAdmin(admin)) return n <= ADMIN_MAX_START_WAVE;
     return reachedStartWave(reached) > n;
   }
-  function clampStartWave(n, lv, reached) {
-    var opts = startWaveOptions(lv), i, best = 1;
+  function clampStartWave(n, lv, reached, admin) {
+    var opts, i, best = 1;
     n = n | 0;
+    if (isStartAdmin(admin)) {
+      if (n < 1) return 1;
+      if (n > ADMIN_MAX_START_WAVE) return ADMIN_MAX_START_WAVE;
+      return n;
+    }
+    opts = startWaveOptions(lv);
     for (i = 0; i < opts.length; i++) {
-      if (opts[i] <= n && startWaveUnlocked(opts[i], reached)) best = opts[i];
+      if (opts[i] <= n && startWaveUnlocked(opts[i], reached, false)) best = opts[i];
     }
     return best;
   }
@@ -2048,29 +2113,37 @@
   // Hub/lobby ‹ Wave N › default: last *cleared* wave this run, snapped down to
   // an unlocked stepper option (1, then 5, 10, 15, …). Never a locked step.
   // Dying on 33 → beaten 32 → Wave 30. Never cleared → stay on 1.
-  function lastBeatenStartWave(cleared, lv, reached) {
+  // Admin keeps the exact beaten wave (every round).
+  function lastBeatenStartWave(cleared, lv, reached, admin) {
     cleared = cleared | 0;
     if (cleared < 1) return 1;
-    return clampStartWave(cleared, lv, reached);
+    return clampStartWave(cleared, lv, reached, admin);
   }
   function rememberLastBeatenStartWave() {
     var beaten = run && (run.clearedWave | 0);
     if (beaten < 1) return;
     profile.startWave = lastBeatenStartWave(beaten);
   }
-  function unlockedStartWaves(lv, reached) {
-    var opts = startWaveOptions(lv), out = [], i;
+  function unlockedStartWaves(lv, reached, admin) {
+    var opts, out = [], i;
+    if (isStartAdmin(admin)) return null;
+    opts = startWaveOptions(lv);
     for (i = 0; i < opts.length; i++) {
-      if (startWaveUnlocked(opts[i], reached)) out.push(opts[i]);
+      if (startWaveUnlocked(opts[i], reached, false)) out.push(opts[i]);
     }
     return out;
   }
-  function adjacentUnlockedStartWave(from, dir, lv, reached) {
-    var list = unlockedStartWaves(lv, reached);
-    var cur = clampStartWave(from, lv, reached);
-    var i;
-    if (!dir) return cur;
+  function adjacentUnlockedStartWave(from, dir, lv, reached, admin) {
+    var list, cur, next, i;
+    if (!dir) return clampStartWave(from, lv, reached, admin);
     dir = dir < 0 ? -1 : 1;
+    if (isStartAdmin(admin)) {
+      cur = clampStartWave(from, lv, reached, true);
+      next = cur + dir;
+      return clampStartWave(next, lv, reached, true);
+    }
+    list = unlockedStartWaves(lv, reached, false);
+    cur = clampStartWave(from, lv, reached, false);
     for (i = 0; i < list.length; i++) {
       if (list[i] === cur) {
         if (list[i + dir] != null) return list[i + dir];
@@ -2120,9 +2193,9 @@
     }
     return { score: pts, xpBonus: xpBonus };
   }
-  function applySkipState(startN, reached) {
+  function applySkipState(startN, reached, admin) {
     var credit;
-    startN = clampStartWave(startN, MAX_LEVEL, reached);
+    startN = clampStartWave(startN, MAX_LEVEL, reached, admin);
     if (startN <= 1) return 1;
     credit = skipCredit(startN);
     score += credit.score;
@@ -3619,7 +3692,8 @@
     profile.totalXp = Math.max(profile.totalXp | 0, xpForLevel(MAX_LEVEL));
     profile.coins = Math.max(profile.coins | 0, catalogCostTotal());
     if (!profile.stats) profile.stats = emptyStats();
-    profile.stats.maxWave = Math.max(profile.stats.maxWave | 0, maxStartWave(MAX_LEVEL) + 1);
+    profile.admin = true;
+    profile.stats.maxWave = Math.max(profile.stats.maxWave | 0, ADMIN_MAX_START_WAVE);
     if (!profile.equipped) profile.equipped = { ship: "wisp", gun: "pulse", mod: null };
     if (profile.ownedShips.indexOf(keepShip) >= 0) profile.equipped.ship = keepShip;
     else profile.equipped.ship = "wisp";
@@ -3629,8 +3703,7 @@
     else if (keepMod) profile.equipped.mod = null;
     grantLevelSkins(profile);
     grantAllSkills();
-    profile.startWave = clampStartWave(profile.startWave || 1);
-    profile.admin = true;
+    profile.startWave = clampStartWave(profile.startWave || 1, null, null, true);
   }
   function onResetProgressTap(e) {
     e.preventDefault();
@@ -4673,7 +4746,7 @@
 
   function spawnWave(n) {
     if (isPvpRun()) return;
-    if (wave && n === wave + 1) run.clearedWave = Math.max(run.clearedWave || 0, wave);
+    if (wave && n === wave + 1) recordClearedWave(wave);
     wave = n;
     waveHold = 0;
     enemies = [];
@@ -11391,7 +11464,8 @@
     var box = el(id);
     var hint = el(id === "start-wave-opts" ? "start-wave-hint" : "lobby-start-wave-hint");
     var lv = xpLevel(profile.totalXp);
-    var opts = startWaveOptions(lv);
+    var admin = isStartAdmin();
+    var opts = admin ? null : startWaveOptions(lv);
     var chosen = preferredStartWave();
     var i, n, hasLocked = false, unlocked = [], idx = -1, canLeft, canRight, nextLocked = false;
     var leftBtn, rightBtn, val, stepper;
@@ -11402,20 +11476,25 @@
       if (hint) hint.textContent = "Host chooses the starting wave";
       return;
     }
-    for (i = 0; i < opts.length; i++) {
-      n = opts[i];
-      if (!startWaveUnlocked(n)) {
-        hasLocked = true;
-        if (n > chosen) nextLocked = true;
-      } else {
-        unlocked.push(n);
+    if (admin) {
+      canLeft = chosen > 1;
+      canRight = chosen < ADMIN_MAX_START_WAVE;
+    } else {
+      for (i = 0; i < opts.length; i++) {
+        n = opts[i];
+        if (!startWaveUnlocked(n)) {
+          hasLocked = true;
+          if (n > chosen) nextLocked = true;
+        } else {
+          unlocked.push(n);
+        }
       }
+      for (i = 0; i < unlocked.length; i++) {
+        if (unlocked[i] === chosen) idx = i;
+      }
+      canLeft = idx > 0;
+      canRight = idx >= 0 && idx < unlocked.length - 1;
     }
-    for (i = 0; i < unlocked.length; i++) {
-      if (unlocked[i] === chosen) idx = i;
-    }
-    canLeft = idx > 0;
-    canRight = idx >= 0 && idx < unlocked.length - 1;
     stepper = box.querySelector(".start-wave-stepper");
     if (!stepper) {
       box.innerHTML = '<div class="start-wave-stepper">' +
@@ -11439,9 +11518,10 @@
     }
     bindStartWaveStepper(box, id);
     if (hint) {
-      if (lv < 5) hint.textContent = "Reach level 5 to skip early waves";
+      if (admin) hint.textContent = "Admin: any wave";
+      else if (lv < 5) hint.textContent = "Reach level 5 to skip early waves";
       else if (hasLocked) hint.textContent = "Beat this wave first to unlock starting at it.";
-      else hint.textContent = "Unlocked through wave " + maxStartWave(lv);
+      else hint.textContent = "Unlocked through wave " + maxStartWave(lv, false);
     }
   }
 
@@ -12146,11 +12226,15 @@
     var refund = el("btn-skills-refund");
     var lv = xpLevel(profile.totalXp);
     var bonus = skillBonusOf();
+    var waveSp = skillWaveSpOf();
     var unspent = skillUnspent();
     var spent = skillSpent();
+    var extra = "";
     var i, d, owned, open, cls, html, lines, px, py, qx, qy, reqs, ri, req, special, specName, canBuy, canEq;
+    if (bonus) extra += " +" + bonus + " quest";
+    if (waveSp) extra += " +" + waveSp + " wave";
     if (stats) {
-      stats.textContent = unspent + " SP  ·  Lv " + lv + (bonus ? (" +" + bonus + " quest") : "") + "  ·  " + spent + " spent";
+      stats.textContent = unspent + " SP  ·  Lv " + lv + extra + "  ·  " + spent + " spent";
     }
     special = equippedSpecial();
     specName = skillNodeForSpecial(special);
@@ -12194,7 +12278,7 @@
     d = skillsPick ? findIn(SKILL_NODES, skillsPick) : null;
     if (detail) {
       if (!d) {
-        detail.innerHTML = "Tap a node. Skill points come from XP level (1 per level, max 100) plus quest bonus. Spent points do not reduce XP. Refund keeps quest bonus.";
+        detail.innerHTML = "Tap a node. Skill points come from XP level (1 per level, max 150), quest bonus, and the first clear of each wave past 100. Spent points do not reduce XP. Refund keeps quest bonus and wave points.";
       } else {
         owned = hasSkill(d.id);
         canBuy = canUnlockSkill(d.id);
@@ -12517,7 +12601,8 @@
       saveProfile();
     }
     var skipReached = opts.fromNet ? 9999 : undefined;
-    var startN = opts.startWave != null ? clampStartWave(opts.startWave, MAX_LEVEL, skipReached) : preferredStartWave();
+    var anyWave = !!(opts.fromNet || (profile && profile.admin));
+    var startN = opts.startWave != null ? clampStartWave(opts.startWave, MAX_LEVEL, skipReached, anyWave) : preferredStartWave();
     if (opts.pvp || (pvpApi() && pvpApi().isMatch())) {
       if (netRole === "host" && specs.length > 1) {
         netSend({
@@ -12532,7 +12617,7 @@
         });
       }
     } else {
-      startN = applySkipState(startN, skipReached);
+      startN = applySkipState(startN, skipReached, anyWave);
       rollBossAbilities(opts.abilityRoll);
       if (netRole === "host" && specs.length > 1) {
         netSend({ t: "start", players: specs, startWave: startN, abilityRoll: serializeAbilityRoll() });
@@ -13170,7 +13255,7 @@
     sb = b.s;
     score = sb.sc;
     if (sb.rc != null) run.coins = sb.rc;
-    if (sb.w === wave + 1) run.clearedWave = Math.max(run.clearedWave || 0, wave);
+    if (sb.w === wave + 1) recordClearedWave(wave);
     wave = sb.w;
     shake = sa ? lerp(sa.sh, sb.sh, t) : sb.sh;
     flash = sa ? lerp(sa.fl, sb.fl, t) : sb.fl;
@@ -17587,9 +17672,13 @@
       enemyHp: enemyHp,
       guestHpMul: guestHpMul,
       FIRE_MS: FIRE_MS,
+      ADMIN_MAX_START_WAVE: ADMIN_MAX_START_WAVE,
+      MAX_LEVEL: MAX_LEVEL,
       maxStartWave: maxStartWave,
       startWaveOptions: startWaveOptions,
       startWaveUnlocked: startWaveUnlocked,
+      clampStartWave: clampStartWave,
+      isStartAdmin: isStartAdmin,
       skipCredit: skipCredit,
       enemyXpMul: enemyXpMul,
       enemyXpPts: enemyXpPts,
@@ -17643,7 +17732,12 @@
       skillSpent: skillSpent,
       skillBudget: skillBudget,
       skillBonusOf: skillBonusOf,
+      skillWaveSpOf: skillWaveSpOf,
       grantSkillBonus: grantSkillBonus,
+      grantPost100WaveSkillPoint: grantPost100WaveSkillPoint,
+      recordClearedWave: recordClearedWave,
+      cloneWaveSp: cloneWaveSp,
+      unionWaveSp: unionWaveSp,
       clampXpCharges: clampXpCharges,
       grantXpCharge: grantXpCharge,
       consumeArmedXpBoost: consumeArmedXpBoost,

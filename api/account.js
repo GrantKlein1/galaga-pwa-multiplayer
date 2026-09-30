@@ -185,10 +185,29 @@ function migrateWarpOwnedList(list) {
   return out;
 }
 
+var WAVE_SP_MIN = 101;
+var WAVE_SP_MAX_LEN = 20000;
+
+function unionWaveSp(a, b) {
+  return sanitizeWaveSp([].concat(Array.isArray(a) ? a : [], Array.isArray(b) ? b : []));
+}
+
+function sanitizeWaveSp(raw) {
+  var out = [], seen = {}, i, n;
+  if (!Array.isArray(raw)) return out;
+  for (i = 0; i < raw.length && out.length < WAVE_SP_MAX_LEN; i++) {
+    n = asInt(raw[i]);
+    if (n < WAVE_SP_MIN || seen[n]) continue;
+    seen[n] = 1;
+    out.push(n);
+  }
+  return out;
+}
+
 function sanitizeSkills(raw) {
   var owned = [], i, id, seen = {}, eq, bonus, need, migrated;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-    return { owned: [], equipped: null, bonus: 0 };
+    return { owned: [], equipped: null, bonus: 0, waveSp: [] };
   }
   migrated = migrateWarpOwnedList(Array.isArray(raw.owned) ? raw.owned : []);
   for (i = 0; i < migrated.length && owned.length < SKILL_NODE_IDS.length; i++) {
@@ -204,12 +223,12 @@ function sanitizeSkills(raw) {
   if (!need) eq = null;
   if (eq && owned.indexOf(need) < 0) eq = null;
   bonus = asInt(raw.bonus, 80);
-  return { owned: owned, equipped: eq, bonus: bonus };
+  return { owned: owned, equipped: eq, bonus: bonus, waveSp: sanitizeWaveSp(raw.waveSp) };
 }
 
 function defaultCloudProfile() {
   return {
-    v: 7,
+    v: 8,
     coins: 0,
     totalXp: 0,
     best: 0,
@@ -221,7 +240,7 @@ function defaultCloudProfile() {
     ownedSkins: { wisp: ["stock"] },
     equipped: { ship: "wisp", gun: "pulse", mod: null },
     equippedSkins: { wisp: "stock" },
-    skills: { owned: [], equipped: null, bonus: 0 },
+    skills: { owned: [], equipped: null, bonus: 0, waveSp: [] },
     xpCharges: 0,
     xpBoostArmed: false,
     startWave: 1,
@@ -301,7 +320,7 @@ export function sanitizeProfile(raw) {
   p.skills = sanitizeSkills(raw.skills);
   p.xpCharges = asInt(raw.xpCharges, 99);
   p.xpBoostArmed = !!raw.xpBoostArmed;
-  p.startWave = asInt(raw.startWave, 100);
+  p.startWave = asInt(raw.startWave, 9999);
   if (p.startWave < 1) p.startWave = 1;
   d = raw.dailies && typeof raw.dailies === "object" ? raw.dailies : {};
   p.dailies.date = typeof d.date === "string" ? d.date.slice(0, 16) : "";
@@ -330,9 +349,11 @@ export function sanitizeProfile(raw) {
   p.stats.runs = asInt(st.runs, 9999999);
   p.admin = !!raw.admin;
   p.updatedAt = asTime(raw.updatedAt);
-  p.v = 7;
+  p.v = 8;
   return p;
 }
+
+export { unionWaveSp };
 
 export function accountPath(username) {
   return "galaga-accounts/" + username + ".json";
@@ -769,6 +790,11 @@ async function handlePut(request) {
     if (!acct || !sessionMatch(acct, parsed.token)) {
       return { response: jsonRes({ error: "unauthorized" }, 401) };
     }
+    if (!profile.skills) profile.skills = { owned: [], equipped: null, bonus: 0, waveSp: [] };
+    profile.skills.waveSp = unionWaveSp(
+      acct.profile && acct.profile.skills && acct.profile.skills.waveSp,
+      profile.skills.waveSp
+    );
     acct.profile = profile;
     acct.updatedAt = now;
     acct.sessions = pruneSessions(acct.sessions, now);

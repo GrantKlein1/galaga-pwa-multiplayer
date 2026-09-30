@@ -58,10 +58,15 @@ assert(galaga.indexOf("reachedStartWave(reached) > n") >= 0, "still must beat th
 assert(maxStartWave(4) === 1 && maxStartWave(5) === 5, "lv5 shows wave 5");
 assert(maxStartWave(20) === 20 && maxStartWave(24) === 20, "lv20 shows 20, not 15");
 assert(maxStartWave(25) === 25 && maxStartWave(100) === 100, "no leftover +5 at 25/100");
+assert(maxStartWave(150) === 150, "lv150 shows 150");
 assert(clampStartWave(20, 20, 21) === 20, "beat 20 + lv20 starts 20");
 assert(clampStartWave(20, 19, 21) === 15, "XP below N blocks start N");
 assert(clampStartWave(20, 25, 21) === 20, "cannot start an unbeaten wave");
 assert(clampStartWave(95, 100, 101) === 95, "admin-level still walks the stepper");
+assert(clampStartWave(145, 150, 151) === 145, "past-100 step of 5");
+assert(clampStartWave(107, 150, 200) === 105, "non-admin snaps 107 to 105");
+assert(clampStartWave(102, 150, 200) === 100, "non-admin snaps 102 to 100");
+assert(galaga.indexOf("var MAX_LEVEL = 150") >= 0, "level cap 150");
 assert(html.indexOf("Reach level 5 to skip early waves") >= 0, "hub hint matches lv5 skip");
 assert(galaga.indexOf("Reach level 5 to skip early waves") >= 0, "picker hint matches lv5 skip");
 
@@ -84,6 +89,6 @@ assert(Math.abs(minCenters - minSp) < 1e-9, "tightest accordion gap is Bastion-w
 assert(minCenters > 2 * (12 + bulletR + CURTAIN_PAD) - 0.01, "Broadwing also fits");
 assert(minCenters > 2 * (5.5 + bulletR), "Needle is not the gap target");
 
-assert(sw.indexOf("galaga-coop-v61") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v62") >= 0, "PWA cache bump");
 
 console.log("guests-skip-leviathan-smoke: ok");

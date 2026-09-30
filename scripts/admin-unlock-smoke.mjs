@@ -36,7 +36,7 @@ function catalogIdUnion(owned, catalog) {
   return out;
 }
 function xpForLevel(lvl) {
-  var MAX_LEVEL = 100;
+  var MAX_LEVEL = 150;
   var l = Math.max(1, Math.min(MAX_LEVEL, lvl | 0)) - 1;
   return Math.round(100 * Math.pow(l, 2.2) + 400 * l);
 }
@@ -73,16 +73,24 @@ var p = {
 p.ownedShips = catalogIdUnion(p.ownedShips, ships);
 p.ownedGuns = catalogIdUnion(p.ownedGuns, guns);
 p.ownedMods = catalogIdUnion(p.ownedMods, mods);
-p.totalXp = Math.max(p.totalXp, xpForLevel(100));
-p.stats.maxWave = Math.max(p.stats.maxWave, maxStartWave(100) + 1);
+p.totalXp = Math.max(p.totalXp, xpForLevel(150));
+p.stats.maxWave = Math.max(p.stats.maxWave, maxStartWave(150) + 1);
 assert(p.ownedShips.length === ships.length, "all ships owned");
 assert(p.ownedGuns.length === guns.length, "all guns owned");
 assert(p.ownedMods.length === mods.length, "all mods owned");
 assert(p.ownedShips.indexOf("needle") === 1, "kept existing ship order");
 assert(p.equipped.ship === "needle", "kept equipped ship");
-assert(p.totalXp >= xpForLevel(100), "max XP");
-assert(p.stats.maxWave > 100, "start-wave gate cleared for late options");
+assert(p.totalXp >= xpForLevel(150), "max XP");
+assert(p.stats.maxWave > 150, "start-wave gate cleared for late options");
 assert(maxStartWave(100) === 100, "lv100 start options include post-50");
+assert(maxStartWave(150) === 150, "lv150 start options include 150");
+
+assert(js.indexOf("var MAX_LEVEL = 150") >= 0, "level cap 150");
+assert(js.indexOf("var ADMIN_MAX_START_WAVE = 9999") >= 0, "admin start not capped at 100");
+assert(js.indexOf("Admin: any wave") >= 0, "admin stepper copy");
+assert(js.indexOf("isStartAdmin") >= 0, "admin start-wave path");
+assert(js.indexOf("profile.admin = true") >= 0 && js.indexOf("ADMIN_MAX_START_WAVE") >= 0, "admin unlock sets any-wave gate");
+assert(account.indexOf("asInt(raw.startWave, 9999)") >= 0, "cloud startWave not capped at 100");
 
 assert(js.indexOf('var ADMIN_CODE = "1234"') >= 0, "passcode");
 assert(js.indexOf("resetTapN >= 3") >= 0, "triple tap");
@@ -92,7 +100,7 @@ assert(js.indexOf("grantAllSkills()") >= 0, "admin maxes skill tree");
 assert(js.indexOf("flushAccountPush") >= 0, "account sync");
 assert(html.indexOf("id=\"admin-passcode\"") >= 0, "passcode sheet");
 assert(html.indexOf("Enter passcode") >= 0, "passcode copy");
-assert(sw.indexOf("galaga-coop-v61") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v62") >= 0, "cache bump");
 assert(readme.toLowerCase().indexOf("passcode") < 0, "readme has no passcode");
 assert(readme.indexOf("1234") < 0, "readme has no code");
 assert(readme.toLowerCase().indexOf("admin unlock") < 0, "readme has no admin unlock");
