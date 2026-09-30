@@ -43,7 +43,7 @@ assert(/\{ id: "hourglass",[\s\S]*?tele: 0\.28/.test(galaga), "Hourglass tele sh
 assert(galaga.indexOf("var GUEST_BOSS_POOL = 10") >= 0, "guests stay Seraph–Overlord");
 assert(galaga.indexOf("function beginBulletRewind") >= 0, "Hourglass rewind");
 assert(galaga.indexOf("function inFightLight") >= 0 && galaga.indexOf("fight.dark") >= 0, "Lanternmoth dark cone");
-assert(galaga.indexOf("function lodestarVolley") >= 0 && galaga.indexOf("b.polar === fight.polar") >= 0, "Lodestar polarity pass-through");
+assert(galaga.indexOf("function lodestarVolley") >= 0 && galaga.indexOf("(b.polar | 0) === (fight.polar | 0)") >= 0, "Lodestar polarity pass-through");
 assert(galaga.indexOf("function spawnLernaeanHeads") >= 0 && galaga.indexOf('fromPerk !== "stump"') >= 0, "Hydra heads/stumps");
 assert(galaga.indexOf("function applyOrreryGravity") >= 0, "Orrery gravity");
 assert(galaga.indexOf("SAND FALLS") >= 0 && galaga.indexOf("THE PILE RISES") >= 0 && galaga.indexOf("TIME RUNS BACK") >= 0, "Hourglass banners");
@@ -52,7 +52,7 @@ assert(galaga.indexOf("CHOOSE A STAR") >= 0 && galaga.indexOf("BINARY") >= 0 && 
 assert(galaga.indexOf("HEADS WILL GROW") >= 0 && galaga.indexOf("TWO FROM ONE") >= 0 && galaga.indexOf("THE HYDRA") >= 0, "Hydra banners");
 assert(galaga.indexOf("THE WHEELS TURN") >= 0 && galaga.indexOf("ALIGNMENT") >= 0 && galaga.indexOf("THE CORE") >= 0, "Orrery banners");
 
-["pour", "pile", "timeslip", "glint", "swarmfan", "gloom", "starred", "starblue", "pulsar", "heads", "neckbeam", "hydrafan", "orbit", "sling", "align"].forEach(function (atk) {
+["pour", "pile", "timeslip", "glint", "swarmfan", "gloom", "starred", "starblue", "pulsar", "redrow", "bluerow", "pulsarrow", "heads", "neckbeam", "hydrafan", "orbit", "sling", "align"].forEach(function (atk) {
   assert(galaga.indexOf('atk === "' + atk + '"') >= 0, "attack wired: " + atk);
 });
 
@@ -62,7 +62,7 @@ assert(codec.indexOf('"sand"') >= 0 && codec.indexOf('"lantern"') >= 0 && codec.
 assert(codec.indexOf('"head"') >= 0 && codec.indexOf('"stump"') >= 0 && codec.indexOf('"planet"') >= 0, "head/stump/planet kinds");
 
 assert(pvp.indexOf("hourglass:") >= 0 && pvp.indexOf("orrery:") >= 0 && pvp.indexOf("lernaean:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v63") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v64") >= 0, "PWA cache bump");
 assert(roster.indexOf("hourglass") >= 0 && roster.indexOf("lernaean") >= 0, "roster docs");
 assert(post.indexOf("Hourglass — wave 105") >= 0 && post.indexOf("Orrery — wave 125") >= 0, "post-55 kits");
 
