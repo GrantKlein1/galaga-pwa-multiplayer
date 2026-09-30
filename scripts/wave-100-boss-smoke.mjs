@@ -12,7 +12,7 @@ var sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 var ids = [...galaga.matchAll(/\{ id: "([a-z]+)", name: "([A-Z]+)"/g)].map(function (m) {
   return m[1];
 });
-assert(ids.length === 25, "25 roster bosses, got " + ids.length);
+assert(ids.length === 30, "30 roster bosses, got " + ids.length);
 assert(ids[15] === "pentarch" && ids[16] === "loom" && ids[17] === "tessera", "85/90 ids");
 assert(ids[18] === "requiem" && ids[19] === "terminus", "95/100 ids");
 assert(ids[20] === "hourglass" && ids[24] === "orrery", "105-125 ids");
@@ -28,9 +28,10 @@ assert(meta(95).type === "requiem" && meta(95).tier === 0, "wave 95 Requiem");
 assert(meta(100).type === "terminus" && meta(100).tier === 0, "wave 100 Terminus");
 assert(meta(105).type === "hourglass" && meta(105).tier === 0, "wave 105 Hourglass");
 assert(meta(125).type === "orrery" && meta(125).tier === 0, "wave 125 Orrery");
-assert(meta(130).type === "seraph" && meta(130).tier === 1, "+1 cycle starts at Seraph after Orrery");
-assert(meta(210).type === "loom" && meta(210).tier === 1, "Loom +1");
-assert(meta(225).type === "terminus" && meta(225).tier === 1, "Terminus +1");
+assert(meta(130).type === "prism" && meta(130).tier === 0, "wave 130 Prism");
+assert(meta(155).type === "seraph" && meta(155).tier === 1, "+1 cycle starts at Seraph after Axiom");
+assert(meta(235).type === "loom" && meta(235).tier === 1, "Loom +1");
+assert(meta(250).type === "terminus" && meta(250).tier === 1, "Terminus +1");
 
 assert(/\{ id: "loom",[\s\S]*?hp: 740,/.test(galaga), "Loom base HP 740");
 assert(/\{ id: "tessera",[\s\S]*?hp: 790,/.test(galaga), "Tessera base HP 790");
@@ -85,12 +86,12 @@ assert(galaga.indexOf('e.type !== "requiem"') >= 0, "Requiem skipped the 0.22 tu
 assert(Math.round(1000 * 1.55) === 1550, "wave 100 HP is 1.55x prior 1000");
 
 assert(codec.indexOf('"loom", "tessera", "requiem", "terminus"') >= 0, "netcodec boss ids");
-assert(/var VER = 10;/.test(codec), "codec VER 10");
+assert(/var VER = 11;/.test(codec), "codec VER 11");
 assert(codec.indexOf("BX_KINDS") >= 0 && codec.indexOf("writeBx") >= 0, "fight extras on the wire");
 assert(codec.indexOf('"thread"') >= 0 && codec.indexOf('"midline"') >= 0, "thread and midline kinds");
 assert(codec.indexOf('"keystone"') >= 0 && codec.indexOf('"pylon"') >= 0 && codec.indexOf('"ghost"') >= 0, "keystone/pylon/ghost kinds");
 
 assert(pvp.indexOf("loom:") >= 0 && pvp.indexOf("terminus:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v60") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v61") >= 0, "PWA cache bump");
 
 console.log("wave-100-boss-smoke: ok");

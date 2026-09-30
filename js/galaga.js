@@ -73,6 +73,9 @@
   // Wave-100 Terminus clear: extra banked XP on the same run.xpBonus path as
   // harder-kill weight. Named Century Clear in the PR / docs.
   var CENTURY_CLEAR_XP = 8000;
+  // Wave-150 Axiom clear: extra banked XP on the same run.xpBonus path.
+  // Named Axiom Clear in the PR / docs.
+  var AXIOM_CLEAR_XP = 12000;
   var PICKUP_PAD = 16;
   var PICKUP_CLAIM_R = 96;
   var POWER_WEIGHTS = [
@@ -306,7 +309,35 @@
       exclusive: true,
       base: ["orbit"], p2: ["sling"], p3: ["align"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "ALIGNMENT", p3Text: "THE CORE",
-      flavor: "Orbiting planets, gravity rings, curve a shot into the gold core" }
+      flavor: "Orbiting planets, gravity rings, curve a shot into the gold core" },
+    { id: "prism", name: "PRISM", color: "#e8f0ff", dark: "#101828", r: 21, hp: 2300, spd: 32, amp: 8, freq: 0.8, cd: 1.18, tele: 0.28, pts: 12600,
+      exclusive: true,
+      base: ["splitbeam"], p2: ["refract"], p3: ["crystal"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "THE SPLIT", p3Text: "RETURN FIRE",
+      flavor: "Beams split through gold prisms; rotate a prism to send a beam home" },
+    { id: "maelstrom", name: "MAELSTROM", color: "#4d88ff", dark: "#061018", r: 24, hp: 2450, spd: 30, amp: 10, freq: 0.75, cd: 1.16, tele: 0.28, pts: 13200,
+      exclusive: true,
+      base: ["current"], p2: ["gyre"], p3: ["maw"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
+      p2Text: "THE GYRE", p3Text: "THE MAW",
+      flavor: "A whirlpool current drags the ship and shots; arrows show the flow" },
+    { id: "cartographer", name: "CARTOGRAPHER", color: "#d8c8a0", dark: "#1a140c", r: 22, hp: 2600, spd: 28, amp: 6, freq: 0.7, cd: 1.14, tele: 0.28, pts: 13800,
+      exclusive: true,
+      base: ["chart"], p2: ["remap"], p3: ["foldmap"], p4: ["atlas"], t1: [], t2: [],
+      p2Thresh: 0.75, p3Thresh: 0.5, p4Thresh: 0.25,
+      p2Text: "THE MAP SLIDES", p3Text: "EDGES AGREE", p4Text: "THE ATLAS",
+      flavor: "Sliding map panes; matching edge colors wrap the ship" },
+    { id: "mimic", name: "MIMIC", color: "#ff8a8a", dark: "#1a0808", r: 20, hp: 2800, spd: 36, amp: 12, freq: 1.0, cd: 1.12, tele: 0.28, pts: 14400,
+      exclusive: true,
+      base: ["copycat"], p2: ["shadow"], p3: ["mock"], p4: ["doppel"], t1: [], t2: [],
+      p2Thresh: 0.75, p3Thresh: 0.5, p4Thresh: 0.25,
+      p2Text: "IT DODGES YOU", p3Text: "IT SHOOTS YOU", p4Text: "TWO OF YOU",
+      flavor: "Copies dodge paths and shots in red; copies the equipped boss ability as red enemy fire" },
+    { id: "axiom", name: "AXIOM", color: "#fff4d0", dark: "#08060c", r: 26, hp: 3000, spd: 26, amp: 8, freq: 0.65, cd: 1.1, tele: 0.28, pts: 15000,
+      exclusive: true,
+      base: ["fallup"], p2: ["bounce"], p3: ["grazeheal"], p4: ["screenturn"], p5: ["pulldown"], p6: ["axiommix"],
+      t1: [], t2: [], p2Thresh: 5 / 6, p3Thresh: 4 / 6, p4Thresh: 0.5, p5Thresh: 2 / 6, p6Thresh: 1 / 6,
+      p2Text: "YOUR BULLETS BOUNCE", p3Text: "GRAZING HEALS", p4Text: "THE SCREEN TURNS", p5Text: "GRAVITY PULLS DOWN", p6Text: "TWO RULES",
+      flavor: "Each phase rewrites a rule on a gold card; the last mixes two. Rules revert when the phase or fight ends" }
   ];
   var GUEST_BOSS_POOL = 10;
   // Player versions of boss attacks. 2–3 per roster boss. Each run rolls one
@@ -373,7 +404,22 @@
     { id: "lern-fan", boss: "lernaean", name: "Hydra Fan", short: "FAN", desc: "A climbing hydra volley.", cd: 10, kind: "fan", n: 7, spread: 0.72, spd: 400, dmg: 1.2 },
     { id: "orr-orbit", boss: "orrery", name: "Orbit", short: "ORB", desc: "Brass planet-shots burst from the hull.", cd: 10, kind: "halo", n: 8, spd: 260, dmg: 1.25 },
     { id: "orr-sling", boss: "orrery", name: "Sling", short: "SLG", desc: "A paired sling shot up the lane.", cd: 9, kind: "fan", n: 2, spread: 0.48, spd: 480, dmg: 1.9, pierce: 1 },
-    { id: "orr-core", boss: "orrery", name: "Core Pull", short: "CORE", desc: "Gravity yanks nearby fodder into a brass well.", cd: 13, kind: "pull", r: 82, life: 0.95 }
+    { id: "orr-core", boss: "orrery", name: "Core Pull", short: "CORE", desc: "Gravity yanks nearby fodder into a brass well.", cd: 13, kind: "pull", r: 82, life: 0.95 },
+    { id: "prism-split", boss: "prism", name: "Split Beam", short: "SPLT", desc: "Three chromatic lances climb the file.", cd: 9, kind: "fan", n: 3, spread: 0.28, spd: 480, dmg: 1.8, pierce: 1 },
+    { id: "prism-refract", boss: "prism", name: "Refract", short: "RFR", desc: "A split fan through gold glass.", cd: 10, kind: "fan", n: 5, spread: 0.55, spd: 430, dmg: 1.3 },
+    { id: "prism-crystal", boss: "prism", name: "Crystal", short: "CRY", desc: "A ring of returning shards.", cd: 12, kind: "halo", n: 8, spd: 280, dmg: 1.25 },
+    { id: "mael-current", boss: "maelstrom", name: "Current", short: "CUR", desc: "A climbing tidal row.", cd: 9, kind: "curtain", n: 4, spd: 350, dmg: 1.35 },
+    { id: "mael-gyre", boss: "maelstrom", name: "Gyre", short: "GYRE", desc: "A spinning whirl of shots.", cd: 11, kind: "halo", n: 10, spd: 250, dmg: 1.2 },
+    { id: "mael-maw", boss: "maelstrom", name: "Maw", short: "MAW", desc: "A smash on the nearest foe.", cd: 12, kind: "stamp", dmg: 5.5, r: 24 },
+    { id: "cart-chart", boss: "cartographer", name: "Chart", short: "CHT", desc: "Three mapped bolts climb.", cd: 9, kind: "fan", n: 3, spread: 0.36, spd: 440, dmg: 1.5 },
+    { id: "cart-remap", boss: "cartographer", name: "Remap", short: "RMP", desc: "File and rank through the hull.", cd: 11, kind: "cross", dmg: 3.4, pad: 9 },
+    { id: "cart-atlas", boss: "cartographer", name: "Atlas", short: "ATL", desc: "Bursts on the nearest two foes.", cd: 13, kind: "stamp", dmg: 3.8, r: 18, n: 2 },
+    { id: "mimic-copy", boss: "mimic", name: "Copycat", short: "CPY", desc: "A ghost fan from where you just were.", cd: 10, kind: "echo", n: 5, spread: 0.5, spd: 420, dmg: 1.3 },
+    { id: "mimic-shadow", boss: "mimic", name: "Shadow", short: "SHD", desc: "A red curtain climbs the field.", cd: 11, kind: "curtain", n: 5, spd: 360, dmg: 1.25 },
+    { id: "mimic-doppel", boss: "mimic", name: "Doppel", short: "DPL", desc: "Twin fans from offset ghosts.", cd: 13, kind: "halo", n: 8, spd: 270, dmg: 1.2 },
+    { id: "axiom-up", boss: "axiom", name: "Fall Up", short: "UP", desc: "A climbing row that inverts the lane.", cd: 10, kind: "curtain", n: 4, spd: 380, dmg: 1.4 },
+    { id: "axiom-bounce", boss: "axiom", name: "Bounce", short: "BNC", desc: "Twin helix bolts that weave up.", cd: 9, kind: "helix", n: 2, spd: 400, dmg: 1.6 },
+    { id: "axiom-mix", boss: "axiom", name: "Two Rules", short: "MIX", desc: "A gold fan plus a shot-clearing pulse.", cd: 14, kind: "medley", n: 5, spread: 0.5, spd: 430, dmg: 1.35 }
   ];
 
   var DAILY_DEFS = [
@@ -656,7 +702,7 @@
     var count = BOSS_DEFS.length;
     return { type: BOSS_DEFS[cycle % count].id, tier: Math.floor(cycle / count) };
   }
-  // First-cycle dedicated debut: (index + 1) * BOSS_EVERY. Seraph 5 … Orrery 125.
+  // First-cycle dedicated debut: (index + 1) * BOSS_EVERY. Seraph 5 … Axiom 150.
   function bossDebutWave(type) {
     var i;
     for (i = 0; i < BOSS_DEFS.length; i++) {
@@ -2052,6 +2098,7 @@
         pts += add;
         xpBonus += Math.round(add * (enemyXpMul(meta.type) - 1));
         if (n === 100) xpBonus += CENTURY_CLEAR_XP;
+        if (n === 150) xpBonus += AXIOM_CLEAR_XP;
       } else {
         slots = buildSlots(formationKind(n), n);
         for (i = 0; i < slots.length; i++) {
@@ -3053,7 +3100,13 @@
       dark: false, coneR: 52, lanterns: [],
       polar: 0, polarT: 0, polarMax: 4.2,
       heads: [], headCap: 7,
-      planets: []
+      planets: [],
+      prisms: [], beams: [],
+      flow: 0, flowX: 120, flowY: 150,
+      panes: [], paneT: 0, pins: [],
+      mimic: false, mimicTape: [], mimicShots: [], mimicGhost: null, mimicGhost2: null, copiedAbility: "",
+      fallUp: false, bounce: false, grazeHeal: false, turn: 0, pullDown: false,
+      rule: "", rule2: "", ruleIdx: -1, ruleIdx2: -1, cardT: 0
     };
   }
   function resetFight() {
@@ -3066,6 +3119,7 @@
     var mid = fightMidY();
     var sand = fight.sandH || 0;
     if (isPvpRun() && p && p.slot === 1) return { lo: margin, hi: mid - margin };
+    if (fight.fallUp) return { lo: margin, hi: mid - margin };
     return { lo: mid + margin, hi: H - margin - sand };
   }
   function fightWallPad() {
@@ -4875,6 +4929,9 @@
       if (e.type === "terminus" && wave === 100 && !e.guest && (e.tier || 0) === 0) {
         run.xpBonus = (run.xpBonus || 0) + CENTURY_CLEAR_XP;
         banner = { text: "WAVE 100 CLEARED", life: 2.2 };
+      } else if (e.type === "axiom" && wave === 150 && !e.guest && (e.tier || 0) === 0) {
+        run.xpBonus = (run.xpBonus || 0) + AXIOM_CLEAR_XP;
+        banner = { text: "WAVE 150 CLEARED", life: 2.4 };
       } else {
         banner = { text: bossName(e.type) + (run.bossHits ? " DOWN" : " FLAWLESS"), life: 1.2 };
       }
@@ -5214,7 +5271,9 @@
     var gem = (who.weaponT > 0 && who.weapon !== "normal") ? who.weapon : "";
     var shots = gunShots(g, gem);
     var dmg = g.dmg * loadoutDmgMul(shipDef(who), equippedMod(who), who);
-    var i, s, b, face = pvpFacing(who), y = pvpMuzzleY(who);
+    var i, s, b, face = pvpFacing(who), y;
+    if (fight.fallUp && !isPvpRun()) face = -face;
+    y = who.y + face * -12;
     if (who.boss) {
       pvpBossPrimary(who);
       return;
@@ -5268,6 +5327,9 @@
       if (fight.echo && !ghost) {
         fight.echoShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: b.r || 2 });
       }
+      if (fight.mimic && !ghost) {
+        fight.mimicShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: b.r || 2 });
+      }
     }
     if (bolt) {
       pbul.push({
@@ -5277,6 +5339,9 @@
       });
       if (fight.echo && !ghost) {
         fight.echoShots.push({ t: time, x: who.x, y: y, vx: 0, vy: face * 300, r: 3 });
+      }
+      if (fight.mimic && !ghost) {
+        fight.mimicShots.push({ t: time, x: who.x, y: y, vx: 0, vy: face * 300, r: 3 });
       }
     }
     applySkinVolley(who, startIdx, g);
@@ -7446,6 +7511,21 @@
     } else if (atk === "orbit" || atk === "sling" || atk === "align") {
       addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
       addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_GOLD);
+    } else if (atk === "splitbeam" || atk === "refract" || atk === "crystal") {
+      addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+      addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
+    } else if (atk === "current" || atk === "gyre" || atk === "maw") {
+      addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+      addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_CYAN);
+    } else if (atk === "chart" || atk === "remap" || atk === "foldmap" || atk === "atlas") {
+      addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+      addZone(e.aimX, e.aimY, 18, 16, delay, FIGHT_WHITE);
+    } else if (atk === "copycat" || atk === "shadow" || atk === "mock" || atk === "doppel") {
+      addTele("flash", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
+      addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_RED);
+    } else if (atk === "fallup" || atk === "bounce" || atk === "grazeheal" || atk === "screenturn" || atk === "pulldown" || atk === "axiommix") {
+      addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_GOLD);
+      addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
     } else {
       addTele("glow", e.x, e.y, 0, 0, delay, col);
     }
@@ -8410,6 +8490,50 @@
     } else if (atk === "align") {
       orrerySling(e, spd + 8);
       slamBox(e.aimX, e.aimY, 14, 12, FIGHT_RED);
+    } else if (atk === "splitbeam") {
+      firePrismBeams(e, spd, 2);
+    } else if (atk === "refract") {
+      firePrismBeams(e, spd + 12, 3);
+    } else if (atk === "crystal") {
+      firePrismBeams(e, spd + 8, 4);
+      aimedShot(e, 0.5, spd, opt);
+    } else if (atk === "current") {
+      fight.flow = 48;
+      aimedShot(e, 0.55, spd, opt);
+    } else if (atk === "gyre") {
+      fight.flow = 64;
+      fanShot(e.x, e.y + 8, 6, 0.9, spd, 16, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.6 });
+    } else if (atk === "maw") {
+      fight.flow = 80;
+      slamBox(e.aimX, e.aimY, 16, 14, FIGHT_RED);
+      aimedShot(e, 0.7, spd + 10, opt);
+    } else if (atk === "chart") {
+      cartographerVolley(e, spd, 3);
+    } else if (atk === "remap") {
+      slideCartographerPanes(0.35);
+      cartographerVolley(e, spd + 8, 4);
+    } else if (atk === "foldmap") {
+      slideCartographerPanes(0.55);
+      cartographerVolley(e, spd + 6, 5);
+    } else if (atk === "atlas") {
+      slideCartographerPanes(0.7);
+      slamBox(e.aimX, e.aimY, 18, 16, FIGHT_RED);
+      cartographerVolley(e, spd + 12, 6);
+    } else if (atk === "copycat") {
+      fireMimicCopy(e, spd, 1);
+    } else if (atk === "shadow") {
+      fireMimicCopy(e, spd, 1);
+      aimedShot(e, 0.5, spd, { color: FIGHT_RED, glow: FIGHT_RED });
+    } else if (atk === "mock") {
+      fireMimicCopy(e, spd + 8, 1);
+      fanShot(e.x, e.y + 8, 5, 0.5, spd, 14, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.5 });
+    } else if (atk === "doppel") {
+      fireMimicCopy(e, spd + 6, 2);
+    } else if (atk === "fallup" || atk === "bounce" || atk === "grazeheal" || atk === "screenturn" || atk === "pulldown") {
+      aimedShot(e, 0.65, spd, opt);
+    } else if (atk === "axiommix") {
+      fanShot(e.x, e.y + 8, 7, 0.85, spd + 8, 18, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.7 });
+      slamBox(e.aimX, e.aimY, 14, 12, FIGHT_RED);
     }
   }
 
@@ -8501,6 +8625,21 @@
     fight.heads = [];
     fight.headCap = 7;
     fight.planets = [];
+    fight.prisms = [];
+    fight.beams = [];
+    fight.flow = 0;
+    fight.flowX = W / 2;
+    fight.flowY = H * 0.42;
+    fight.panes = [];
+    fight.paneT = 0;
+    fight.pins = [];
+    fight.mimic = false;
+    fight.mimicTape = [];
+    fight.mimicShots = [];
+    fight.mimicGhost = null;
+    fight.mimicGhost2 = null;
+    fight.copiedAbility = "";
+    clearAxiomRules();
   }
   function addKnot(x, y) {
     var k = { x: x, y: y, alive: true, r: 7 };
@@ -8739,7 +8878,9 @@
   function isLateFight(type) {
     return type === "loom" || type === "tessera" || type === "requiem" || type === "terminus"
       || type === "hourglass" || type === "lanternmoth" || type === "lodestar"
-      || type === "lernaean" || type === "orrery";
+      || type === "lernaean" || type === "orrery"
+      || type === "prism" || type === "maelstrom" || type === "cartographer"
+      || type === "mimic" || type === "axiom";
   }
   function hourglassPour(e, n) {
     var i, tgt = { x: e.aimX, y: e.aimY }, x, vx, vy, len;
@@ -8905,6 +9046,463 @@
       b.vy = (b.vy || 0) + dy * inv * f * 55;
     }
   }
+  var AXIOM_RULES = [
+    { id: "fallUp", text: "SHOTS FALL UP" },
+    { id: "bounce", text: "YOUR BULLETS BOUNCE" },
+    { id: "grazeHeal", text: "GRAZING HEALS" },
+    { id: "turn", text: "THE SCREEN TURNS" },
+    { id: "pullDown", text: "GRAVITY PULLS DOWN" }
+  ];
+  var MIMIC_LAG = 1.6;
+  function clearAxiomRules() {
+    fight.fallUp = false;
+    fight.bounce = false;
+    fight.grazeHeal = false;
+    fight.turn = 0;
+    fight.pullDown = false;
+    fight.rule = "";
+    fight.rule2 = "";
+    fight.ruleIdx = -1;
+    fight.ruleIdx2 = -1;
+    fight.cardT = 0;
+  }
+  function setAxiomRule(r) {
+    if (!r) return;
+    if (r.id === "fallUp") fight.fallUp = true;
+    else if (r.id === "bounce") fight.bounce = true;
+    else if (r.id === "grazeHeal") fight.grazeHeal = true;
+    else if (r.id === "turn") fight.turn = 1;
+    else if (r.id === "pullDown") fight.pullDown = true;
+  }
+  function applyAxiomPhase(idx) {
+    var a, b;
+    clearAxiomRules();
+    if (idx >= 5) {
+      a = AXIOM_RULES[1];
+      b = AXIOM_RULES[4];
+      setAxiomRule(a);
+      setAxiomRule(b);
+      fight.rule = a.text;
+      fight.rule2 = b.text;
+      fight.ruleIdx = 1;
+      fight.ruleIdx2 = 4;
+    } else {
+      a = AXIOM_RULES[idx] || AXIOM_RULES[0];
+      setAxiomRule(a);
+      fight.rule = a.text;
+      fight.rule2 = "";
+      fight.ruleIdx = idx;
+      fight.ruleIdx2 = -1;
+    }
+    fight.cardT = 2.4;
+    banner = { text: fight.rule2 ? (fight.rule + " + " + fight.rule2) : fight.rule, life: 1.55 };
+  }
+  function spawnPrisms(e, n) {
+    var i, spots;
+    n = n || 2;
+    spots = [
+      { x: 48, y: 150, ang: 0.45 }, { x: W - 48, y: 150, ang: -0.45 },
+      { x: 70, y: 220, ang: 0.9 }, { x: W - 70, y: 220, ang: -0.9 },
+      { x: W / 2, y: 190, ang: 0.2 }
+    ];
+    fight.prisms = [];
+    for (i = 0; i < n && i < spots.length; i++) {
+      fight.prisms.push({
+        x: spots[i].x, y: spots[i].y, ang: spots[i].ang, r: 8, hp: 4, alive: true
+      });
+    }
+  }
+  function rayHitsCircle(x, y, ux, uy, cx, cy, r) {
+    var dx = cx - x, dy = cy - y, t = dx * ux + dy * uy, px, py;
+    if (t < 8) return false;
+    px = x + ux * t;
+    py = y + uy * t;
+    return dist2(px, py, cx, cy) < (r + 6) * (r + 6);
+  }
+  function firePrismBeams(e, spd, splits) {
+    var i, k, p, dx, dy, len, ux, uy, a, vx, vy, bossHit = false;
+    fight.beams = [];
+    splits = splits || 2;
+    for (i = 0; i < fight.prisms.length; i++) {
+      p = fight.prisms[i];
+      if (!p.alive) continue;
+      dx = p.x - e.x;
+      dy = p.y - e.y;
+      len = Math.sqrt(dx * dx + dy * dy) || 1;
+      ux = dx / len;
+      uy = dy / len;
+      fight.beams.push({ x: e.x, y: e.y, x2: p.x, y2: p.y, life: 0.28, back: false });
+      for (k = 0; k < splits; k++) {
+        a = Math.atan2(uy, ux) + p.ang + (k - (splits - 1) / 2) * 0.42;
+        vx = Math.cos(a);
+        vy = Math.sin(a);
+        addEbul(p.x, p.y, vx * spd, vy * spd, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, silent: k > 0 });
+        fight.beams.push({ x: p.x, y: p.y, x2: p.x + vx * 160, y2: p.y + vy * 160, life: 0.28, back: rayHitsCircle(p.x, p.y, vx, vy, e.x, e.y, e.r || 18) });
+        if (rayHitsCircle(p.x, p.y, vx, vy, e.x, e.y, (e.r || 18) + 4)) bossHit = true;
+      }
+    }
+    if (bossHit) {
+      killEnemy(e, false, Math.max(8, Math.round((e.maxHp || 2300) * 0.035)), null, "prism");
+      explode(e.x, e.y, FIGHT_GOLD, true);
+      banner = { text: "RETURNED", life: 0.55 };
+    }
+  }
+  function applyMaelstromFlow(obj, dt, mul) {
+    var cx = fight.flowX || W / 2, cy = fight.flowY || H * 0.42;
+    var dx = obj.x - cx, dy = obj.y - cy;
+    var d = Math.sqrt(dx * dx + dy * dy) || 1;
+    var str = (fight.flow || 0) * (mul || 1);
+    if (str <= 0) return;
+    obj.x += (-dy / d) * str * dt;
+    obj.y += (dx / d) * str * dt;
+    obj.x += (-dx / d) * str * 0.22 * dt;
+    obj.y += (-dy / d) * str * 0.22 * dt;
+  }
+  function applyMaelstromVel(obj, dt, mul) {
+    var cx = fight.flowX || W / 2, cy = fight.flowY || H * 0.42;
+    var dx = obj.x - cx, dy = obj.y - cy;
+    var d = Math.sqrt(dx * dx + dy * dy) || 1;
+    var str = (fight.flow || 0) * (mul || 1);
+    if (str <= 0) return;
+    obj.vx = (obj.vx || 0) + (-dy / d) * str * 0.55 * dt;
+    obj.vy = (obj.vy || 0) + (dx / d) * str * 0.55 * dt;
+    obj.vx += (-dx / d) * str * 0.12 * dt;
+    obj.vy += (-dy / d) * str * 0.12 * dt;
+  }
+  var PANE_COLS = ["#ff4d4d", "#7ef9ff", "#ffd23d", "#e8e4dc"];
+  function spawnCartographerPanes(e, n) {
+    var pw = W / 2, ph = H / 2, i, row, col;
+    n = n || 4;
+    fight.panes = [];
+    fight.pins = [];
+    for (i = 0; i < n; i++) {
+      col = i % 2;
+      row = Math.floor(i / 2);
+      fight.panes.push({
+        id: i, x: col * pw, y: row * ph, w: pw, h: ph,
+        ox: 0, oy: 0, col: i,
+        linkR: col === 0 ? i + 1 : i - 1,
+        linkD: row === 0 ? i + 2 : i - 2
+      });
+      fight.pins.push({
+        x: col * pw + pw * 0.5, y: row * ph + ph * 0.5, r: 7, hp: 5, alive: true, col: i
+      });
+    }
+    fight.paneT = 0;
+  }
+  function slideCartographerPanes(amp) {
+    fight.paneAmp = amp || 0.35;
+    fight.paneT = 0;
+  }
+  function paneWorld(p) {
+    return { x: p.x + (p.ox || 0), y: p.y + (p.oy || 0), w: p.w, h: p.h };
+  }
+  function paneContaining(x, y) {
+    var i, p, w;
+    for (i = 0; i < fight.panes.length; i++) {
+      p = fight.panes[i];
+      w = paneWorld(p);
+      if (x >= w.x && x < w.x + w.w && y >= w.y && y < w.y + w.h) return p;
+    }
+    return null;
+  }
+  function wrapCartographer(pl) {
+    var pane, linked, w, lw, nx, ny, i;
+    if (!fight.panes.length || !pl) return;
+    pane = paneContaining(pl.x, pl.y);
+    if (pane) return;
+    nx = pl.x;
+    ny = pl.y;
+    if (nx < 0) nx += W;
+    if (nx >= W) nx -= W;
+    if (ny < 0) ny += H;
+    if (ny >= H) ny -= H;
+    for (i = 0; i < fight.panes.length; i++) {
+      pane = fight.panes[i];
+      w = paneWorld(pane);
+      if (pl.x < w.x && pane.linkR != null) {
+        linked = fight.panes[pane.linkR];
+        if (linked) {
+          lw = paneWorld(linked);
+          pl.x = lw.x + lw.w - 8;
+          pl.y = lw.y + ((pl.y - w.y) / w.h) * lw.h;
+          pl.targetX = pl.x;
+          pl.targetY = pl.y;
+          return;
+        }
+      }
+      if (pl.x > w.x + w.w && pane.linkR != null) {
+        linked = fight.panes[pane.linkR];
+        if (linked) {
+          lw = paneWorld(linked);
+          pl.x = lw.x + 8;
+          pl.y = lw.y + ((pl.y - w.y) / w.h) * lw.h;
+          pl.targetX = pl.x;
+          pl.targetY = pl.y;
+          return;
+        }
+      }
+      if (pl.y < w.y && pane.linkD != null) {
+        linked = fight.panes[pane.linkD];
+        if (linked) {
+          lw = paneWorld(linked);
+          pl.y = lw.y + lw.h - 8;
+          pl.x = lw.x + ((pl.x - w.x) / w.w) * lw.w;
+          pl.targetX = pl.x;
+          pl.targetY = pl.y;
+          return;
+        }
+      }
+      if (pl.y > w.y + w.h && pane.linkD != null) {
+        linked = fight.panes[pane.linkD];
+        if (linked) {
+          lw = paneWorld(linked);
+          pl.y = lw.y + 8;
+          pl.x = lw.x + ((pl.x - w.x) / w.w) * lw.w;
+          pl.targetX = pl.x;
+          pl.targetY = pl.y;
+          return;
+        }
+      }
+    }
+    pl.x = clamp(nx, 12, W - 12);
+    pl.y = clamp(ny, 12, H - 12);
+    pl.targetX = pl.x;
+    pl.targetY = pl.y;
+  }
+  function cartographerVolley(e, spd, n) {
+    var i, a, tgt = { x: e.aimX, y: e.aimY };
+    n = n || 3;
+    a = Math.atan2(tgt.y - e.y, tgt.x - e.x);
+    for (i = 0; i < n; i++) {
+      addEbul(e.x, e.y + 8, Math.cos(a + (i - (n - 1) / 2) * 0.2) * spd, Math.sin(a + (i - (n - 1) / 2) * 0.2) * spd, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: i > 0
+      });
+    }
+  }
+  // Mimic copies the player's current boss ability via currentBossAbilityId +
+  // bossAbilityDef, then fires a red enemy-bullet version of that pattern.
+  // Do not call tryCastBossAbility / fireBossAbilityFx: those burn the player
+  // cooldown and spawn pbul that hit enemies.
+  function fireMimicAbilityCopy(e, def, ox, oy, spd) {
+    var kind, n, i, a, ang, x0, x1, pad, k, nx, ny, pl, r, b;
+    if (!e || !def) return false;
+    kind = def.kind;
+    ox = ox == null ? e.x : ox;
+    oy = oy == null ? e.y + 8 : oy;
+    spd = spd || def.spd || 360;
+    ang = Math.atan2(e.aimY - oy, e.aimX - ox);
+    switch (kind) {
+      case "fan":
+      case "cone":
+        n = def.n || 5;
+        for (i = 0; i < n; i++) {
+          a = n === 1 ? ang : ang - (def.spread || 0.6) / 2 + i * ((def.spread || 0.6) / (n - 1));
+          addEbul(ox, oy, Math.cos(a) * spd, Math.sin(a) * spd, {
+            color: FIGHT_RED, glow: FIGHT_RED, r: def.r || 2.5, silent: i > 0
+          });
+        }
+        break;
+      case "halo":
+        n = def.n || 8;
+        spd = def.spd || 260;
+        for (i = 0; i < n; i++) {
+          a = (i / n) * Math.PI * 2;
+          addEbul(ox, oy, Math.cos(a) * spd, Math.sin(a) * spd, {
+            color: FIGHT_RED, glow: FIGHT_RED, r: def.r || 2.6, silent: i > 0
+          });
+        }
+        break;
+      case "laser":
+        addEbul(ox, oy, Math.cos(ang) * (spd + 90), Math.sin(ang) * (spd + 90), {
+          color: FIGHT_RED, glow: FIGHT_RED, r: 3.4
+        });
+        slamBox(e.aimX, e.aimY, def.pad || 8, 16, FIGHT_RED);
+        break;
+      case "gates":
+        pad = def.spread || 36;
+        x0 = clamp(ox - pad, 16, W - 16);
+        x1 = clamp(ox + pad, 16, W - 16);
+        addEbul(x0, oy, 0, spd + 40, { color: FIGHT_RED, glow: FIGHT_RED, r: 3.2 });
+        addEbul(x1, oy, 0, spd + 40, { color: FIGHT_RED, glow: FIGHT_RED, r: 3.2, silent: true });
+        tryHitPlayersRect(x0, H / 2, def.pad || 6, H / 2);
+        tryHitPlayersRect(x1, H / 2, def.pad || 6, H / 2);
+        break;
+      case "curtain":
+        n = def.n || 4;
+        for (i = 0; i < n; i++) {
+          x0 = ox + (i - (n - 1) / 2) * 22;
+          addEbul(x0, oy, 0, spd, {
+            color: FIGHT_RED, glow: FIGHT_RED, r: 2.8, silent: i > 0,
+            sway: def.helix ? 10 : 0, swayF: 12
+          });
+        }
+        break;
+      case "helix":
+        addEbul(ox, oy, Math.cos(ang) * spd, Math.sin(ang) * spd, {
+          color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, sway: 11, swayF: 12, swayPh: 0
+        });
+        addEbul(ox, oy, Math.cos(ang) * spd, Math.sin(ang) * spd, {
+          color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, sway: 11, swayF: 12, swayPh: Math.PI, silent: true
+        });
+        break;
+      case "homing":
+        n = def.n || 3;
+        for (i = 0; i < n; i++) {
+          a = ang + (i - (n - 1) / 2) * 0.28;
+          addEbul(ox + (i - (n - 1) / 2) * 10, oy, Math.cos(a) * 80, Math.sin(a) * (def.spd || 240), {
+            color: FIGHT_RED, glow: FIGHT_RED, r: 3.2, homing: true, homeT: 2.2, hsp: 160, hturn: 1.6, silent: i > 0
+          });
+        }
+        break;
+      case "mines":
+        n = def.n || 3;
+        for (i = 0; i < n; i++) {
+          addEbul(ox + (i - (n - 1) / 2) * 18, oy, (i - 1) * 12, 24, {
+            color: FIGHT_RED, glow: FIGHT_RED, r: 4.2, pauseAt: 0.08, pauseT: 0.55,
+            resumeSpd: spd + 40, silent: i > 0
+          });
+        }
+        break;
+      case "shock":
+      case "clear":
+      case "medley":
+        n = 8;
+        for (i = 0; i < n; i++) {
+          a = (i / n) * Math.PI * 2;
+          addEbul(ox, oy, Math.cos(a) * (def.vr || 180) * 0.55, Math.sin(a) * (def.vr || 180) * 0.55, {
+            color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, silent: i > 0
+          });
+        }
+        if (kind === "medley") {
+          n = def.n || 5;
+          for (i = 0; i < n; i++) {
+            a = n === 1 ? ang : ang - (def.spread || 0.5) / 2 + i * ((def.spread || 0.5) / (n - 1));
+            addEbul(ox, oy, Math.cos(a) * spd, Math.sin(a) * spd, {
+              color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: true
+            });
+          }
+        }
+        break;
+      case "pull":
+        r = def.r || 70;
+        for (i = 0; i < players.length; i++) {
+          pl = players[i];
+          if (!pl || !pl.alive) continue;
+          if (dist2(pl.x, pl.y, ox, oy) < r * r) {
+            pl.x += (ox - pl.x) * 0.35;
+            pl.y += (oy - pl.y) * 0.35;
+            pl.targetX = pl.x;
+            pl.targetY = pl.y;
+          }
+        }
+        addTele("glow", ox, oy + 24, 16, 16, def.life || 0.85, FIGHT_RED);
+        break;
+      case "rewind":
+      case "timeslip":
+        for (i = 0; i < pbul.length; i++) {
+          b = pbul[i];
+          if (dist2(b.x, b.y, ox, oy) < (def.r || 92) * (def.r || 92)) {
+            b.vx = -(b.vx || 0);
+            b.vy = -(b.vy || 0);
+          }
+        }
+        addTele("ring", ox, oy, 24, 24, 0.32, FIGHT_RED);
+        flash = Math.max(flash, 0.14);
+        break;
+      case "pulsar":
+        n = def.n || 5;
+        for (i = 0; i < n; i++) {
+          a = n === 1 ? ang : ang - (def.spread || 0.48) / 2 + i * ((def.spread || 0.48) / (n - 1));
+          addEbul(ox - 6, oy, Math.cos(a) * spd, Math.sin(a) * spd, {
+            color: "#ff4d4d", glow: FIGHT_RED, r: 2.5, silent: i > 0
+          });
+          addEbul(ox + 6, oy, Math.cos(a) * spd, Math.sin(a) * spd, {
+            color: "#4d88ff", glow: FIGHT_RED, r: 2.5, silent: true
+          });
+        }
+        break;
+      case "heads":
+        n = def.n || 3;
+        for (i = 0; i < n; i++) {
+          x0 = ox + (i - (n - 1) / 2) * 24;
+          a = Math.atan2(e.aimY - oy, e.aimX - x0);
+          addEbul(x0, oy, Math.cos(a) * spd, Math.sin(a) * spd, {
+            color: FIGHT_RED, glow: FIGHT_RED, r: 2.8, silent: i > 0
+          });
+        }
+        break;
+      case "nova":
+      case "stamp":
+        slamBox(e.aimX, e.aimY, def.r || 20, def.r || 18, FIGHT_RED);
+        addEbul(ox, oy, Math.cos(ang) * spd, Math.sin(ang) * spd, {
+          color: FIGHT_RED, glow: FIGHT_RED, r: 3.2
+        });
+        break;
+      case "cross":
+        tryHitPlayersRect(e.aimX, H / 2, def.pad || 10, H / 2);
+        tryHitPlayersRect(W / 2, e.aimY, W / 2, def.pad || 10);
+        addTele("vline", e.aimX, 4, e.aimX, H - 4, 0.22, FIGHT_RED);
+        addTele("hline", 8, e.aimY, W - 8, e.aimY, 0.22, FIGHT_RED);
+        break;
+      case "diag":
+        slamBox(e.aimX, e.aimY, 16, 16, FIGHT_RED);
+        fanShot(ox, oy, 4, 0.9, spd, 16, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.6 });
+        break;
+      case "knight":
+        k = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
+        for (i = 0; i < k.length; i++) {
+          nx = e.aimX + k[i][0] * 28;
+          ny = e.aimY + k[i][1] * 28;
+          if (nx < 8 || nx > W - 8 || ny < 8 || ny > H - 8) continue;
+          slamBox(nx, ny, 10, 10, FIGHT_RED);
+        }
+        break;
+      case "echo":
+        n = def.n || 5;
+        for (i = 0; i < n; i++) {
+          a = n === 1 ? ang : ang - (def.spread || 0.55) / 2 + i * ((def.spread || 0.55) / (n - 1));
+          addEbul(ox, oy, Math.cos(a) * spd, Math.sin(a) * spd, {
+            color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: i > 0
+          });
+        }
+        break;
+      default:
+        addEbul(ox, oy, Math.cos(ang) * spd, Math.sin(ang) * spd, {
+          color: FIGHT_RED, glow: FIGHT_RED, r: 2.8
+        });
+        break;
+    }
+    return true;
+  }
+  function fireMimicCopy(e, spd, ghosts) {
+    var pl = targetPlayer(e.x, e.y), id, def, g, i, s, a, ox, oy;
+    ghosts = ghosts || 1;
+    fight.mimic = true;
+    id = currentBossAbilityId(pl);
+    def = bossAbilityDef(id);
+    fight.copiedAbility = id || "";
+    g = fight.mimicGhost;
+    ox = g ? g.x : e.x;
+    oy = g ? g.y : e.y + 8;
+    if (def) fireMimicAbilityCopy(e, def, ox, oy, spd);
+    if (g) {
+      a = Math.atan2((pl ? pl.y : e.aimY) - g.y, (pl ? pl.x : e.aimX) - g.x);
+      addEbul(g.x, g.y, Math.cos(a) * spd, Math.sin(a) * spd, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.8, silent: !!def });
+      for (i = fight.mimicShots.length - 1; i >= 0 && i > fight.mimicShots.length - 5; i--) {
+        s = fight.mimicShots[i];
+        addEbul(g.x, g.y, s.vx, s.vy, { color: FIGHT_RED, glow: FIGHT_RED, r: s.r || 2.4, silent: true });
+      }
+    } else if (!def) {
+      aimedShot(e, 0.6, spd, { color: FIGHT_RED, glow: FIGHT_RED });
+    }
+    if (ghosts > 1 && fight.mimicGhost2) {
+      g = fight.mimicGhost2;
+      a = Math.atan2(e.aimY - g.y, e.aimX - g.x);
+      addEbul(g.x, g.y, Math.cos(a) * spd, Math.sin(a) * spd, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, silent: true });
+      if (def) fireMimicAbilityCopy(e, def, g.x, g.y, spd);
+    }
+  }
   function setupFightPhase(e, idx) {
     if (!e || !e.isBoss) return;
     if (!isLateFight(e.type)) return;
@@ -8950,6 +9548,33 @@
     } else if (e.type === "orrery") {
       spawnOrreryPlanets(e, idx >= 2 ? 4 : (idx >= 1 ? 3 : 2));
       if (idx === 0) banner = { text: "THE WHEELS TURN", life: 1.2 };
+    } else if (e.type === "prism") {
+      spawnPrisms(e, idx >= 2 ? 4 : (idx >= 1 ? 3 : 2));
+      if (idx === 0) banner = { text: "LIGHT SPLITS", life: 1.2 };
+    } else if (e.type === "maelstrom") {
+      fight.flow = 40 + idx * 14;
+      fight.flowX = W / 2;
+      fight.flowY = H * 0.42;
+      if (idx === 0) banner = { text: "THE WATER TURNS", life: 1.2 };
+    } else if (e.type === "cartographer") {
+      spawnCartographerPanes(e, 4);
+      fight.paneAmp = 0.12 + idx * 0.12;
+      if (idx === 0) banner = { text: "THE MAP OPENS", life: 1.2 };
+    } else if (e.type === "mimic") {
+      fight.mimic = true;
+      fight.copiedAbility = currentBossAbilityId(targetPlayer(e.x, e.y));
+      if (idx === 0) banner = { text: "IT WEARS YOUR FACE", life: 1.2 };
+    } else if (e.type === "axiom") {
+      applyAxiomPhase(idx);
+      if (idx === 0) {
+        var pi, pl;
+        for (pi = 0; pi < players.length; pi++) {
+          pl = players[pi];
+          if (!pl || !pl.alive) continue;
+          pl.y = 36;
+          pl.targetY = 36;
+        }
+      }
     }
   }
   function updateFight(dt) {
@@ -9187,6 +9812,64 @@
         k.y = boss.y + Math.sin(k.ang) * (k.rad * 0.62);
       }
     }
+    if (fight.prisms && fight.prisms.length) {
+      for (i = fight.beams.length - 1; i >= 0; i--) {
+        k = fight.beams[i];
+        k.life -= dt;
+        if (k.life <= 0) fight.beams.splice(i, 1);
+      }
+    }
+    if (fight.type === "maelstrom") {
+      fight.flowX = W / 2 + Math.sin(time * 0.6) * 18;
+      fight.flowY = H * 0.42 + Math.cos(time * 0.45) * 12;
+      for (k = 0; k < players.length; k++) {
+        pl = players[k];
+        if (!pl || !pl.alive) continue;
+        applyMaelstromFlow(pl, dt, 0.85);
+        pl.targetX = pl.x;
+        pl.targetY = pl.y;
+      }
+    }
+    if (fight.panes && fight.panes.length) {
+      fight.paneT += dt;
+      for (i = 0; i < fight.panes.length; i++) {
+        k = fight.panes[i];
+        k.ox = Math.sin(fight.paneT * 0.8 + i) * 18 * (fight.paneAmp || 0.2);
+        k.oy = Math.cos(fight.paneT * 0.55 + i * 0.7) * 12 * (fight.paneAmp || 0.2);
+      }
+      for (i = 0; i < fight.pins.length; i++) {
+        k = fight.pins[i];
+        if (!k.alive || !fight.panes[k.col]) continue;
+        pos = paneWorld(fight.panes[k.col]);
+        k.x = pos.x + pos.w * 0.5;
+        k.y = pos.y + pos.h * 0.5;
+      }
+      for (k = 0; k < players.length; k++) {
+        pl = players[k];
+        if (!pl || !pl.alive) continue;
+        wrapCartographer(pl);
+      }
+    }
+    if (fight.mimic) {
+      if (tgt) fight.mimicTape.push({ t: time, x: tgt.x, y: tgt.y });
+      while (fight.mimicTape.length && fight.mimicTape[0].t < time - 3.2) fight.mimicTape.shift();
+      fight.mimicGhost = null;
+      fight.mimicGhost2 = null;
+      for (i = 0; i < fight.mimicTape.length; i++) {
+        if (!fight.mimicGhost && fight.mimicTape[i].t >= time - MIMIC_LAG) fight.mimicGhost = fight.mimicTape[i];
+        if (fight.mimicTape[i].t >= time - MIMIC_LAG - 0.8) { fight.mimicGhost2 = fight.mimicTape[i]; break; }
+      }
+      while (fight.mimicShots.length && fight.mimicShots[0].t < time - 2.4) fight.mimicShots.shift();
+    }
+    if (fight.cardT > 0) fight.cardT -= dt;
+    if (fight.pullDown) {
+      for (k = 0; k < players.length; k++) {
+        pl = players[k];
+        if (!pl || !pl.alive) continue;
+        pl.y = Math.min(H - 16, pl.y + 42 * dt);
+        pl.targetY = pl.y;
+      }
+    }
   }
   function hitFightShot(b, i) {
     var n, obj, dmg, boss, ok, burst, j;
@@ -9322,10 +10005,41 @@
         return true;
       }
     }
+    for (n = 0; n < fight.prisms.length; n++) {
+      obj = fight.prisms[n];
+      if (!obj.alive) continue;
+      if (dist2(b.x, b.y, obj.x, obj.y) < (obj.r + (b.r || 2)) * (obj.r + (b.r || 2))) {
+        obj.ang += Math.PI / 4;
+        obj.hp -= dmg;
+        explode(obj.x, obj.y, FIGHT_GOLD, false);
+        if (obj.hp <= 0) {
+          obj.alive = false;
+          boss = currentBoss();
+          if (boss) killEnemy(boss, false, Math.max(6, Math.round((boss.maxHp || 2300) * 0.02)), b.owner, "prism");
+        }
+        pbul.splice(i, 1);
+        return true;
+      }
+    }
+    for (n = 0; n < fight.pins.length; n++) {
+      obj = fight.pins[n];
+      if (!obj.alive) continue;
+      if (dist2(b.x, b.y, obj.x, obj.y) < (obj.r + (b.r || 2)) * (obj.r + (b.r || 2))) {
+        obj.hp -= dmg;
+        if (obj.hp <= 0) {
+          obj.alive = false;
+          explode(obj.x, obj.y, FIGHT_GOLD, true);
+          boss = currentBoss();
+          if (boss) killEnemy(boss, false, Math.max(10, Math.round((boss.maxHp || 2600) * 0.04)), b.owner, "pin");
+        }
+        pbul.splice(i, 1);
+        return true;
+      }
+    }
     return false;
   }
   function fightSnap() {
-    var out = [], i, th, ka, kb, k, tile, obj, pos, pl;
+    var out = [], i, th, ka, kb, k, tile, obj, pos, pl, a;
     if (!fight.on) return out;
     for (i = 0; i < fight.threads.length; i++) {
       th = fight.threads[i];
@@ -9412,6 +10126,44 @@
       obj = fight.planets[i];
       out.push({ kind: "planet", x: obj.x, y: obj.y, x2: obj.pull || 46, y2: obj.r || 8, st: i, t: obj.mass || 0, color: FIGHT_GOLD });
     }
+    for (i = 0; i < fight.prisms.length; i++) {
+      obj = fight.prisms[i];
+      if (!obj.alive) continue;
+      out.push({ kind: "prism", x: obj.x, y: obj.y, x2: obj.ang, y2: obj.r || 8, st: 1, t: 0, color: FIGHT_GOLD });
+    }
+    for (i = 0; i < fight.beams.length; i++) {
+      obj = fight.beams[i];
+      out.push({ kind: "ray", x: obj.x, y: obj.y, x2: obj.x2, y2: obj.y2, st: obj.back ? 1 : 0, t: obj.life || 0, color: obj.back ? FIGHT_GOLD : FIGHT_RED });
+    }
+    if (fight.flow > 0) {
+      for (i = 0; i < 8; i++) {
+        a = (i / 8) * Math.PI * 2 + time;
+        out.push({
+          kind: "flow", x: (fight.flowX || W / 2) + Math.cos(a) * 36, y: (fight.flowY || H * 0.42) + Math.sin(a) * 28,
+          x2: (fight.flowX || W / 2) + Math.cos(a + 1.2) * 22, y2: (fight.flowY || H * 0.42) + Math.sin(a + 1.2) * 16,
+          st: 1, t: fight.flow, color: FIGHT_CYAN
+        });
+      }
+    }
+    for (i = 0; i < fight.panes.length; i++) {
+      obj = fight.panes[i];
+      pos = paneWorld(obj);
+      out.push({ kind: "pane", x: pos.x, y: pos.y, x2: pos.w, y2: pos.h, st: obj.col, t: 0, color: PANE_COLS[obj.col] || FIGHT_CYAN });
+    }
+    for (i = 0; i < fight.pins.length; i++) {
+      obj = fight.pins[i];
+      if (!obj.alive) continue;
+      out.push({ kind: "pin", x: obj.x, y: obj.y, x2: 0, y2: 0, st: 1, t: 0, color: FIGHT_GOLD });
+    }
+    if (fight.mimicGhost) out.push({ kind: "ghost", x: fight.mimicGhost.x, y: fight.mimicGhost.y, x2: 1, y2: 0, st: 1, t: 0, color: FIGHT_RED });
+    if (fight.mimicGhost2 && fight.type === "mimic") out.push({ kind: "ghost", x: fight.mimicGhost2.x, y: fight.mimicGhost2.y, x2: 1, y2: 0, st: 2, t: 0, color: FIGHT_RED });
+    if (fight.rule) {
+      out.push({
+        kind: "rule", x: fight.ruleIdx, y: fight.ruleIdx2, x2: 0, y2: 0,
+        st: (fight.fallUp ? 1 : 0) | (fight.bounce ? 2 : 0) | (fight.grazeHeal ? 4 : 0) | (fight.turn ? 8 : 0) | (fight.pullDown ? 16 : 0),
+        t: fight.cardT || 0, color: FIGHT_GOLD
+      });
+    }
     return out;
   }
   function applyFightSnap(list) {
@@ -9425,6 +10177,20 @@
       it = fightView[i];
       if (it.kind === "midline") { fight.invert = true; fight.midY = it.y; }
       if (it.kind === "wall") { fight.wallL = it.x || 0; fight.wallR = it.x2 || 0; }
+      if (it.kind === "sand") fight.sandH = it.y || 0;
+      if (it.kind === "flow") fight.flow = it.t || fight.flow;
+      if (it.kind === "rule") {
+        fight.fallUp = !!(it.st & 1);
+        fight.bounce = !!(it.st & 2);
+        fight.grazeHeal = !!(it.st & 4);
+        fight.turn = (it.st & 8) ? 1 : 0;
+        fight.pullDown = !!(it.st & 16);
+        fight.ruleIdx = it.x;
+        fight.ruleIdx2 = it.y;
+        fight.cardT = it.t || 0;
+        fight.rule = (AXIOM_RULES[it.x] && AXIOM_RULES[it.x].text) || "";
+        fight.rule2 = (it.y >= 0 && AXIOM_RULES[it.y]) ? AXIOM_RULES[it.y].text : "";
+      }
     }
   }
   function drawTesseraBoard(context) {
@@ -9621,6 +10387,60 @@
         context.beginPath(); context.arc(f.x, f.y, f.y2 || 8, 0, Math.PI * 2); context.fill();
         context.fillStyle = FIGHT_GOLD;
         context.beginPath(); context.arc(f.x - 2, f.y - 2, 2, 0, Math.PI * 2); context.fill();
+      } else if (f.kind === "prism") {
+        context.translate(f.x, f.y);
+        context.rotate(f.x2 || 0);
+        context.fillStyle = FIGHT_GOLD;
+        context.globalAlpha = 0.95;
+        context.beginPath();
+        context.moveTo(0, -8); context.lineTo(7, 6); context.lineTo(-7, 6);
+        context.closePath(); context.fill();
+        context.strokeStyle = FIGHT_WHITE;
+        context.lineWidth = 1;
+        context.stroke();
+      } else if (f.kind === "ray") {
+        context.strokeStyle = f.st ? FIGHT_GOLD : FIGHT_RED;
+        context.globalAlpha = f.st ? 0.9 : 0.55;
+        context.lineWidth = f.st ? 2.4 : 1.6;
+        context.beginPath(); context.moveTo(f.x, f.y); context.lineTo(f.x2, f.y2); context.stroke();
+      } else if (f.kind === "flow") {
+        context.strokeStyle = FIGHT_CYAN;
+        context.globalAlpha = 0.55;
+        context.lineWidth = 1.6;
+        context.beginPath(); context.moveTo(f.x, f.y); context.lineTo(f.x2, f.y2); context.stroke();
+        context.fillStyle = FIGHT_CYAN;
+        context.beginPath();
+        context.moveTo(f.x2, f.y2);
+        context.lineTo(f.x2 - 4, f.y2 - 3);
+        context.lineTo(f.x2 - 4, f.y2 + 3);
+        context.closePath(); context.fill();
+      } else if (f.kind === "pane") {
+        context.strokeStyle = col;
+        context.globalAlpha = 0.7;
+        context.lineWidth = 2;
+        context.strokeRect(f.x + 2, f.y + 2, (f.x2 || 40) - 4, (f.y2 || 40) - 4);
+        context.globalAlpha = 0.12;
+        context.fillStyle = col;
+        context.fillRect(f.x + 2, f.y + 2, (f.x2 || 40) - 4, (f.y2 || 40) - 4);
+      } else if (f.kind === "pin") {
+        context.fillStyle = FIGHT_GOLD;
+        context.beginPath(); context.arc(f.x, f.y, 5, 0, Math.PI * 2); context.fill();
+        context.strokeStyle = FIGHT_WHITE;
+        context.stroke();
+      } else if (f.kind === "rule") {
+        context.fillStyle = "rgba(8,8,16,0.72)";
+        context.fillRect(28, 28, W - 56, 36);
+        context.strokeStyle = FIGHT_GOLD;
+        context.lineWidth = 1.6;
+        context.strokeRect(28, 28, W - 56, 36);
+        context.fillStyle = FIGHT_GOLD;
+        context.font = "bold 8px ui-sans-serif, system-ui, sans-serif";
+        context.textAlign = "center";
+        context.fillText(fight.rule || (AXIOM_RULES[f.x] && AXIOM_RULES[f.x].text) || "RULE", W / 2, 44);
+        if (fight.rule2 || f.y >= 0) {
+          context.font = "bold 7px ui-sans-serif, system-ui, sans-serif";
+          context.fillText(fight.rule2 || ((AXIOM_RULES[f.y] && AXIOM_RULES[f.y].text) || ""), W / 2, 56);
+        }
       }
       context.restore();
     }
@@ -9737,6 +10557,7 @@
       if (e.x < 34) { e.x = 34; e.patrolDir = 1; }
       if (e.x > W - 34) { e.x = W - 34; e.patrolDir = -1; }
       fy = 58 + (H / 2 - 72) * (0.5 + 0.5 * Math.sin(t * freq * 0.52));
+      if (fight.fallUp) fy = H - fy;
       e.x = clamp(e.x, 34, W - 34);
       e.y += (fy - e.y) * Math.min(1, 3.2 * dt);
       return;
@@ -12897,7 +13718,7 @@
   }
 
   function updateOneShip(p, dt, fire) {
-    var spd, margin, inp, aimX, aimY, band;
+    var spd, margin, inp, aimX, aimY, band, gx, gy;
     if (!p || !p.alive) {
       if (p) {
         p.fireCd = Math.max(0, (p.fireCd || 0) - dt);
@@ -12910,6 +13731,7 @@
     if (p.slowT > 0) p.slowT = Math.max(0, p.slowT - dt);
     if (p.jamT > 0) p.jamT = Math.max(0, p.jamT - dt);
     if ((p.freezeT || 0) > 0) p.freezeT = Math.max(0, p.freezeT - dt);
+    if ((p.grazeLock || 0) > 0) p.grazeLock = Math.max(0, p.grazeLock - dt);
     spd = (p.speed || 250) * (p.speedT > 0 ? 1.45 : 1) * (p.slowT > 0 ? 0.62 : 1) * (p.skinSpdMul || 1);
     if ((p.freezeT || 0) > 0) {
       spd = 0;
@@ -12930,11 +13752,22 @@
     } else {
       aimY = inp.aimY;
     }
+    if (fight.turn && aimX != null && aimY != null) {
+      gx = W / 2 - (aimY - H / 2);
+      gy = H / 2 + (aimX - W / 2);
+      aimX = gx;
+      aimY = gy;
+    }
     if (aimX != null) {
       p.targetX = aimX;
     } else if (!(netRole === "host" && p.slot !== localSlot)) {
-      p.targetX += steerDelta(inp, inp.left, "holdL", -1, spd, dt);
-      p.targetX += steerDelta(inp, inp.right, "holdR", 1, spd, dt);
+      if (fight.turn) {
+        p.targetX += steerDelta(inp, inp.up, "holdU", -1, spd, dt);
+        p.targetX += steerDelta(inp, inp.down, "holdD", 1, spd, dt);
+      } else {
+        p.targetX += steerDelta(inp, inp.left, "holdL", -1, spd, dt);
+        p.targetX += steerDelta(inp, inp.right, "holdR", 1, spd, dt);
+      }
     }
     p.targetX = clamp(p.targetX, margin + fightWallPad().l, W - margin - fightWallPad().r);
     }
@@ -12945,8 +13778,13 @@
       if (aimY != null) {
         p.targetY = aimY;
       } else if (!(netRole === "host" && p.slot !== localSlot)) {
-        p.targetY += steerDelta(inp, inp.up, "holdU", -1, spd, dt);
-        p.targetY += steerDelta(inp, inp.down, "holdD", 1, spd, dt);
+        if (fight.turn) {
+          p.targetY += steerDelta(inp, inp.right, "holdR", -1, spd, dt);
+          p.targetY += steerDelta(inp, inp.left, "holdL", 1, spd, dt);
+        } else {
+          p.targetY += steerDelta(inp, inp.up, "holdU", -1, spd, dt);
+          p.targetY += steerDelta(inp, inp.down, "holdD", 1, spd, dt);
+        }
       }
       p.targetY = clamp(p.targetY, band.lo, band.hi);
       }
@@ -13064,7 +13902,7 @@
   }
 
   function update(dt) {
-    var i, e, b, p, t, fx, fy, maxD, d, spd, j, pellets, ang, pr, dx, dy, len, pi, pl;
+    var i, e, b, p, t, fx, fy, maxD, d, spd, j, pellets, ang, pr, dx, dy, len, pi, pl, gd;
 
     shake *= Math.exp(-dt * 7);
     if (shake < 0.05) shake = 0;
@@ -13304,6 +14142,8 @@
       }
       if (b.life && b.age > b.life) { pbul.splice(i, 1); continue; }
       if (fight.on && fight.planets && fight.planets.length) applyOrreryGravity(b, dt);
+      if (fight.on && fight.flow > 0) applyMaelstromVel(b, dt, 0.7);
+      if (fight.pullDown) b.vy += 90 * dt;
       if (b.helix) {
         b.bx += (b.vx || 0) * dt;
         b.x = b.bx + Math.sin(b.age * b.hf + b.hp0) * b.ha;
@@ -13311,6 +14151,14 @@
         b.x += (b.vx || 0) * dt;
       }
       b.y += b.vy * dt;
+      if (fight.bounce) {
+        b.bounces = b.bounces || 0;
+        if (b.x < 4 && b.vx < 0) { b.x = 4; b.vx *= -1; b.bounces += 1; }
+        if (b.x > W - 4 && b.vx > 0) { b.x = W - 4; b.vx *= -1; b.bounces += 1; }
+        if (b.y < 4 && b.vy < 0) { b.y = 4; b.vy *= -1; b.bounces += 1; }
+        if (b.y > H - 4 && b.vy > 0) { b.y = H - 4; b.vy *= -1; b.bounces += 1; }
+        if (b.bounces > 4) { pbul.splice(i, 1); continue; }
+      }
       if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
       if (applyBossHazardsToPbul(b, i)) continue;
       if (fight.on && hitFightShot(b, i)) continue;
@@ -13445,6 +14293,8 @@
       }
       if (!b.paused) {
         if (b.grav) b.vy += b.grav * dt;
+        if (fight.pullDown) b.vy += 70 * dt;
+        if (fight.on && fight.flow > 0) applyMaelstromVel(b, dt, 0.55);
         if (b.accel) { b.vx *= 1 + b.accel * dt; b.vy *= 1 + b.accel * dt; }
         if (b.sway) {
           b.bx += b.vx * dt;
@@ -13519,6 +14369,24 @@
         }
         if (pl.invuln > 0) continue;
         pr = pl.r || PLAYER_R;
+        if (fight.grazeHeal) {
+          gd = dist2(b.x, b.y, pl.x, pl.y);
+          if (gd > (pr + (b.r || 2)) * (pr + (b.r || 2)) && gd < (pr + 12) * (pr + 12)) {
+            pl.grazeAcc = (pl.grazeAcc || 0) + dt;
+            if (pl.grazeAcc >= 0.35 && (pl.grazeLock || 0) <= 0) {
+              pl.grazeAcc = 0;
+              pl.grazeLock = 1.15;
+              if (pl.lives < lifeCap(pl)) {
+                pl.lives += 1;
+                banner = { text: "GRAZE HEAL", life: 0.5 };
+              } else {
+                pl.shieldHp = Math.max(pl.shieldHp || 0, 1);
+                banner = { text: "GRAZE WARD", life: 0.5 };
+              }
+              sfxArmor();
+            }
+          }
+        }
         if (dist2(b.x, b.y, pl.x, pl.y) < (pr + (b.r || 2) - 1.5) * (pr + (b.r || 2) - 1.5)) {
           if (b.polar != null && fight.type === "lodestar" && b.polar === fight.polar) continue;
           ebul.splice(i, 1);
@@ -15034,6 +15902,59 @@
       context.strokeStyle = col;
       context.lineWidth = 1;
       context.beginPath(); context.ellipse(0, 0, 18, 6, t, 0, Math.PI * 2); context.stroke();
+    } else if (e.type === "prism") {
+      context.fillStyle = col;
+      context.beginPath();
+      context.moveTo(0, -16); context.lineTo(12, 10); context.lineTo(-12, 10);
+      context.closePath(); context.fill();
+      context.fillStyle = dark;
+      context.beginPath(); context.moveTo(0, -8); context.lineTo(6, 6); context.lineTo(-6, 6); context.closePath(); context.fill();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.beginPath(); context.arc(0, 2, 3.2 + Math.sin(t * 7) * 0.5, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "maelstrom") {
+      context.fillStyle = dark;
+      context.beginPath(); context.arc(0, 0, 16, 0, Math.PI * 2); context.fill();
+      context.strokeStyle = col;
+      context.lineWidth = 1.5;
+      context.beginPath(); context.arc(0, 0, 12, t, t + 4.2); context.stroke();
+      context.beginPath(); context.arc(0, 0, 7, -t, -t + 3.4); context.stroke();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.beginPath(); context.arc(0, 0, 3.4, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "cartographer") {
+      context.fillStyle = col;
+      context.fillRect(-14, -12, 28, 24);
+      context.fillStyle = dark;
+      context.fillRect(-10, -8, 20, 16);
+      context.strokeStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.lineWidth = 1.2;
+      context.strokeRect(-10, -8, 20, 16);
+      context.beginPath(); context.moveTo(-6, 0); context.lineTo(6, 0); context.moveTo(0, -5); context.lineTo(0, 5); context.stroke();
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.beginPath(); context.arc(0, 0, 2.4, 0, Math.PI * 2); context.fill();
+    } else if (e.type === "mimic") {
+      context.fillStyle = col;
+      context.beginPath();
+      context.moveTo(0, -12); context.lineTo(8, 10); context.lineTo(-8, 10);
+      context.closePath(); context.fill();
+      context.globalAlpha = 0.45;
+      context.strokeStyle = FIGHT_RED;
+      context.lineWidth = 1.4;
+      context.stroke();
+      context.globalAlpha = 1;
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.fillRect(-3, -2, 6, 4);
+    } else if (e.type === "axiom") {
+      context.fillStyle = dark;
+      context.fillRect(-16, -16, 32, 32);
+      context.strokeStyle = col;
+      context.lineWidth = 1.5;
+      context.strokeRect(-14, -14, 28, 28);
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.fillRect(-10, -6, 20, 12);
+      context.fillStyle = dark;
+      context.font = "bold 6px ui-sans-serif, system-ui, sans-serif";
+      context.textAlign = "center";
+      context.fillText("∴", 0, 2);
     } else {
       context.beginPath(); context.arc(0, 0, e.r, 0, Math.PI * 2); context.fill();
     }
@@ -15378,6 +16299,11 @@
     if (pvpFlipped()) {
       ctx.translate(W, H);
       ctx.rotate(Math.PI);
+    }
+    if (fight.turn) {
+      ctx.translate(W / 2, H / 2);
+      ctx.rotate(Math.PI / 2);
+      ctx.translate(-W / 2, -H / 2);
     }
 
     for (i = 0; i < stars.length; i++) {
@@ -16729,6 +17655,7 @@
       XP_CHARGES_MAX: XP_CHARGES_MAX,
       BOSS_XP_BOOST_CHANCE: BOSS_XP_BOOST_CHANCE,
       CENTURY_CLEAR_XP: CENTURY_CLEAR_XP,
+      AXIOM_CLEAR_XP: AXIOM_CLEAR_XP,
       GUEST_XP_BOOST_CHANCE: GUEST_XP_BOOST_CHANCE,
       maybeDropXpBoost: maybeDropXpBoost,
       canUnlockSkill: canUnlockSkill,

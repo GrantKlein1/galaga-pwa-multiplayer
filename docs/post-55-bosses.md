@@ -49,7 +49,7 @@ Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarc
 
 **Victory:** banner `WAVE 100 CLEARED` and a **Century Clear** XP bonus (`CENTURY_CLEAR_XP = 8000`) on the existing `run.xpBonus` path (same bank that skip-start and harder-kill XP use). First-cycle dedicated wave 100 only, not guests or later rematches. Skip-start past 100 also credits Century Clear.
 
-Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, and Orrery planets on netcodec VER 9 (`bx` extras).
+Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, Orrery planets, Prism prisms/rays, Maelstrom flow, Cartographer panes/pins, Mimic ghosts, and Axiom rule cards on netcodec VER 11 (`bx` extras).
 
 ## Hourglass — wave 105, the glass
 
@@ -100,4 +100,59 @@ Telegraphs are 0.28s, shorter than Terminus.
 - **Alignment (p2):** ALIGNMENT. Three planets, a sling shot at the player.
 - **Core (p3):** THE CORE. Four planets, strongest pull.
 
+## Prism — wave 130, the splitter
+
+3 exclusive phases. Base HP 2300. HP ticks at 66% and 33%. Crystal body with gold prisms.
+
+- Beams split through gold prisms. Rotate a prism (shoot it) so a split returns into the boss (~3.5% max HP).
+- **Split (p1):** LIGHT SPLITS. Two prisms, split beams aimed at the live player.
+- **Refract (p2):** THE SPLIT. Three prisms, denser refraction.
+- **Crystal (p3):** RETURN FIRE. Four prisms; a returning beam can hit the body.
+
+## Maelstrom — wave 135, the whirlpool
+
+3 exclusive phases. Base HP 2450. HP ticks at 66% and 33%. Deep-water body.
+
+- A current drags the ship and shots. Cyan flow arrows show the pull.
+- **Current (p1):** THE WATER TURNS. Modest flow plus aimed shots.
+- **Gyre (p2):** THE GYRE. Stronger pull, a red fan.
+- **Maw (p3):** THE MAW. Hardest flow and a slam on the player.
+
+## Cartographer — wave 140, the map
+
+4 exclusive phases. Base HP 2600. HP ticks at 75 / 50 / 25. Sliding 2×2 panes.
+
+- Matching-color pane edges wrap the ship. Gold pins are weak points.
+- **Chart (p1):** THE MAP OPENS. Slow slide, three-shot volleys.
+- **Remap (p2):** THE MAP SLIDES. Panes shift; four-shot volleys.
+- **Fold (p3):** EDGES AGREE. Faster wrap, denser volleys.
+- **Atlas (p4):** THE ATLAS. Hardest slide and a slam.
+
+## Mimic — wave 145, the copy
+
+4 exclusive phases. Base HP 2800. HP ticks at 75 / 50 / 25. It wears your silhouette.
+
+- A red ghost replays the player's path from **1.6s** ago and fires those shots back. Stay off the recent path.
+- Copies the equipped boss ability via `currentBossAbilityId` + `bossAbilityDef` as **red enemy fire**. It does not spend the player's cooldown.
+- **Copycat (p1):** IT WEARS YOUR FACE. One ghost, ability copy.
+- **Shadow (p2):** IT DODGES YOU. Ghost plus an aimed red shot.
+- **Mock (p3):** IT SHOOTS YOU. Ghost plus a red fan.
+- **Doppel (p4):** TWO OF YOU. Two delayed ghosts.
+
+## Axiom — wave 150, the finale
+
+6 exclusive phases, Pentarch-style banners and 83 / 67 / 50 / 33 / 17 HP ticks. Base HP 3000. Gold rule cards. Every rule is fully reverted when the phase or fight ends (`clearAxiomRules`).
+
+| Phase | Banner | Kit |
+| ---: | --- | --- |
+| 1 Fall up | SHOTS FALL UP | The ship is locked to the top band. Shots fall "up." |
+| 2 Bounce | YOUR BULLETS BOUNCE | Player bullets reverse on walls (max 4). |
+| 3 Graze | GRAZING HEALS | A 0.35s near-miss then +1 life or shield (1.15s lock). |
+| 4 Turn | THE SCREEN TURNS | The playfield rotates 90°. Keys and pointer remap. |
+| 5 Gravity | GRAVITY PULLS DOWN | Extra downward velocity on the ship and shots. |
+| 6 Mix | TWO RULES | Bounce plus gravity together. |
+
+**Victory:** banner `WAVE 150 CLEARED` and an **Axiom Clear** XP bonus (`AXIOM_CLEAR_XP = 12000`) on the existing `run.xpBonus` path. First-cycle dedicated wave 150 only, not guests or later rematches. Skip-start past 150 also credits Axiom Clear.
+
 None of these bosses guest. Health gems still drop only on each id’s first-cycle dedicated debut, plus the 12% XP-boost roll.
+

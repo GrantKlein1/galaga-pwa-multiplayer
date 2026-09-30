@@ -12,7 +12,7 @@ var sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 var ids = [...galaga.matchAll(/\{ id: "([a-z]+)", name: "([A-Z]+)"/g)].map(function (m) {
   return m[1];
 });
-assert(ids.length === 25, "25 roster bosses, got " + ids.length);
+assert(ids.length === 30, "30 roster bosses, got " + ids.length);
 assert(ids[10] === "mandala" && ids[12] === "kaleido", "Mandala 55 and Kaleido 65 stay");
 assert(ids[11] === "cenotaph" && ids[13] === "helios" && ids[14] === "selene", "60/70/75 ids stay");
 assert(ids[15] === "pentarch", "wave 80 is Pentarch");
@@ -30,8 +30,8 @@ assert(meta(75).type === "selene" && meta(75).tier === 0, "wave 75 Selene");
 assert(meta(80).type === "pentarch" && meta(80).tier === 0, "wave 80 Pentarch");
 assert(meta(85).type === "loom" && meta(85).tier === 0, "wave 85 Loom");
 assert(meta(105).type === "hourglass" && meta(105).tier === 0, "wave 105 Hourglass");
-assert(meta(200).type === "selene" && meta(200).tier === 1, "Selene +1");
-assert(meta(205).type === "pentarch" && meta(205).tier === 1, "Pentarch +1");
+assert(meta(225).type === "selene" && meta(225).tier === 1, "Selene +1");
+assert(meta(230).type === "pentarch" && meta(230).tier === 1, "Pentarch +1");
 
 assert(galaga.indexOf('base: ["seal", "stamp"]') >= 0, "Mandala kit unchanged");
 assert(galaga.indexOf('p3: ["wheel"]') >= 0, "Mandala p3 unchanged");
@@ -60,12 +60,12 @@ assert(galaga.indexOf("guestPairOk") >= 0, "pairing helper present");
 assert(/never two late-tier[\s\S]{0,80}bosses/.test(galaga), "no late+late pairing");
 
 assert(codec.indexOf('"helios", "selene", "pentarch"') >= 0, "netcodec pentarch id");
-assert(/var VER = 10;/.test(codec), "codec VER 10");
+assert(/var VER = 11;/.test(codec), "codec VER 11");
 assert(codec.indexOf("p.freezeT") >= 0, "freezeT in player snap");
 
 assert(pvp.indexOf("pentarch:") >= 0, "pvp kit");
 assert(pvp.indexOf("cenotaph:") >= 0 && pvp.indexOf("helios:") >= 0 && pvp.indexOf("selene:") >= 0, "prior late pvp kits stay");
 
-assert(sw.indexOf("galaga-coop-v60") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v61") >= 0, "PWA cache bump");
 
 console.log("wave-80-boss-smoke: ok");

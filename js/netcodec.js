@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 10;
+  var VER = 11;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -16,7 +16,8 @@
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
     "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch",
     "loom", "tessera", "requiem", "terminus",
-    "hourglass", "lanternmoth", "lodestar", "lernaean", "orrery"
+    "hourglass", "lanternmoth", "lodestar", "lernaean", "orrery",
+    "prism", "maelstrom", "cartographer", "mimic", "axiom"
   ];
   var ENEMY_STATES = ["", "enter", "form", "dive", "kami", "return", "charge"];
   var GUN_IDS = [
@@ -48,7 +49,7 @@
   ];
   var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive", "xpboost"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
-  var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam", "sand", "glass", "lantern", "cone", "polar", "head", "stump", "planet"];
+  var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam", "sand", "glass", "lantern", "cone", "polar", "head", "stump", "planet", "prism", "ray", "flow", "pane", "pin", "rule"];
   var WEAPONS = ["normal", "spread", "double", "rapid", "shield", "speed"];
   var BOSS_ABILITY_IDS = [
     "",
@@ -76,7 +77,12 @@
     "moth-glint", "moth-swarm", "moth-lamp",
     "lode-red", "lode-blue", "lode-pulsar",
     "lern-heads", "lern-beam", "lern-fan",
-    "orr-orbit", "orr-sling", "orr-core"
+    "orr-orbit", "orr-sling", "orr-core",
+    "prism-split", "prism-refract", "prism-crystal",
+    "mael-current", "mael-gyre", "mael-maw",
+    "cart-chart", "cart-remap", "cart-atlas",
+    "mimic-copy", "mimic-shadow", "mimic-doppel",
+    "axiom-up", "axiom-bounce", "axiom-mix"
   ];
 
   function idxOf(list, val) {

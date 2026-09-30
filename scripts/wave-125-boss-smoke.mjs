@@ -14,10 +14,11 @@ var post = fs.readFileSync(new URL("../docs/post-55-bosses.md", import.meta.url)
 var ids = [...galaga.matchAll(/\{ id: "([a-z]+)", name: "([A-Z]+)"/g)].map(function (m) {
   return m[1];
 });
-assert(ids.length === 25, "25 roster bosses, got " + ids.length);
+assert(ids.length === 30, "30 roster bosses, got " + ids.length);
 assert(ids[19] === "terminus" && ids[20] === "hourglass", "Hourglass follows Terminus");
 assert(ids[21] === "lanternmoth" && ids[22] === "lodestar", "Lanternmoth then Lodestar");
 assert(ids[23] === "lernaean" && ids[24] === "orrery", "Lernaean Hydra then Orrery");
+assert(ids[25] === "prism" && ids[29] === "axiom", "Prism through Axiom");
 assert(ids.filter(function (id) { return id === "hydra"; }).length === 1, "wave-15 hydra id stays unique");
 
 function meta(n) {
@@ -30,7 +31,8 @@ assert(meta(110).type === "lanternmoth" && meta(110).tier === 0, "wave 110 Lante
 assert(meta(115).type === "lodestar" && meta(115).tier === 0, "wave 115 Lodestar");
 assert(meta(120).type === "lernaean" && meta(120).tier === 0, "wave 120 Hydra heads");
 assert(meta(125).type === "orrery" && meta(125).tier === 0, "wave 125 Orrery");
-assert(meta(130).type === "seraph" && meta(130).tier === 1, "+1 cycle starts at 130");
+assert(meta(130).type === "prism" && meta(130).tier === 0, "wave 130 Prism");
+assert(meta(155).type === "seraph" && meta(155).tier === 1, "+1 cycle starts at 155");
 
 assert(/\{ id: "hourglass",[\s\S]*?hp: 1700,/.test(galaga), "Hourglass HP 1700");
 assert(/\{ id: "lanternmoth",[\s\S]*?hp: 1800,/.test(galaga), "Lanternmoth HP 1800");
@@ -55,12 +57,12 @@ assert(galaga.indexOf("THE WHEELS TURN") >= 0 && galaga.indexOf("ALIGNMENT") >= 
 });
 
 assert(codec.indexOf('"hourglass", "lanternmoth", "lodestar", "lernaean", "orrery"') >= 0, "netcodec boss ids");
-assert(/var VER = 10;/.test(codec), "codec VER 10");
+assert(/var VER = 11;/.test(codec), "codec VER 11");
 assert(codec.indexOf('"sand"') >= 0 && codec.indexOf('"lantern"') >= 0 && codec.indexOf('"polar"') >= 0, "new bx kinds");
 assert(codec.indexOf('"head"') >= 0 && codec.indexOf('"stump"') >= 0 && codec.indexOf('"planet"') >= 0, "head/stump/planet kinds");
 
 assert(pvp.indexOf("hourglass:") >= 0 && pvp.indexOf("orrery:") >= 0 && pvp.indexOf("lernaean:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v60") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v61") >= 0, "PWA cache bump");
 assert(roster.indexOf("hourglass") >= 0 && roster.indexOf("lernaean") >= 0, "roster docs");
 assert(post.indexOf("Hourglass — wave 105") >= 0 && post.indexOf("Orrery — wave 125") >= 0, "post-55 kits");
 

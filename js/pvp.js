@@ -6,7 +6,8 @@
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
     "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch",
     "loom", "tessera", "requiem", "terminus",
-    "hourglass", "lanternmoth", "lodestar", "lernaean", "orrery"
+    "hourglass", "lanternmoth", "lodestar", "lernaean", "orrery",
+    "prism", "maelstrom", "cartographer", "mimic", "axiom"
   ];
   var DRAFT_STEPS = ["ship", "mod", "skin", "gun"];
   // Insane duel only (not co-op / PvE bosses).
@@ -288,6 +289,56 @@
       abilities: [
         { id: "sling", key: "1", name: "Sling", cd: 6.4 },
         { id: "align", key: "2", name: "Align", cd: 7.4 }
+      ]
+    },
+    prism: {
+      fire: "splitbeam", ability: "refract",
+      fireHint: "SPACE / FIRE — split beam",
+      abilityHint: "1 — refract",
+      abilities: [
+        { id: "refract", key: "1", name: "Refract", cd: 6.4 },
+        { id: "crystal", key: "2", name: "Crystal", cd: 7.4 }
+      ]
+    },
+    maelstrom: {
+      fire: "current", ability: "gyre",
+      fireHint: "SPACE / FIRE — current",
+      abilityHint: "1 — gyre",
+      abilities: [
+        { id: "gyre", key: "1", name: "Gyre", cd: 6.2 },
+        { id: "maw", key: "2", name: "Maw", cd: 7.6 }
+      ]
+    },
+    cartographer: {
+      fire: "chart", ability: "remap",
+      fireHint: "SPACE / FIRE — chart shot",
+      abilityHint: "1 — remap",
+      abilities: [
+        { id: "remap", key: "1", name: "Remap", cd: 6.4 },
+        { id: "foldmap", key: "2", name: "Fold", cd: 7.0 },
+        { id: "atlas", key: "3", name: "Atlas", cd: 8.0 }
+      ]
+    },
+    mimic: {
+      fire: "copycat", ability: "shadow",
+      fireHint: "SPACE / FIRE — copy",
+      abilityHint: "1 — shadow",
+      abilities: [
+        { id: "shadow", key: "1", name: "Shadow", cd: 6.2 },
+        { id: "mock", key: "2", name: "Mock", cd: 7.0 },
+        { id: "doppel", key: "3", name: "Doppel", cd: 8.2 }
+      ]
+    },
+    axiom: {
+      fire: "fallup", ability: "axiommix",
+      fireHint: "SPACE / FIRE — rewrite",
+      abilityHint: "1 — mix",
+      abilities: [
+        { id: "bounce", key: "1", name: "Bounce", cd: 6.0 },
+        { id: "grazeheal", key: "2", name: "Graze", cd: 6.6 },
+        { id: "screenturn", key: "3", name: "Turn", cd: 7.2 },
+        { id: "pulldown", key: "4", name: "Gravity", cd: 7.4 },
+        { id: "axiommix", key: "5", name: "Two rules", cd: 8.4 }
       ]
     }
   };

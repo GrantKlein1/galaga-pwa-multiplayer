@@ -1,6 +1,6 @@
 # Boss roster
 
-Debut wave is `(index + 1) * 5`. After wave 125 the list repeats as +1, +2, …
+Debut wave is `(index + 1) * 5`. After wave 150 the list repeats as +1, +2, …
 
 Guests on mixed waves stay **Seraph through Overlord** only.
 
@@ -33,5 +33,10 @@ Health gems drop only on each id’s first-cycle dedicated debut. Dedicated kill
 | 115 | lodestar | LODESTAR | 3 | 1900 | 66 / 33 | Red/blue polarity ring |
 | 120 | lernaean | HYDRA | 3 | 2000 | 66 / 33 | Multi-head; gold stump or two grow |
 | 125 | orrery | ORRERY | 3 | 2150 | 66 / 33 | Gravity planets, curved shots |
+| 130 | prism | PRISM | 3 | 2300 | 66 / 33 | Beams split through gold prisms |
+| 135 | maelstrom | MAELSTROM | 3 | 2450 | 66 / 33 | Whirlpool current, cyan flow arrows |
+| 140 | cartographer | CARTOGRAPHER | 4 | 2600 | 75 / 50 / 25 | Sliding 2×2 panes, gold pins |
+| 145 | mimic | MIMIC | 4 | 2800 | 75 / 50 / 25 | Copies dodge, shots, and the equipped boss ability |
+| 150 | axiom | AXIOM | 6 | 3000 | 83 / 67 / 50 / 33 / 17 | Phase rules on a gold card; mix on the last |
 
-+1 cycle starts at wave **130** (Seraph +1). Wave 210 is Loom +1, wave 225 is Orrery +1. Wave 120 Hydra is id `lernaean` (heads); wave 15 Hydra stays the siphon escort fight.
++1 cycle starts at wave **155** (Seraph +1). Wave 235 is Loom +1, wave 250 is Terminus +1, wave 300 is Axiom +1. Wave 120 Hydra is id `lernaean` (heads); wave 15 Hydra stays the siphon escort fight.
