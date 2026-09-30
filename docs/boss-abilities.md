@@ -79,4 +79,26 @@ Colors match each boss. Shots fire **up** from the player.
 | | | `term-medley` | Gold fan plus a clear pulse | 14s |
 | | | `term-key` | Bursts on the nearest three foes | 13s |
 
-Co-op replicates the ability id, Q input, and colored ability shots on netcodec VER 9.
+Co-op replicates the ability id, Q input, and colored ability shots on netcodec VER 10.
+
+## Library (waves 105–125)
+
+Hourglass through Orrery. Wave-120 Hydra is id `lernaean` (heads), distinct from wave-15 siphon Hydra.
+
+| Boss | Wave | Ability ids | What it does | CD |
+| --- | ---: | --- | --- | ---: |
+| Hourglass | 105 | `hour-sand` | Amber sand grains spray up | 9s |
+| | | `hour-pile` | Climbing dune slam | 11s |
+| | | `hour-rewind` | Enemy shots fly back along their paths | 13s |
+| Lanternmoth | 110 | `moth-glint` | Tight lantern glint volley | 8s |
+| | | `moth-swarm` | Wide climbing swarm | 10s |
+| | | `moth-lamp` | Pierce cone of lantern light | 12s |
+| Lodestar | 115 | `lode-red` | Red polarity fan | 9s |
+| | | `lode-blue` | Blue polarity fan | 9s |
+| | | `lode-pulsar` | Red and blue fans together | 12s |
+| Hydra | 120 | `lern-heads` | Three offset head-bolts | 9s |
+| | | `lern-beam` | Green neck pierce beam | 11s |
+| | | `lern-fan` | Climbing hydra volley | 10s |
+| Orrery | 125 | `orr-orbit` | Brass planet burst | 10s |
+| | | `orr-sling` | Paired sling shot | 9s |
+| | | `orr-core` | Gravity well yank | 13s |

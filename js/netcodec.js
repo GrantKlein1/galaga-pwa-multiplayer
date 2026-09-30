@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 9;
+  var VER = 10;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -71,7 +71,12 @@
     "loom-warp", "loom-weft", "loom-cocoon",
     "tess-rook", "tess-bishop", "tess-knight",
     "req-hymn", "req-gap", "req-canon",
-    "term-echo", "term-medley", "term-key"
+    "term-echo", "term-medley", "term-key",
+    "hour-sand", "hour-pile", "hour-rewind",
+    "moth-glint", "moth-swarm", "moth-lamp",
+    "lode-red", "lode-blue", "lode-pulsar",
+    "lern-heads", "lern-beam", "lern-fan",
+    "orr-orbit", "orr-sling", "orr-core"
   ];
 
   function idxOf(list, val) {
