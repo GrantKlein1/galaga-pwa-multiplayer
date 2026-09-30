@@ -62,7 +62,7 @@ assert(codec.indexOf('"sand"') >= 0 && codec.indexOf('"lantern"') >= 0 && codec.
 assert(codec.indexOf('"head"') >= 0 && codec.indexOf('"stump"') >= 0 && codec.indexOf('"planet"') >= 0, "head/stump/planet kinds");
 
 assert(pvp.indexOf("hourglass:") >= 0 && pvp.indexOf("orrery:") >= 0 && pvp.indexOf("lernaean:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v64") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v65") >= 0, "PWA cache bump");
 assert(roster.indexOf("hourglass") >= 0 && roster.indexOf("lernaean") >= 0, "roster docs");
 assert(post.indexOf("Hourglass — wave 105") >= 0 && post.indexOf("Orrery — wave 125") >= 0, "post-55 kits");
 
