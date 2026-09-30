@@ -5,7 +5,8 @@
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
     "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch",
-    "loom", "tessera", "requiem", "terminus"
+    "loom", "tessera", "requiem", "terminus",
+    "hourglass", "lanternmoth", "lodestar", "lernaean", "orrery"
   ];
   var DRAFT_STEPS = ["ship", "mod", "skin", "gun"];
   // Insane duel only (not co-op / PvE bosses).
@@ -242,6 +243,51 @@
         { id: "keystones", key: "2", name: "Keystones", cd: 7.4 },
         { id: "collapse", key: "3", name: "Collapse", cd: 7.8 },
         { id: "medley", key: "4", name: "Terminus", cd: 8.6 }
+      ]
+    },
+    hourglass: {
+      fire: "pour", ability: "timeslip",
+      fireHint: "SPACE / FIRE — sand pour",
+      abilityHint: "1 — rewind shots",
+      abilities: [
+        { id: "timeslip", key: "1", name: "Rewind", cd: 7.0 },
+        { id: "pile", key: "2", name: "Sand pile", cd: 6.6 }
+      ]
+    },
+    lanternmoth: {
+      fire: "glint", ability: "swarmfan",
+      fireHint: "SPACE / FIRE — glint volley",
+      abilityHint: "1 — swarm fan",
+      abilities: [
+        { id: "swarmfan", key: "1", name: "Swarm", cd: 6.4 },
+        { id: "gloom", key: "2", name: "Gloom", cd: 7.6 }
+      ]
+    },
+    lodestar: {
+      fire: "starred", ability: "pulsar",
+      fireHint: "SPACE / FIRE — red star",
+      abilityHint: "1 — pulsar",
+      abilities: [
+        { id: "starblue", key: "1", name: "Blue star", cd: 5.8 },
+        { id: "pulsar", key: "2", name: "Pulsar", cd: 7.2 }
+      ]
+    },
+    lernaean: {
+      fire: "heads", ability: "neckbeam",
+      fireHint: "SPACE / FIRE — head shot",
+      abilityHint: "1 — neck beam",
+      abilities: [
+        { id: "neckbeam", key: "1", name: "Neck beam", cd: 6.2 },
+        { id: "hydrafan", key: "2", name: "Hydra fan", cd: 7.0 }
+      ]
+    },
+    orrery: {
+      fire: "orbit", ability: "sling",
+      fireHint: "SPACE / FIRE — orbit shot",
+      abilityHint: "1 — sling",
+      abilities: [
+        { id: "sling", key: "1", name: "Sling", cd: 6.4 },
+        { id: "align", key: "2", name: "Align", cd: 7.4 }
       ]
     }
   };

@@ -1,6 +1,6 @@
 # Boss roster
 
-Debut wave is `(index + 1) * 5`. After wave 100 the list repeats as +1, +2, …
+Debut wave is `(index + 1) * 5`. After wave 125 the list repeats as +1, +2, …
 
 Guests on mixed waves stay **Seraph through Overlord** only.
 
@@ -28,5 +28,10 @@ Health gems drop only on each id’s first-cycle dedicated debut. Dedicated kill
 | 90 | tessera | TESSERA | 3 | 790 | 66 / 33 | Rook / bishop / knight tiles |
 | 95 | requiem | REQUIEM | 3 | 850 | 66 / 33 | Gold choir, gapped rings |
 | 100 | terminus | TERMINUS | 5 | 1550 | 80 / 60 / 40 / 20 | Echo, invert, keystones, walls, medley |
+| 105 | hourglass | HOURGLASS | 3 | 1700 | 66 / 33 | Sand pile, rewind shots, gold glass |
+| 110 | lanternmoth | LANTERNMOTH | 3 | 1800 | 66 / 33 | Dark field, light cone, lanterns |
+| 115 | lodestar | LODESTAR | 3 | 1900 | 66 / 33 | Red/blue polarity ring |
+| 120 | lernaean | HYDRA | 3 | 2000 | 66 / 33 | Multi-head; gold stump or two grow |
+| 125 | orrery | ORRERY | 3 | 2150 | 66 / 33 | Gravity planets, curved shots |
 
-+1 cycle starts at wave **105** (Seraph +1). Wave 185 is Loom +1, wave 200 is Terminus +1.
++1 cycle starts at wave **130** (Seraph +1). Wave 210 is Loom +1, wave 225 is Orrery +1. Wave 120 Hydra is id `lernaean` (heads); wave 15 Hydra stays the siphon escort fight.

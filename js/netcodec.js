@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 7;
+  var VER = 8;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -15,7 +15,8 @@
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
     "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch",
-    "loom", "tessera", "requiem", "terminus"
+    "loom", "tessera", "requiem", "terminus",
+    "hourglass", "lanternmoth", "lodestar", "lernaean", "orrery"
   ];
   var ENEMY_STATES = ["", "enter", "form", "dive", "kami", "return", "charge"];
   var GUN_IDS = [
@@ -47,7 +48,7 @@
   ];
   var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive", "xpboost"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
-  var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam"];
+  var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam", "sand", "glass", "lantern", "cone", "polar", "head", "stump", "planet"];
   var WEAPONS = ["normal", "spread", "double", "rapid", "shield", "speed"];
 
   function idxOf(list, val) {

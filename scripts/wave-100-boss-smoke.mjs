@@ -12,9 +12,10 @@ var sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 var ids = [...galaga.matchAll(/\{ id: "([a-z]+)", name: "([A-Z]+)"/g)].map(function (m) {
   return m[1];
 });
-assert(ids.length === 20, "20 roster bosses, got " + ids.length);
+assert(ids.length === 25, "25 roster bosses, got " + ids.length);
 assert(ids[15] === "pentarch" && ids[16] === "loom" && ids[17] === "tessera", "85/90 ids");
 assert(ids[18] === "requiem" && ids[19] === "terminus", "95/100 ids");
+assert(ids[20] === "hourglass" && ids[24] === "orrery", "105-125 ids");
 
 function meta(n) {
   var cycle = Math.max(0, Math.round(n / 5) - 1);
@@ -25,9 +26,11 @@ assert(meta(85).type === "loom" && meta(85).tier === 0, "wave 85 Loom, not Serap
 assert(meta(90).type === "tessera" && meta(90).tier === 0, "wave 90 Tessera");
 assert(meta(95).type === "requiem" && meta(95).tier === 0, "wave 95 Requiem");
 assert(meta(100).type === "terminus" && meta(100).tier === 0, "wave 100 Terminus");
-assert(meta(105).type === "seraph" && meta(105).tier === 1, "+1 cycle starts at Seraph after Terminus");
-assert(meta(185).type === "loom" && meta(185).tier === 1, "Loom +1");
-assert(meta(200).type === "terminus" && meta(200).tier === 1, "Terminus +1");
+assert(meta(105).type === "hourglass" && meta(105).tier === 0, "wave 105 Hourglass");
+assert(meta(125).type === "orrery" && meta(125).tier === 0, "wave 125 Orrery");
+assert(meta(130).type === "seraph" && meta(130).tier === 1, "+1 cycle starts at Seraph after Orrery");
+assert(meta(210).type === "loom" && meta(210).tier === 1, "Loom +1");
+assert(meta(225).type === "terminus" && meta(225).tier === 1, "Terminus +1");
 
 assert(/\{ id: "loom",[\s\S]*?hp: 740,/.test(galaga), "Loom base HP 740");
 assert(/\{ id: "tessera",[\s\S]*?hp: 790,/.test(galaga), "Tessera base HP 790");
@@ -82,12 +85,12 @@ assert(galaga.indexOf('e.type !== "requiem"') >= 0, "Requiem skipped the 0.22 tu
 assert(Math.round(1000 * 1.55) === 1550, "wave 100 HP is 1.55x prior 1000");
 
 assert(codec.indexOf('"loom", "tessera", "requiem", "terminus"') >= 0, "netcodec boss ids");
-assert(/var VER = 7;/.test(codec), "codec VER 7");
+assert(/var VER = 8;/.test(codec), "codec VER 8");
 assert(codec.indexOf("BX_KINDS") >= 0 && codec.indexOf("writeBx") >= 0, "fight extras on the wire");
 assert(codec.indexOf('"thread"') >= 0 && codec.indexOf('"midline"') >= 0, "thread and midline kinds");
 assert(codec.indexOf('"keystone"') >= 0 && codec.indexOf('"pylon"') >= 0 && codec.indexOf('"ghost"') >= 0, "keystone/pylon/ghost kinds");
 
 assert(pvp.indexOf("loom:") >= 0 && pvp.indexOf("terminus:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v57") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v58") >= 0, "PWA cache bump");
 
 console.log("wave-100-boss-smoke: ok");

@@ -49,4 +49,55 @@ Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarc
 
 **Victory:** banner `WAVE 100 CLEARED` and a **Century Clear** XP bonus (`CENTURY_CLEAR_XP = 8000`) on the existing `run.xpBonus` path (same bank that skip-start and harder-kill XP use). First-cycle dedicated wave 100 only, not guests or later rematches. Skip-start past 100 also credits Century Clear.
 
-Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, and the desperation beam on netcodec VER 7 (`bx` extras).
+Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, and Orrery planets on netcodec VER 8 (`bx` extras).
+
+## Hourglass — wave 105, the glass
+
+3 exclusive phases. Base HP 1700. HP ticks at 66% and 33%. Amber glass body with a gold lower bulb.
+
+- Sand pours from the top (white telegraph) and piles on the floor, raising the playable band. Standing in the pile hurts.
+- **Pour (p1):** SAND FALLS. Aimed sand grains plus a slow rise. Shoot the gold glass to drain the pile and hurt the boss.
+- **Pile (p2):** THE PILE RISES. Faster pour and a red slam along the dune.
+- **Timeslip (p3):** TIME RUNS BACK. A white flash, then enemy shots fly back along the paths they just took.
+
+Telegraphs are 0.28s, shorter than Terminus.
+
+## Lanternmoth — wave 110, the lamp
+
+3 exclusive phases. Base HP 1800. HP ticks at 66% and 33%. Moth body with a gold lantern abdomen.
+
+- The field goes dark except for a cyan light cone around the player. Enemy shots glint white when fired, then show only inside the light (they still hurt in the dark).
+- Shoot gold lanterns to light a patch of the field for a few seconds.
+- **Glint (p1):** THE LAMP GOES OUT. Aimed glint volleys, 2 lanterns.
+- **Swarm (p2):** THE SWARM. Wider fans, 3 lanterns.
+- **Gloom (p3):** LIGHT DIES. The cone shrinks; 4 lanterns.
+
+## Lodestar — wave 115, the pole
+
+3 exclusive phases. Base HP 1900. HP ticks at 66% and 33%. Star body whose core matches the current polarity.
+
+- The ship wears a red or blue countdown ring. Shots that match the ring pass through; opposite-color shots hurt.
+- **Red (p1):** CHOOSE A STAR. Slow swap, red volleys.
+- **Binary (p2):** BINARY. Blue volleys, faster swap.
+- **Pulsar (p3):** PULSAR. Both colors at once, fastest ring.
+
+## Hydra — wave 120, the heads (id `lernaean`)
+
+3 exclusive phases. Base HP 2000. HP ticks at 66% and 33%. Distinct from wave-15 Hydra. The body ignores shots; only heads and gold stumps count.
+
+- Each living head fires its own aimed attack at the live player.
+- Cutting a head leaves a gold stump for about a second. Hit the stump to wound the boss. Miss it, and two more heads grow (capped at 7).
+- **Heads (p1):** HEADS WILL GROW. Three heads.
+- **Neck (p2):** TWO FROM ONE. Four heads, beam shots.
+- **Hydra (p3):** THE HYDRA. Five heads, fans.
+
+## Orrery — wave 125, the wheels
+
+3 exclusive phases. Base HP 2150. HP ticks at 66% and 33%. Brass core with gold heart.
+
+- Planets orbit the boss. Gravity rings (cyan) show pull strength and bend player bullets. Shoot a planet to weaken its pull. Curve a shot into the gold core.
+- **Orbit (p1):** THE WHEELS TURN. Two planets.
+- **Alignment (p2):** ALIGNMENT. Three planets, a sling shot at the player.
+- **Core (p3):** THE CORE. Four planets, strongest pull.
+
+None of these bosses guest. Health gems still drop only on each id’s first-cycle dedicated debut, plus the 12% XP-boost roll.
