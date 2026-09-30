@@ -300,12 +300,12 @@
       exclusive: true,
       base: ["starred", "redrow"], p2: ["starblue", "bluerow"], p3: ["pulsar", "pulsarrow"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "BINARY", p3Text: "PULSAR",
-      flavor: "Red/blue polarity, a countdown ring, matching shots pass through; some rows span the field" },
+      flavor: "Red/blue polarity, a countdown ring, matching shots pass through; full-width rows mix both colors" },
     { id: "lernaean", name: "HYDRA", color: "#b8ff70", dark: "#142008", r: 24, hp: 2000, spd: 30, amp: 8, freq: 0.8, cd: 1.18, tele: 0.28, pts: 11400,
       exclusive: true,
       base: ["heads"], p2: ["neckbeam"], p3: ["hydrafan"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "TWO FROM ONE", p3Text: "THE HYDRA",
-      flavor: "Cut a head, hit the gold stump or two more grow" },
+      flavor: "Cut a head, hit the gold stump or two more grow; each head has its own shot" },
     { id: "orrery", name: "ORRERY", color: "#d8c090", dark: "#18100c", r: 23, hp: 2150, spd: 28, amp: 6, freq: 0.7, cd: 1.2, tele: 0.28, pts: 12000,
       exclusive: true,
       base: ["orbit"], p2: ["sling"], p3: ["align"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
@@ -7646,19 +7646,10 @@
     } else if (atk === "pulsar") {
       addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
       addTele("line", e.x, e.y + 6, e.aimX, e.aimY, delay, FIGHT_WHITE);
-    } else if (atk === "redrow") {
-      addTele("hline", 6, e.y + 16, W - 6, e.y + 16, delay, FIGHT_RED);
-      addTele("flash", W / 2, e.y + 16, 0, 0, delay, FIGHT_WHITE);
-    } else if (atk === "bluerow") {
-      addTele("hline", 6, e.y + 16, W - 6, e.y + 16, delay, "#4d88ff");
-      addTele("flash", W / 2, e.y + 16, 0, 0, delay, FIGHT_WHITE);
-    } else if (atk === "pulsarrow") {
-      addTele("hline", 6, e.y + 14, W - 6, e.y + 14, delay, FIGHT_RED);
-      addTele("hline", 6, e.y + 22, W - 6, e.y + 22, delay, "#4d88ff");
-      addTele("flash", W / 2, e.y + 18, 0, 0, delay, FIGHT_WHITE);
+    } else if (atk === "redrow" || atk === "bluerow" || atk === "pulsarrow") {
+      lodestarRowTele(e, delay);
     } else if (atk === "heads" || atk === "neckbeam" || atk === "hydrafan") {
-      addTele("flash", e.x, e.y + 16, e.aimX, e.aimY, delay, FIGHT_WHITE);
-      addTele("line", e.x, e.y + 16, e.aimX, e.aimY, delay, FIGHT_RED);
+      telegraphLernaeanHeads(e, delay);
     } else if (atk === "orbit" || atk === "sling" || atk === "align") {
       addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
       addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_GOLD);
@@ -8657,20 +8648,14 @@
     } else if (atk === "pulsar") {
       lodestarVolley(e, 0, spd);
       lodestarVolley(e, 1, spd + 10);
-    } else if (atk === "redrow") {
-      lodestarRow(e, 0, spd);
-    } else if (atk === "bluerow") {
-      lodestarRow(e, 1, spd);
+    } else if (atk === "redrow" || atk === "bluerow") {
+      lodestarRow(e, spd);
     } else if (atk === "pulsarrow") {
-      lodestarRow(e, 0, spd);
-      addTele("hline", 6, e.y + 18, W - 6, e.y + 18, 0.42, "#4d88ff");
+      lodestarRow(e, spd);
+      lodestarRowTele(e, 0.42);
       queueFollow(e, 0.42, "bluerow");
-    } else if (atk === "heads") {
-      lernaeanHeadShot(e, "aimed", spd);
-    } else if (atk === "neckbeam") {
-      lernaeanHeadShot(e, "beam", spd);
-    } else if (atk === "hydrafan") {
-      lernaeanHeadShot(e, "fan", spd);
+    } else if (atk === "heads" || atk === "neckbeam" || atk === "hydrafan") {
+      lernaeanHeadShot(e, spd);
     } else if (atk === "orbit") {
       orrerySling(e, spd);
     } else if (atk === "sling") {
@@ -9204,12 +9189,35 @@
       addEbul(e.x, e.y + 6, Math.cos(a + (i - 2) * 0.16) * spd, Math.sin(a + (i - 2) * 0.16) * spd, opt);
     }
   }
-  function lodestarRow(e, polar, spd) {
-    var i, x, n = 16, opt, y;
+  var LODESTAR_ROW_CUTS = [0.2, 0.28, 0.35, 0.5, 0.65, 0.72, 0.8];
+  function nextLodestarRowSplit(e) {
+    var n = (e && e.rowSplitN) | 0;
+    if (e) e.rowSplitN = n + 1;
+    return { cut: LODESTAR_ROW_CUTS[n % LODESTAR_ROW_CUTS.length], leftPolar: n % 2 };
+  }
+  function lodestarRowTele(e, delay, split) {
+    var y, cutX, rightPolar;
+    split = split || nextLodestarRowSplit(e);
+    e.rowSplit = split;
+    y = e.y + 16;
+    cutX = 6 + (W - 12) * split.cut;
+    rightPolar = split.leftPolar ? 0 : 1;
+    addTele("hline", 6, y, cutX, y, delay, lodestarColor(split.leftPolar));
+    addTele("hline", cutX, y, W - 6, y, delay, lodestarColor(rightPolar));
+    addTele("flash", cutX, y, 0, 0, delay, FIGHT_WHITE);
+  }
+  function lodestarRow(e, spd, split) {
+    var i, x, n = 16, opt, y, cutI, polar, rightPolar;
+    split = split || (e && e.rowSplit) || nextLodestarRowSplit(e);
+    rightPolar = split.leftPolar ? 0 : 1;
     y = e.y + 12;
     spd = (spd || 140) * 0.92;
+    cutI = Math.round((n - 1) * split.cut);
+    if (cutI < 2) cutI = 2;
+    if (cutI > n - 3) cutI = n - 3;
     for (i = 0; i < n; i++) {
       x = 8 + i * ((W - 16) / (n - 1));
+      polar = i < cutI ? split.leftPolar : rightPolar;
       opt = lodestarShotOpt(polar, { silent: i > 0, r: 3.6 });
       addEbul(x, y, 0, spd, opt);
     }
@@ -9255,29 +9263,85 @@
         ang: n === 1 ? 0 : -span / 2 + i * (span / (n - 1)),
         rad: 36 + (i % 2) * 8, x: e.x, y: e.y + 28, r: 10,
         nx: e.x, ny: e.y + 8,
-        hp: 5, alive: true, stump: false, stumpT: 0, sealed: false,
+        hp: 20, alive: true, stump: false, stumpT: 0, sealed: false,
         kind: i % 3, atkT: 0.4 + i * 0.25
       });
       placeLernaeanHead(e, fight.heads[i]);
     }
   }
-  function lernaeanHeadShot(e, kind, spd) {
-    var i, h, a, tgt = { x: e.aimX, y: e.aimY };
+  function lernaeanHeadKind(h) {
+    return ((h && h.kind) | 0) % 3;
+  }
+  function telegraphLernaeanHead(h, tgt, delay) {
+    var kind;
+    if (!h || !tgt) return;
+    kind = lernaeanHeadKind(h);
+    delay = delay || 0.34;
+    if (kind === 1) {
+      addTele("line", h.x, h.y, tgt.x, tgt.y, delay, FIGHT_WHITE);
+      addTele("flash", h.x, h.y, 0, 0, delay, FIGHT_GOLD);
+    } else if (kind === 2) {
+      addTele("line", h.x, h.y, tgt.x, tgt.y, delay, FIGHT_RED);
+      addTele("flash", h.x, h.y, 0, 0, delay, FIGHT_WHITE);
+    } else {
+      addTele("line", h.x, h.y, tgt.x, tgt.y, delay, FIGHT_WHITE);
+      addTele("flash", h.x, h.y, 0, 0, delay, FIGHT_RED);
+    }
+  }
+  function telegraphLernaeanHeads(e, delay) {
+    var i, h, tgt = { x: e.aimX, y: e.aimY };
     for (i = 0; i < fight.heads.length; i++) {
       h = fight.heads[i];
       if (!h.alive || h.stump || h.sealed) continue;
-      a = Math.atan2(tgt.y - h.y, tgt.x - h.x);
-      if (kind === "beam" || h.kind === 1) {
-        addEbul(h.x, h.y, Math.cos(a) * (spd + 20), Math.sin(a) * (spd + 20), {
-          color: FIGHT_RED, glow: FIGHT_RED, r: 3, silent: true
+      telegraphLernaeanHead(h, tgt, delay);
+    }
+  }
+  function fireLernaeanHead(h, e, tgt, spd, chase) {
+    var a, i, kind;
+    if (!h || !tgt) return;
+    kind = lernaeanHeadKind(h);
+    spd = spd || 120;
+    a = Math.atan2(tgt.y - h.y, tgt.x - h.x);
+    if (kind === 1) {
+      addEbul(h.x, h.y, Math.cos(a) * (spd + 40), Math.sin(a) * (spd + 40), {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 4.4, silent: true
+      });
+      addEbul(h.x, h.y, Math.cos(a - 0.42) * spd, Math.sin(a - 0.42) * spd, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.7, silent: true
+      });
+      addEbul(h.x, h.y, Math.cos(a + 0.42) * spd, Math.sin(a + 0.42) * spd, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.7, silent: true
+      });
+    } else if (kind === 2) {
+      for (i = -2; i <= 2; i++) {
+        addEbul(h.x, h.y, Math.cos(a + i * 0.2) * (spd - 6), Math.sin(a + i * 0.2) * (spd - 6), {
+          color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: true,
+          sway: 20, swayF: 3.4, swayPh: i * 0.8
         });
-      } else if (kind === "fan" || h.kind === 2) {
-        addEbul(h.x, h.y, Math.cos(a - 0.22) * spd, Math.sin(a - 0.22) * spd, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.4, silent: true });
-        addEbul(h.x, h.y, Math.cos(a) * spd, Math.sin(a) * spd, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.4, silent: true });
-        addEbul(h.x, h.y, Math.cos(a + 0.22) * spd, Math.sin(a + 0.22) * spd, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.4, silent: true });
-      } else {
-        addEbul(h.x, h.y, Math.cos(a) * spd, Math.sin(a) * spd, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, silent: true });
       }
+    } else if (chase) {
+      addEbul(h.x, h.y, Math.cos(a) * (spd + 18), Math.sin(a) * (spd + 18), {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.8, silent: true
+      });
+    } else {
+      addEbul(h.x, h.y, Math.cos(a) * spd, Math.sin(a) * spd, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.9, silent: true
+      });
+      addEbul(h.x, h.y, Math.cos(a) * (spd - 28), Math.sin(a) * (spd - 28), {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.4, silent: true
+      });
+      h.burstT = 0.2;
+      h.burstN = 2;
+    }
+  }
+  function lernaeanHeadShot(e, spd) {
+    var i, h, tgt = { x: e.aimX, y: e.aimY };
+    for (i = 0; i < fight.heads.length; i++) {
+      h = fight.heads[i];
+      if (!h.alive || h.stump || h.sealed) continue;
+      fireLernaeanHead(h, e, tgt, spd);
+      h.atkT = 1.25;
+      h.winding = false;
     }
   }
   function growLernaeanHeads(from, n) {
@@ -9290,7 +9354,7 @@
       fight.heads.push({
         ang: from.ang + (i ? 0.42 : -0.42), rad: (from.rad || 36) + (i ? 6 : 0),
         x: from.x, y: from.y, r: 9, nx: from.nx, ny: from.ny,
-        hp: 6, alive: true, stump: false, stumpT: 0, sealed: false,
+        hp: 24, alive: true, stump: false, stumpT: 0, sealed: false,
         kind: (from.kind + 1 + i) % 3, atkT: 0.3
       });
     }
@@ -10196,13 +10260,25 @@
         }
         placeLernaeanHead(boss, k);
         if (k.sealed || !k.alive) continue;
+        if (k.burstT > 0) {
+          k.burstT -= dt;
+          if (k.burstT <= 0 && tgt) {
+            fireLernaeanHead(k, boss, tgt, 110 + boss.phaseIdx * 12, true);
+            k.burstN = (k.burstN | 0) - 1;
+            if (k.burstN > 0) k.burstT = 0.18;
+          }
+        }
         k.atkT -= dt;
         if (k.atkT <= 0 && tgt) {
-          k.atkT = 1.15 - boss.phaseIdx * 0.12;
-          ang = Math.atan2(tgt.y - k.y, tgt.x - k.x);
-          addEbul(k.x, k.y, Math.cos(ang) * (110 + boss.phaseIdx * 12), Math.sin(ang) * (110 + boss.phaseIdx * 12), {
-            color: FIGHT_RED, glow: FIGHT_RED, r: 2.4, silent: true
-          });
+          if (!k.winding) {
+            k.winding = true;
+            k.atkT = 0.36;
+            telegraphLernaeanHead(k, tgt, 0.36);
+          } else {
+            k.winding = false;
+            fireLernaeanHead(k, boss, tgt, 110 + boss.phaseIdx * 12);
+            k.atkT = 1.15 - boss.phaseIdx * 0.12;
+          }
         }
       }
       if (lernaeanCoreOpen() && !fight.coreOpen) {

@@ -12,7 +12,7 @@ var account = fs.readFileSync(new URL("../api/account.js", import.meta.url), "ut
 assert(js.indexOf("var PROFILE_VER = 8") >= 0, "client profile ver 8");
 assert(account.indexOf("v: 8") >= 0, "cloud profile ver 8");
 assert(account.indexOf("p.v = 8") >= 0, "sanitize writes ver 8");
-assert(sw.indexOf("galaga-coop-v68") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v69") >= 0, "PWA cache bump");
 
 assert(js.indexOf("waveSp: []") >= 0, "default waveSp set");
 assert(js.indexOf("function cloneWaveSp") >= 0, "clone helper");
