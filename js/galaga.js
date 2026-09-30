@@ -7684,12 +7684,14 @@
     addEbul(e.x, e.y + 6, dx / T, dy / T - 0.5 * g * T, o);
   }
   // Frozen ring around the lock-on that hangs, then every shard lunges inward.
+  // Dedicated Nullwarden and mixed-wave guests share this helper. Spawn off-screen
+  // rather than clamping onto the ship; the ring is wide enough to slip through.
   function eclipseRing(e, rad, hang, spd, opt) {
     var i, a, x0, y0, n = 8;
     for (i = 0; i < n; i++) {
       a = (i / n) * Math.PI * 2 + time;
-      x0 = clamp(e.aimX + Math.cos(a) * rad, 10, W - 10);
-      y0 = clamp(e.aimY + Math.sin(a) * (rad * 0.7), 28, H - 18);
+      x0 = clamp(e.aimX + Math.cos(a) * rad, -14, W + 14);
+      y0 = clamp(e.aimY + Math.sin(a) * (rad * 0.7), -18, H + 12);
       addEbul(x0, y0 - 5, 0, 36, {
         color: opt.color, glow: opt.glow, r: 3.2, life: 5.5,
         pauseAt: y0, pauseT: hang, resumeSpd: spd
@@ -8187,13 +8189,13 @@
     } else if (atk === "singularity") {
       addEbul(e.x, e.y + 10, 0, 50, { mine: true, fuse: 2.6, pellets: 10, pelletSpd: 120, homing: true, homeT: 2.4, hsp: 70, hturn: 0.8, r: 5.5, color: "#c8a0ff", glow: col });
     } else if (atk === "eclipse") {
-      eclipseRing(e, 92, 0.62, 148, opt);
+      eclipseRing(e, 160, 0.62, 148, opt);
       queueFollow(e, 0.58, "eclipse2");
     } else if (atk === "eclipse2") {
       aim = targetPlayer(e.x, e.y);
       e.aimX = aim ? aim.x : W / 2;
       e.aimY = aim ? aim.y : fallbackAimY();
-      eclipseRing(e, 58, 0.48, 168, { color: "#e0c8ff", glow: col });
+      eclipseRing(e, 128, 0.48, 168, { color: "#e0c8ff", glow: col });
     } else if (atk === "riftstep") {
       ox = e.x;
       oy = e.y;
