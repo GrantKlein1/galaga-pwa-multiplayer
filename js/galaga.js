@@ -276,7 +276,7 @@
       base: ["hymn"], p2: ["canon"], p3: ["crescendo"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "CANON", p3Text: "CRESCENDO",
       flavor: "Gold choir satellites, gapped sound rings, a heartbeat finale" },
-    { id: "terminus", name: "TERMINUS", color: "#ffd23d", dark: "#0a0a0c", r: 26, hp: 1000, spd: 30, amp: 10, freq: 0.7, cd: 1.18, tele: 0.36, pts: 9000,
+    { id: "terminus", name: "TERMINUS", color: "#ffd23d", dark: "#0a0a0c", r: 26, hp: 1550, spd: 30, amp: 10, freq: 0.7, cd: 1.18, tele: 0.36, pts: 9000,
       exclusive: true,
       base: ["echo"], p2: ["invert"], p3: ["keystones"], p4: ["collapse"], p5: ["medley"],
       t1: [], t2: [], p2Thresh: 0.8, p3Thresh: 0.6, p4Thresh: 0.4, p5Thresh: 0.2,
@@ -2953,7 +2953,7 @@
       invert: false, midY: H / 2, midDir: 1,
       wallL: 0, wallR: 0, pylons: [],
       keys: [], keyOrder: [], keyNext: 0, keysNeed: false, rune: 0,
-      sats: [], satGold: 0, satBeat: 0, rings: [], reqMerged: false,
+      sats: [], satGold: 0, satBeat: 0, rings: [], reqMerged: false, reqOrigin: null, reqSafe: null,
       despair: false, beamAng: 0, beamGap: 1.2, beamOn: false, beamT: 0,
       cycle: 0, cycleT: 0
     };
@@ -6237,6 +6237,7 @@
   function bossCooldown(e) {
     var d = bossDef(e.type) || BOSS_DEFS[0];
     var cd = d.cd - Math.min(0.4, e.tier * 0.12) - e.phaseIdx * 0.1;
+    if (e.type === "requiem" && (e.phaseIdx || 0) >= 1) cd = Math.max(cd, e.phaseIdx >= 2 ? 1.92 : 1.78);
     return Math.max(0.4, cd / (1 + extraPlayers() * 0.28));
   }
   function bossShotSpd(e) { return 115 + Math.min(45, wave * 0.9) + e.tier * 12 + extraPlayers() * 12; }
@@ -7589,13 +7590,13 @@
       spawnSoundRing(e, 0);
     } else if (atk === "canon") {
       spawnSoundRing(e, 0);
-      spawnSoundRing(e, 0.28);
+      spawnSoundRing(e, 0.55);
       fight.satGold = (fight.satGold + 1) % Math.max(1, fight.sats.length);
-      spawnSoundRing(e, 0.52);
+      spawnSoundRing(e, 1.1);
     } else if (atk === "crescendo") {
       fight.reqMerged = true;
       spawnSoundRing(e, 0);
-      spawnSoundRing(e, 0.22);
+      spawnSoundRing(e, 0.48);
     } else if (atk === "echo") {
       fight.echo = true;
       aimedShot(e, 0.5, spd, { color: FIGHT_RED, glow: FIGHT_RED });
@@ -7684,6 +7685,8 @@
     fight.sats = [];
     fight.rings = [];
     fight.reqMerged = false;
+    fight.reqOrigin = null;
+    fight.reqSafe = null;
     fight.despair = false;
     fight.beamOn = false;
     fight.cycle = 0;
@@ -7857,12 +7860,35 @@
     fight.satBeat = 0.55;
     fight.reqMerged = false;
   }
+  function requiemRingSpeed() {
+    var boss = currentBoss();
+    var idx = boss && boss.type === "requiem" ? (boss.phaseIdx || 0) : 0;
+    if (boss && boss.type === "requiem" && (idx >= 2 || fight.reqMerged)) return 72;
+    if (boss && boss.type === "requiem" && idx === 1) return 58;
+    return 92;
+  }
+  function requiemGapTarget(e, pl) {
+    var band = shipYBand(pl, 16);
+    var x = pl && pl.alive ? pl.x : W / 2;
+    var y = pl && pl.alive ? pl.y : (band.lo + band.hi) * 0.55;
+    x = clamp(x, 64, W - 64);
+    y = clamp(y, band.lo + 14, band.hi - 14);
+    return { x: x, y: y };
+  }
   function spawnSoundRing(e, delay) {
-    var sat = fight.sats[fight.satGold] || fight.sats[0];
-    var gap = sat ? Math.atan2(sat.y - e.y, sat.x - e.x) : 0;
+    var pl, origin, safe, gap, vr;
+    if (!delay || !fight.reqOrigin || !fight.reqSafe) {
+      pl = targetPlayer(e.x, e.y);
+      fight.reqOrigin = { x: e.x, y: e.y };
+      fight.reqSafe = requiemGapTarget(e, pl);
+    }
+    origin = fight.reqOrigin;
+    safe = fight.reqSafe;
+    gap = Math.atan2(safe.y - origin.y, safe.x - origin.x);
+    vr = requiemRingSpeed();
     fight.rings.push({
-      x: e.x, y: e.y, r: 10, vr: fight.reqMerged ? 150 : 92, gap: gap, gw: 0.55,
-      t: 2.4, wait: delay || 0, st: delay ? 0 : 1
+      x: origin.x, y: origin.y, r: 10, vr: vr, gap: gap, gw: 0.55,
+      t: vr < 92 ? 3.6 : 2.4, wait: delay || 0, st: delay ? 0 : 1
     });
   }
   function spawnKeystones(e) {
@@ -8648,7 +8674,7 @@
         fireBossAttack(e, e.tele.atk);
         e.tele = null;
         e.atkCd = bossCooldown(e);
-        if ((e.tier >= 2 || e.phaseIdx >= 2) && e.state === "form" && Math.random() < 0.4) e.atkCd = 0.22;
+        if ((e.tier >= 2 || e.phaseIdx >= 2) && e.type !== "requiem" && e.state === "form" && Math.random() < 0.4) e.atkCd = 0.22;
       }
       return;
     }

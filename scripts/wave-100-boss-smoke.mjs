@@ -32,7 +32,7 @@ assert(meta(200).type === "terminus" && meta(200).tier === 1, "Terminus +1");
 assert(/\{ id: "loom",[\s\S]*?hp: 740,/.test(galaga), "Loom base HP 740");
 assert(/\{ id: "tessera",[\s\S]*?hp: 790,/.test(galaga), "Tessera base HP 790");
 assert(/\{ id: "requiem",[\s\S]*?hp: 850,/.test(galaga), "Requiem base HP 850");
-assert(/\{ id: "terminus",[\s\S]*?hp: 1000,/.test(galaga), "Terminus base HP 1000");
+assert(/\{ id: "terminus",[\s\S]*?hp: 1550,/.test(galaga), "Terminus base HP 1550");
 assert(galaga.indexOf("p2Thresh: 2 / 3, p3Thresh: 1 / 3") >= 0, "3-phase 66/33 ticks");
 assert(galaga.indexOf('p2Text: "IT REMEMBERS YOU"') < 0, "Echo banner is phase-enter, not p2Text");
 assert(galaga.indexOf("IT REMEMBERS YOU") >= 0, "Echo banner");
@@ -70,6 +70,17 @@ assert(galaga.indexOf("function fireTesseraVolley") >= 0, "later phases still sp
 assert(galaga.indexOf("t: st === 1 ? tesseraTileTele() : 0.28") >= 0, "later-phase fuse stays 0.28");
 assert(galaga.indexOf("pickSafeTile") >= 0 && galaga.indexOf('fight.piece = "mate"') >= 0, "p2 safe tile and p3 mate stay");
 
+assert(galaga.indexOf("function requiemGapTarget") >= 0, "Requiem gaps aim into the player band");
+assert(galaga.indexOf("function requiemRingSpeed") >= 0, "Requiem ring speed by phase");
+assert(galaga.indexOf("return 58") >= 0 && galaga.indexOf("return 72") >= 0, "p2/p3 rings slower than p1");
+assert(galaga.indexOf("return 92") >= 0, "p1 ring speed stays 92");
+assert(galaga.indexOf("spawnSoundRing(e, 0.55)") >= 0 && galaga.indexOf("spawnSoundRing(e, 1.1)") >= 0, "canon cadence is slower");
+assert(galaga.indexOf("spawnSoundRing(e, 0.48)") >= 0, "crescendo cadence is slower");
+assert(galaga.indexOf("spawnSoundRing(e, 0.28)") < 0 && galaga.indexOf("spawnSoundRing(e, 0.22)") < 0, "old stacked delays gone");
+assert(galaga.indexOf("fight.reqOrigin") >= 0 && galaga.indexOf("fight.reqSafe") >= 0, "overlapping rings share one pocket");
+assert(galaga.indexOf('e.type !== "requiem"') >= 0, "Requiem skipped the 0.22 turbo cadence");
+assert(Math.round(1000 * 1.55) === 1550, "wave 100 HP is 1.55x prior 1000");
+
 assert(codec.indexOf('"loom", "tessera", "requiem", "terminus"') >= 0, "netcodec boss ids");
 assert(/var VER = 7;/.test(codec), "codec VER 7");
 assert(codec.indexOf("BX_KINDS") >= 0 && codec.indexOf("writeBx") >= 0, "fight extras on the wire");
@@ -77,6 +88,6 @@ assert(codec.indexOf('"thread"') >= 0 && codec.indexOf('"midline"') >= 0, "threa
 assert(codec.indexOf('"keystone"') >= 0 && codec.indexOf('"pylon"') >= 0 && codec.indexOf('"ghost"') >= 0, "keystone/pylon/ghost kinds");
 
 assert(pvp.indexOf("loom:") >= 0 && pvp.indexOf("terminus:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v56") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v57") >= 0, "PWA cache bump");
 
 console.log("wave-100-boss-smoke: ok");
