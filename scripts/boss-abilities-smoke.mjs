@@ -92,7 +92,7 @@ ids.forEach(function (id) {
   assert(docs.indexOf("`" + id + "`") >= 0, "docs list " + id);
 });
 
-assert(sw.indexOf("galaga-coop-v61") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v62") >= 0, "PWA cache bump");
 assert(docs.indexOf("Mimic") >= 0, "mimic API documented");
 
 var codecFn = new Function("window", codec + "\nreturn window.__netcodec;");

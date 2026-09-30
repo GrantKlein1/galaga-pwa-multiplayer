@@ -52,6 +52,22 @@ assert(adjacentStep(30, 1, 50, 40) === 35, "right step size unchanged");
 assert(adjacentStep(30, -1, 50, 40) === 25, "left step size unchanged");
 assert(startWaveUnlocked(30, 30) === false, "unlock still maxWave > N");
 assert(startWaveUnlocked(30, 31) === true, "cleared 30 unlocks start 30");
+assert(lastBeatenStartWave(102, 150, 200) === 100, "non-admin last beaten 102 -> 100");
+assert(lastBeatenStartWave(107, 150, 200) === 105, "non-admin last beaten 107 -> 105");
+assert(lastBeatenStartWave(145, 150, 151) === 145, "non-admin 145 stays on the 5-step");
+assert(lastBeatenStartWave(150, 150, 151) === 150, "non-admin can start 150");
+assert(adjacentStep(100, 1, 150, 151) === 105, "right step past 100 is still 5");
+assert(adjacentStep(145, 1, 150, 151) === 150, "step to 150");
+assert(adjacentStep(150, 1, 150, 151) === 150, "150 is the non-admin cap at lv150");
+assert(clampStartWaveAdmin(107) === 107, "admin keeps 107");
+assert(clampStartWaveAdmin(101) === 101, "admin can start 101");
+assert(clampStartWaveAdmin(150) === 150, "admin can start 150");
+assert(clampStartWaveAdmin(151) === 151, "admin not capped at 150");
+assert(clampStartWaveAdmin(0) === 1, "admin min 1");
+assert(clampStartWaveAdmin(10000) === 9999, "admin cloud-aligned cap");
+assert(adjacentAdmin(107, 1) === 108, "admin steps by 1");
+assert(adjacentAdmin(107, -1) === 106, "admin steps back by 1");
+assert(adjacentAdmin(1, -1) === 1, "admin does not go below 1");
 
 function adjacentStep(from, dir, lv, reached) {
   var list = [], opts = startWaveOptions(lv), i, cur = clampStartWave(from, lv, reached);
@@ -66,6 +82,15 @@ function adjacentStep(from, dir, lv, reached) {
   }
   return cur;
 }
+function clampStartWaveAdmin(n) {
+  n = n | 0;
+  if (n < 1) return 1;
+  if (n > 9999) return 9999;
+  return n;
+}
+function adjacentAdmin(from, dir) {
+  return clampStartWaveAdmin((from | 0) + (dir < 0 ? -1 : 1));
+}
 
 assert(js.indexOf("function lastBeatenStartWave") >= 0, "helper present");
 assert(js.indexOf("function rememberLastBeatenStartWave") >= 0, "remember after run");
@@ -75,6 +100,10 @@ assert(js.indexOf("n === wave + 1") >= 0, "spawnWave records clear");
 assert(js.indexOf("sb.w === wave + 1") >= 0, "client snap records clear");
 assert(js.indexOf("clearedWave: run.clearedWave || 0") >= 0, "host over includes clear");
 assert(js.indexOf("startWaveUnlocked") >= 0 && js.indexOf("reachedStartWave(reached) > n") >= 0, "unlock rule unchanged");
-assert(sw.indexOf("galaga-coop-v61") >= 0, "cache bump");
+assert(js.indexOf("var MAX_LEVEL = 150") >= 0, "level cap 150");
+assert(js.indexOf("var ADMIN_MAX_START_WAVE = 9999") >= 0, "admin any-wave cap");
+assert(js.indexOf("Admin: any wave") >= 0, "admin picker copy");
+assert(js.indexOf("opts.fromNet || (profile && profile.admin)") >= 0, "coop honors host non-5 start");
+assert(sw.indexOf("galaga-coop-v62") >= 0, "cache bump");
 
 console.log("start-wave-last-beaten-smoke: ok");
