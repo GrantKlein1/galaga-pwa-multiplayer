@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 6;
+  var VER = 7;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -14,7 +14,8 @@
     "juggernaut", "lancer", "mirage", "tether", "sower",
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",
-    "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch"
+    "mandala", "cenotaph", "kaleido", "helios", "selene", "pentarch",
+    "loom", "tessera", "requiem", "terminus"
   ];
   var ENEMY_STATES = ["", "enter", "form", "dive", "kami", "return", "charge"];
   var GUN_IDS = [
@@ -46,6 +47,7 @@
   ];
   var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive", "xpboost"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
+  var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam"];
   var WEAPONS = ["normal", "spread", "double", "rapid", "shield", "speed"];
 
   function idxOf(list, val) {
@@ -343,6 +345,30 @@
     };
   }
 
+  function writeBx(w, b) {
+    w.u8w(idxOf(BX_KINDS, b.kind));
+    w.coord(b.x);
+    w.coord(b.y);
+    w.coord(b.x2);
+    w.coord(b.y2);
+    w.u8frac(b.t, 100);
+    w.u8w(b.st || 0);
+    w.rgb(b.color || "#ffffff");
+  }
+
+  function readBx(r) {
+    return {
+      kind: BX_KINDS[r.u8r()] || "thread",
+      x: r.coord(),
+      y: r.coord(),
+      x2: r.coord(),
+      y2: r.coord(),
+      t: r.u8frac(100),
+      st: r.u8r(),
+      color: r.rgb()
+    };
+  }
+
   function writePl(w, p) {
     var lo = p.loadout || {};
     w.u8w(p.slot || 0);
@@ -447,6 +473,9 @@
     list = s.te || [];
     w.u8w(Math.min(255, list.length));
     for (i = 0; i < list.length && i < 255; i++) writeTe(w, list[i]);
+    list = s.bx || [];
+    w.u8w(Math.min(255, list.length));
+    for (i = 0; i < list.length && i < 255; i++) writeBx(w, list[i]);
     list = s.pl || [];
     w.u8w(Math.min(8, list.length));
     for (i = 0; i < list.length && i < 8; i++) writePl(w, list[i]);
@@ -529,6 +558,7 @@
       eb: [],
       pk: [],
       te: [],
+      bx: [],
       pl: []
     };
     bnLen = r.u8r();
@@ -547,6 +577,8 @@
     for (i = 0; i < n; i++) s.pk.push(readPk(r));
     n = r.u8r();
     for (i = 0; i < n; i++) s.te.push(readTe(r));
+    n = r.u8r();
+    for (i = 0; i < n; i++) s.bx.push(readBx(r));
     n = r.u8r();
     for (i = 0; i < n; i++) s.pl.push(readPl(r));
     return s;
@@ -599,6 +631,7 @@
       }],
       pk: [{ id: 10, x: 5, y: 6, kind: "coin", amount: 2, bob: 1.2 }],
       te: [{ kind: "line", x: 1, y: 2, x2: 3, y2: 4, t: 0.5, max: 1, color: "#ff6b9a" }],
+      bx: [{ kind: "thread", x: 8, y: 10, x2: 200, y2: 40, t: 0.3, st: 2, color: "#ff4d4d" }],
       pl: [{
         slot: 0, x: 120, y: 326, alive: 1, invuln: 0, muzzle: 0, shieldHp: 0,
         weapon: "normal", weaponT: 0, speedT: 0, lives: 3, r: 9, slowT: 0,
@@ -611,6 +644,7 @@
     e = out.s.en[0];
     p = out.s.pl[0];
     if (!(out.s.sc === 99 && e.type === "grunt" && e.id === 7 && p.ship === "wisp" && out.s.bn.text === "WAVE 2")) return false;
+    if (!(out.s.bx && out.s.bx[0] && out.s.bx[0].kind === "thread" && out.s.bx[0].st === 2)) return false;
     if (p.targetY !== 326) return false;
     buf = encodeInput({ t: "input", n: 11, slot: 1, l: 1, r: 0, u: 1, d: 0, f: 1, a: 0, aimX: 80.4, aimY: 200.5, x: 120.5, targetX: 118, y: 300, targetY: 290 });
     out = decode(buf);
