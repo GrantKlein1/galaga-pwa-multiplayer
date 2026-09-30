@@ -92,8 +92,16 @@ ids.forEach(function (id) {
   assert(docs.indexOf("`" + id + "`") >= 0, "docs list " + id);
 });
 
-assert(sw.indexOf("galaga-coop-v65") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v66") >= 0, "PWA cache bump");
 assert(docs.indexOf("Mimic") >= 0, "mimic API documented");
+assert(galaga.indexOf("function bossAbAim") >= 0, "casts aim at the nearest enemy");
+assert(galaga.indexOf('id: "seraph-fan"') >= 0 && /id: "seraph-fan"[\s\S]{0,220}dmg: 8/.test(galaga), "Seraph fan is boss-weight damage");
+assert(galaga.indexOf('id: "seraph-fan"') >= 0 && /id: "seraph-fan"[\s\S]{0,180}n: 5, spread: 1\.15/.test(galaga), "Seraph fan matches the boss 5-shot spread");
+assert(galaga.indexOf('id: "over-decree"') >= 0 && /id: "over-decree"[\s\S]{0,160}dmg: 48/.test(galaga), "Overlord smash is boss-weight");
+assert(galaga.indexOf('cd: 14, kind: "pull"') < 0, "long unused pull CD is gone");
+assert(galaga.indexOf("dmg: opt.dmg == null ? 8") >= 0, "ability shots default to boss-weight damage");
+assert(docs.indexOf("Damage is boss-weight") >= 0, "docs describe the stronger casts");
+assert(docs.indexOf("5.5s") >= 0 && docs.indexOf("| 14s |") < 0, "docs list the shorter cooldowns");
 
 var codecFn = new Function("window", codec + "\nreturn window.__netcodec;");
 var nc = codecFn({});
