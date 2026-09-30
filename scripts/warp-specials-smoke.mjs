@@ -34,7 +34,7 @@ assert(js.indexOf("warpInRampart") >= 0 && js.indexOf("kamikaze") >= 0, "rampart
 assert(js.indexOf("function drawWarpFx") >= 0, "full-duration warp draw");
 assert(js.indexOf("special: \"seeker\"") < 0, "not seeker");
 assert(js.indexOf("k === \"e\" || k === \"E\"") >= 0, "E key");
-assert(sw.indexOf("galaga-coop-v57") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v58") >= 0, "cache bump");
 
 var start = account.indexOf("var SKILL_NODE_IDS");
 var end = account.indexOf("function defaultCloudProfile");
