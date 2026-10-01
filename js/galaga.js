@@ -376,88 +376,88 @@
     mimic: { desc: "It copies you. Red dodge paths, red shots, then the equipped boss ability as enemy fire, then two of you.", abilities: ["Copies your dodge path in red", "Copies your shots in red", "Copies the equipped boss ability", "A doppelganger"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "warp-haunt", "warp-horizon"] },
     axiom: { desc: "The last gate. Each phase writes a rule on a gold card — fall up, bounce, graze-heal, screen turn, pull down — then two at once. Bounced shots hurt you.", abilities: ["Fall up", "Your bullets bounce and hurt you on the way back", "Grazing heals the boss", "The screen turns", "Gravity pulls down", "The last phase mixes two rules"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-laststand", "gun-pierce", "warp-fold", "warp-horizon"] }
   };
-  // Player versions of boss attacks. Same shot count, size, and pattern as the
-  // boss kit, aimed from the player at enemies. Damage is boss-weight (clears
-  // fodder, chunks bosses) — not pulse-chip. 2–3 per roster boss; each run
-  // rolls one per boss. Not saved to the profile.
+  // Player versions of boss attacks. Same shot count and pattern as the boss
+  // kit, aimed from the player at enemies. Damage is player-scale (clears
+  // fodder groups, chunks bosses) — not a boss-bullet copy. 2–3 per roster
+  // boss; each run rolls one per boss. Not saved to the profile.
   var BOSS_ABILITY_DEFS = [
-    { id: "seraph-fan", boss: "seraph", name: "Feather Fan", short: "FAN", desc: "The Seraph fan: 5 feathers at the nearest foe.", cd: 5.5, kind: "fan", n: 5, spread: 1.15, spd: 200, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "seraph-halo", boss: "seraph", name: "Halo", short: "HALO", desc: "The Seraph ring: 8 heavy feathers burst from the hull.", cd: 6.5, kind: "halo", n: 8, spd: 140, dmg: 8, r: 3.2, pierce: 1 },
-    { id: "seraph-dive", boss: "seraph", name: "Dive Bolt", short: "RAM", desc: "The ram: a piercing bolt through the nearest foe.", cd: 6.5, kind: "laser", dmg: 36, pad: 8 },
-    { id: "wraith-spiral", boss: "wraith", name: "Spiral", short: "SPR", desc: "The Wraith spiral: 10 violet shards from the hull.", cd: 6, kind: "halo", n: 10, spd: 160, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "wraith-sweep", boss: "wraith", name: "Sweep", short: "SWP", desc: "The Wraith curtain: 5 wide bolts at the nearest foe.", cd: 6, kind: "curtain", n: 5, spd: 180, dmg: 8, r: 2.8, pierce: 1 },
-    { id: "hydra-beam", boss: "hydra", name: "Siphon Beam", short: "BEAM", desc: "The siphon laser through the nearest foe.", cd: 6.5, kind: "laser", dmg: 36, pad: 7 },
-    { id: "hydra-rain", boss: "hydra", name: "Venom Rain", short: "RAIN", desc: "The Hydra rain: 7 siphon bolts at the nearest foe.", cd: 5.5, kind: "fan", n: 7, spread: 0.95, spd: 190, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "colossus-ring", boss: "colossus", name: "Shock Ring", short: "RING", desc: "The Colossus shock: an expanding gold ring that rips foes.", cd: 7, kind: "shock", dmg: 12, vr: 210, life: 0.55 },
-    { id: "colossus-missiles", boss: "colossus", name: "Missiles", short: "MSL", desc: "Three Colossus homing missiles.", cd: 6.5, kind: "homing", n: 3, spd: 160, dmg: 14, r: 3.2, pierce: 1 },
-    { id: "chronos-tick", boss: "chronos", name: "Rewind Tick", short: "TICK", desc: "Nearby enemy shots reverse, then a 5-shot Chronos fan.", cd: 7, kind: "rewind", r: 92, n: 5, spread: 0.7, spd: 200, dmg: 8, pierce: 1 },
-    { id: "chronos-pendulum", boss: "chronos", name: "Pendulum", short: "PDL", desc: "Two Chronos pendulum bolts through the nearest foe.", cd: 5.5, kind: "fan", n: 2, spread: 1.1, spd: 200, dmg: 14, r: 3, pierce: 2 },
-    { id: "levi-surge", boss: "leviathan", name: "Accordion Sweep", short: "ACC", desc: "The tidal row: 4 accordion bolts at the nearest foe.", cd: 6, kind: "curtain", n: 4, spd: 180, dmg: 8, r: 2.8, helix: 1, pierce: 1 },
-    { id: "levi-whip", boss: "leviathan", name: "Tail Whip", short: "WHIP", desc: "Twin Leviathan helix bolts at the nearest foe.", cd: 5.5, kind: "helix", n: 2, spd: 200, dmg: 12, r: 2.6, pierce: 2 },
-    { id: "levi-depth", boss: "leviathan", name: "Depth Charge", short: "DPT", desc: "Three depth mines hang, then rocket at foes.", cd: 7, kind: "mines", n: 3, dmg: 16, r: 4.5, pierce: 2 },
-    { id: "inferno-flare", boss: "inferno", name: "Flare", short: "FLR", desc: "Three Inferno fire lances at the nearest foe.", cd: 5.5, kind: "fan", n: 3, spread: 0.34, spd: 220, dmg: 14, r: 2.8, pierce: 2 },
-    { id: "inferno-embers", boss: "inferno", name: "Embers", short: "EMB", desc: "The ember spray: 8 shots at the nearest foe.", cd: 5.5, kind: "fan", n: 8, spread: 1.05, spd: 190, dmg: 8, r: 2.5, pierce: 1 },
-    { id: "null-well", boss: "nullwarden", name: "Gravity Well", short: "WELL", desc: "A void well that yanks fodder in and rips them.", cd: 7.5, kind: "pull", r: 78, life: 0.9, dmg: 24 },
-    { id: "null-gates", boss: "nullwarden", name: "Void Gates", short: "GATE", desc: "Two Nullwarden side lasers through the field.", cd: 6.5, kind: "gates", dmg: 32, pad: 6, spread: 36 },
-    { id: "basil-venom", boss: "basilisk", name: "Venom Arc", short: "VNM", desc: "Five arcing venom bolts at the nearest foe.", cd: 5.5, kind: "fan", n: 5, spread: 0.86, spd: 190, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "basil-gaze", boss: "basilisk", name: "Gaze", short: "GZE", desc: "The petrify cone: 6 piercing bolts at the nearest foe.", cd: 6.5, kind: "cone", n: 6, spread: 1.15, spd: 210, dmg: 10, r: 2.7, pierce: 2 },
-    { id: "over-barrage", boss: "overlord", name: "Barrage", short: "BRG", desc: "The Overlord barrage: 7 gold shots at the nearest foe.", cd: 6, kind: "fan", n: 7, spread: 0.55, spd: 210, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "over-decree", boss: "overlord", name: "Decree", short: "DEC", desc: "A gold smash on the nearest foe, Overlord-weight.", cd: 7, kind: "stamp", dmg: 48, r: 28 },
-    { id: "mandala-seal", boss: "mandala", name: "Seal", short: "SEAL", desc: "The Mandala petal ring: 8 copper shots.", cd: 6, kind: "halo", n: 8, spd: 150, dmg: 8, r: 2.8, pierce: 1 },
-    { id: "mandala-wheel", boss: "mandala", name: "Wheel", short: "WHL", desc: "The spinning seal spray: 9 shots at the nearest foe.", cd: 6.5, kind: "fan", n: 9, spread: 1.35, spd: 200, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "ceno-slab", boss: "cenotaph", name: "Slab", short: "SLB", desc: "A marble column laser through the nearest foe.", cd: 6.5, kind: "laser", dmg: 36, pad: 10 },
-    { id: "ceno-crypt", boss: "cenotaph", name: "Crypt", short: "CRY", desc: "A crypt shard burst: 6 heavy shots from the hull.", cd: 6, kind: "halo", n: 6, spd: 160, dmg: 10, r: 3.2, pierce: 1 },
-    { id: "kale-shatter", boss: "kaleido", name: "Shatter", short: "SHT", desc: "Six glass shards at the nearest foe.", cd: 5.5, kind: "fan", n: 6, spread: 0.8, spd: 210, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "kale-pane", boss: "kaleido", name: "Pane", short: "PANE", desc: "A glass lane laser through the nearest foe.", cd: 6.5, kind: "laser", dmg: 32, pad: 9 },
-    { id: "helios-glare", boss: "helios", name: "Glare", short: "GLR", desc: "Noon glare: a flash that hits every foe hard.", cd: 7.5, kind: "nova", dmg: 24 },
-    { id: "helios-sear", boss: "helios", name: "Sear", short: "SEAR", desc: "The noon pillar through the nearest foe.", cd: 6.5, kind: "laser", dmg: 40, pad: 7 },
-    { id: "selene-crescent", boss: "selene", name: "Crescent", short: "CRS", desc: "Two moon-blade helix bolts at the nearest foe.", cd: 5.5, kind: "helix", n: 2, spd: 200, dmg: 12, r: 2.6, pierce: 2 },
-    { id: "selene-tide", boss: "selene", name: "Tide", short: "TIDE", desc: "The lunar wave: 5 bolts at the nearest foe.", cd: 6, kind: "curtain", n: 5, spd: 180, dmg: 8, r: 2.8, pierce: 1 },
-    { id: "pent-pyre", boss: "pentarch", name: "Pyre", short: "PYR", desc: "The pentarch fire fan: 5 shots at the nearest foe.", cd: 5.5, kind: "fan", n: 5, spread: 0.62, spd: 210, dmg: 10, r: 2.6, pierce: 1 },
-    { id: "pent-bolt", boss: "pentarch", name: "Storm Bolt", short: "BLT", desc: "Lightning pierce through the nearest foe.", cd: 6, kind: "laser", dmg: 36, pad: 6 },
-    { id: "pent-rime", boss: "pentarch", name: "Rime", short: "RIME", desc: "Four ice shards that freeze fodder and rip hulls.", cd: 6.5, kind: "fan", n: 4, spread: 0.5, spd: 190, dmg: 10, r: 2.8, freeze: 1, pierce: 1 },
-    { id: "loom-warp", boss: "loom", name: "Cut Thread", short: "CUT", desc: "A taut red cut-thread through the nearest foe.", cd: 6, kind: "laser", dmg: 36, pad: 5 },
-    { id: "loom-weft", boss: "loom", name: "Weft Net", short: "WFT", desc: "Two crossing Loom threads cut the field.", cd: 6.5, kind: "gates", dmg: 32, pad: 5, spread: 22 },
-    { id: "loom-cocoon", boss: "loom", name: "Cocoon", short: "COC", desc: "The cocoon spiral: 12 gold threads from the hull.", cd: 7.5, kind: "halo", n: 12, spd: 140, dmg: 8, r: 2.4, pierce: 1 },
-    { id: "tess-rook", boss: "tessera", name: "Rook File", short: "ROOK", desc: "Rook file and rank detonate through the hull.", cd: 6.5, kind: "cross", dmg: 28, pad: 10 },
-    { id: "tess-bishop", boss: "tessera", name: "Bishop", short: "BSH", desc: "Both bishop diagonals through the hull.", cd: 6.5, kind: "diag", dmg: 28, pad: 9 },
-    { id: "tess-knight", boss: "tessera", name: "Knight", short: "KNT", desc: "L-shaped knight bursts around the ship.", cd: 6, kind: "knight", dmg: 16, r: 16 },
-    { id: "req-hymn", boss: "requiem", name: "Hymn", short: "HYM", desc: "The choir fan: 5 gold bolts at the nearest foe.", cd: 5.5, kind: "fan", n: 5, spread: 0.4, spd: 200, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "req-gap", boss: "requiem", name: "Gap Ring", short: "GAP", desc: "A Requiem ring that eats enemy shots and rips foes.", cd: 7, kind: "clear", vr: 220, life: 0.62, dmg: 10 },
-    { id: "req-canon", boss: "requiem", name: "Canon", short: "CAN", desc: "Two offset Requiem rings that eat shots and rip foes.", cd: 7.5, kind: "clear", vr: 180, life: 0.8, dmg: 10, echo: 0.22 },
-    { id: "term-echo", boss: "terminus", name: "Echo", short: "ECHO", desc: "The Echo ghost fan: 5 shots, then a delayed copy.", cd: 6.5, kind: "echo", n: 5, spread: 0.55, spd: 200, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "term-medley", boss: "terminus", name: "Medley", short: "MDL", desc: "Terminus medley: a 5-shot fan plus a clearing pulse.", cd: 7.5, kind: "medley", n: 5, spread: 0.5, spd: 200, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "term-key", boss: "terminus", name: "Keystone", short: "KEY", desc: "Ordered bursts on the nearest three foes.", cd: 7, kind: "stamp", dmg: 32, r: 20, n: 3 },
-    { id: "hour-sand", boss: "hourglass", name: "Sand Pour", short: "SAND", desc: "The sand pour: 6 amber grains at the nearest foe.", cd: 5.5, kind: "fan", n: 6, spread: 0.88, spd: 180, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "hour-pile", boss: "hourglass", name: "Dune Slam", short: "DUNE", desc: "The dune slam: a 4-shot sand row at the nearest foe.", cd: 6, kind: "curtain", n: 4, spd: 170, dmg: 10, r: 3, pierce: 1 },
-    { id: "hour-rewind", boss: "hourglass", name: "Timeslip", short: "SLIP", desc: "Timeslip: enemy shots fly back along their paths.", cd: 8, kind: "timeslip" },
-    { id: "moth-glint", boss: "lanternmoth", name: "Glint", short: "GLN", desc: "The lantern glint: 5 tight bolts at the nearest foe.", cd: 5.5, kind: "fan", n: 5, spread: 0.42, spd: 210, dmg: 8, r: 2.5, pierce: 1 },
-    { id: "moth-swarm", boss: "lanternmoth", name: "Swarm", short: "SWM", desc: "The moth swarm: 8 wide bolts at the nearest foe.", cd: 6, kind: "fan", n: 8, spread: 1.12, spd: 190, dmg: 8, r: 2.5, pierce: 1 },
-    { id: "moth-lamp", boss: "lanternmoth", name: "Lamp Cone", short: "LAMP", desc: "A pierce cone of lantern light at the nearest foe.", cd: 6.5, kind: "cone", n: 7, spread: 0.92, spd: 210, dmg: 10, r: 2.6, pierce: 2 },
-    { id: "lode-red", boss: "lodestar", name: "Red Star", short: "RED", desc: "The red polarity fan: 5 shots at the nearest foe.", cd: 5.5, kind: "fan", n: 5, spread: 0.64, spd: 200, dmg: 8, r: 3.1, pierce: 1, color: "#ff4d4d" },
-    { id: "lode-blue", boss: "lodestar", name: "Blue Star", short: "BLU", desc: "The blue polarity fan: 5 shots at the nearest foe.", cd: 5.5, kind: "fan", n: 5, spread: 0.64, spd: 200, dmg: 8, r: 3.1, pierce: 1, color: "#4d88ff" },
-    { id: "lode-pulsar", boss: "lodestar", name: "Pulsar", short: "PSR", desc: "Red and blue Lodestar fans together at the nearest foe.", cd: 6.5, kind: "pulsar", n: 5, spread: 0.64, spd: 200, dmg: 8, r: 3.1, pierce: 1 },
-    { id: "lern-heads", boss: "lernaean", name: "Three Heads", short: "HDS", desc: "Three Hydra head-bolts at the nearest foe.", cd: 5.5, kind: "heads", n: 3, spd: 200, dmg: 10, r: 2.8, pierce: 1 },
-    { id: "lern-beam", boss: "lernaean", name: "Neck Beam", short: "NCK", desc: "A neck pierce beam through the nearest foe.", cd: 6.5, kind: "laser", dmg: 36, pad: 7 },
-    { id: "lern-fan", boss: "lernaean", name: "Hydra Fan", short: "FAN", desc: "The hydra volley: 7 shots at the nearest foe.", cd: 6, kind: "fan", n: 7, spread: 0.72, spd: 200, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "orr-orbit", boss: "orrery", name: "Orbit", short: "ORB", desc: "The planet burst: 8 brass shots from the hull.", cd: 6, kind: "halo", n: 8, spd: 150, dmg: 8, r: 2.8, pierce: 1 },
-    { id: "orr-sling", boss: "orrery", name: "Sling", short: "SLG", desc: "A paired sling shot through the nearest foe.", cd: 5.5, kind: "fan", n: 2, spread: 0.48, spd: 220, dmg: 14, r: 2.8, pierce: 2 },
-    { id: "orr-core", boss: "orrery", name: "Core Pull", short: "CORE", desc: "A gravity well that yanks fodder in and rips them.", cd: 7.5, kind: "pull", r: 82, life: 0.95, dmg: 24 },
-    { id: "prism-split", boss: "prism", name: "Split Beam", short: "SPLT", desc: "Three Prism lances through the nearest foe.", cd: 5.5, kind: "fan", n: 3, spread: 0.42, spd: 220, dmg: 12, r: 2.6, pierce: 2 },
-    { id: "prism-refract", boss: "prism", name: "Refract", short: "RFR", desc: "A 5-shot Prism refraction at the nearest foe.", cd: 6, kind: "fan", n: 5, spread: 0.55, spd: 210, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "prism-crystal", boss: "prism", name: "Crystal", short: "CRY", desc: "A ring of 8 returning Prism shards.", cd: 6.5, kind: "halo", n: 8, spd: 150, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "mael-current", boss: "maelstrom", name: "Current", short: "CUR", desc: "The tidal row: 4 current bolts at the nearest foe.", cd: 5.5, kind: "curtain", n: 4, spd: 180, dmg: 8, r: 2.8, pierce: 1 },
-    { id: "mael-gyre", boss: "maelstrom", name: "Gyre", short: "GYRE", desc: "The gyre whirl: 10 shots from the hull.", cd: 6.5, kind: "halo", n: 10, spd: 150, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "mael-maw", boss: "maelstrom", name: "Maw", short: "MAW", desc: "A maw smash on the nearest foe.", cd: 7, kind: "stamp", dmg: 48, r: 24 },
-    { id: "cart-chart", boss: "cartographer", name: "Chart", short: "CHT", desc: "Three mapped bolts at the nearest foe.", cd: 5.5, kind: "fan", n: 3, spread: 0.36, spd: 210, dmg: 10, r: 2.5, pierce: 1 },
-    { id: "cart-remap", boss: "cartographer", name: "Remap", short: "RMP", desc: "File and rank through the hull.", cd: 6.5, kind: "cross", dmg: 28, pad: 9 },
-    { id: "cart-atlas", boss: "cartographer", name: "Atlas", short: "ATL", desc: "Bursts on the nearest two foes.", cd: 7, kind: "stamp", dmg: 36, r: 18, n: 2 },
-    { id: "mimic-copy", boss: "mimic", name: "Copycat", short: "CPY", desc: "A ghost fan at the nearest foe, then a delayed copy.", cd: 6, kind: "echo", n: 5, spread: 0.5, spd: 200, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "mimic-shadow", boss: "mimic", name: "Shadow", short: "SHD", desc: "A 5-shot shadow curtain at the nearest foe.", cd: 6, kind: "curtain", n: 5, spd: 180, dmg: 8, r: 2.8, pierce: 1 },
-    { id: "mimic-doppel", boss: "mimic", name: "Doppel", short: "DPL", desc: "Twin 8-shot bursts from offset ghosts.", cd: 7, kind: "halo", n: 8, spd: 150, dmg: 8, r: 2.6, pierce: 1 },
-    { id: "axiom-up", boss: "axiom", name: "Fall Up", short: "UP", desc: "A 4-shot Axiom row at the nearest foe.", cd: 6, kind: "curtain", n: 4, spd: 190, dmg: 8, r: 2.8, pierce: 1 },
-    { id: "axiom-bounce", boss: "axiom", name: "Bounce", short: "BNC", desc: "Twin helix bolts at the nearest foe.", cd: 5.5, kind: "helix", n: 2, spd: 200, dmg: 12, r: 2.6, pierce: 2 },
-    { id: "axiom-mix", boss: "axiom", name: "Two Rules", short: "MIX", desc: "A 5-shot fan plus a shot-clearing pulse.", cd: 7.5, kind: "medley", n: 5, spread: 0.5, spd: 200, dmg: 8, r: 2.6, pierce: 1 }
+    { id: "seraph-fan", boss: "seraph", name: "Feather Fan", short: "FAN", desc: "The Seraph fan: 5 feathers at the nearest foe.", cd: 3.4, kind: "fan", n: 5, spread: 1.15, spd: 240, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "seraph-halo", boss: "seraph", name: "Halo", short: "HALO", desc: "The Seraph ring: 8 heavy feathers burst from the hull.", cd: 4.2, kind: "halo", n: 8, spd: 170, dmg: 28, r: 3.2, pierce: 4 },
+    { id: "seraph-dive", boss: "seraph", name: "Dive Bolt", short: "RAM", desc: "The ram: a piercing bolt through the nearest foe.", cd: 4.2, kind: "laser", dmg: 110, pad: 8 },
+    { id: "wraith-spiral", boss: "wraith", name: "Spiral", short: "SPR", desc: "The Wraith spiral: 10 violet shards from the hull.", cd: 3.8, kind: "halo", n: 10, spd: 190, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "wraith-sweep", boss: "wraith", name: "Sweep", short: "SWP", desc: "The Wraith curtain: 5 wide bolts at the nearest foe.", cd: 3.8, kind: "curtain", n: 5, spd: 210, dmg: 28, r: 2.8, pierce: 4 },
+    { id: "hydra-beam", boss: "hydra", name: "Siphon Beam", short: "BEAM", desc: "The siphon laser through the nearest foe.", cd: 4.2, kind: "laser", dmg: 110, pad: 7 },
+    { id: "hydra-rain", boss: "hydra", name: "Venom Rain", short: "RAIN", desc: "The Hydra rain: 7 siphon bolts at the nearest foe.", cd: 3.4, kind: "fan", n: 7, spread: 0.95, spd: 220, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "colossus-ring", boss: "colossus", name: "Shock Ring", short: "RING", desc: "The Colossus shock: an expanding gold ring that rips foes.", cd: 4.6, kind: "shock", dmg: 36, vr: 240, life: 0.6 },
+    { id: "colossus-missiles", boss: "colossus", name: "Missiles", short: "MSL", desc: "Three Colossus homing missiles.", cd: 4.2, kind: "homing", n: 3, spd: 190, dmg: 40, r: 3.2, pierce: 4 },
+    { id: "chronos-tick", boss: "chronos", name: "Rewind Tick", short: "TICK", desc: "Nearby enemy shots reverse, then a 5-shot Chronos fan.", cd: 4.6, kind: "rewind", r: 92, n: 5, spread: 0.7, spd: 230, dmg: 28, pierce: 4 },
+    { id: "chronos-pendulum", boss: "chronos", name: "Pendulum", short: "PDL", desc: "Two Chronos pendulum bolts through the nearest foe.", cd: 3.4, kind: "fan", n: 2, spread: 1.1, spd: 240, dmg: 40, r: 3, pierce: 6 },
+    { id: "levi-surge", boss: "leviathan", name: "Accordion Sweep", short: "ACC", desc: "The tidal row: 4 accordion bolts at the nearest foe.", cd: 3.8, kind: "curtain", n: 4, spd: 210, dmg: 28, r: 2.8, helix: 1, pierce: 4 },
+    { id: "levi-whip", boss: "leviathan", name: "Tail Whip", short: "WHIP", desc: "Twin Leviathan helix bolts at the nearest foe.", cd: 3.4, kind: "helix", n: 2, spd: 230, dmg: 36, r: 2.6, pierce: 6 },
+    { id: "levi-depth", boss: "leviathan", name: "Depth Charge", short: "DPT", desc: "Three depth mines hang, then rocket at foes.", cd: 4.6, kind: "mines", n: 3, dmg: 44, r: 4.5, pierce: 6 },
+    { id: "inferno-flare", boss: "inferno", name: "Flare", short: "FLR", desc: "Three Inferno fire lances at the nearest foe.", cd: 3.4, kind: "fan", n: 3, spread: 0.34, spd: 250, dmg: 40, r: 2.8, pierce: 6 },
+    { id: "inferno-embers", boss: "inferno", name: "Embers", short: "EMB", desc: "The ember spray: 8 shots at the nearest foe.", cd: 3.4, kind: "fan", n: 8, spread: 1.05, spd: 220, dmg: 28, r: 2.5, pierce: 4 },
+    { id: "null-well", boss: "nullwarden", name: "Gravity Well", short: "WELL", desc: "A void well that yanks fodder in and rips them.", cd: 5, kind: "pull", r: 78, life: 0.9, dmg: 70 },
+    { id: "null-gates", boss: "nullwarden", name: "Void Gates", short: "GATE", desc: "Two Nullwarden side lasers through the field.", cd: 4.2, kind: "gates", dmg: 100, pad: 6, spread: 36 },
+    { id: "basil-venom", boss: "basilisk", name: "Venom Arc", short: "VNM", desc: "Five arcing venom bolts at the nearest foe.", cd: 3.4, kind: "fan", n: 5, spread: 0.86, spd: 220, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "basil-gaze", boss: "basilisk", name: "Gaze", short: "GZE", desc: "The petrify cone: 6 piercing bolts at the nearest foe.", cd: 4.2, kind: "cone", n: 6, spread: 1.15, spd: 240, dmg: 32, r: 2.7, pierce: 6 },
+    { id: "over-barrage", boss: "overlord", name: "Barrage", short: "BRG", desc: "The Overlord barrage: 7 gold shots at the nearest foe.", cd: 3.8, kind: "fan", n: 7, spread: 0.55, spd: 240, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "over-decree", boss: "overlord", name: "Decree", short: "DEC", desc: "A gold smash on the nearest foe, Overlord-weight.", cd: 4.6, kind: "stamp", dmg: 140, r: 28 },
+    { id: "mandala-seal", boss: "mandala", name: "Seal", short: "SEAL", desc: "The Mandala petal ring: 8 copper shots.", cd: 3.8, kind: "halo", n: 8, spd: 180, dmg: 28, r: 2.8, pierce: 4 },
+    { id: "mandala-wheel", boss: "mandala", name: "Wheel", short: "WHL", desc: "The spinning seal spray: 9 shots at the nearest foe.", cd: 4.2, kind: "fan", n: 9, spread: 1.35, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "ceno-slab", boss: "cenotaph", name: "Slab", short: "SLB", desc: "A marble column laser through the nearest foe.", cd: 4.2, kind: "laser", dmg: 110, pad: 10 },
+    { id: "ceno-crypt", boss: "cenotaph", name: "Crypt", short: "CRY", desc: "A crypt shard burst: 6 heavy shots from the hull.", cd: 3.8, kind: "halo", n: 6, spd: 190, dmg: 32, r: 3.2, pierce: 4 },
+    { id: "kale-shatter", boss: "kaleido", name: "Shatter", short: "SHT", desc: "Six glass shards at the nearest foe.", cd: 3.4, kind: "fan", n: 6, spread: 0.8, spd: 240, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "kale-pane", boss: "kaleido", name: "Pane", short: "PANE", desc: "A glass lane laser through the nearest foe.", cd: 4.2, kind: "laser", dmg: 100, pad: 9 },
+    { id: "helios-glare", boss: "helios", name: "Glare", short: "GLR", desc: "Noon glare: a flash that hits every foe hard.", cd: 5, kind: "nova", dmg: 80 },
+    { id: "helios-sear", boss: "helios", name: "Sear", short: "SEAR", desc: "The noon pillar through the nearest foe.", cd: 4.2, kind: "laser", dmg: 120, pad: 7 },
+    { id: "selene-crescent", boss: "selene", name: "Crescent", short: "CRS", desc: "Two moon-blade helix bolts at the nearest foe.", cd: 3.4, kind: "helix", n: 2, spd: 230, dmg: 36, r: 2.6, pierce: 6 },
+    { id: "selene-tide", boss: "selene", name: "Tide", short: "TIDE", desc: "The lunar wave: 5 bolts at the nearest foe.", cd: 3.8, kind: "curtain", n: 5, spd: 210, dmg: 28, r: 2.8, pierce: 4 },
+    { id: "pent-pyre", boss: "pentarch", name: "Pyre", short: "PYR", desc: "The pentarch fire fan: 5 shots at the nearest foe.", cd: 3.4, kind: "fan", n: 5, spread: 0.62, spd: 240, dmg: 32, r: 2.6, pierce: 4 },
+    { id: "pent-bolt", boss: "pentarch", name: "Storm Bolt", short: "BLT", desc: "Lightning pierce through the nearest foe.", cd: 3.8, kind: "laser", dmg: 110, pad: 6 },
+    { id: "pent-rime", boss: "pentarch", name: "Rime", short: "RIME", desc: "Four ice shards that freeze fodder and rip hulls.", cd: 4.2, kind: "fan", n: 4, spread: 0.5, spd: 220, dmg: 32, r: 2.8, freeze: 1, pierce: 4 },
+    { id: "loom-warp", boss: "loom", name: "Cut Thread", short: "CUT", desc: "A taut red cut-thread through the nearest foe.", cd: 3.8, kind: "laser", dmg: 110, pad: 5 },
+    { id: "loom-weft", boss: "loom", name: "Weft Net", short: "WFT", desc: "Two crossing Loom threads cut the field.", cd: 4.2, kind: "gates", dmg: 100, pad: 5, spread: 22 },
+    { id: "loom-cocoon", boss: "loom", name: "Cocoon", short: "COC", desc: "The cocoon spiral: 12 gold threads from the hull.", cd: 5, kind: "halo", n: 12, spd: 170, dmg: 28, r: 2.4, pierce: 4 },
+    { id: "tess-rook", boss: "tessera", name: "Rook File", short: "ROOK", desc: "Rook file and rank detonate through the hull.", cd: 4.2, kind: "cross", dmg: 90, pad: 10 },
+    { id: "tess-bishop", boss: "tessera", name: "Bishop", short: "BSH", desc: "Both bishop diagonals through the hull.", cd: 4.2, kind: "diag", dmg: 90, pad: 9 },
+    { id: "tess-knight", boss: "tessera", name: "Knight", short: "KNT", desc: "L-shaped knight bursts around the ship.", cd: 3.8, kind: "knight", dmg: 48, r: 16 },
+    { id: "req-hymn", boss: "requiem", name: "Hymn", short: "HYM", desc: "The choir fan: 5 gold bolts at the nearest foe.", cd: 3.4, kind: "fan", n: 5, spread: 0.4, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "req-gap", boss: "requiem", name: "Gap Ring", short: "GAP", desc: "A Requiem ring that eats enemy shots and rips foes.", cd: 4.6, kind: "clear", vr: 250, life: 0.62, dmg: 32 },
+    { id: "req-canon", boss: "requiem", name: "Canon", short: "CAN", desc: "Two offset Requiem rings that eat shots and rip foes.", cd: 5, kind: "clear", vr: 210, life: 0.8, dmg: 32, echo: 0.22 },
+    { id: "term-echo", boss: "terminus", name: "Echo", short: "ECHO", desc: "The Echo ghost fan: 5 shots, then a delayed copy.", cd: 4.2, kind: "echo", n: 5, spread: 0.55, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "term-medley", boss: "terminus", name: "Medley", short: "MDL", desc: "Terminus medley: a 5-shot fan plus a clearing pulse.", cd: 5, kind: "medley", n: 5, spread: 0.5, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "term-key", boss: "terminus", name: "Keystone", short: "KEY", desc: "Ordered bursts on the nearest three foes.", cd: 4.6, kind: "stamp", dmg: 100, r: 20, n: 3 },
+    { id: "hour-sand", boss: "hourglass", name: "Sand Pour", short: "SAND", desc: "The sand pour: 6 amber grains at the nearest foe.", cd: 3.4, kind: "fan", n: 6, spread: 0.88, spd: 210, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "hour-pile", boss: "hourglass", name: "Dune Slam", short: "DUNE", desc: "The dune slam: a 4-shot sand row at the nearest foe.", cd: 3.8, kind: "curtain", n: 4, spd: 200, dmg: 32, r: 3, pierce: 4 },
+    { id: "hour-rewind", boss: "hourglass", name: "Timeslip", short: "SLIP", desc: "Timeslip: enemy shots fly back along their paths.", cd: 5.5, kind: "timeslip", dmg: 36 },
+    { id: "moth-glint", boss: "lanternmoth", name: "Glint", short: "GLN", desc: "The lantern glint: 5 tight bolts at the nearest foe.", cd: 3.4, kind: "fan", n: 5, spread: 0.42, spd: 240, dmg: 28, r: 2.5, pierce: 4 },
+    { id: "moth-swarm", boss: "lanternmoth", name: "Swarm", short: "SWM", desc: "The moth swarm: 8 wide bolts at the nearest foe.", cd: 3.8, kind: "fan", n: 8, spread: 1.12, spd: 220, dmg: 28, r: 2.5, pierce: 4 },
+    { id: "moth-lamp", boss: "lanternmoth", name: "Lamp Cone", short: "LAMP", desc: "A pierce cone of lantern light at the nearest foe.", cd: 4.2, kind: "cone", n: 7, spread: 0.92, spd: 240, dmg: 32, r: 2.6, pierce: 6 },
+    { id: "lode-red", boss: "lodestar", name: "Red Star", short: "RED", desc: "The red polarity fan: 5 shots at the nearest foe.", cd: 3.4, kind: "fan", n: 5, spread: 0.64, spd: 230, dmg: 28, r: 3.1, pierce: 4, color: "#ff4d4d" },
+    { id: "lode-blue", boss: "lodestar", name: "Blue Star", short: "BLU", desc: "The blue polarity fan: 5 shots at the nearest foe.", cd: 3.4, kind: "fan", n: 5, spread: 0.64, spd: 230, dmg: 28, r: 3.1, pierce: 4, color: "#4d88ff" },
+    { id: "lode-pulsar", boss: "lodestar", name: "Pulsar", short: "PSR", desc: "Red and blue Lodestar fans together at the nearest foe.", cd: 4.2, kind: "pulsar", n: 5, spread: 0.64, spd: 230, dmg: 28, r: 3.1, pierce: 4 },
+    { id: "lern-heads", boss: "lernaean", name: "Three Heads", short: "HDS", desc: "Three Hydra head-bolts at the nearest foe.", cd: 3.4, kind: "heads", n: 3, spd: 230, dmg: 32, r: 2.8, pierce: 4 },
+    { id: "lern-beam", boss: "lernaean", name: "Neck Beam", short: "NCK", desc: "A neck pierce beam through the nearest foe.", cd: 4.2, kind: "laser", dmg: 110, pad: 7 },
+    { id: "lern-fan", boss: "lernaean", name: "Hydra Fan", short: "FAN", desc: "The hydra volley: 7 shots at the nearest foe.", cd: 3.8, kind: "fan", n: 7, spread: 0.72, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "orr-orbit", boss: "orrery", name: "Orbit", short: "ORB", desc: "The planet burst: 8 brass shots from the hull.", cd: 3.8, kind: "halo", n: 8, spd: 180, dmg: 28, r: 2.8, pierce: 4 },
+    { id: "orr-sling", boss: "orrery", name: "Sling", short: "SLG", desc: "A paired sling shot through the nearest foe.", cd: 3.4, kind: "fan", n: 2, spread: 0.48, spd: 250, dmg: 40, r: 2.8, pierce: 6 },
+    { id: "orr-core", boss: "orrery", name: "Core Pull", short: "CORE", desc: "A gravity well that yanks fodder in and rips them.", cd: 5, kind: "pull", r: 82, life: 0.95, dmg: 70 },
+    { id: "prism-split", boss: "prism", name: "Split Beam", short: "SPLT", desc: "Three Prism lances through the nearest foe.", cd: 3.4, kind: "fan", n: 3, spread: 0.42, spd: 250, dmg: 36, r: 2.6, pierce: 6 },
+    { id: "prism-refract", boss: "prism", name: "Refract", short: "RFR", desc: "A 5-shot Prism refraction at the nearest foe.", cd: 3.8, kind: "fan", n: 5, spread: 0.55, spd: 240, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "prism-crystal", boss: "prism", name: "Crystal", short: "CRY", desc: "A ring of 8 returning Prism shards.", cd: 4.2, kind: "halo", n: 8, spd: 180, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "mael-current", boss: "maelstrom", name: "Current", short: "CUR", desc: "The tidal row: 4 current bolts at the nearest foe.", cd: 3.4, kind: "curtain", n: 4, spd: 210, dmg: 28, r: 2.8, pierce: 4 },
+    { id: "mael-gyre", boss: "maelstrom", name: "Gyre", short: "GYRE", desc: "The gyre whirl: 10 shots from the hull.", cd: 4.2, kind: "halo", n: 10, spd: 180, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "mael-maw", boss: "maelstrom", name: "Maw", short: "MAW", desc: "A maw smash on the nearest foe.", cd: 4.6, kind: "stamp", dmg: 140, r: 24 },
+    { id: "cart-chart", boss: "cartographer", name: "Chart", short: "CHT", desc: "Three mapped bolts at the nearest foe.", cd: 3.4, kind: "fan", n: 3, spread: 0.36, spd: 240, dmg: 32, r: 2.5, pierce: 4 },
+    { id: "cart-remap", boss: "cartographer", name: "Remap", short: "RMP", desc: "File and rank through the hull.", cd: 4.2, kind: "cross", dmg: 90, pad: 9 },
+    { id: "cart-atlas", boss: "cartographer", name: "Atlas", short: "ATL", desc: "Bursts on the nearest two foes.", cd: 4.6, kind: "stamp", dmg: 110, r: 18, n: 2 },
+    { id: "mimic-copy", boss: "mimic", name: "Copycat", short: "CPY", desc: "A ghost fan at the nearest foe, then a delayed copy.", cd: 3.8, kind: "echo", n: 5, spread: 0.5, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "mimic-shadow", boss: "mimic", name: "Shadow", short: "SHD", desc: "A 5-shot shadow curtain at the nearest foe.", cd: 3.8, kind: "curtain", n: 5, spd: 210, dmg: 28, r: 2.8, pierce: 4 },
+    { id: "mimic-doppel", boss: "mimic", name: "Doppel", short: "DPL", desc: "Twin 8-shot bursts from offset ghosts.", cd: 4.6, kind: "halo", n: 8, spd: 180, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "axiom-up", boss: "axiom", name: "Fall Up", short: "UP", desc: "A 4-shot Axiom row at the nearest foe.", cd: 3.8, kind: "curtain", n: 4, spd: 220, dmg: 28, r: 2.8, pierce: 4 },
+    { id: "axiom-bounce", boss: "axiom", name: "Bounce", short: "BNC", desc: "Twin helix bolts at the nearest foe.", cd: 3.4, kind: "helix", n: 2, spd: 230, dmg: 36, r: 2.6, pierce: 6 },
+    { id: "axiom-mix", boss: "axiom", name: "Two Rules", short: "MIX", desc: "A 5-shot fan plus a shot-clearing pulse.", cd: 5, kind: "medley", n: 5, spread: 0.5, spd: 230, dmg: 28, r: 2.6, pierce: 4 }
   ];
 
   var DAILY_DEFS = [
@@ -5726,25 +5726,29 @@
     return list[0] || null;
   }
   function resetBossAbFx() { bossAbFx = []; }
+  // Player casts are sized up here so Mimic's red copy can keep the kit radii.
+  function bossAbScaleR(r) { return (r || 2.6) * 1.65; }
+  function bossAbScalePad(pad) { return (pad || 8) * 2; }
   function addBossAbShot(who, x, y, vx, vy, opt) {
-    var ghost, b;
+    var ghost, b, dmg;
     opt = opt || {};
     who = who || player;
     if (!who) return null;
     ghost = netRole === "client";
+    dmg = opt.dmg == null ? 28 : opt.dmg;
     b = {
       id: allocId(),
       x: x, y: y, vx: vx, vy: vy,
-      dmg: opt.dmg == null ? 8 : opt.dmg,
-      r: opt.r || 2.6,
+      dmg: dmg,
+      r: bossAbScaleR(opt.r || 2.6),
       age: 0, life: opt.life || 0,
-      pierce: opt.pierce == null ? 1 : opt.pierce,
+      pierce: opt.pierce == null ? 4 : opt.pierce,
       hit: (opt.pierce == null || opt.pierce) ? [] : null,
       homing: !!opt.homing,
       homeT: opt.homeT || 1.8,
       hsp: opt.hsp || 150,
       hturn: opt.hturn || 1.5,
-      splash: opt.splash || null,
+      splash: opt.splash || { r: 22, dmg: Math.max(10, dmg * 0.4) },
       gun: "pulse",
       bossAb: true,
       color: opt.color || "#e8f6ff",
@@ -5758,7 +5762,7 @@
     if (opt.helix) {
       b.helix = true;
       b.bx = b.x;
-      b.ha = opt.ha || 11;
+      b.ha = opt.ha || 16;
       b.hf = opt.hf || 12;
       b.hp0 = opt.ph || 0;
     }
@@ -5778,7 +5782,7 @@
   function bossAbHitLine(who, x0, y0, x1, y1, pad, dmg) {
     var i, e, hit = 0;
     pad = pad || 8;
-    dmg = dmg || 32;
+    dmg = dmg || 110;
     for (i = 0; i < enemies.length; i++) {
       e = enemies[i];
       if (!e.alive || e.state === "enter") continue;
@@ -5854,7 +5858,7 @@
     for (i = 0; i < n; i++) {
       ang = n === 1 ? base : base - spread / 2 + i * (spread / (n - 1));
       addBossAbShot(who, ox, oy, Math.cos(ang) * spd, Math.sin(ang) * spd, {
-        dmg: def.dmg, r: def.r || 2.6, pierce: def.pierce, color: col, freeze: def.freeze, helix: def.helix
+        dmg: def.dmg, r: def.r || 2.6, pierce: def.pierce, color: col, freeze: def.freeze, helix: def.helix, ha: 16
       });
     }
   }
@@ -5883,14 +5887,14 @@
         addTele("ring", who.x, who.y, 18, 18, 0.28, col);
         break;
       case "laser":
-        pad = def.pad || 7;
+        pad = bossAbScalePad(def.pad || 7);
         ray = bossAbRayEnd(who, aim);
         addTele("line", who.x, who.y, ray.x, ray.y, 0.22, col);
         bossAbHitLine(who, who.x, who.y, ray.x, ray.y, pad, def.dmg);
         flash = Math.max(flash, 0.12);
         break;
       case "gates":
-        pad = def.pad || 6;
+        pad = bossAbScalePad(def.pad || 6);
         off = def.spread || 36;
         ray = bossAbRayEnd(who, aim);
         x0 = clamp(who.x - off, 16, W - 16);
@@ -5905,11 +5909,11 @@
         spd = def.spd || 180;
         base = Math.atan2(aim.y - who.y, aim.x - who.x);
         for (i = 0; i < n; i++) {
-          off = (i - (n - 1) / 2) * 18;
+          off = (i - (n - 1) / 2) * 13;
           ox = who.x + Math.cos(base + Math.PI / 2) * off;
           oy = who.y + Math.sin(base + Math.PI / 2) * off;
           addBossAbShot(who, ox, oy, Math.cos(base) * spd, Math.sin(base) * spd, {
-            dmg: def.dmg, r: def.r || 2.8, pierce: def.pierce, color: col, helix: def.helix, ph: i * 0.7, ha: 10
+            dmg: def.dmg, r: def.r || 2.8, pierce: def.pierce, color: col, helix: def.helix, ph: i * 0.7, ha: 16
           });
         }
         addTele("line", who.x, who.y, aim.x, aim.y, 0.18, col);
@@ -5918,10 +5922,10 @@
         base = Math.atan2(aim.y - who.y, aim.x - who.x);
         spd = def.spd || 200;
         addBossAbShot(who, who.x, y, Math.cos(base) * spd, Math.sin(base) * spd, {
-          dmg: def.dmg, r: def.r || 2.6, color: col, helix: true, ph: 0, pierce: def.pierce == null ? 2 : def.pierce
+          dmg: def.dmg, r: def.r || 2.6, color: col, helix: true, ph: 0, ha: 16, pierce: def.pierce == null ? 6 : def.pierce
         });
         addBossAbShot(who, who.x, y, Math.cos(base) * spd, Math.sin(base) * spd, {
-          dmg: def.dmg, r: def.r || 2.6, color: col, helix: true, ph: Math.PI, pierce: def.pierce == null ? 2 : def.pierce
+          dmg: def.dmg, r: def.r || 2.6, color: col, helix: true, ph: Math.PI, ha: 16, pierce: def.pierce == null ? 6 : def.pierce
         });
         addTele("line", who.x, who.y, aim.x, aim.y, 0.16, col);
         break;
@@ -5931,7 +5935,7 @@
         for (i = 0; i < n; i++) {
           a = (i - (n - 1) / 2) * 0.28;
           addBossAbShot(who, who.x + a * 18, y, Math.sin(a) * 40, Math.cos(a) * 20 + (aim.y > who.y ? 1 : -1) * 8, {
-            dmg: def.dmg, r: def.r || 3.2, color: col, homing: true, homeT: 2.4, hsp: 170, hturn: 1.8, pierce: def.pierce
+            dmg: def.dmg, r: def.r || 3.2, color: col, homing: true, homeT: 2.6, hsp: 210, hturn: 2.2, pierce: def.pierce
           });
         }
         break;
@@ -5948,18 +5952,18 @@
         }
         break;
       case "shock":
-        bossAbFx.push({ kind: "shock", x: who.x, y: who.y, r: 10, vr: def.vr || 200, t: def.life || 0.55, max: def.life || 0.55, dmg: def.dmg || 12, owner: who.slot, color: col });
+        bossAbFx.push({ kind: "shock", x: who.x, y: who.y, r: 18, vr: def.vr || 240, t: def.life || 0.55, max: def.life || 0.55, dmg: def.dmg || 36, owner: who.slot, color: col, hit: [] });
         addTele("ring", who.x, who.y, 20, 20, def.life || 0.55, col);
         break;
       case "clear":
-        bossAbFx.push({ kind: "clear", x: who.x, y: who.y, r: 12, vr: def.vr || 220, t: def.life || 0.6, max: def.life || 0.6, dmg: def.dmg || 10, owner: who.slot, color: col, gap: true });
+        bossAbFx.push({ kind: "clear", x: who.x, y: who.y, r: 20, vr: def.vr || 250, t: def.life || 0.6, max: def.life || 0.6, dmg: def.dmg || 32, owner: who.slot, color: col, gap: true, hit: [] });
         addTele("ring", who.x, who.y, 22, 22, def.life || 0.6, col);
         if (def.echo) {
           bossAbFx.push({ kind: "delay", t: def.echo, owner: who.slot, id: def.id, x: who.x, y: who.y, skipEcho: true });
         }
         break;
       case "pull":
-        bossAbFx.push({ kind: "pull", x: who.x, y: who.y + face * 36, r: def.r || 70, t: def.life || 0.85, owner: who.slot, color: col, dmg: def.dmg || 24 });
+        bossAbFx.push({ kind: "pull", x: who.x, y: who.y + face * 36, r: (def.r || 70) * 1.4, t: def.life || 0.85, owner: who.slot, color: col, dmg: def.dmg || 70, hit: [] });
         addTele("glow", who.x, who.y + face * 36, 16, 16, def.life || 0.85, col);
         break;
       case "rewind":
@@ -5976,6 +5980,7 @@
         break;
       case "timeslip":
         beginBulletRewind();
+        bossAbFx.push({ kind: "shock", x: who.x, y: who.y, r: 18, vr: 240, t: 0.5, max: 0.5, dmg: def.dmg || 36, owner: who.slot, color: col, hit: [] });
         addTele("ring", who.x, who.y, 28, 28, 0.4, col);
         flash = Math.max(flash, 0.2);
         break;
@@ -5999,7 +6004,7 @@
         spd = def.spd || 200;
         base = Math.atan2(aim.y - who.y, aim.x - who.x);
         for (i = 0; i < n; i++) {
-          off = (i - (n - 1) / 2) * 24;
+          off = (i - (n - 1) / 2) * 18;
           ox = who.x + Math.cos(base + Math.PI / 2) * off;
           oy = who.y + Math.sin(base + Math.PI / 2) * off;
           addBossAbShot(who, ox, oy, Math.cos(base) * spd, Math.sin(base) * spd, {
@@ -6012,13 +6017,14 @@
         for (i = 0; i < enemies.length; i++) {
           e = enemies[i];
           if (!e.alive || e.state === "enter") continue;
-          killEnemy(e, false, def.dmg || 24, who.slot);
+          killEnemy(e, false, def.dmg || 80, who.slot);
         }
         rings.push({ x: who.x, y: who.y, r: 8, vr: 220, life: 0.4, color: col });
         flash = Math.max(flash, 0.18);
         break;
       case "stamp":
         list = bossAbNearest(def.n || 1, who.x, who.y);
+        pad = bossAbScaleR(def.r || 24);
         if (!list.length && isPvpRun()) {
           aim = bossAbAim(who);
           explode(aim.x, aim.y, col, false);
@@ -6026,19 +6032,26 @@
         for (i = 0; i < list.length; i++) {
           e = list[i];
           explode(e.x, e.y, col, false);
-          killEnemy(e, false, def.dmg || 48, who.slot);
+          killEnemy(e, false, def.dmg || 140, who.slot);
           addTele("flash", e.x, e.y, 12, 12, 0.22, col);
+          for (n = 0; n < enemies.length; n++) {
+            k = enemies[n];
+            if (!k.alive || k === e) continue;
+            if (dist2(k.x, k.y, e.x, e.y) < (pad + k.r) * (pad + k.r)) {
+              killEnemy(k, false, (def.dmg || 140) * 0.45, who.slot);
+            }
+          }
         }
         break;
       case "cross":
-        pad = def.pad || 10;
+        pad = bossAbScalePad(def.pad || 10);
         addTele("vline", who.x, 4, who.x, H - 4, 0.28, col);
         addTele("hline", 8, who.y, W - 8, who.y, 0.28, col);
         bossAbHitLine(who, who.x, 0, who.x, H, pad, def.dmg);
         bossAbHitLine(who, 0, who.y, W, who.y, pad, def.dmg);
         break;
       case "diag":
-        pad = def.pad || 9;
+        pad = bossAbScalePad(def.pad || 9);
         addTele("line", who.x - 200, who.y - 200, who.x + 200, who.y + 200, 0.28, col);
         addTele("line", who.x + 200, who.y - 200, who.x - 200, who.y + 200, 0.28, col);
         bossAbHitLine(who, who.x - 220, who.y - 220, who.x + 220, who.y + 220, pad, def.dmg);
@@ -6046,17 +6059,17 @@
         break;
       case "knight":
         k = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
-        pad = def.r || 16;
+        pad = bossAbScaleR(def.r || 16);
         for (i = 0; i < k.length; i++) {
-          ox = who.x + k[i][0] * 28;
-          oy = who.y + k[i][1] * 28;
+          ox = who.x + k[i][0] * 34;
+          oy = who.y + k[i][1] * 34;
           if (ox < 8 || ox > W - 8 || oy < 8 || oy > H - 8) continue;
           addTele("flash", ox, oy, 10, 10, 0.2, col);
           explode(ox, oy, col, false);
           for (n = 0; n < enemies.length; n++) {
             e = enemies[n];
             if (!e.alive) continue;
-            if (dist2(e.x, e.y, ox, oy) < (pad + e.r) * (pad + e.r)) killEnemy(e, false, def.dmg || 16, who.slot);
+            if (dist2(e.x, e.y, ox, oy) < (pad + e.r) * (pad + e.r)) killEnemy(e, false, def.dmg || 48, who.slot);
           }
         }
         break;
@@ -6067,7 +6080,7 @@
         break;
       case "medley":
         bossAbFan(who, def, who.x, y);
-        bossAbFx.push({ kind: "clear", x: who.x, y: who.y, r: 10, vr: 200, t: 0.5, max: 0.5, dmg: def.dmg || 8, owner: who.slot, color: col, gap: true });
+        bossAbFx.push({ kind: "clear", x: who.x, y: who.y, r: 18, vr: 230, t: 0.55, max: 0.55, dmg: def.dmg || 28, owner: who.slot, color: col, gap: true, hit: [] });
         addTele("ring", who.x, who.y, 20, 20, 0.5, col);
         break;
       default:
@@ -6077,7 +6090,7 @@
     return true;
   }
   function tickBossAbFx(dt) {
-    var i, f, j, e, owner, def, gone, dmg;
+    var i, f, j, e, owner, def, gone, dmg, hid;
     for (i = bossAbFx.length - 1; i >= 0; i--) {
       f = bossAbFx[i];
       f.t -= dt;
@@ -6090,17 +6103,25 @@
             if (dist2(e.x, e.y, f.x, f.y) < (f.r + (e.r || 2)) * (f.r + (e.r || 2))) ebul.splice(j, 1);
           }
         }
-        dmg = f.dmg || 12;
+        dmg = f.dmg || 32;
+        if (!f.hit) f.hit = [];
         for (j = 0; j < enemies.length; j++) {
           e = enemies[j];
           if (!e.alive) continue;
           if (dist2(e.x, e.y, f.x, f.y) < (f.r + e.r) * (f.r + e.r)) {
-            killEnemy(e, false, dmg * dt * 3.2, owner ? owner.slot : 0);
+            hid = e.id;
+            if (f.hit.indexOf(hid) < 0) {
+              f.hit.push(hid);
+              killEnemy(e, false, dmg, owner ? owner.slot : 0);
+            } else {
+              killEnemy(e, false, dmg * dt * 1.2, owner ? owner.slot : 0);
+            }
           }
         }
         if (f.t <= 0) bossAbFx.splice(i, 1);
       } else if (f.kind === "pull") {
-        dmg = f.dmg || 24;
+        dmg = f.dmg || 70;
+        if (!f.hit) f.hit = [];
         for (j = 0; j < enemies.length; j++) {
           e = enemies[j];
           if (!e.alive || e.state === "enter") continue;
@@ -6109,7 +6130,13 @@
               e.x += (f.x - e.x) * Math.min(1, 5.5 * dt);
               e.y += (f.y - e.y) * Math.min(1, 5.5 * dt);
             }
-            killEnemy(e, false, dmg * dt * 2.2, owner ? owner.slot : 0);
+            hid = e.id;
+            if (f.hit.indexOf(hid) < 0) {
+              f.hit.push(hid);
+              killEnemy(e, false, dmg, owner ? owner.slot : 0);
+            } else {
+              killEnemy(e, false, dmg * dt * 1.4, owner ? owner.slot : 0);
+            }
           }
         }
         if (f.t <= 0) bossAbFx.splice(i, 1);
@@ -6120,7 +6147,7 @@
         if (def && gone) {
           if (f.echoFan) bossAbFan(gone, def, f.x, f.y);
           else if (def.kind === "clear") {
-            bossAbFx.push({ kind: "clear", x: f.x, y: f.y, r: 14, vr: def.vr || 180, t: 0.5, max: 0.5, dmg: def.dmg, owner: f.owner, color: bossAbilityColor(def), gap: true });
+            bossAbFx.push({ kind: "clear", x: f.x, y: f.y, r: 18, vr: def.vr || 180, t: 0.5, max: 0.5, dmg: def.dmg, owner: f.owner, color: bossAbilityColor(def), gap: true, hit: [] });
             addTele("ring", f.x, f.y, 22, 22, 0.5, bossAbilityColor(def));
           }
         }
@@ -7971,6 +7998,7 @@
   }
   function applyBossHazardsToPbul(b, i) {
     var pane = fxHas("pane"), catcher = fxHas("catch"), ei, eb, boss;
+    if (b.bossAb) return false;
     if (pane && Math.abs(b.x - pane.x) < pane.hw) {
       addEbul(b.x, b.y, pane.left ? -95 : 95, 18, { color: "#c8f0ff", glow: "#a8f0ff", r: 1.8, silent: true, life: 1.6, noTwin: true });
       addEbul(b.x, b.y, pane.left ? -46 : 46, 72, { color: "#e8ffff", glow: "#a8f0ff", r: 1.6, silent: true, life: 1.4, noTwin: true });
@@ -14129,6 +14157,7 @@
       if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
       consumed = false;
       br = (b.r || 2) + 1;
+      if (b.bossAb) br += 4;
       for (j = 0; j < enemies.length; j++) {
         e = enemies[j];
         if (!e.alive) continue;
@@ -14952,6 +14981,7 @@
       if (fight.on && hitFightShot(b, i)) continue;
       var consumed = false, br = (b.r || 2) + 1;
       var mi, mb;
+      if (b.bossAb) br += 4;
       for (mi = ebul.length - 1; mi >= 0; mi--) {
         mb = ebul[mi];
         if (!mb.mine) continue;
@@ -14959,6 +14989,7 @@
           // Spore mines pop harmlessly when shot, before their fuse runs out.
           explode(mb.x, mb.y, mb.glow || "#8ad86b", false);
           ebul.splice(mi, 1);
+          if (b.bossAb) break;
           if (b.pierce && b.pierce > 0) b.pierce -= 1;
           else { pbul.splice(i, 1); consumed = true; }
           break;

@@ -78,7 +78,7 @@ assert(codec.indexOf('"pane"') >= 0 && codec.indexOf('"pin"') >= 0 && codec.inde
 assert(codec.indexOf("prism-split") >= 0 && codec.indexOf("axiom-mix") >= 0, "130–150 ability ids");
 
 assert(pvp.indexOf("prism:") >= 0 && pvp.indexOf("axiom:") >= 0 && pvp.indexOf("mimic:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v70") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v71") >= 0, "PWA cache bump");
 assert(roster.indexOf("prism") >= 0 && roster.indexOf("axiom") >= 0, "roster docs");
 assert(roster.indexOf("wave **155**") >= 0, "roster +1 at 155");
 assert(post.indexOf("Prism — wave 130") >= 0 && post.indexOf("Axiom — wave 150") >= 0, "post-55 kits");

@@ -30,7 +30,7 @@ function catalogUnlock(name) {
 assert(js.indexOf("var PROFILE_VER = 9") >= 0, "client profile ver 9");
 assert(account.indexOf("v: 9") >= 0, "cloud profile ver 9");
 assert(account.indexOf("p.v = 9") >= 0, "sanitize writes ver 9");
-assert(sw.indexOf("galaga-coop-v70") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v71") >= 0, "PWA cache bump");
 assert(codec.indexOf("var VER = 11") >= 0 || /VER\s*=\s*11/.test(codec), "netcodec stays 11");
 
 assert(js.indexOf("facedWave: 0") >= 0, "emptyStats facedWave");

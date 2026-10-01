@@ -26,7 +26,7 @@ assert(galaga.indexOf("obj.alive = false;\n          boss = currentBoss();\n    
 assert(galaga.indexOf("fight.prisms = [];") >= 0 && galaga.indexOf("function spawnPrisms") >= 0, "next phase still replaces the set");
 
 assert(/var VER = 11;/.test(codec), "codec payload unchanged");
-assert(sw.indexOf("galaga-coop-v70") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v71") >= 0, "PWA cache bump");
 assert(post.indexOf("Prisms stay on the field until the next set spawns") >= 0, "docs say prisms persist");
 assert(post.indexOf("shard fan") >= 0 && post.indexOf("red lattice") >= 0, "docs name the new p1 patterns");
 assert(post.indexOf("bouncing ricochets") >= 0 && post.indexOf("gapped ring") >= 0, "docs name ricochet and gap ring");
