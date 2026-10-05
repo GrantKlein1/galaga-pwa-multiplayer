@@ -86,12 +86,12 @@ assert(galaga.indexOf('e.type !== "requiem"') >= 0, "Requiem skipped the 0.22 tu
 assert(Math.round(1000 * 1.55) === 1550, "wave 100 HP is 1.55x prior 1000");
 
 assert(codec.indexOf('"loom", "tessera", "requiem", "terminus"') >= 0, "netcodec boss ids");
-assert(/var VER = 11;/.test(codec), "codec VER 11");
+assert(/var VER = 12;/.test(codec), "codec VER 12");
 assert(codec.indexOf("BX_KINDS") >= 0 && codec.indexOf("writeBx") >= 0, "fight extras on the wire");
 assert(codec.indexOf('"thread"') >= 0 && codec.indexOf('"midline"') >= 0, "thread and midline kinds");
 assert(codec.indexOf('"keystone"') >= 0 && codec.indexOf('"pylon"') >= 0 && codec.indexOf('"ghost"') >= 0, "keystone/pylon/ghost kinds");
 
 assert(pvp.indexOf("loom:") >= 0 && pvp.indexOf("terminus:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v71") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v72") >= 0, "PWA cache bump");
 
 console.log("wave-100-boss-smoke: ok");

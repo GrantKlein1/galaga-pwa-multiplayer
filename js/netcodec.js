@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 11;
+  var VER = 12;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -49,7 +49,7 @@
   ];
   var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive", "xpboost"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
-  var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam", "sand", "glass", "lantern", "cone", "polar", "head", "stump", "planet", "prism", "ray", "flow", "pane", "pin", "rule"];
+  var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam", "sand", "glass", "lantern", "cone", "polar", "head", "stump", "planet", "prism", "ray", "flow", "pane", "pin", "rule", "orbit", "arc", "wake", "pocket", "seal"];
   var WEAPONS = ["normal", "spread", "double", "rapid", "shield", "speed"];
   var BOSS_ABILITY_IDS = [
     "",

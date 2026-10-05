@@ -50,7 +50,7 @@ Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarc
 
 **Victory:** banner `WAVE 100 CLEARED` and a **Century Clear** XP bonus (`CENTURY_CLEAR_XP = 8000`) on the existing `run.xpBonus` path (same bank that skip-start and harder-kill XP use). First-cycle dedicated wave 100 only, not guests or later rematches. Skip-start past 100 also credits Century Clear.
 
-Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, Orrery planets, Prism prisms/rays, Maelstrom flow, Cartographer panes/pins, Mimic ghosts, and Axiom rule cards on netcodec VER 11 (`bx` extras).
+Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, Orrery planets, Prism prisms/rays, Maelstrom flow, Cartographer panes/pins, Mimic ghosts, and Axiom rule cards plus orbit/wake/pocket/seals on netcodec VER 12 (`bx` extras).
 
 ## Hourglass — wave 105, the glass
 
@@ -148,12 +148,12 @@ Telegraphs are 0.28s, shorter than Terminus.
 
 | Phase | Banner | Kit |
 | ---: | --- | --- |
-| 1 Fall up | SHOTS FALL UP | The ship is locked to the top band. Shots fall "up." |
-| 2 Bounce | YOUR BULLETS BOUNCE | Player bullets reverse on walls (max 4). After a bounce they are red and damage the player, including the owner, if they come back. The rule card stays. Bounce turns off when the phase ends. |
-| 3 Graze | GRAZING HEALS | A 0.35s near-miss then +1 life or shield (1.15s lock). |
-| 4 Turn | THE SCREEN TURNS | The playfield rotates 90°. Keys and pointer remap. |
-| 5 Gravity | GRAVITY PULLS DOWN | Extra downward velocity on the ship and shots. |
-| 6 Mix | TWO RULES | Bounce plus gravity together. Bounced player shots still hurt the owner. Both rules clear when the fight ends. |
+| 1 Fall up | SHOTS FALL UP | Ship locked to the top band. Climbing blade row with one moving cyan gap, then a zipper of side blades. |
+| 2 Bounce | YOUR BULLETS BOUNCE | Player bullets bounce **once**. After a bounce they are red and damage the player, then they are gone (no second bounce). Wall ricochets and a bounce sweep. The rule card stays. Bounce turns off when the phase ends. |
+| 3 Graze | GRAZING HEALS | A 0.35s near-miss then +1 life or shield (1.15s lock), plus graze needles and a gapped swath. |
+| 4 Orbit | ORBIT | A circle in the middle. The boss moves inside. The player is locked to the outer ring; left/right (or the stick) slides around it. The ship faces inward and shots fire toward the center. Rotating red shield arcs block free hits — orbit to an open gap. Normal movement returns when the phase ends. |
+| 5 Past | THE PAST CLOSES | A crushing red trail follows the path you flew ~2s ago. Standing still or repeating a line gets you hit. A gold pocket orbits the field; the boss only takes damage while you are inside it. |
+| 6 Seals | BREAK THE SEALS | The core is immune until four seals break in the order on the card (shoot / fly through / bounced shot / strike from the ring). Wrong action bursts and resets. After all four the core opens briefly, then the seals reshuffle. |
 
 **Victory:** banner `WAVE 150 CLEARED` and an **Axiom Clear** XP bonus (`AXIOM_CLEAR_XP = 12000`) on the existing `run.xpBonus` path. First-cycle dedicated wave 150 only, not guests or later rematches. Skip-start past 150 also credits Axiom Clear.
 

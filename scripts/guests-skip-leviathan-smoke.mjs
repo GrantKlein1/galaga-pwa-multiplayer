@@ -89,6 +89,6 @@ assert(Math.abs(minCenters - minSp) < 1e-9, "tightest accordion gap is Bastion-w
 assert(minCenters > 2 * (12 + bulletR + CURTAIN_PAD) - 0.01, "Broadwing also fits");
 assert(minCenters > 2 * (5.5 + bulletR), "Needle is not the gap target");
 
-assert(sw.indexOf("galaga-coop-v71") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v72") >= 0, "PWA cache bump");
 
 console.log("guests-skip-leviathan-smoke: ok");

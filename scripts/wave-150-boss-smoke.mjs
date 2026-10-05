@@ -58,27 +58,34 @@ assert(galaga.indexOf("if (n === 150) xpBonus += AXIOM_CLEAR_XP") >= 0, "skip-st
 assert(galaga.indexOf("LIGHT SPLITS") >= 0 && galaga.indexOf("THE WATER TURNS") >= 0, "Prism/Maelstrom banners");
 assert(galaga.indexOf("THE MAP OPENS") >= 0 && galaga.indexOf("IT WEARS YOUR FACE") >= 0, "Cartographer/Mimic banners");
 assert(galaga.indexOf("SHOTS FALL UP") >= 0 && galaga.indexOf("YOUR BULLETS BOUNCE") >= 0, "Axiom banners");
-assert(galaga.indexOf("GRAZING HEALS") >= 0 && galaga.indexOf("THE SCREEN TURNS") >= 0, "Axiom graze/turn");
-assert(galaga.indexOf("GRAVITY PULLS DOWN") >= 0 && galaga.indexOf("TWO RULES") >= 0, "Axiom gravity/mix");
+assert(galaga.indexOf("GRAZING HEALS") >= 0 && galaga.indexOf("ORBIT") >= 0, "Axiom graze/orbit");
+assert(galaga.indexOf("THE PAST CLOSES") >= 0 && galaga.indexOf("BREAK THE SEALS") >= 0, "Axiom past/seals");
+assert(galaga.indexOf("THE SCREEN TURNS") < 0 && galaga.indexOf("GRAVITY PULLS DOWN") < 0, "old turn/gravity gone");
 assert(galaga.indexOf("if (d.p6 && d.p6.length)") >= 0, "6-phase Axiom thresholds");
+assert(galaga.indexOf("if (b.bounces > 1)") >= 0, "player shots bounce once");
+assert(galaga.indexOf("function axiomSteerOnRing") >= 0 && galaga.indexOf("function axiomShieldBlocks") >= 0, "orbit ring + shields");
+assert(galaga.indexOf("function startAxiomPast") >= 0 && galaga.indexOf("function startAxiomSeals") >= 0, "past and seals");
+assert(galaga.indexOf("AXIOM_SEAL_KINDS") >= 0, "seal kinds");
 
 [
   "splitbeam", "refract", "crystal", "shardfan", "lattice", "ricochet", "gapring",
   "current", "gyre", "maw",
   "chart", "remap", "foldmap", "atlas", "copycat", "shadow", "mock", "doppel",
-  "fallup", "bounce", "grazeheal", "screenturn", "pulldown", "axiommix"
+  "fallup", "fallzip", "bounce", "bouncesweep", "grazeheal", "grazeswath",
+  "orbitring", "orbitsweep", "pastclose", "pastcrush", "seals", "sealburst"
 ].forEach(function (atk) {
   assert(galaga.indexOf('atk === "' + atk + '"') >= 0, "attack wired: " + atk);
 });
 
 assert(codec.indexOf('"prism", "maelstrom", "cartographer", "mimic", "axiom"') >= 0, "netcodec boss ids");
-assert(/var VER = 11;/.test(codec), "codec VER 11");
+assert(/var VER = 12;/.test(codec), "codec VER 12");
 assert(codec.indexOf('"prism"') >= 0 && codec.indexOf('"ray"') >= 0 && codec.indexOf('"flow"') >= 0, "prism/ray/flow kinds");
 assert(codec.indexOf('"pane"') >= 0 && codec.indexOf('"pin"') >= 0 && codec.indexOf('"rule"') >= 0, "pane/pin/rule kinds");
+assert(codec.indexOf('"orbit"') >= 0 && codec.indexOf('"wake"') >= 0 && codec.indexOf('"seal"') >= 0, "axiom extra kinds");
 assert(codec.indexOf("prism-split") >= 0 && codec.indexOf("axiom-mix") >= 0, "130–150 ability ids");
 
 assert(pvp.indexOf("prism:") >= 0 && pvp.indexOf("axiom:") >= 0 && pvp.indexOf("mimic:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v71") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v72") >= 0, "PWA cache bump");
 assert(roster.indexOf("prism") >= 0 && roster.indexOf("axiom") >= 0, "roster docs");
 assert(roster.indexOf("wave **155**") >= 0, "roster +1 at 155");
 assert(post.indexOf("Prism — wave 130") >= 0 && post.indexOf("Axiom — wave 150") >= 0, "post-55 kits");

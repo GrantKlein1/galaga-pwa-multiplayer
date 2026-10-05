@@ -33,12 +33,14 @@ assert(galaga.indexOf("if (!consumed && fight.bounce && (b.bounces || 0) > 0)") 
 assert(galaga.indexOf("else playerDie(pl);") >= 0, "PvE bounced shots kill");
 assert(galaga.indexOf("function clearAxiomRules") >= 0 && galaga.indexOf("fight.bounce = false") >= 0, "bounce clears with the phase");
 assert(galaga.indexOf('text: "YOUR BULLETS BOUNCE"') >= 0, "rule card stays");
-assert(galaga.indexOf("a = AXIOM_RULES[1]") >= 0 && galaga.indexOf("b = AXIOM_RULES[4]") >= 0, "mix still includes bounce");
+assert(galaga.indexOf("if (b.bounces > 1)") >= 0, "one bounce then gone");
+assert(galaga.indexOf("a = AXIOM_RULES[1]") < 0, "old mix pairing gone");
+assert(galaga.indexOf('text: "BREAK THE SEALS"') >= 0, "seals card");
 
-assert(/var VER = 11;/.test(codec), "codec payload unchanged");
-assert(sw.indexOf("galaga-coop-v71") >= 0, "PWA cache bump");
+assert(/var VER = 12;/.test(codec), "codec VER 12");
+assert(sw.indexOf("galaga-coop-v72") >= 0, "PWA cache bump");
 assert(post.indexOf("sliding-puzzle of map panes") >= 0, "docs describe the puzzle");
-assert(post.indexOf("After a bounce they are red and damage the player") >= 0, "docs say bounced shots hurt");
+assert(post.indexOf("Player bullets bounce **once**") >= 0, "docs say bounce once");
 assert(roster.indexOf("colored wrap edges") >= 0, "roster notes wrap edges");
 
 console.log("cartographer-axiom-smoke: ok");

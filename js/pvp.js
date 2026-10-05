@@ -334,15 +334,15 @@
       ]
     },
     axiom: {
-      fire: "fallup", ability: "axiommix",
+      fire: "fallup", ability: "seals",
       fireHint: "SPACE / FIRE — rewrite",
       abilityHint: "1 — mix",
       abilities: [
         { id: "bounce", key: "1", name: "Bounce", cd: 6.0 },
         { id: "grazeheal", key: "2", name: "Graze", cd: 6.6 },
-        { id: "screenturn", key: "3", name: "Turn", cd: 7.2 },
-        { id: "pulldown", key: "4", name: "Gravity", cd: 7.4 },
-        { id: "axiommix", key: "5", name: "Two rules", cd: 8.4 }
+        { id: "orbitring", key: "3", name: "Orbit", cd: 7.2 },
+        { id: "pastclose", key: "4", name: "Past", cd: 7.4 },
+        { id: "seals", key: "5", name: "Seals", cd: 8.4 }
       ]
     }
   };

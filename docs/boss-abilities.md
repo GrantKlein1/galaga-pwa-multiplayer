@@ -121,7 +121,7 @@ Prism through Axiom. Wave 145 unlocks the full 30-boss roster.
 | Mimic | 145 | `mimic-copy` | Ghost fan, then a delayed copy | 3.8s |
 | | | `mimic-shadow` | 5-shot shadow curtain | 3.8s |
 | | | `mimic-doppel` | Twin 8-shot bursts from offset ghosts | 4.6s |
-| Axiom | 150 | `axiom-up` | 4-shot Axiom row at the nearest foe | 3.8s |
-| | | `axiom-bounce` | Twin helix bolts at the nearest foe | 3.4s |
-| | | `axiom-mix` | 5-shot fan plus a shot-clearing pulse | 5s |
+| Axiom | 150 | `axiom-up` | Climbing blade row with a moving gap | 3.8s |
+| | | `axiom-bounce` | Wall ricochets that bounce once | 3.4s |
+| | | `axiom-mix` | Punishing burst from the core if the seal order is wrong | 5s |
 

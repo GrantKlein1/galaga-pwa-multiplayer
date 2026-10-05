@@ -335,10 +335,11 @@
       flavor: "Copies dodge paths and shots in red; copies the equipped boss ability as red enemy fire" },
     { id: "axiom", name: "AXIOM", color: "#fff4d0", dark: "#08060c", r: 26, hp: 3000, spd: 26, amp: 8, freq: 0.65, cd: 1.1, tele: 0.28, pts: 15000,
       exclusive: true,
-      base: ["fallup"], p2: ["bounce"], p3: ["grazeheal"], p4: ["screenturn"], p5: ["pulldown"], p6: ["axiommix"],
+      base: ["fallup", "fallzip"], p2: ["bounce", "bouncesweep"], p3: ["grazeheal", "grazeswath"],
+      p4: ["orbitring", "orbitsweep"], p5: ["pastclose", "pastcrush"], p6: ["seals", "sealburst"],
       t1: [], t2: [], p2Thresh: 5 / 6, p3Thresh: 4 / 6, p4Thresh: 0.5, p5Thresh: 2 / 6, p6Thresh: 1 / 6,
-      p2Text: "YOUR BULLETS BOUNCE", p3Text: "GRAZING HEALS", p4Text: "THE SCREEN TURNS", p5Text: "GRAVITY PULLS DOWN", p6Text: "TWO RULES",
-      flavor: "Each phase rewrites a rule on a gold card; the last mixes two. Rules revert when the phase or fight ends" }
+      p2Text: "YOUR BULLETS BOUNCE", p3Text: "GRAZING HEALS", p4Text: "ORBIT", p5Text: "THE PAST CLOSES", p6Text: "BREAK THE SEALS",
+      flavor: "Each phase rewrites a rule on a gold card. Orbit the ring, chase a gold pocket off your wake, then break seals in order. Rules revert when the phase or fight ends" }
   ];
   var GUEST_BOSS_POOL = 10;
   // Hangar Bosses menu. Builds use hangar kit a player could own the first time
@@ -374,7 +375,7 @@
     maelstrom: { desc: "A whirlpool. Cyan arrows show the flow; it drags the ship and shots, then the maw opens.", abilities: ["A current that drags the ship and shots", "Cyan arrows that show the flow", "A tightening gyre", "A maw in the center"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-speed", "gun-dmg1", "warp-stasis", "warp-horizon"] },
     cartographer: { desc: "A sliding map. Panes swap; matching edge colors wrap the ship. Gold pins still chip the body.", abilities: ["Sliding map panes", "Matching edge colors that wrap the ship", "Unlinked edges that are walls", "Gold pins that chip the body"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-speed", "gun-dmg1", "warp-fold", "warp-horizon"] },
     mimic: { desc: "It copies you. Red dodge paths, red shots, then the equipped boss ability as enemy fire, then two of you.", abilities: ["Copies your dodge path in red", "Copies your shots in red", "Copies the equipped boss ability", "A doppelganger"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "warp-haunt", "warp-horizon"] },
-    axiom: { desc: "The last gate. Each phase writes a rule on a gold card — fall up, bounce, graze-heal, screen turn, pull down — then two at once. Bounced shots hurt you.", abilities: ["Fall up", "Your bullets bounce and hurt you on the way back", "Grazing heals the boss", "The screen turns", "Gravity pulls down", "The last phase mixes two rules"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-laststand", "gun-pierce", "warp-fold", "warp-horizon"] }
+    axiom: { desc: "The last gate. Each phase writes a rule on a gold card — fall up, bounce once, graze-heal, orbit the ring, a crushing wake, then break four seals in order.", abilities: ["Fall up with a climbing blade gap", "Your bullets bounce once and hurt you on the way back", "Grazing heals", "Orbit a ring and shoot inward through shield gaps", "A gold pocket on a crushing wake", "Four seals in order, then the core opens"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-laststand", "gun-pierce", "warp-fold", "warp-horizon"] }
   };
   // Player versions of boss attacks. Same shot count and pattern as the boss
   // kit, aimed from the player at enemies. Damage is player-scale (clears
@@ -455,9 +456,9 @@
     { id: "mimic-copy", boss: "mimic", name: "Copycat", short: "CPY", desc: "A ghost fan at the nearest foe, then a delayed copy.", cd: 3.8, kind: "echo", n: 5, spread: 0.5, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
     { id: "mimic-shadow", boss: "mimic", name: "Shadow", short: "SHD", desc: "A 5-shot shadow curtain at the nearest foe.", cd: 3.8, kind: "curtain", n: 5, spd: 210, dmg: 28, r: 2.8, pierce: 4 },
     { id: "mimic-doppel", boss: "mimic", name: "Doppel", short: "DPL", desc: "Twin 8-shot bursts from offset ghosts.", cd: 4.6, kind: "halo", n: 8, spd: 180, dmg: 28, r: 2.6, pierce: 4 },
-    { id: "axiom-up", boss: "axiom", name: "Fall Up", short: "UP", desc: "A 4-shot Axiom row at the nearest foe.", cd: 3.8, kind: "curtain", n: 4, spd: 220, dmg: 28, r: 2.8, pierce: 4 },
-    { id: "axiom-bounce", boss: "axiom", name: "Bounce", short: "BNC", desc: "Twin helix bolts at the nearest foe.", cd: 3.4, kind: "helix", n: 2, spd: 230, dmg: 36, r: 2.6, pierce: 6 },
-    { id: "axiom-mix", boss: "axiom", name: "Two Rules", short: "MIX", desc: "A 5-shot fan plus a shot-clearing pulse.", cd: 5, kind: "medley", n: 5, spread: 0.5, spd: 230, dmg: 28, r: 2.6, pierce: 4 }
+    { id: "axiom-up", boss: "axiom", name: "Fall Up", short: "UP", desc: "A climbing blade row with one moving gap.", cd: 3.8, kind: "curtain", n: 4, spd: 220, dmg: 28, r: 2.8, pierce: 4 },
+    { id: "axiom-bounce", boss: "axiom", name: "Bounce", short: "BNC", desc: "Wall ricochets that bounce once.", cd: 3.4, kind: "helix", n: 2, spd: 230, dmg: 36, r: 2.6, pierce: 6 },
+    { id: "axiom-mix", boss: "axiom", name: "Seals", short: "SEAL", desc: "A punishing burst from the core if the order is wrong.", cd: 5, kind: "medley", n: 5, spread: 0.5, spd: 230, dmg: 28, r: 2.6, pierce: 4 }
   ];
 
   var DAILY_DEFS = [
@@ -3241,6 +3242,10 @@
       panes: [], paneT: 0, pins: [],
       mimic: false, mimicTape: [], mimicShots: [], mimicGhost: null, mimicGhost2: null, copiedAbility: "",
       fallUp: false, bounce: false, grazeHeal: false, turn: 0, pullDown: false,
+      orbit: false, ringLock: false, orbitR: 0, orbitCx: 0, orbitCy: 0, orbitShields: [],
+      pastClose: false, wake: [], wakeDwell: 0, pocket: null, pocketAng: 0,
+      sealsNeed: false, seals: [], sealOrder: [], sealNext: 0, axiomOpen: false, axiomOpenT: 0,
+      blades: [],
       rule: "", rule2: "", ruleIdx: -1, ruleIdx2: -1, cardT: 0
     };
   }
@@ -3255,6 +3260,7 @@
     var sand = fight.sandH || 0;
     if (isPvpRun() && p && p.slot === 1) return { lo: margin, hi: mid - margin };
     if (fight.fallUp) return { lo: margin, hi: mid - margin };
+    if (axiomOnRing()) return { lo: margin, hi: H - margin - sand };
     if (fight.panes && fight.panes.length) return { lo: margin, hi: H - margin - sand };
     return { lo: mid + margin, hi: H - margin - sand };
   }
@@ -4977,6 +4983,18 @@
       e.hitFlash = 0.05;
       return;
     }
+    if (e.type === "axiom" && e.isBoss && fight.on && fight.pastClose && fromPerk !== "pocket") {
+      if (!axiomPlayerInPocket(owner)) {
+        e.hp += dmg;
+        e.hitFlash = 0.04;
+        return;
+      }
+    }
+    if (e.type === "axiom" && e.isBoss && fight.on && fight.sealsNeed && !fight.axiomOpen && fromPerk !== "seal") {
+      e.hp += dmg;
+      e.hitFlash = 0.04;
+      return;
+    }
     if (e.type === "lernaean" && e.isBoss && fight.on && fromPerk !== "stump" && !lernaeanCoreOpen()) {
       e.hp += dmg;
       e.hitFlash = 0.04;
@@ -5413,9 +5431,10 @@
     var gem = (who.weaponT > 0 && who.weapon !== "normal") ? who.weapon : "";
     var shots = gunShots(g, gem);
     var dmg = g.dmg * loadoutDmgMul(shipDef(who), equippedMod(who), who);
-    var i, s, b, face = pvpFacing(who), y;
+    var i, s, b, face = pvpFacing(who), y, orbitAim;
     if (fight.fallUp && !isPvpRun()) face = -face;
     y = who.y + face * -12;
+    orbitAim = axiomOnRing() ? axiomInwardAim(who) : null;
     if (who.boss) {
       pvpBossPrimary(who);
       return;
@@ -5431,13 +5450,20 @@
       s = shots[i];
       b = {
         id: allocId(),
-        x: who.x + s.dx, y: y, vx: Math.sin(s.ang) * s.spd, vy: face * Math.cos(s.ang) * s.spd,
+        x: who.x + s.dx, y: y,
+        vx: Math.sin(s.ang) * s.spd, vy: face * Math.cos(s.ang) * s.spd,
         dmg: dmg, r: g.r || 2, age: 0, life: g.life || 0,
         pierce: g.pierce || 0, hit: g.pierce ? [] : null,
         homing: !!g.homing, homeT: g.homeT || 0,
         hsp: g.hsp || 0, hturn: g.hturn || 0,
         splash: g.splash || null, gun: g.id, owner: who.slot, ghost: ghost
       };
+      if (orbitAim) {
+        b.x = who.x + orbitAim.ux * 12 + (-orbitAim.uy) * s.dx;
+        b.y = who.y + orbitAim.uy * 12 + orbitAim.ux * s.dx;
+        b.vx = (orbitAim.ux * Math.cos(s.ang) + (-orbitAim.uy) * Math.sin(s.ang)) * s.spd;
+        b.vy = (orbitAim.uy * Math.cos(s.ang) + orbitAim.ux * Math.sin(s.ang)) * s.spd;
+      }
       if (umbra) b.dmg *= 1.25;
       if ((who.skinBlood || 0) > 0) { b.dmg *= 2; who.skinBlood -= 1; }
       if ((who.skinCarrion || 0) > 0) { b.dmg += 1; who.skinCarrion -= 1; }
@@ -5474,16 +5500,23 @@
       }
     }
     if (bolt) {
-      pbul.push({
+      b = {
         id: allocId(),
         x: who.x, y: y, vx: 0, vy: face * 300, dmg: (g.boltDmg || 2) * loadoutDmgMul(shipDef(who), equippedMod(who), who) * (umbra ? 1.25 : 1), r: 3, age: 0, life: 0,
         pierce: 0, hit: null, homing: true, homeT: 2.2, splash: null, gun: g.id, bolt: true, owner: who.slot, ghost: ghost
-      });
+      };
+      if (orbitAim) {
+        b.x = who.x + orbitAim.ux * 12;
+        b.y = who.y + orbitAim.uy * 12;
+        b.vx = orbitAim.ux * 300;
+        b.vy = orbitAim.uy * 300;
+      }
+      pbul.push(b);
       if (fight.echo && !ghost) {
-        fight.echoShots.push({ t: time, x: who.x, y: y, vx: 0, vy: face * 300, r: 3 });
+        fight.echoShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: 3 });
       }
       if (fight.mimic && !ghost) {
-        fight.mimicShots.push({ t: time, x: who.x, y: y, vx: 0, vy: face * 300, r: 3 });
+        fight.mimicShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: 3 });
       }
     }
     applySkinVolley(who, startIdx, g);
@@ -7781,9 +7814,8 @@
     } else if (atk === "copycat" || atk === "shadow" || atk === "mock" || atk === "doppel") {
       addTele("flash", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
       addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_RED);
-    } else if (atk === "fallup" || atk === "bounce" || atk === "grazeheal" || atk === "screenturn" || atk === "pulldown" || atk === "axiommix") {
-      addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_GOLD);
-      addTele("line", e.x, e.y, e.aimX, e.aimY, delay, FIGHT_WHITE);
+    } else if (isAxiomAtk(atk)) {
+      teleAxiom(e, atk, delay);
     } else {
       addTele("glow", e.x, e.y, 0, 0, delay, col);
     }
@@ -8802,11 +8834,8 @@
       fanShot(e.x, e.y + 8, 5, 0.5, spd, 14, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.5 });
     } else if (atk === "doppel") {
       fireMimicCopy(e, spd + 6, 2);
-    } else if (atk === "fallup" || atk === "bounce" || atk === "grazeheal" || atk === "screenturn" || atk === "pulldown") {
-      aimedShot(e, 0.65, spd, opt);
-    } else if (atk === "axiommix") {
-      fanShot(e.x, e.y + 8, 7, 0.85, spd + 8, 18, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.7 });
-      slamBox(e.aimX, e.aimY, 14, 12, FIGHT_RED);
+    } else if (isAxiomAtk(atk)) {
+      fireAxiomAttack(e, atk);
     }
   }
 
@@ -9491,53 +9520,589 @@
     { id: "fallUp", text: "SHOTS FALL UP" },
     { id: "bounce", text: "YOUR BULLETS BOUNCE" },
     { id: "grazeHeal", text: "GRAZING HEALS" },
-    { id: "turn", text: "THE SCREEN TURNS" },
-    { id: "pullDown", text: "GRAVITY PULLS DOWN" }
+    { id: "orbit", text: "ORBIT" },
+    { id: "pastClose", text: "THE PAST CLOSES" },
+    { id: "seals", text: "BREAK THE SEALS" }
   ];
+  var AXIOM_CX = W / 2;
+  var AXIOM_CY = H / 2;
+  var AXIOM_ARENA_R = 78;
+  var AXIOM_RING_R = 104;
+  var AXIOM_SHIELD_R = 60;
+  var AXIOM_BOSS_R = 38;
+  var AXIOM_WAKE_LAG = 2;
+  var AXIOM_POCKET_R = 24;
+  var AXIOM_SEAL_KINDS = ["shoot", "fly", "bounce", "orbit"];
+  var AXIOM_SEAL_LABELS = { shoot: "SHOOT", fly: "FLY", bounce: "BOUNCE", orbit: "RING" };
   var MIMIC_LAG = 1.6;
+  function axiomOnRing() {
+    return !!(fight.orbit || fight.ringLock);
+  }
+  function axiomCurrentSeal() {
+    var id;
+    if (!fight.sealsNeed || !fight.sealOrder || !fight.seals) return null;
+    id = fight.sealOrder[fight.sealNext];
+    if (id == null) return null;
+    return fight.seals[id] || null;
+  }
+  function axiomSteerOnRing(p, inp, dt, spd) {
+    var cx = fight.orbitCx || AXIOM_CX, cy = fight.orbitCy || AXIOM_CY;
+    var R = fight.orbitR || AXIOM_RING_R;
+    var aimX, aimY, want, step, tang;
+    p.dash = null;
+    if (p.orbitAng == null) p.orbitAng = Math.atan2(p.y - cy, p.x - cx);
+    if (p.slot === localSlot && pointerSteer.aimX != null) {
+      aimX = pvpFlipped() ? (W - pointerSteer.aimX) : pointerSteer.aimX;
+    } else {
+      aimX = inp && inp.aimX;
+    }
+    if (p.slot === localSlot && pointerSteer.aimY != null) {
+      aimY = pvpFlipped() ? (H - pointerSteer.aimY) : pointerSteer.aimY;
+    } else {
+      aimY = inp && inp.aimY;
+    }
+    step = (spd / Math.max(48, R)) * dt;
+    if (aimX != null && aimY != null) {
+      want = Math.atan2(aimY - cy, aimX - cx);
+      p.orbitAng += clamp(signedAngDiff(want, p.orbitAng), -step * 1.35, step * 1.35);
+    } else if (!(netRole === "host" && p.slot !== localSlot)) {
+      tang = 0;
+      tang += steerDelta(inp, inp.right, "holdR", 1, spd, dt);
+      tang += steerDelta(inp, inp.left, "holdL", -1, spd, dt);
+      p.orbitAng += tang / Math.max(48, R);
+    }
+    p.x = cx + Math.cos(p.orbitAng) * R;
+    p.y = cy + Math.sin(p.orbitAng) * R;
+    p.targetX = p.x;
+    p.targetY = p.y;
+  }
+  function axiomInwardAim(who) {
+    var cx = fight.orbitCx || AXIOM_CX, cy = fight.orbitCy || AXIOM_CY;
+    var dx = cx - (who && who.x || cx), dy = cy - (who && who.y || cy);
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    return { ux: dx / len, uy: dy / len };
+  }
+  function axiomPlayerInPocket(who) {
+    var i, pl, pk = fight.pocket;
+    if (!pk) return false;
+    if (who && who.alive) return dist2(who.x, who.y, pk.x, pk.y) < (pk.r + (who.r || PLAYER_R)) * (pk.r + (who.r || PLAYER_R));
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
+      if (dist2(pl.x, pl.y, pk.x, pk.y) < (pk.r + (pl.r || PLAYER_R)) * (pk.r + (pl.r || PLAYER_R))) return true;
+    }
+    return false;
+  }
+  function axiomShieldBlocks(b) {
+    var i, s, ang, d, cx = fight.orbitCx || AXIOM_CX, cy = fight.orbitCy || AXIOM_CY;
+    if (!fight.orbit || !fight.orbitShields || !fight.orbitShields.length) return false;
+    d = Math.sqrt((b.x - cx) * (b.x - cx) + (b.y - cy) * (b.y - cy));
+    if (d < AXIOM_SHIELD_R - 11 || d > AXIOM_SHIELD_R + 11) return false;
+    ang = Math.atan2(b.y - cy, b.x - cx);
+    for (i = 0; i < fight.orbitShields.length; i++) {
+      s = fight.orbitShields[i];
+      if (angAbsDiff(ang, s.ang) < s.span * 0.5) return true;
+    }
+    return false;
+  }
+  function signedAngDiff(a, b) {
+    var d = a - b;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return d;
+  }
+  function snapPlayersToAxiomRing() {
+    var i, pl, cx = fight.orbitCx || AXIOM_CX, cy = fight.orbitCy || AXIOM_CY, R = fight.orbitR || AXIOM_RING_R;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
+      if (pl.orbitAng == null) pl.orbitAng = Math.atan2(pl.y - cy, pl.x - cx);
+      pl.x = cx + Math.cos(pl.orbitAng) * R;
+      pl.y = cy + Math.sin(pl.orbitAng) * R;
+      pl.targetX = pl.x;
+      pl.targetY = pl.y;
+      pl.dash = null;
+    }
+  }
+  function releaseAxiomOrbit() {
+    var i, pl, band;
+    fight.orbit = false;
+    fight.ringLock = false;
+    fight.orbitShields = [];
+    fight.orbitR = 0;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl) continue;
+      pl.orbitAng = null;
+      if (!pl.alive) continue;
+      band = shipYBand(pl, 12);
+      if (pl.y < band.lo) {
+        pl.y = (band.lo + band.hi) * 0.55;
+        pl.targetY = pl.y;
+      }
+    }
+  }
+  function clearAxiomHazards() {
+    fight.blades = [];
+    fight.wake = [];
+    fight.wakeDwell = 0;
+    fight.pocket = null;
+    fight.seals = [];
+    fight.sealOrder = [];
+    fight.sealNext = 0;
+    fight.sealsNeed = false;
+    fight.axiomOpen = false;
+    fight.axiomOpenT = 0;
+  }
   function clearAxiomRules() {
+    if (fight.orbit || fight.ringLock) releaseAxiomOrbit();
     fight.fallUp = false;
     fight.bounce = false;
     fight.grazeHeal = false;
     fight.turn = 0;
     fight.pullDown = false;
+    fight.orbit = false;
+    fight.orbitShields = [];
+    fight.pastClose = false;
+    fight.sealsNeed = false;
+    fight.axiomOpen = false;
+    fight.axiomOpenT = 0;
     fight.rule = "";
     fight.rule2 = "";
     fight.ruleIdx = -1;
     fight.ruleIdx2 = -1;
     fight.cardT = 0;
+    clearAxiomHazards();
   }
   function setAxiomRule(r) {
     if (!r) return;
     if (r.id === "fallUp") fight.fallUp = true;
     else if (r.id === "bounce") fight.bounce = true;
     else if (r.id === "grazeHeal") fight.grazeHeal = true;
-    else if (r.id === "turn") fight.turn = 1;
-    else if (r.id === "pullDown") fight.pullDown = true;
+    else if (r.id === "orbit") startAxiomOrbit(false);
+    else if (r.id === "pastClose") startAxiomPast();
+    else if (r.id === "seals") startAxiomSeals();
+  }
+  function startAxiomOrbit(shortRing) {
+    fight.ringLock = true;
+    if (!shortRing) fight.orbit = true;
+    fight.orbitCx = AXIOM_CX;
+    fight.orbitCy = AXIOM_CY;
+    fight.orbitR = shortRing ? 100 : AXIOM_RING_R;
+    fight.orbitShields = shortRing ? [] : [
+      { ang: 0.2, span: 1.15, spin: 0.72 },
+      { ang: Math.PI + 0.4, span: 1.05, spin: 0.72 }
+    ];
+    snapPlayersToAxiomRing();
+  }
+  function startAxiomPast() {
+    fight.pastClose = true;
+    fight.wake = [];
+    fight.wakeDwell = 0;
+    fight.pocketAng = 0.4;
+    fight.pocket = { x: AXIOM_CX + 70, y: AXIOM_CY, r: AXIOM_POCKET_R };
+  }
+  function axiomSealSpots() {
+    return [
+      { x: AXIOM_CX + 50, y: AXIOM_CY },
+      { x: AXIOM_CX - 50, y: AXIOM_CY },
+      { x: AXIOM_CX, y: AXIOM_CY - 48 },
+      { x: AXIOM_CX, y: AXIOM_CY + 48 }
+    ];
+  }
+  function axiomSealOrderText() {
+    var i, id, s, parts = [];
+    for (i = 0; i < fight.sealOrder.length; i++) {
+      id = fight.sealOrder[i];
+      s = fight.seals[id];
+      parts.push(s ? AXIOM_SEAL_LABELS[s.kind] : "?");
+    }
+    return parts.join("  ");
+  }
+  function startAxiomSeals() {
+    var spots = axiomSealSpots(), order = [0, 1, 2, 3], kinds, i;
+    kinds = AXIOM_SEAL_KINDS.slice();
+    shuffleInPlace(order);
+    shuffleInPlace(kinds);
+    fight.sealsNeed = true;
+    fight.seals = [];
+    fight.sealOrder = order;
+    fight.sealNext = 0;
+    fight.axiomOpen = false;
+    fight.axiomOpenT = 0;
+    fight.bounce = true;
+    for (i = 0; i < 4; i++) {
+      fight.seals.push({
+        x: spots[i].x, y: spots[i].y, kind: kinds[i], alive: true, r: kinds[i] === "fly" ? 16 : 11, hp: 1
+      });
+    }
+    fight.rule2 = axiomSealOrderText();
+    axiomSyncSealRing();
+  }
+  function axiomPunish(boss) {
+    var b = boss || currentBoss() || { x: AXIOM_CX, y: AXIOM_CY };
+    fanShot(b.x, b.y, 10, 1.6, 170, 8, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.8 });
+    ringShot(b.x, b.y, 12, 130, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: true });
+    banner = { text: "ORDER BROKEN", life: 0.85 };
+    sfxBoom(true);
+  }
+  function axiomResetSeals(boss) {
+    var i;
+    axiomPunish(boss);
+    for (i = 0; i < fight.seals.length; i++) {
+      if (fight.seals[i]) fight.seals[i].alive = true;
+    }
+    fight.sealNext = 0;
+    fight.axiomOpen = false;
+    fight.rule2 = axiomSealOrderText();
+    axiomSyncSealRing();
+  }
+  function axiomBreakSeal(idx, boss) {
+    var s = fight.seals[idx];
+    if (!s || !s.alive) return;
+    s.alive = false;
+    explode(s.x, s.y, FIGHT_GOLD, true);
+    fight.sealNext += 1;
+    if (fight.sealNext >= fight.sealOrder.length) {
+      fight.axiomOpen = true;
+      fight.axiomOpenT = 4.4;
+      banner = { text: "THE CORE OPENS", life: 1.15 };
+      rings.push({ x: (boss && boss.x) || AXIOM_CX, y: (boss && boss.y) || AXIOM_CY, r: 8, vr: 140, life: 0.5, color: FIGHT_GOLD });
+    } else {
+      fight.rule2 = axiomSealOrderText();
+      banner = { text: AXIOM_SEAL_LABELS[s.kind] + " BROKEN", life: 0.7 };
+    }
+    axiomSyncSealRing();
+  }
+  function axiomSyncSealRing() {
+    var cur = axiomCurrentSeal();
+    if (fight.orbit) return;
+    if (fight.sealsNeed && !fight.axiomOpen && cur && cur.kind === "orbit" && cur.alive) {
+      if (!fight.ringLock) startAxiomOrbit(true);
+    } else if (fight.ringLock) {
+      releaseAxiomOrbit();
+    }
+  }
+  function axiomTrySealShot(b, i) {
+    var n, s, cur, idx, bounced;
+    if (!fight.sealsNeed || fight.axiomOpen) return false;
+    cur = axiomCurrentSeal();
+    bounced = (b.bounces || 0) === 1;
+    for (n = 0; n < fight.seals.length; n++) {
+      s = fight.seals[n];
+      if (!s || !s.alive) continue;
+      if (dist2(b.x, b.y, s.x, s.y) >= (s.r + (b.r || 2) + 1) * (s.r + (b.r || 2) + 1)) continue;
+      if (s.kind === "bounce" && (b.bounces || 0) !== 1) return false;
+      if (s.kind === "fly") {
+        axiomResetSeals(currentBoss());
+        pbul.splice(i, 1);
+        return true;
+      }
+      idx = fight.sealOrder[fight.sealNext];
+      if (n !== idx) {
+        axiomResetSeals(currentBoss());
+        pbul.splice(i, 1);
+        return true;
+      }
+      if (s.kind === "shoot") {
+        axiomBreakSeal(n, currentBoss());
+        pbul.splice(i, 1);
+        return true;
+      }
+      if (s.kind === "bounce" && bounced) {
+        axiomBreakSeal(n, currentBoss());
+        pbul.splice(i, 1);
+        return true;
+      }
+      if (s.kind === "orbit") {
+        if (axiomOnRing()) axiomBreakSeal(n, currentBoss());
+        else axiomResetSeals(currentBoss());
+        pbul.splice(i, 1);
+        return true;
+      }
+      axiomResetSeals(currentBoss());
+      pbul.splice(i, 1);
+      return true;
+    }
+    return false;
+  }
+  function axiomTrySealFly(pl) {
+    var n, s, idx, pr;
+    if (!fight.sealsNeed || fight.axiomOpen || !pl || !pl.alive) return;
+    pr = pl.r || PLAYER_R;
+    idx = fight.sealOrder[fight.sealNext];
+    for (n = 0; n < fight.seals.length; n++) {
+      s = fight.seals[n];
+      if (!s || !s.alive) continue;
+      if (dist2(pl.x, pl.y, s.x, s.y) >= (s.r + pr - 2) * (s.r + pr - 2)) continue;
+      if (s.kind === "fly" && n === idx) {
+        axiomBreakSeal(n, currentBoss());
+        return;
+      }
+      if (s.kind === "fly" && n !== idx) {
+        axiomResetSeals(currentBoss());
+        return;
+      }
+    }
   }
   function applyAxiomPhase(idx) {
-    var a, b;
+    var a;
     clearAxiomRules();
-    if (idx >= 5) {
-      a = AXIOM_RULES[1];
-      b = AXIOM_RULES[4];
-      setAxiomRule(a);
-      setAxiomRule(b);
-      fight.rule = a.text;
-      fight.rule2 = b.text;
-      fight.ruleIdx = 1;
-      fight.ruleIdx2 = 4;
-    } else {
-      a = AXIOM_RULES[idx] || AXIOM_RULES[0];
-      setAxiomRule(a);
-      fight.rule = a.text;
-      fight.rule2 = "";
-      fight.ruleIdx = idx;
-      fight.ruleIdx2 = -1;
-    }
-    fight.cardT = 2.4;
-    banner = { text: fight.rule2 ? (fight.rule + " + " + fight.rule2) : fight.rule, life: 1.55 };
+    a = AXIOM_RULES[idx] || AXIOM_RULES[0];
+    setAxiomRule(a);
+    fight.rule = a.text;
+    fight.rule2 = a.id === "seals" ? axiomSealOrderText() : "";
+    fight.ruleIdx = idx;
+    fight.ruleIdx2 = -1;
+    fight.cardT = 2.6;
+    banner = { text: fight.rule, life: 1.55 };
   }
+  function spawnClimbingBlades() {
+    var gap = 36 + Math.random() * (W - 72);
+    var up = !!fight.fallUp;
+    fight.blades.push({
+      kind: "row", y: up ? H - 18 : 18, vy: up ? -78 : 78,
+      gapX: gap, gapW: 30, gapVx: (Math.random() < 0.5 ? -1 : 1) * 62,
+      h: 7, life: 2.8
+    });
+  }
+  function spawnAxiomZipper() {
+    var up = !!fight.fallUp;
+    fight.blades.push({
+      kind: "zip", x: 12, vx: 110, y: up ? 70 : H - 80, gapY: up ? 52 : H - 100, gapH: 34, w: 8, life: 2.2
+    });
+    fight.blades.push({
+      kind: "zip", x: W - 12, vx: -110, y: up ? 160 : H - 170, gapY: up ? 142 : H - 188, gapH: 34, w: 8, life: 2.2, silent: true
+    });
+  }
+  function fireAxiomWallBounce() {
+    var spd = 150, opt = { color: FIGHT_RED, glow: FIGHT_RED, r: 2.7, bounce: true, bounceMax: 1, life: 2.2 };
+    addEbul(8, 50, spd, 70, opt);
+    addEbul(W - 8, 50, -spd, 70, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.7, bounce: true, bounceMax: 1, life: 2.2, silent: true });
+    addEbul(8, H - 40, spd, -40, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, bounce: true, bounceMax: 1, life: 2.2, silent: true });
+    addEbul(W - 8, H - 40, -spd, -40, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, bounce: true, bounceMax: 1, life: 2.2, silent: true });
+  }
+  function fireAxiomBounceSweep(e) {
+    var a = Math.atan2((e.aimY || H * 0.75) - e.y, (e.aimX || W / 2) - e.x), k;
+    for (k = -2; k <= 2; k++) {
+      addEbul(e.x, e.y, Math.cos(a + k * 0.38) * 165, Math.sin(a + k * 0.38) * 165, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, bounce: true, bounceMax: 1, life: 2.0, silent: k !== 0
+      });
+    }
+  }
+  function fireAxiomGrazeNeedles(e) {
+    var tgt = targetPlayer(e.x, e.y), a, i, miss;
+    if (!tgt) return;
+    a = Math.atan2(tgt.y - e.y, tgt.x - e.x);
+    for (i = -3; i <= 3; i++) {
+      if (i === 0) continue;
+      miss = (i < 0 ? -1 : 1) * 0.22;
+      addEbul(e.x, e.y, Math.cos(a + miss + i * 0.08) * 155, Math.sin(a + miss + i * 0.08) * 155, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.4, silent: i !== -3
+      });
+    }
+  }
+  function fireAxiomGrazeSwath(e) {
+    var tgt = targetPlayer(e.x, e.y);
+    var skip = tgt ? Math.atan2(tgt.y - e.y, tgt.x - e.x) : 1.2;
+    fireGappedRing(e.x, e.y, 16, 125, Math.round(((skip / (Math.PI * 2)) * 16 + 16) % 16), 3, {
+      color: FIGHT_RED, glow: FIGHT_RED, r: 2.5
+    });
+    addEbul(e.x, e.y, Math.cos(skip + 1.15) * 90, Math.sin(skip + 1.15) * 90, {
+      color: FIGHT_RED, glow: FIGHT_RED, r: 3.4, silent: true
+    });
+  }
+  function fireAxiomOrbitSpokes(e) {
+    var i, a, skip = time * 0.7;
+    for (i = 0; i < 10; i++) {
+      a = skip + i * (Math.PI * 2 / 10);
+      if (axiomShieldBlocks({ x: (fight.orbitCx || AXIOM_CX) + Math.cos(a) * AXIOM_SHIELD_R, y: (fight.orbitCy || AXIOM_CY) + Math.sin(a) * AXIOM_SHIELD_R })) continue;
+      addEbul(e.x, e.y, Math.cos(a) * 95, Math.sin(a) * 95, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.6, silent: i > 0 });
+    }
+  }
+  function fireAxiomOrbitSweep() {
+    var cx = fight.orbitCx || AXIOM_CX, cy = fight.orbitCy || AXIOM_CY, i, a, R = (fight.orbitR || AXIOM_RING_R);
+    a = time * 1.1;
+    for (i = -2; i <= 2; i++) {
+      if (i === 0) continue;
+      addEbul(cx + Math.cos(a + i * 0.18) * R, cy + Math.sin(a + i * 0.18) * R, Math.cos(a + i * 0.18 + 1.2) * 70, Math.sin(a + i * 0.18 + 1.2) * 70, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: i !== -2, life: 1.3
+      });
+    }
+  }
+  function fireAxiomPastCrush() {
+    var pk = fight.pocket, i, a;
+    if (!pk) return;
+    for (i = 0; i < 9; i++) {
+      a = i * (Math.PI * 2 / 9) + time;
+      if (Math.abs(Math.atan2(Math.sin(a - fight.pocketAng), Math.cos(a - fight.pocketAng))) < 0.55) continue;
+      addEbul(pk.x + Math.cos(a) * 40, pk.y + Math.sin(a) * 40, Math.cos(a) * 80, Math.sin(a) * 80, {
+        color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: i > 0, life: 1.4
+      });
+    }
+  }
+  function fireAxiomPastStamps(e) {
+    var i, w, tgt = targetPlayer(e.x, e.y);
+    for (i = 0; i < fight.wake.length; i++) {
+      w = fight.wake[i];
+      if (time - w.t < AXIOM_WAKE_LAG - 0.15 || time - w.t > AXIOM_WAKE_LAG + 0.05) continue;
+      slamBox(w.x, w.y, 10, 8, FIGHT_RED);
+      break;
+    }
+    if (tgt) aimedWedge(e.x, e.y, tgt.x, tgt.y, 4, 0.7, 140, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.5 });
+  }
+  function fireAxiomSealBurst(e) {
+    var s = axiomCurrentSeal();
+    if (s && s.alive) {
+      aimedWedge(s.x, s.y, e.aimX, e.aimY, 5, 0.8, 150, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.5 });
+    }
+    fireGappedRing(e.x, e.y, 14, 120, 3, 2, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.5, silent: true });
+  }
+  function fireAxiomClockHands(e) {
+    var a = time * 1.35, i;
+    for (i = 0; i < 2; i++) {
+      fireSpoke(e.x, e.y, a + i * Math.PI, 6, 70, { color: FIGHT_RED, glow: FIGHT_RED, r: 2.7, silent: i > 0 });
+    }
+  }
+  function teleAxiom(e, atk, delay) {
+    var s;
+    addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+    if (atk === "fallup") addTele("hline", 10, fight.fallUp ? H - 24 : 24, W - 10, fight.fallUp ? H - 24 : 24, delay, FIGHT_WHITE);
+    else if (atk === "fallzip") {
+      addTele("vline", 16, 40, 16, H - 40, delay, FIGHT_WHITE);
+      addTele("vline", W - 16, 40, W - 16, H - 40, delay, FIGHT_WHITE);
+    } else if (atk === "bounce" || atk === "bouncesweep") {
+      addTele("line", 8, 40, W - 8, H - 40, delay, FIGHT_WHITE);
+      addTele("line", W - 8, 40, 8, H - 40, delay, FIGHT_WHITE);
+    } else if (atk === "grazeheal" || atk === "grazeswath") addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
+    else if (atk === "orbitring") addTele("ring", fight.orbitCx || AXIOM_CX, fight.orbitCy || AXIOM_CY, 0, 0, delay, FIGHT_WHITE);
+    else if (atk === "orbitsweep") addTele("ring", fight.orbitCx || AXIOM_CX, fight.orbitCy || AXIOM_CY, 0, 0, delay, FIGHT_CYAN);
+    else if (atk === "pastclose" && fight.pocket) addTele("ring", fight.pocket.x, fight.pocket.y, 0, 0, delay, FIGHT_GOLD);
+    else if (atk === "pastcrush") addTele("flash", e.aimX, e.aimY, 0, 0, delay, FIGHT_WHITE);
+    else if (atk === "seals" || atk === "sealburst") {
+      s = axiomCurrentSeal();
+      if (s) addTele("flash", s.x, s.y, 0, 0, delay, FIGHT_GOLD);
+    }
+  }
+  function fireAxiomAttack(e, atk) {
+    if (atk === "fallup") spawnClimbingBlades();
+    else if (atk === "fallzip") spawnAxiomZipper();
+    else if (atk === "bounce") fireAxiomWallBounce();
+    else if (atk === "bouncesweep") fireAxiomBounceSweep(e);
+    else if (atk === "grazeheal") fireAxiomGrazeNeedles(e);
+    else if (atk === "grazeswath") fireAxiomGrazeSwath(e);
+    else if (atk === "orbitring") fireAxiomOrbitSpokes(e);
+    else if (atk === "orbitsweep") fireAxiomOrbitSweep();
+    else if (atk === "pastclose") fireAxiomPastCrush();
+    else if (atk === "pastcrush") fireAxiomPastStamps(e);
+    else if (atk === "seals") fireAxiomSealBurst(e);
+    else if (atk === "sealburst") fireAxiomClockHands(e);
+  }
+  function isAxiomAtk(atk) {
+    return atk === "fallup" || atk === "fallzip" || atk === "bounce" || atk === "bouncesweep"
+      || atk === "grazeheal" || atk === "grazeswath" || atk === "orbitring" || atk === "orbitsweep"
+      || atk === "pastclose" || atk === "pastcrush" || atk === "seals" || atk === "sealburst";
+  }
+  function updateAxiomBlades(dt) {
+    var i, f, hit;
+    for (i = fight.blades.length - 1; i >= 0; i--) {
+      f = fight.blades[i];
+      f.life -= dt;
+      if (f.kind === "row") {
+        f.y += f.vy * dt;
+        f.gapX += f.gapVx * dt;
+        if (f.gapX < 28 || f.gapX > W - 28) f.gapVx *= -1;
+        f.gapX = clamp(f.gapX, 28, W - 28);
+        hit = true;
+        tryHitPlayersRect((f.gapX - f.gapW) * 0.5, f.y, Math.max(8, (f.gapX - f.gapW) * 0.5), f.h);
+        tryHitPlayersRect((W + f.gapX + f.gapW) * 0.5, f.y, Math.max(8, (W - (f.gapX + f.gapW)) * 0.5), f.h);
+      } else if (f.kind === "zip") {
+        f.x += f.vx * dt;
+        tryHitPlayersRect(f.x, (f.gapY - f.gapH * 0.5) * 0.5, f.w, Math.max(8, (f.gapY - f.gapH * 0.5) * 0.5));
+        tryHitPlayersRect(f.x, (H + f.gapY + f.gapH * 0.5) * 0.5, f.w, Math.max(8, (H - (f.gapY + f.gapH * 0.5)) * 0.5));
+      }
+      if (f.life <= 0 || f.y < -12 || f.y > H + 12 || f.x < -16 || f.x > W + 16) fight.blades.splice(i, 1);
+    }
+  }
+  function updateAxiomOrbit(dt, boss) {
+    var i, s, t;
+    if (!axiomOnRing()) return;
+    fight.orbitCx = AXIOM_CX;
+    fight.orbitCy = AXIOM_CY;
+    if (!fight.orbitR) fight.orbitR = AXIOM_RING_R;
+    for (i = 0; i < fight.orbitShields.length; i++) {
+      s = fight.orbitShields[i];
+      s.ang += s.spin * dt;
+    }
+    if (boss && fight.orbit) {
+      t = time + (boss.phase || 0);
+      boss.x = AXIOM_CX + Math.cos(t * 0.9) * AXIOM_BOSS_R;
+      boss.y = AXIOM_CY + Math.sin(t * 1.15) * AXIOM_BOSS_R * 0.82;
+    }
+  }
+  function updateAxiomPast(dt) {
+    var i, pl, w, hit, pk, age;
+    if (!fight.pastClose) return;
+    fight.pocketAng += 0.62 * dt;
+    pk = fight.pocket || { r: AXIOM_POCKET_R };
+    pk.x = AXIOM_CX + Math.cos(fight.pocketAng) * 68;
+    pk.y = AXIOM_CY + Math.sin(fight.pocketAng * 0.82) * 92;
+    pk.r = AXIOM_POCKET_R;
+    fight.pocket = pk;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
+      fight.wake.push({ t: time, x: pl.x, y: pl.y });
+    }
+    while (fight.wake.length && fight.wake[0].t < time - AXIOM_WAKE_LAG - 0.45) fight.wake.shift();
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive || pl.invuln > 0) continue;
+      hit = false;
+      for (w = 0; w < fight.wake.length; w++) {
+        age = time - fight.wake[w].t;
+        if (age < AXIOM_WAKE_LAG - 0.12 || age > AXIOM_WAKE_LAG + 0.28) continue;
+        if (dist2(pl.x, pl.y, fight.wake[w].x, fight.wake[w].y) < 13 * 13) { hit = true; break; }
+      }
+      if (hit) {
+        fight.wakeDwell = (fight.wakeDwell || 0) + dt;
+        if (fight.wakeDwell >= 0.12) {
+          if (isPvpRun()) pvpHurt(pl, 8);
+          else playerDie(pl);
+          fight.wakeDwell = 0;
+        }
+      } else {
+        fight.wakeDwell = Math.max(0, (fight.wakeDwell || 0) - dt * 2);
+      }
+    }
+  }
+  function updateAxiomSeals(dt, boss) {
+    var i, pl;
+    if (!fight.sealsNeed) return;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      axiomTrySealFly(pl);
+    }
+    if (fight.axiomOpen) {
+      fight.axiomOpenT -= dt;
+      if (fight.axiomOpenT <= 0) {
+        fight.axiomOpen = false;
+        startAxiomSeals();
+        banner = { text: "SEALS REFORGED", life: 1.05 };
+        fight.rule = "BREAK THE SEALS";
+        fight.cardT = 1.6;
+      }
+    }
+    axiomSyncSealRing();
+  }
+  function updateAxiom(dt, boss) {
+    if (fight.cardT > 0) fight.cardT -= dt;
+    updateAxiomBlades(dt);
+    updateAxiomOrbit(dt, boss);
+    updateAxiomPast(dt);
+    updateAxiomSeals(dt, boss);
+  }
+
   function spawnPrisms(e, n) {
     var i, spots;
     n = n || 2;
@@ -10467,19 +11032,17 @@
       }
       while (fight.mimicShots.length && fight.mimicShots[0].t < time - 2.4) fight.mimicShots.shift();
     }
-    if (fight.cardT > 0) fight.cardT -= dt;
-    if (fight.pullDown) {
-      for (k = 0; k < players.length; k++) {
-        pl = players[k];
-        if (!pl || !pl.alive) continue;
-        pl.y = Math.min(H - 16, pl.y + 42 * dt);
-        pl.targetY = pl.y;
-      }
-    }
+    updateAxiom(dt, boss);
   }
   function hitFightShot(b, i) {
     var n, obj, dmg, boss, ok, burst, j;
     dmg = b.dmg || 1;
+    if (axiomTrySealShot(b, i)) return true;
+    if (axiomShieldBlocks(b)) {
+      explode(b.x, b.y, FIGHT_RED, false);
+      pbul.splice(i, 1);
+      return true;
+    }
     for (n = 0; n < fight.knots.length; n++) {
       obj = fight.knots[n];
       if (!obj.alive) continue;
@@ -10824,10 +11387,50 @@
     }
     if (fight.mimicGhost) out.push({ kind: "ghost", x: fight.mimicGhost.x, y: fight.mimicGhost.y, x2: 1, y2: 0, st: 1, t: 0, color: FIGHT_RED });
     if (fight.mimicGhost2 && fight.type === "mimic") out.push({ kind: "ghost", x: fight.mimicGhost2.x, y: fight.mimicGhost2.y, x2: 1, y2: 0, st: 2, t: 0, color: FIGHT_RED });
+    if (axiomOnRing() || fight.orbit) {
+      out.push({
+        kind: "orbit", x: fight.orbitCx || AXIOM_CX, y: fight.orbitCy || AXIOM_CY,
+        x2: AXIOM_ARENA_R, y2: fight.orbitR || AXIOM_RING_R, st: fight.orbit ? 1 : 0, t: 0, color: FIGHT_CYAN
+      });
+    }
+    for (i = 0; i < (fight.orbitShields || []).length; i++) {
+      obj = fight.orbitShields[i];
+      out.push({
+        kind: "arc", x: fight.orbitCx || AXIOM_CX, y: fight.orbitCy || AXIOM_CY,
+        x2: obj.ang, y2: obj.span, st: 1, t: AXIOM_SHIELD_R, color: FIGHT_RED
+      });
+    }
+    for (i = 0; i < (fight.wake || []).length; i++) {
+      obj = fight.wake[i];
+      a = time - obj.t;
+      if (a < AXIOM_WAKE_LAG - 0.2 || a > AXIOM_WAKE_LAG + 0.35) continue;
+      out.push({ kind: "wake", x: obj.x, y: obj.y, x2: 10, y2: 10, st: 1, t: a, color: FIGHT_RED });
+    }
+    if (fight.pocket) {
+      out.push({ kind: "pocket", x: fight.pocket.x, y: fight.pocket.y, x2: fight.pocket.r, y2: 0, st: 1, t: 0, color: FIGHT_GOLD });
+    }
+    for (i = 0; i < (fight.seals || []).length; i++) {
+      obj = fight.seals[i];
+      if (!obj || !obj.alive) continue;
+      out.push({
+        kind: "seal", x: obj.x, y: obj.y, x2: obj.r, y2: 0,
+        st: AXIOM_SEAL_KINDS.indexOf(obj.kind) + 1,
+        t: fight.sealOrder[fight.sealNext] === i ? 1 : 0,
+        color: fight.sealOrder[fight.sealNext] === i ? FIGHT_GOLD : FIGHT_WHITE
+      });
+    }
+    for (i = 0; i < (fight.blades || []).length; i++) {
+      obj = fight.blades[i];
+      if (obj.kind === "row") {
+        out.push({ kind: "wake", x: obj.gapX, y: obj.y, x2: obj.gapW, y2: obj.h, st: 2, t: 0, color: FIGHT_CYAN });
+      } else {
+        out.push({ kind: "wake", x: obj.x, y: obj.gapY, x2: obj.w, y2: obj.gapH, st: 3, t: 0, color: FIGHT_CYAN });
+      }
+    }
     if (fight.rule) {
       out.push({
         kind: "rule", x: fight.ruleIdx, y: fight.ruleIdx2, x2: 0, y2: 0,
-        st: (fight.fallUp ? 1 : 0) | (fight.bounce ? 2 : 0) | (fight.grazeHeal ? 4 : 0) | (fight.turn ? 8 : 0) | (fight.pullDown ? 16 : 0),
+        st: (fight.fallUp ? 1 : 0) | (fight.bounce ? 2 : 0) | (fight.grazeHeal ? 4 : 0) | (fight.orbit ? 8 : 0) | (fight.pastClose ? 16 : 0) | (fight.sealsNeed ? 32 : 0) | (fight.ringLock ? 64 : 0) | (fight.axiomOpen ? 128 : 0),
         t: fight.cardT || 0, color: FIGHT_GOLD
       });
     }
@@ -10840,6 +11443,11 @@
     fight.midY = H / 2;
     fight.wallL = 0;
     fight.wallR = 0;
+    fight.orbit = false;
+    fight.ringLock = false;
+    fight.pastClose = false;
+    fight.sealsNeed = false;
+    fight.axiomOpen = false;
     for (i = 0; i < fightView.length; i++) {
       it = fightView[i];
       if (it.kind === "midline") { fight.invert = true; fight.midY = it.y; }
@@ -10856,14 +11464,25 @@
         fight.fallUp = !!(it.st & 1);
         fight.bounce = !!(it.st & 2);
         fight.grazeHeal = !!(it.st & 4);
-        fight.turn = (it.st & 8) ? 1 : 0;
-        fight.pullDown = !!(it.st & 16);
+        fight.orbit = !!(it.st & 8);
+        fight.pastClose = !!(it.st & 16);
+        fight.sealsNeed = !!(it.st & 32);
+        fight.ringLock = !!(it.st & 64);
+        fight.axiomOpen = !!(it.st & 128);
+        fight.turn = 0;
+        fight.pullDown = false;
         fight.ruleIdx = it.x;
         fight.ruleIdx2 = it.y;
         fight.cardT = it.t || 0;
         fight.rule = (AXIOM_RULES[it.x] && AXIOM_RULES[it.x].text) || "";
-        fight.rule2 = (it.y >= 0 && AXIOM_RULES[it.y]) ? AXIOM_RULES[it.y].text : "";
+        fight.rule2 = fight.sealsNeed ? (fight.rule2 || "") : "";
       }
+      if (it.kind === "orbit") {
+        fight.orbitCx = it.x;
+        fight.orbitCy = it.y;
+        fight.orbitR = it.y2 || AXIOM_RING_R;
+      }
+      if (it.kind === "pocket") fight.pocket = { x: it.x, y: it.y, r: it.x2 || AXIOM_POCKET_R };
     }
   }
   function drawTesseraBoard(context) {
@@ -10891,6 +11510,58 @@
       context.beginPath(); context.moveTo(0, r * thh); context.lineTo(W, r * thh); context.stroke();
     }
     context.restore();
+  }
+  function drawAxiomSealIcon(context, x, y, kind, current, r) {
+    r = r || 10;
+    context.save();
+    context.translate(x, y);
+    context.strokeStyle = current ? FIGHT_GOLD : FIGHT_WHITE;
+    context.fillStyle = current ? FIGHT_GOLD : FIGHT_WHITE;
+    context.lineWidth = current ? 2 : 1.4;
+    context.globalAlpha = current ? 1 : 0.8;
+    context.beginPath();
+    context.arc(0, 0, r, 0, Math.PI * 2);
+    context.stroke();
+    context.globalAlpha = current ? 0.22 : 0.08;
+    context.fill();
+    context.globalAlpha = 1;
+    context.fillStyle = current ? FIGHT_GOLD : FIGHT_WHITE;
+    context.strokeStyle = current ? FIGHT_GOLD : FIGHT_WHITE;
+    if (kind === "shoot") {
+      context.beginPath();
+      context.moveTo(0, -5); context.lineTo(3, 4); context.lineTo(-3, 4);
+      context.closePath(); context.fill();
+    } else if (kind === "fly") {
+      context.lineWidth = 1.5;
+      context.beginPath();
+      context.moveTo(-5, 3); context.lineTo(0, -5); context.lineTo(5, 3);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(-3, 0); context.lineTo(3, 0); context.stroke();
+    } else if (kind === "bounce") {
+      context.lineWidth = 1.6;
+      context.beginPath();
+      context.moveTo(-5, 4); context.lineTo(-5, -2); context.lineTo(5, -2); context.lineTo(5, 4);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(2, 1); context.lineTo(5, 4); context.lineTo(8, 1);
+      context.stroke();
+    } else {
+      context.beginPath(); context.arc(0, 0, 4.5, 0, Math.PI * 2); context.stroke();
+      context.beginPath(); context.arc(0, 0, 1.6, 0, Math.PI * 2); context.fill();
+    }
+    context.restore();
+  }
+  function drawAxiomSealRow(context, cx, y) {
+    var i, id, s, x0;
+    if (!fight.seals || !fight.sealOrder) return;
+    x0 = cx - 42;
+    for (i = 0; i < fight.sealOrder.length; i++) {
+      id = fight.sealOrder[i];
+      s = fight.seals[id];
+      if (!s) continue;
+      drawAxiomSealIcon(context, x0 + i * 28, y, s.kind, i === fight.sealNext && s.alive, s.alive ? 9 : 6);
+    }
   }
   function drawFight(context) {
     var list = netRole === "client" ? fightView : fightSnap();
@@ -11109,19 +11780,75 @@
         context.beginPath(); context.arc(f.x, f.y, 5, 0, Math.PI * 2); context.fill();
         context.strokeStyle = FIGHT_WHITE;
         context.stroke();
+      } else if (f.kind === "orbit") {
+        context.strokeStyle = FIGHT_CYAN;
+        context.globalAlpha = 0.55;
+        context.lineWidth = 2.2;
+        context.beginPath(); context.arc(f.x, f.y, f.x2 || AXIOM_ARENA_R, 0, Math.PI * 2); context.stroke();
+        context.strokeStyle = FIGHT_WHITE;
+        context.globalAlpha = 0.85;
+        context.lineWidth = 1.6;
+        if (context.setLineDash) context.setLineDash([5, 4]);
+        context.beginPath(); context.arc(f.x, f.y, f.y2 || AXIOM_RING_R, 0, Math.PI * 2); context.stroke();
+        if (context.setLineDash) context.setLineDash([]);
+      } else if (f.kind === "arc") {
+        context.strokeStyle = FIGHT_RED;
+        context.globalAlpha = 0.92;
+        context.lineWidth = 7;
+        context.beginPath();
+        context.arc(f.x, f.y, f.t || AXIOM_SHIELD_R, f.x2 - (f.y2 || 1) * 0.5, f.x2 + (f.y2 || 1) * 0.5);
+        context.stroke();
+      } else if (f.kind === "wake") {
+        if (f.st === 2) {
+          context.fillStyle = FIGHT_RED;
+          context.globalAlpha = 0.82;
+          context.fillRect(4, f.y - (f.y2 || 6), Math.max(0, f.x - (f.x2 || 28) - 4), (f.y2 || 6) * 2);
+          context.fillRect(f.x + (f.x2 || 28), f.y - (f.y2 || 6), W - 4 - (f.x + (f.x2 || 28)), (f.y2 || 6) * 2);
+          context.fillStyle = FIGHT_CYAN;
+          context.globalAlpha = 0.7;
+          context.fillRect(f.x - (f.x2 || 28), f.y - (f.y2 || 6), (f.x2 || 28) * 2, (f.y2 || 6) * 2);
+        } else if (f.st === 3) {
+          context.fillStyle = FIGHT_RED;
+          context.globalAlpha = 0.82;
+          context.fillRect(f.x - (f.x2 || 6), 8, (f.x2 || 6) * 2, Math.max(0, f.y - (f.y2 || 16) - 8));
+          context.fillRect(f.x - (f.x2 || 6), f.y + (f.y2 || 16), (f.x2 || 6) * 2, H - 8 - (f.y + (f.y2 || 16)));
+          context.fillStyle = FIGHT_CYAN;
+          context.globalAlpha = 0.7;
+          context.fillRect(f.x - (f.x2 || 6), f.y - (f.y2 || 16), (f.x2 || 6) * 2, (f.y2 || 16) * 2);
+        } else {
+          context.fillStyle = FIGHT_RED;
+          context.globalAlpha = 0.55;
+          context.beginPath(); context.arc(f.x, f.y, 7, 0, Math.PI * 2); context.fill();
+        }
+      } else if (f.kind === "pocket") {
+        context.strokeStyle = FIGHT_GOLD;
+        context.fillStyle = FIGHT_GOLD;
+        context.globalAlpha = 0.2 + 0.08 * Math.sin(time * 8);
+        context.beginPath(); context.arc(f.x, f.y, f.x2 || AXIOM_POCKET_R, 0, Math.PI * 2); context.fill();
+        context.globalAlpha = 0.95;
+        context.lineWidth = 2;
+        context.beginPath(); context.arc(f.x, f.y, f.x2 || AXIOM_POCKET_R, 0, Math.PI * 2); context.stroke();
+        context.strokeStyle = FIGHT_WHITE;
+        context.lineWidth = 1;
+        context.beginPath(); context.arc(f.x, f.y, 4, 0, Math.PI * 2); context.stroke();
+      } else if (f.kind === "seal") {
+        drawAxiomSealIcon(context, f.x, f.y, AXIOM_SEAL_KINDS[(f.st || 1) - 1], !!f.t, f.x2 || 11);
       } else if (f.kind === "rule") {
+        a = fight.sealsNeed ? 52 : 36;
         context.fillStyle = "rgba(8,8,16,0.72)";
-        context.fillRect(28, 28, W - 56, 36);
+        context.fillRect(28, 22, W - 56, a);
         context.strokeStyle = FIGHT_GOLD;
         context.lineWidth = 1.6;
-        context.strokeRect(28, 28, W - 56, 36);
+        context.strokeRect(28, 22, W - 56, a);
         context.fillStyle = FIGHT_GOLD;
         context.font = "bold 8px ui-sans-serif, system-ui, sans-serif";
         context.textAlign = "center";
-        context.fillText(fight.rule || (AXIOM_RULES[f.x] && AXIOM_RULES[f.x].text) || "RULE", W / 2, 44);
-        if (fight.rule2 || f.y >= 0) {
+        context.fillText(fight.rule || (AXIOM_RULES[f.x] && AXIOM_RULES[f.x].text) || "RULE", W / 2, 38);
+        if (fight.sealsNeed) {
+          drawAxiomSealRow(context, W / 2, 58);
+        } else if (fight.rule2) {
           context.font = "bold 7px ui-sans-serif, system-ui, sans-serif";
-          context.fillText(fight.rule2 || ((AXIOM_RULES[f.y] && AXIOM_RULES[f.y].text) || ""), W / 2, 56);
+          context.fillText(fight.rule2, W / 2, 52);
         }
       }
       context.restore();
@@ -11234,6 +11961,7 @@
       e.y += (fy - e.y) * Math.min(1, 4 * dt);
       return;
     }
+    if (e.type === "axiom" && fight.orbit) return;
     if (e.type === "pentarch" || isLateFight(e.type)) {
       e.x += e.patrolDir * spd * 0.92 * dt;
       if (e.x < 34) { e.x = 34; e.patrolDir = 1; }
@@ -14557,7 +15285,9 @@
     }
     margin = Math.max(10, (p.r || PLAYER_R) + 4);
     if (p.targetY == null) p.targetY = p.y;
-    if (!((p.freezeT || 0) > 0)) {
+    if (axiomOnRing()) {
+      if (!((p.freezeT || 0) > 0)) axiomSteerOnRing(p, inp, dt, spd);
+    } else if (!((p.freezeT || 0) > 0)) {
     if (p.slot === localSlot && pointerSteer.aimX != null) {
       aimX = pvpFlipped() ? (W - pointerSteer.aimX) : pointerSteer.aimX;
     } else {
@@ -14974,7 +15704,7 @@
         if (b.y < 4 && b.vy < 0) { b.y = 4; b.vy *= -1; b.bounces += 1; }
         if (b.y > H - 4 && b.vy > 0) { b.y = H - 4; b.vy *= -1; b.bounces += 1; }
         if (b.bounces > 0) { b.color = FIGHT_RED; b.glow = FIGHT_RED; }
-        if (b.bounces > 4) { pbul.splice(i, 1); continue; }
+        if (b.bounces > 1) { pbul.splice(i, 1); continue; }
       }
       if (b.y < -14 || b.y > H + 14 || b.x < -12 || b.x > W + 12) { pbul.splice(i, 1); continue; }
       if (applyBossHazardsToPbul(b, i)) continue;
@@ -16807,12 +17537,19 @@
       context.strokeStyle = col;
       context.lineWidth = 1.5;
       context.strokeRect(-14, -14, 28, 28);
-      context.fillStyle = e.hitFlash > 0 ? "#fff" : FIGHT_GOLD;
+      context.fillStyle = e.hitFlash > 0 ? "#fff" : (fight.axiomOpen ? FIGHT_GOLD : FIGHT_GOLD);
       context.fillRect(-10, -6, 20, 12);
       context.fillStyle = dark;
       context.font = "bold 6px ui-sans-serif, system-ui, sans-serif";
       context.textAlign = "center";
       context.fillText("∴", 0, 2);
+      if (fight.axiomOpen) {
+        context.strokeStyle = FIGHT_GOLD;
+        context.lineWidth = 1.8;
+        context.globalAlpha = 0.7 + 0.25 * Math.sin(time * 10);
+        context.strokeRect(-18, -18, 36, 36);
+        context.globalAlpha = 1;
+      }
     } else {
       context.beginPath(); context.arc(0, 0, e.r, 0, Math.PI * 2); context.fill();
     }
@@ -17158,11 +17895,6 @@
       ctx.translate(W, H);
       ctx.rotate(Math.PI);
     }
-    if (fight.turn) {
-      ctx.translate(W / 2, H / 2);
-      ctx.rotate(Math.PI / 2);
-      ctx.translate(-W / 2, -H / 2);
-    }
 
     for (i = 0; i < stars.length; i++) {
       p = stars[i];
@@ -17415,7 +18147,11 @@
         ctx.restore();
       }
       ctx.save();
-      if (p.facing > 0) {
+      if (axiomOnRing()) {
+        ctx.translate(p.x, p.y);
+        ctx.rotate(Math.atan2((fight.orbitCy || AXIOM_CY) - p.y, (fight.orbitCx || AXIOM_CX) - p.x) + Math.PI / 2);
+        ctx.translate(-p.x, -p.y);
+      } else if (p.facing > 0) {
         ctx.translate(p.x, p.y);
         ctx.scale(1, -1);
         ctx.translate(-p.x, -p.y);
@@ -17429,6 +18165,21 @@
         drawShip(ctx, p.x, p.y, p.invuln > 0, currentLoadout(p));
       }
       ctx.restore();
+      if (axiomOnRing()) {
+        ctx.save();
+        ctx.strokeStyle = FIGHT_CYAN;
+        ctx.globalAlpha = 0.9;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(fight.orbitCx || AXIOM_CX, fight.orbitCy || AXIOM_CY);
+        ctx.stroke();
+        ctx.fillStyle = FIGHT_CYAN;
+        ctx.beginPath();
+        ctx.arc(p.x + axiomInwardAim(p).ux * 16, p.y + axiomInwardAim(p).uy * 16, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
       if (fight.on && fight.type === "lodestar") {
         var pcol = fight.polar ? "#4d88ff" : FIGHT_RED;
         var pmax = fight.polarMax || 4.2;
@@ -18410,7 +19161,17 @@
       getBoss: function () {
         var b = currentBoss();
         if (!b) return null;
-        return { type: b.type, tier: b.tier, hp: b.hp, maxHp: b.maxHp, state: b.state, atk: b.atk, phaseIdx: b.phaseIdx, x: Math.round(b.x), y: Math.round(b.y), tele: !!b.tele, kit: bossKit(b), healFlash: b.healFlash || 0, leech: hydraLeechTotal(), moveStyle: b.moveStyle || "patrol", atkQueue: (b.atkQueue || []).slice(), patrolDir: b.patrolDir };
+        return { type: b.type, tier: b.tier, hp: b.hp, maxHp: b.maxHp, state: b.state, atk: b.atk, phaseIdx: b.phaseIdx, x: Math.round(b.x), y: Math.round(b.y), tele: !!b.tele, kit: bossKit(b), healFlash: b.healFlash || 0, leech: hydraLeechTotal(), moveStyle: b.moveStyle || "patrol", atkQueue: (b.atkQueue || []).slice(), patrolDir: b.patrolDir, axiom: window.__galaga.getAxiom ? window.__galaga.getAxiom() : null };
+      },
+      getAxiom: function () {
+        var cur = axiomCurrentSeal();
+        return {
+          rule: fight.rule, rule2: fight.rule2, fallUp: !!fight.fallUp, bounce: !!fight.bounce, grazeHeal: !!fight.grazeHeal,
+          orbit: !!fight.orbit, ringLock: !!fight.ringLock, pastClose: !!fight.pastClose, sealsNeed: !!fight.sealsNeed,
+          axiomOpen: !!fight.axiomOpen, pocket: fight.pocket ? { x: Math.round(fight.pocket.x), y: Math.round(fight.pocket.y), r: fight.pocket.r } : null,
+          shields: (fight.orbitShields || []).length, blades: (fight.blades || []).length, wake: (fight.wake || []).length,
+          sealNext: fight.sealNext, sealKind: cur && cur.kind, seals: (fight.seals || []).map(function (s) { return s && s.alive ? s.kind : ""; })
+        };
       },
       bossPhaseTicks: function (type, tier) {
         return bossPhaseThresholds({ type: type, tier: tier || 0 });

@@ -27,8 +27,8 @@ assert(galaga.indexOf("tel.follow = true") >= 0, "telegraph tracks the live play
 assert(galaga.indexOf("fallbackAimY()") >= 0 && galaga.indexOf("function fallbackAimY") >= 0, "bottom of the field is a valid aim");
 assert(galaga.indexOf("function addKnot") >= 0 && galaga.indexOf("function addThread") >= 0, "knots and threads stay");
 
-assert(/var VER = 11;/.test(codec), "codec payload unchanged");
-assert(sw.indexOf("galaga-coop-v71") >= 0, "PWA cache bump");
+assert(/var VER = 12;/.test(codec), "codec payload unchanged");
+assert(sw.indexOf("galaga-coop-v72") >= 0, "PWA cache bump");
 assert(post.indexOf("Periodically fires a red shuttle dart") >= 0, "docs mention the shuttle");
 assert(post.indexOf("Sitting at the bottom is not safe") >= 0, "docs say bottom camping is unsafe");
 assert(roster.indexOf("periodic aimed shuttle") >= 0, "roster notes the shuttle");
