@@ -3214,6 +3214,7 @@
   }
   function spawnYFor(slot) {
     if (isPvp() && (slot | 0) === 1) return 34;
+    if (fight && fight.fallUp && !isPvpRun()) return 36;
     return H - 34;
   }
   // Nose into the field: PvP top seat faces down; everyone else (solo/co-op) faces up.
@@ -11841,7 +11842,7 @@
         drawAxiomSealIcon(context, f.x, f.y, AXIOM_SEAL_KINDS[(f.st || 1) - 1], !!f.t, f.x2 || 11);
       } else if (f.kind === "rule") {
         a = fight.sealsNeed ? 52 : 36;
-        cardY = fight.fallUp ? Math.round(H * 0.48) : 22;
+        cardY = fight.fallUp ? Math.round(H * 0.56) : 22;
         context.fillStyle = "rgba(8,8,16,0.72)";
         context.fillRect(28, cardY, W - 56, a);
         context.strokeStyle = FIGHT_GOLD;
