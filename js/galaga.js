@@ -9722,10 +9722,10 @@
   }
   function startAxiomSeals() {
     var placed = [
-      { kind: "shoot", x: AXIOM_CX + 52, y: AXIOM_CY, r: 12 },
-      { kind: "fly", x: AXIOM_CX - 52, y: AXIOM_CY, r: 16 },
-      { kind: "orbit", x: AXIOM_CX, y: AXIOM_CY - 54, r: 12 },
-      { kind: "bounce", x: AXIOM_CX, y: AXIOM_CY + 66, r: 14 }
+      { kind: "shoot", x: AXIOM_CX + 58, y: AXIOM_CY + 6, r: 12 },
+      { kind: "fly", x: AXIOM_CX - 58, y: AXIOM_CY + 6, r: 16 },
+      { kind: "orbit", x: AXIOM_CX - 30, y: AXIOM_CY - 56, r: 12 },
+      { kind: "bounce", x: AXIOM_CX + 30, y: AXIOM_CY + 72, r: 14 }
     ];
     var order = [0, 1, 2, 3], i;
     shuffleInPlace(order);
