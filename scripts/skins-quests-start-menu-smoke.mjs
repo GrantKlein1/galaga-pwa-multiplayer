@@ -90,6 +90,6 @@ assert(galaga.indexOf("pendingXpBoost = false") >= 0, "pvp / no-boost clears int
 assert(galaga.indexOf("consumeArmedXpBoost(!!(opts.pvp") >= 0, "start still consumes through existing helper");
 assert(galaga.indexOf("XP boosts:") >= 0, "banked copy");
 assert(css.indexOf(".start-run-menu") >= 0, "start menu style");
-assert(sw.indexOf("galaga-coop-v72") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v73") >= 0, "PWA cache bump");
 
 console.log("skins-quests-start-menu-smoke: ok  coinSkins=" + coinSkins.length);

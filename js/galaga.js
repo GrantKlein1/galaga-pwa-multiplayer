@@ -3260,7 +3260,7 @@
     var sand = fight.sandH || 0;
     if (isPvpRun() && p && p.slot === 1) return { lo: margin, hi: mid - margin };
     if (fight.fallUp) return { lo: margin, hi: mid - margin };
-    if (axiomOnRing()) return { lo: margin, hi: H - margin - sand };
+    if (axiomOnRing() || fight.pastClose || fight.sealsNeed) return { lo: margin, hi: H - margin - sand };
     if (fight.panes && fight.panes.length) return { lo: margin, hi: H - margin - sand };
     return { lo: mid + margin, hi: H - margin - sand };
   }
@@ -8943,6 +8943,7 @@
     fight.mimicGhost2 = null;
     fight.copiedAbility = "";
     clearAxiomRules();
+    snapPlayersToCurrentBand();
   }
   function addKnot(x, y) {
     var k = { x: x, y: y, alive: true, r: 7 };
@@ -9625,7 +9626,7 @@
     }
   }
   function releaseAxiomOrbit() {
-    var i, pl, band;
+    var i, pl;
     fight.orbit = false;
     fight.ringLock = false;
     fight.orbitShields = [];
@@ -9634,10 +9635,17 @@
       pl = players[i];
       if (!pl) continue;
       pl.orbitAng = null;
-      if (!pl.alive) continue;
+    }
+  }
+  function snapPlayersToCurrentBand() {
+    var i, pl, band;
+    if (axiomOnRing()) return;
+    for (i = 0; i < players.length; i++) {
+      pl = players[i];
+      if (!pl || !pl.alive) continue;
       band = shipYBand(pl, 12);
-      if (pl.y < band.lo) {
-        pl.y = (band.lo + band.hi) * 0.55;
+      if (pl.y < band.lo || pl.y > band.hi) {
+        pl.y = clamp(pl.y, band.lo, band.hi);
         pl.targetY = pl.y;
       }
     }
@@ -9702,14 +9710,6 @@
     fight.pocketAng = 0.4;
     fight.pocket = { x: AXIOM_CX + 70, y: AXIOM_CY, r: AXIOM_POCKET_R };
   }
-  function axiomSealSpots() {
-    return [
-      { x: AXIOM_CX + 50, y: AXIOM_CY },
-      { x: AXIOM_CX - 50, y: AXIOM_CY },
-      { x: AXIOM_CX, y: AXIOM_CY - 48 },
-      { x: AXIOM_CX, y: AXIOM_CY + 48 }
-    ];
-  }
   function axiomSealOrderText() {
     var i, id, s, parts = [];
     for (i = 0; i < fight.sealOrder.length; i++) {
@@ -9720,10 +9720,14 @@
     return parts.join("  ");
   }
   function startAxiomSeals() {
-    var spots = axiomSealSpots(), order = [0, 1, 2, 3], kinds, i;
-    kinds = AXIOM_SEAL_KINDS.slice();
+    var placed = [
+      { kind: "shoot", x: AXIOM_CX + 52, y: AXIOM_CY, r: 12 },
+      { kind: "fly", x: AXIOM_CX - 52, y: AXIOM_CY, r: 16 },
+      { kind: "orbit", x: AXIOM_CX, y: AXIOM_CY - 54, r: 12 },
+      { kind: "bounce", x: AXIOM_CX, y: AXIOM_CY + 66, r: 14 }
+    ];
+    var order = [0, 1, 2, 3], i;
     shuffleInPlace(order);
-    shuffleInPlace(kinds);
     fight.sealsNeed = true;
     fight.seals = [];
     fight.sealOrder = order;
@@ -9731,9 +9735,9 @@
     fight.axiomOpen = false;
     fight.axiomOpenT = 0;
     fight.bounce = true;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < placed.length; i++) {
       fight.seals.push({
-        x: spots[i].x, y: spots[i].y, kind: kinds[i], alive: true, r: kinds[i] === "fly" ? 16 : 11, hp: 1
+        x: placed[i].x, y: placed[i].y, kind: placed[i].kind, alive: true, r: placed[i].r, hp: 1
       });
     }
     fight.rule2 = axiomSealOrderText();
@@ -9850,6 +9854,7 @@
     clearAxiomRules();
     a = AXIOM_RULES[idx] || AXIOM_RULES[0];
     setAxiomRule(a);
+    snapPlayersToCurrentBand();
     fight.rule = a.text;
     fight.rule2 = a.id === "seals" ? axiomSealOrderText() : "";
     fight.ruleIdx = idx;
@@ -11403,7 +11408,7 @@
     for (i = 0; i < (fight.wake || []).length; i++) {
       obj = fight.wake[i];
       a = time - obj.t;
-      if (a < AXIOM_WAKE_LAG - 0.2 || a > AXIOM_WAKE_LAG + 0.35) continue;
+      if (a < AXIOM_WAKE_LAG - 0.85 || a > AXIOM_WAKE_LAG + 0.35) continue;
       out.push({ kind: "wake", x: obj.x, y: obj.y, x2: 10, y2: 10, st: 1, t: a, color: FIGHT_RED });
     }
     if (fight.pocket) {
@@ -11565,7 +11570,7 @@
   }
   function drawFight(context) {
     var list = netRole === "client" ? fightView : fightSnap();
-    var i, f, col, a, gap, tw, thh, showBoard = tesseraBoardLive(), showGrid = showBoard;
+    var i, f, col, a, gap, tw, thh, cardY, showBoard = tesseraBoardLive(), showGrid = showBoard;
     tw = tileW();
     thh = tileH();
     for (i = 0; i < list.length; i++) if (list[i].kind === "tile" || list[i].kind === "pawn") showGrid = true;
@@ -11816,9 +11821,10 @@
           context.globalAlpha = 0.7;
           context.fillRect(f.x - (f.x2 || 6), f.y - (f.y2 || 16), (f.x2 || 6) * 2, (f.y2 || 16) * 2);
         } else {
+          gap = 1 - Math.min(1, Math.abs((f.t || AXIOM_WAKE_LAG) - AXIOM_WAKE_LAG) / 0.9);
           context.fillStyle = FIGHT_RED;
-          context.globalAlpha = 0.55;
-          context.beginPath(); context.arc(f.x, f.y, 7, 0, Math.PI * 2); context.fill();
+          context.globalAlpha = 0.28 + 0.55 * gap;
+          context.beginPath(); context.arc(f.x, f.y, 5 + 3.5 * gap, 0, Math.PI * 2); context.fill();
         }
       } else if (f.kind === "pocket") {
         context.strokeStyle = FIGHT_GOLD;
@@ -11835,20 +11841,21 @@
         drawAxiomSealIcon(context, f.x, f.y, AXIOM_SEAL_KINDS[(f.st || 1) - 1], !!f.t, f.x2 || 11);
       } else if (f.kind === "rule") {
         a = fight.sealsNeed ? 52 : 36;
+        cardY = fight.fallUp ? Math.round(H * 0.48) : 22;
         context.fillStyle = "rgba(8,8,16,0.72)";
-        context.fillRect(28, 22, W - 56, a);
+        context.fillRect(28, cardY, W - 56, a);
         context.strokeStyle = FIGHT_GOLD;
         context.lineWidth = 1.6;
-        context.strokeRect(28, 22, W - 56, a);
+        context.strokeRect(28, cardY, W - 56, a);
         context.fillStyle = FIGHT_GOLD;
         context.font = "bold 8px ui-sans-serif, system-ui, sans-serif";
         context.textAlign = "center";
-        context.fillText(fight.rule || (AXIOM_RULES[f.x] && AXIOM_RULES[f.x].text) || "RULE", W / 2, 38);
+        context.fillText(fight.rule || (AXIOM_RULES[f.x] && AXIOM_RULES[f.x].text) || "RULE", W / 2, cardY + 16);
         if (fight.sealsNeed) {
-          drawAxiomSealRow(context, W / 2, 58);
+          drawAxiomSealRow(context, W / 2, cardY + 36);
         } else if (fight.rule2) {
           context.font = "bold 7px ui-sans-serif, system-ui, sans-serif";
-          context.fillText(fight.rule2, W / 2, 52);
+          context.fillText(fight.rule2, W / 2, cardY + 30);
         }
       }
       context.restore();
@@ -15729,6 +15736,7 @@
       for (j = 0; j < enemies.length; j++) {
         e = enemies[j];
         if (!e.alive) continue;
+        if (e.isBoss && e.type === "axiom" && fight.sealsNeed && !fight.axiomOpen) continue;
         if (b.hit && b.hit.indexOf(e) >= 0) continue;
         if (dist2(b.x, b.y, e.x, e.y) < (e.r + br) * (e.r + br)) {
           var own = players[b.owner] || player;
@@ -18004,6 +18012,21 @@
     ctx.save();
     for (i = 0; i < pbul.length; i++) {
       b = pbul[i];
+      if ((b.bounces || 0) > 0) {
+        glow(ctx, b.color || FIGHT_RED, 12);
+        ctx.fillStyle = b.color || FIGHT_RED;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, (b.r || 2) + 1.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x - (b.vx || 0) * 0.016, b.y - (b.vy || 0) * 0.016);
+        ctx.stroke();
+        noGlow(ctx);
+        continue;
+      }
       if (b.bossAb && b.color) {
         glow(ctx, b.color, 12);
         ctx.fillStyle = b.color;
@@ -18151,7 +18174,7 @@
         ctx.translate(p.x, p.y);
         ctx.rotate(Math.atan2((fight.orbitCy || AXIOM_CY) - p.y, (fight.orbitCx || AXIOM_CX) - p.x) + Math.PI / 2);
         ctx.translate(-p.x, -p.y);
-      } else if (p.facing > 0) {
+      } else if (p.facing > 0 || (fight.fallUp && !isPvpRun())) {
         ctx.translate(p.x, p.y);
         ctx.scale(1, -1);
         ctx.translate(-p.x, -p.y);

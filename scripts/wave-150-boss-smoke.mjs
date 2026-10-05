@@ -77,6 +77,12 @@ assert(galaga.indexOf("AXIOM_SEAL_KINDS") >= 0, "seal kinds");
   assert(galaga.indexOf('atk === "' + atk + '"') >= 0, "attack wired: " + atk);
 });
 
+assert(galaga.indexOf("function snapPlayersToCurrentBand") >= 0, "phase end snaps back into the legal band");
+assert(galaga.indexOf("fight.pastClose || fight.sealsNeed") >= 0, "past/seals free the whole field");
+assert(galaga.indexOf("cardY = fight.fallUp") >= 0, "fall-up rule card leaves the top lane");
+assert(galaga.indexOf("if (e.isBoss && e.type === \"axiom\" && fight.sealsNeed && !fight.axiomOpen) continue") >= 0, "sealed core does not eat bounce shots");
+assert(galaga.indexOf("if ((b.bounces || 0) > 0)") >= 0, "bounced player shots draw red");
+
 assert(codec.indexOf('"prism", "maelstrom", "cartographer", "mimic", "axiom"') >= 0, "netcodec boss ids");
 assert(/var VER = 12;/.test(codec), "codec VER 12");
 assert(codec.indexOf('"prism"') >= 0 && codec.indexOf('"ray"') >= 0 && codec.indexOf('"flow"') >= 0, "prism/ray/flow kinds");
@@ -85,7 +91,7 @@ assert(codec.indexOf('"orbit"') >= 0 && codec.indexOf('"wake"') >= 0 && codec.in
 assert(codec.indexOf("prism-split") >= 0 && codec.indexOf("axiom-mix") >= 0, "130–150 ability ids");
 
 assert(pvp.indexOf("prism:") >= 0 && pvp.indexOf("axiom:") >= 0 && pvp.indexOf("mimic:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v72") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v73") >= 0, "PWA cache bump");
 assert(roster.indexOf("prism") >= 0 && roster.indexOf("axiom") >= 0, "roster docs");
 assert(roster.indexOf("wave **155**") >= 0, "roster +1 at 155");
 assert(post.indexOf("Prism — wave 130") >= 0 && post.indexOf("Axiom — wave 150") >= 0, "post-55 kits");

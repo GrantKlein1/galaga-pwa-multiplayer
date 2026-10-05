@@ -46,7 +46,7 @@ assert(galaga.indexOf("sway: 20, swayF: 3.4") >= 0, "spray head swaying pellets"
 assert(galaga.indexOf("kind === \"beam\" || h.kind === 1") < 0, "kit volley no longer clones one pattern onto every head");
 
 assert(/var VER = 12;/.test(codec), "codec payload unchanged");
-assert(sw.indexOf("galaga-coop-v72") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v73") >= 0, "PWA cache bump");
 assert(post.indexOf("mixed row") >= 0, "Lodestar kit mentions mixed-color rows");
 assert(post.indexOf("never one color") >= 0, "docs forbid single-color rows");
 assert(post.indexOf("Head HP is 20") >= 0, "Hydra kit mentions 4x head HP");
