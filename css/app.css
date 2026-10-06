@@ -817,9 +817,26 @@ html, body {
 .badge.b-rare { background: #10304a; color: #3df0ff; }
 .badge.b-epic { background: #2a1450; color: #d46bff; }
 .badge.b-legendary { background: #40300a; color: #ffd23d; }
+.badge.b-relic {
+  background: linear-gradient(90deg, #4a0810 0%, #3a2808 100%);
+  color: #ffd27a;
+  border: 1px solid #c45a3a;
+}
 .cat-row.r-rare { border-left: 2px solid #3df0ff; }
 .cat-row.r-epic { border-left: 2px solid #d46bff; }
 .cat-row.r-legendary { border-left: 2px solid #ffd23d; }
+.cat-row.r-relic {
+  border-left: 2px solid #c45a3a;
+  box-shadow: inset 0 0 0 1px rgba(196, 90, 58, 0.4);
+  background-image: linear-gradient(105deg, transparent 0%, rgba(255, 210, 122, 0.1) 46%, transparent 70%);
+  background-size: 220% 100%;
+  animation: relic-shimmer 4.8s linear infinite;
+}
+@keyframes relic-shimmer {
+  0% { background-position: 120% 0; box-shadow: inset 0 0 0 1px rgba(196, 90, 58, 0.35); }
+  50% { background-position: 0% 0; box-shadow: inset 0 0 0 1px rgba(255, 210, 122, 0.55); }
+  100% { background-position: -120% 0; box-shadow: inset 0 0 0 1px rgba(196, 90, 58, 0.35); }
+}
 .chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
 .chip {
   font-size: 8px;

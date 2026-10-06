@@ -84,14 +84,14 @@ assert(galaga.indexOf("if (e.isBoss && e.type === \"axiom\" && fight.sealsNeed &
 assert(galaga.indexOf("if ((b.bounces || 0) > 0)") >= 0, "bounced player shots draw red");
 
 assert(codec.indexOf('"prism", "maelstrom", "cartographer", "mimic", "axiom"') >= 0, "netcodec boss ids");
-assert(/var VER = 12;/.test(codec), "codec VER 12");
+assert(/var VER = 13;/.test(codec), "codec VER 13");
 assert(codec.indexOf('"prism"') >= 0 && codec.indexOf('"ray"') >= 0 && codec.indexOf('"flow"') >= 0, "prism/ray/flow kinds");
 assert(codec.indexOf('"pane"') >= 0 && codec.indexOf('"pin"') >= 0 && codec.indexOf('"rule"') >= 0, "pane/pin/rule kinds");
 assert(codec.indexOf('"orbit"') >= 0 && codec.indexOf('"wake"') >= 0 && codec.indexOf('"seal"') >= 0, "axiom extra kinds");
 assert(codec.indexOf("prism-split") >= 0 && codec.indexOf("axiom-mix") >= 0, "130–150 ability ids");
 
 assert(pvp.indexOf("prism:") >= 0 && pvp.indexOf("axiom:") >= 0 && pvp.indexOf("mimic:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v74") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v75") >= 0, "PWA cache bump");
 assert(roster.indexOf("prism") >= 0 && roster.indexOf("axiom") >= 0, "roster docs");
 assert(roster.indexOf("wave **155**") >= 0, "roster +1 at 155");
 assert(post.indexOf("Prism — wave 130") >= 0 && post.indexOf("Axiom — wave 150") >= 0, "post-55 kits");

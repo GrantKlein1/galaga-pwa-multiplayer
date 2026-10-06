@@ -78,7 +78,7 @@ assert(css.indexOf("has-boss-ab") >= 0, "pad layout class");
 assert(css.indexOf("pad-cd-ring") >= 0, "cooldown ring");
 assert(pad.indexOf('key: "q"') >= 0, "touchpad Q");
 
-assert(/var VER = 12;/.test(codec), "codec VER 12");
+assert(/var VER = 13;/.test(codec), "codec VER 13");
 assert(codec.indexOf("BOSS_ABILITY_IDS") >= 0, "ability ids on wire");
 assert(codec.indexOf("seraph-fan") >= 0 && codec.indexOf("term-key") >= 0, "library ids in codec");
 assert(codec.indexOf("hour-rewind") >= 0 && codec.indexOf("orr-core") >= 0, "105–125 ids in codec");
@@ -92,7 +92,7 @@ ids.forEach(function (id) {
   assert(docs.indexOf("`" + id + "`") >= 0, "docs list " + id);
 });
 
-assert(sw.indexOf("galaga-coop-v74") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v75") >= 0, "PWA cache bump");
 assert(docs.indexOf("Mimic") >= 0, "mimic API documented");
 assert(galaga.indexOf("function bossAbAim") >= 0, "casts aim at the nearest enemy");
 assert(galaga.indexOf('id: "seraph-fan"') >= 0 && /id: "seraph-fan"[\s\S]{0,220}dmg: 28/.test(galaga), "Seraph fan is player-scale damage");

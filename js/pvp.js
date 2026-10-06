@@ -1,6 +1,6 @@
 (function (root) {
-  var RARITIES = ["common", "rare", "epic", "legendary"];
-  var RARITY_RANK = { common: 0, rare: 1, epic: 2, legendary: 3 };
+  var RARITIES = ["common", "rare", "epic", "legendary", "relic"];
+  var RARITY_RANK = { common: 0, rare: 1, epic: 2, legendary: 3, relic: 4 };
   var BOSS_IDS = [
     "seraph", "wraith", "hydra", "colossus", "chronos",
     "leviathan", "inferno", "nullwarden", "basilisk", "overlord",

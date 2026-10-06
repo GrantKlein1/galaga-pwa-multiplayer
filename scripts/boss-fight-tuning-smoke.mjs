@@ -11,8 +11,8 @@ var post = fs.readFileSync(new URL("../docs/post-55-bosses.md", import.meta.url)
 var roster = fs.readFileSync(new URL("../docs/boss-roster.md", import.meta.url), "utf8");
 var pvp = fs.readFileSync(new URL("../js/pvp.js", import.meta.url), "utf8");
 
-assert(sw.indexOf("galaga-coop-v74") >= 0, "PWA cache bump");
-assert(/var VER = 12;/.test(codec), "codec VER unchanged");
+assert(sw.indexOf("galaga-coop-v75") >= 0, "PWA cache bump");
+assert(/var VER = 13;/.test(codec), "codec VER 13");
 
 assert(galaga.indexOf('if (fight.dark && !(b.glintT > 0) && !inFightLight(b.x, b.y)) continue') < 0, "Lanternmoth shots are not skipped in the dark");
 assert(galaga.indexOf('rgba(2, 2, 10, 0.88)') < 0, "no full blackout overlay");

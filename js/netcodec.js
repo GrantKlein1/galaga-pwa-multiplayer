@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 12;
+  var VER = 13;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -22,15 +22,18 @@
   var ENEMY_STATES = ["", "enter", "form", "dive", "kami", "return", "charge"];
   var GUN_IDS = [
     "pulse", "twin", "rapid", "spread", "lance", "seeker", "scatter",
-    "railgun", "volley", "helix", "storm", "novacannon", "prism"
+    "railgun", "volley", "helix", "storm", "novacannon", "prism",
+    "loomthread", "requiem", "axiomlance"
   ];
   var SHIP_IDS = [
     "wisp", "needle", "aegis", "broadwing", "phantom", "vulture",
-    "bastion", "strix", "nova", "tempest", "warden", "eclipse"
+    "bastion", "strix", "nova", "tempest", "warden", "eclipse",
+    "chronoweaver", "twinstar", "eventhorizon"
   ];
   var MOD_IDS = [
     "", "barrier", "magnet", "fortune", "overdrive", "reactor",
-    "afterburner", "salvage", "guardian", "berserk", "ascension"
+    "afterburner", "salvage", "guardian", "berserk", "ascension",
+    "overclock", "paradox"
   ];
   var SKIN_IDS = [
     "stock", "ion", "ember", "void", "gilded", "prism", "novaflux", "frost", "solar", "nebula", "mythic",
@@ -45,7 +48,8 @@
     "nova-supernova", "nova-starburst",
     "tempest-cyclone", "tempest-lightning",
     "warden-jade", "warden-sentinel",
-    "eclipse-umbra", "eclipse-corona"
+    "eclipse-umbra", "eclipse-corona",
+    "eventide", "genesis"
   ];
   var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive", "xpboost"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
@@ -435,6 +439,10 @@
     w.u8w((p.boss || lo.boss) ? idxOf(ENEMY_TYPES, p.boss || lo.boss) : 255);
     w.u8frac(p.freezeT, 10);
     w.u8w(idxOf(BOSS_ABILITY_IDS, p.bossAbilityId || ""));
+    w.u8w(p.twinOn ? 1 : 0);
+    w.coord(p.twinX);
+    w.coord(p.twinY);
+    w.u8w(p.eventideMask || 0);
   }
 
   function readPl(r) {
@@ -468,6 +476,10 @@
     p.boss = bi === 255 ? "" : (ENEMY_TYPES[bi] || "");
     p.freezeT = r.u8frac(10);
     p.bossAbilityId = BOSS_ABILITY_IDS[r.u8r()] || "";
+    p.twinOn = !!r.u8r();
+    p.twinX = r.coord();
+    p.twinY = r.coord();
+    p.eventideMask = r.u8r();
     if (!p.mod) p.mod = null;
     if (!p.skin) p.skin = "stock";
     return p;
@@ -702,7 +714,19 @@
     s.pb[0].color = "#e8f6ff";
     buf = encodeSnap(5, s);
     out = decode(buf);
-    return !!(out && out.s.pl[0].bossAbilityId === "seraph-fan" && out.s.pb[0].bossAb && out.s.pb[0].color === "#e8f6ff");
+    if (!(out && out.s.pl[0].bossAbilityId === "seraph-fan" && out.s.pb[0].bossAb && out.s.pb[0].color === "#e8f6ff")) return false;
+    s.pl[0].ship = "twinstar";
+    s.pl[0].gun = "loomthread";
+    s.pl[0].mod = "overclock";
+    s.pl[0].skin = "eventide";
+    s.pl[0].twinOn = 1;
+    s.pl[0].twinX = 200;
+    s.pl[0].twinY = 326;
+    s.pl[0].eventideMask = 5;
+    buf = encodeSnap(6, s);
+    out = decode(buf);
+    p = out && out.s.pl[0];
+    return !!(p && p.ship === "twinstar" && p.gun === "loomthread" && p.mod === "overclock" && p.skin === "eventide" && p.twinOn && p.twinX === 200 && p.eventideMask === 5);
   }
 
   window.__netcodec = {

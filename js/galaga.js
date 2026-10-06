@@ -144,7 +144,10 @@
     { id: "nova", name: "Nova", unlockLevel: 55, cost: 4500, rarity: "epic", desc: "+1 life. Losing a life detonates a 6-damage nova", speed: 245, r: 9, invuln: 2.16, extraLives: 1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "nova", color: "#ffe08a", accent: "#ffb060" },
     { id: "tempest", name: "Tempest", unlockLevel: 66, cost: 5800, rarity: "legendary", desc: "+15% fire rate, +5% damage, gems last 50% longer", speed: 280, r: 8, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.05, coinMul: 1, pickMul: 1.5, passive: "", color: "#7ef9ff", accent: "#ffffff" },
     { id: "warden", name: "Warden", unlockLevel: 80, cost: 7500, rarity: "legendary", desc: "+1 life, 2-hit shield that regrows every 6s", speed: 215, r: 11, invuln: 2.32, extraLives: 1, regen: 6, startShield: 2, fireMul: 1, dmgMul: 1.05, coinMul: 1, pickMul: 1, passive: "", color: "#c8ffe8", accent: "#3dffb0" },
-    { id: "eclipse", name: "Eclipse", unlockLevel: 95, cost: 10000, rarity: "legendary", desc: "+30% damage, +15% fire rate, +1 life. Boss kills restore a life", speed: 290, r: 7, invuln: 2.8, extraLives: 1, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.3, coinMul: 1, pickMul: 1.2, passive: "eclipse", color: "#e0c8ff", accent: "#ffd23d" }
+    { id: "eclipse", name: "Eclipse", unlockLevel: 95, cost: 10000, rarity: "legendary", desc: "+30% damage, +15% fire rate, +1 life. Boss kills restore a life", speed: 290, r: 7, invuln: 2.8, extraLives: 1, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.3, coinMul: 1, pickMul: 1.2, passive: "eclipse", color: "#e0c8ff", accent: "#ffd23d" },
+    { id: "chronoweaver", name: "Chronoweaver", unlockLevel: 100, cost: 15000, rarity: "relic", desc: "Once per wave, the first life-costing hit rewinds 1.5s along your path", speed: 260, r: 9, invuln: 2, extraLives: 1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "chrono", color: "#e8c878", accent: "#c8a050" },
+    { id: "twinstar", name: "Twinstar", unlockLevel: 115, cost: 22000, rarity: "relic", desc: "A mirrored partner copies movement and fires the same gun at 60% damage. Only you can be hit", speed: 250, r: 9, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "twin", color: "#c8d0ff", accent: "#4d88ff" },
+    { id: "eventhorizon", name: "Event Horizon", unlockLevel: 135, cost: 28000, rarity: "relic", desc: "Enemy bullets within 26px slow to 40% speed. One fewer life and a smaller hull", speed: 250, r: 6.5, invuln: 2, extraLives: -1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "horizon", color: "#d8c090", accent: "#ffe08a" }
   ];
   // Guns. shots: list of { dx (muzzle x offset), ang (radians, 0 = straight up), spd }.
   // dmg per bullet, cd (ms), pierce (extra targets), homing, hsp/hturn (homing speed/turn),
@@ -163,7 +166,10 @@
     { id: "helix", name: "Helix", unlockLevel: 58, cost: 4600, rarity: "epic", desc: "Two weaving bolts that sweep a wide lane", dmg: 1.6, cd: 150, shots: [{ dx: 0, ang: 0, spd: 470, ph: 0 }, { dx: 0, ang: 0, spd: 470, ph: 3.1416 }], helix: { amp: 12, freq: 13 }, r: 2.4 },
     { id: "storm", name: "Storm", unlockLevel: 70, cost: 6000, rarity: "legendary", desc: "Hyper-rapid fire; every 5th shot adds a homing bolt", dmg: 1.1, cd: 60, shots: [{ dx: 0, ang: 0, spd: 520 }], bolt: 5, boltDmg: 2, r: 2 },
     { id: "novacannon", name: "Nova Cannon", unlockLevel: 80, cost: 7500, rarity: "legendary", desc: "6-damage shell with 2-damage splash", dmg: 6, cd: 320, shots: [{ dx: 0, ang: 0, spd: 520 }], pierce: 1, splash: { r: 34, dmg: 2 }, r: 4.5 },
-    { id: "prism", name: "Prism", unlockLevel: 90, cost: 9500, rarity: "legendary", desc: "Three piercing beams. The final word", dmg: 2.2, cd: 190, shots: [{ dx: -4, ang: -0.08, spd: 560 }, { dx: 0, ang: 0, spd: 580 }, { dx: 4, ang: 0.08, spd: 560 }], pierce: 2, r: 2.4 }
+    { id: "prism", name: "Prism", unlockLevel: 90, cost: 9500, rarity: "legendary", desc: "Three piercing beams. The final word", dmg: 2.2, cd: 190, shots: [{ dx: -4, ang: -0.08, spd: 560 }, { dx: 0, ang: 0, spd: 580 }, { dx: 4, ang: 0.08, spd: 560 }], pierce: 2, r: 2.4 },
+    { id: "loomthread", name: "Loomthread", unlockLevel: 105, cost: 16000, rarity: "relic", desc: "Shots fire in pairs; a thread links each pair for 0.4s and damages anything it crosses", dmg: 1, cd: 155, shots: [{ dx: -7, ang: 0, spd: 460 }, { dx: 7, ang: 0, spd: 460 }], r: 2, thread: 0.4 },
+    { id: "requiem", name: "Requiem Bell", unlockLevel: 120, cost: 22000, rarity: "relic", desc: "Fast single shots, plus every 3s a forward half-ring that erases enemy shots and deals 2 damage", dmg: 1, cd: 70, shots: [{ dx: 0, ang: 0, spd: 500 }], r: 2, bell: 3 },
+    { id: "axiomlance", name: "Axiom Lance", unlockLevel: 140, cost: 30000, rarity: "relic", desc: "Heavy piercing bolts that bounce once off walls or the top. After the bounce they deal +50% and never hurt you", dmg: 3.2, cd: 260, shots: [{ dx: 0, ang: 0, spd: 560 }], pierce: 3, r: 2.8, wallBounce: 1 }
   ];
   var MODS = [
     { id: "barrier", name: "Barrier", unlockLevel: 2, cost: 300, rarity: "common", desc: "Start every run with a 2-hit shield", tags: ["SHIELD 2"] },
@@ -175,7 +181,9 @@
     { id: "salvage", name: "Salvage", unlockLevel: 40, cost: 2500, rarity: "epic", desc: "Bosses drop +60% coins; wave bonus +50%", tags: ["BOSS COINS +60%", "WAVE BONUS +50%"] },
     { id: "guardian", name: "Guardian", unlockLevel: 52, cost: 3200, rarity: "epic", desc: "Respawn with a 2-hit shield and +0.48s invuln", tags: ["RESPAWN SHIELD 2", "INV +0.48s"] },
     { id: "berserk", name: "Berserk", unlockLevel: 64, cost: 4200, rarity: "legendary", desc: "+10% damage per missing life", tags: ["DMG +10% per lost life"] },
-    { id: "ascension", name: "Ascension", unlockLevel: 78, cost: 6000, rarity: "legendary", desc: "+25% XP and +10% fire rate", tags: ["XP +25%", "ROF +10%"] }
+    { id: "ascension", name: "Ascension", unlockLevel: 78, cost: 6000, rarity: "legendary", desc: "+25% XP and +10% fire rate", tags: ["XP +25%", "ROF +10%"] },
+    { id: "overclock", name: "Overclock Core", unlockLevel: 110, cost: 18000, rarity: "relic", desc: "Boss ability (Q) recharges 30% faster. Each cast also takes 20% off the Warp special's remaining cooldown", tags: ["Q CD -30%", "WARP -20%"] },
+    { id: "paradox", name: "Paradox", unlockLevel: 130, cost: 25000, rarity: "relic", desc: "Delay a life-loss 3s. Kill 6 foes or chunk a boss in that window to erase it. Recharges every 20s", tags: ["DELAY 3s", "SAVE 6 KILLS"] }
   ];
   // Shared paint tiers. Free at player levels 7, 12, 17, 22… Each hull keeps its own colorway of the FX.
   var SKIN_TIERS = [
@@ -189,7 +197,9 @@
     { id: "frost", name: "Frost", unlockLevel: 37, cost: 0, rarity: "epic", fx: "frost", hue: 28, sat: 0.62, lit: 1.24, desc: "Crystalline overgrowth and ice-shard wings", perk: "FREEZE", perkText: "20% of hits freeze fodder 1s; 8% freeze bosses 0.4s" },
     { id: "solar", name: "Solar", unlockLevel: 42, cost: 0, rarity: "epic", fx: "solar", hue: -55, sat: 1.32, lit: 1.16, desc: "Photosphere core and corona prominences", perk: "IGNITE", perkText: "Hits ignite: +1 damage after 0.65s" },
     { id: "nebula", name: "Nebula", unlockLevel: 47, cost: 0, rarity: "legendary", fx: "nebula", hue: 112, sat: 1.2, lit: 0.94, desc: "Living gas-cloud body with embedded stars", perk: "CLOUD", perkText: "Every 7.5s a 1.1s cloud deletes nearby bullets" },
-    { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.24, lit: 1.08, desc: "Ceremonial wings and a gold-violet afterimage", perk: "ECHO", perkText: "28% of volleys ghost-fire 0.16s later at 70% damage" }
+    { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.24, lit: 1.08, desc: "Ceremonial wings and a gold-violet afterimage", perk: "ECHO", perkText: "28% of volleys ghost-fire 0.16s later at 70% damage" },
+    { id: "eventide", name: "Eventide", unlockLevel: 125, cost: 0, rarity: "relic", fx: "eventide", hue: -12, sat: 0.7, lit: 0.42, desc: "Dark hull with three orbiting lantern shards", perk: "LANTERN", perkText: "Each shard blocks one enemy bullet, then regrows after 10 seconds" },
+    { id: "genesis", name: "Genesis", unlockLevel: 150, cost: 0, rarity: "relic", fx: "genesis", hue: 20, sat: 1.18, lit: 1.08, desc: "Hull cycles through boss palettes", perk: "GENESIS", perkText: "Every 20s the next volley borrows Burst, Freeze, Ignite, or Echo" }
   ];
   var SHIP_COIN_SKINS = [
     { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 10000, rarity: "epic", fx: "aurora", hull: "#3dffc8", accent: "#ff9ad6", desc: "Northern-light ribbon wings", perk: "WEAVE", perkText: "Shots weave ±7px (Helix gains extra sweep)" },
@@ -365,17 +375,17 @@
     loom: { desc: "A weaver. Wall knots pull taut into red threads, a shuttle dart hunts the hull, then a cocoon closes.", abilities: ["Gold knots that pull taut into red threads", "Periodic aimed shuttle darts, including the bottom", "A closing cocoon"], ship: "warden", gun: "novacannon", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-rof1", "warp-rampart"] },
     tessera: { desc: "A chessboard from the first volley. Rook files, bishop diagonals, knight jumps; later the board fills.", abilities: ["Rook files through the ship", "Bishop diagonals", "Knight jumps", "A filling board you clear with a pawn"], ship: "warden", gun: "storm", mod: "ascension", skills: ["gun-dmg1", "gun-chip", "gun-focus", "warp-stasis"] },
     requiem: { desc: "A choir. Gold satellites sing, gapped rings pulse, then a heartbeat finale.", abilities: ["Gold choir satellites", "Gapped sound rings", "A heartbeat crescendo"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-rof1", "gun-chip", "warp-fold"] },
-    terminus: { desc: "The century gate. An echo ghost, a sweeping line with a safe gap, ordered keystones, closing walls, then everything at once.", abilities: ["An echo ghost of your shots", "A sweeping line with a safe gap", "Keystones that must break in order", "Closing walls", "A last medley"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-pierce", "warp-fold"] },
-    hourglass: { desc: "Sand and rewind. Falling sand piles a floor, then time runs back and your own shots come home.", abilities: ["Falling sand", "A rising floor", "A rewind that sends shots home"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-iframes", "gun-dmg1", "warp-haunt", "warp-fold"] },
-    lanternmoth: { desc: "A dim field. Your lamp and gold lanterns brighten it; every shot stays visible.", abilities: ["A dim field with a player lamp", "Gold lanterns", "Shots that stay visible in the gloom"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "warp-stasis", "warp-fold"] },
-    lodestar: { desc: "Red and blue polarity. Matching shots pass; the wrong color hurts. Full-width rows mix red and blue so a polarity swap is not an auto-hit.", abilities: ["Red or blue polarity on the ship", "Matching shots pass through", "Full-width rows split red and blue at the same time", "A countdown pulsar ring"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-rof1", "gun-pierce", "warp-fold"] },
-    lernaean: { desc: "Heads on necks. Cut a head and hit the gold stump or two more grow. The body is safe until the heads are gone.", abilities: ["Each head shoots a different pattern", "Needle chase, a fork, and a swaying spray", "A gold stump you must finish", "Two heads grow if the stump lives"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-chip", "gun-pierce", "warp-horizon"] },
-    orrery: { desc: "A clockwork sky. Planets orbit, gravity rings curve shots; send one into the gold core.", abilities: ["Orbiting planets", "Gravity rings that curve shots", "A gold core you sling a shot into"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-focus", "warp-stasis", "warp-horizon"] },
-    prism: { desc: "Beams split through gold prisms that stay until the next set. Rotate a prism to send a beam home.", abilities: ["Beams that split through gold prisms", "Prisms that stay until the next set", "Rotate a prism to send a beam home", "Shard fans and ricochets"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-pierce", "warp-fold", "warp-horizon"] },
-    maelstrom: { desc: "A whirlpool. Cyan arrows show the flow; it drags the ship and shots, then the maw opens.", abilities: ["A current that drags the ship and shots", "Cyan arrows that show the flow", "A tightening gyre", "A maw in the center"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-speed", "gun-dmg1", "warp-stasis", "warp-horizon"] },
-    cartographer: { desc: "A sliding map. Panes swap; matching edge colors wrap the ship. Gold pins still chip the body.", abilities: ["Sliding map panes", "Matching edge colors that wrap the ship", "Unlinked edges that are walls", "Gold pins that chip the body"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-speed", "gun-dmg1", "warp-fold", "warp-horizon"] },
-    mimic: { desc: "It copies you. Red dodge paths, red shots, then the equipped boss ability as enemy fire, then two of you.", abilities: ["Copies your dodge path in red", "Copies your shots in red", "Copies the equipped boss ability", "A doppelganger"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "warp-haunt", "warp-horizon"] },
-    axiom: { desc: "The last gate. Each phase writes a rule on a gold card — fall up, bounce once, graze-heal, orbit the ring, a crushing wake, then break four seals in order.", abilities: ["Fall up with a climbing blade gap", "Your bullets bounce once and hurt you on the way back", "Grazing heals", "Orbit a ring and shoot inward through shield gaps", "A gold pocket on a crushing wake", "Four seals in order, then the core opens"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-laststand", "gun-pierce", "warp-fold", "warp-horizon"] }
+    terminus: { desc: "The century gate. An echo ghost, a sweeping line with a safe gap, ordered keystones, closing walls, then everything at once.", abilities: ["An echo ghost of your shots", "A sweeping line with a safe gap", "Keystones that must break in order", "Closing walls", "A last medley"], ship: "chronoweaver", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-pierce", "warp-fold"] },
+    hourglass: { desc: "Sand and rewind. Falling sand piles a floor, then time runs back and your own shots come home.", abilities: ["Falling sand", "A rising floor", "A rewind that sends shots home"], ship: "chronoweaver", gun: "loomthread", mod: "ascension", skills: ["hull-iframes", "gun-dmg1", "warp-haunt", "warp-fold"] },
+    lanternmoth: { desc: "A dim field. Your lamp and gold lanterns brighten it; every shot stays visible.", abilities: ["A dim field with a player lamp", "Gold lanterns", "Shots that stay visible in the gloom"], ship: "chronoweaver", gun: "loomthread", mod: "overclock", skills: ["hull-life1", "gun-dmg1", "warp-stasis", "warp-fold"] },
+    lodestar: { desc: "Red and blue polarity. Matching shots pass; the wrong color hurts. Full-width rows mix red and blue so a polarity swap is not an auto-hit.", abilities: ["Red or blue polarity on the ship", "Matching shots pass through", "Full-width rows split red and blue at the same time", "A countdown pulsar ring"], ship: "twinstar", gun: "loomthread", mod: "overclock", skills: ["gun-dmg1", "gun-rof1", "gun-pierce", "warp-fold"] },
+    lernaean: { desc: "Heads on necks. Cut a head and hit the gold stump or two more grow. The body is safe until the heads are gone.", abilities: ["Each head shoots a different pattern", "Needle chase, a fork, and a swaying spray", "A gold stump you must finish", "Two heads grow if the stump lives"], ship: "twinstar", gun: "requiem", mod: "overclock", skills: ["gun-dmg1", "gun-chip", "gun-pierce", "warp-horizon"] },
+    orrery: { desc: "A clockwork sky. Planets orbit, gravity rings curve shots; send one into the gold core.", abilities: ["Orbiting planets", "Gravity rings that curve shots", "A gold core you sling a shot into"], ship: "twinstar", gun: "requiem", mod: "overclock", skills: ["gun-dmg1", "gun-focus", "warp-stasis", "warp-horizon"] },
+    prism: { desc: "Beams split through gold prisms that stay until the next set. Rotate a prism to send a beam home.", abilities: ["Beams that split through gold prisms", "Prisms that stay until the next set", "Rotate a prism to send a beam home", "Shard fans and ricochets"], ship: "twinstar", gun: "requiem", mod: "paradox", skills: ["gun-dmg1", "gun-pierce", "warp-fold", "warp-horizon"] },
+    maelstrom: { desc: "A whirlpool. Cyan arrows show the flow; it drags the ship and shots, then the maw opens.", abilities: ["A current that drags the ship and shots", "Cyan arrows that show the flow", "A tightening gyre", "A maw in the center"], ship: "eventhorizon", gun: "requiem", mod: "paradox", skills: ["hull-speed", "gun-dmg1", "warp-stasis", "warp-horizon"] },
+    cartographer: { desc: "A sliding map. Panes swap; matching edge colors wrap the ship. Gold pins still chip the body.", abilities: ["Sliding map panes", "Matching edge colors that wrap the ship", "Unlinked edges that are walls", "Gold pins that chip the body"], ship: "eventhorizon", gun: "axiomlance", mod: "paradox", skills: ["hull-speed", "gun-dmg1", "warp-fold", "warp-horizon"] },
+    mimic: { desc: "It copies you. Red dodge paths, red shots, then the equipped boss ability as enemy fire, then two of you.", abilities: ["Copies your dodge path in red", "Copies your shots in red", "Copies the equipped boss ability", "A doppelganger"], ship: "eventhorizon", gun: "axiomlance", mod: "paradox", skills: ["hull-life1", "gun-dmg1", "warp-haunt", "warp-horizon"] },
+    axiom: { desc: "The last gate. Each phase writes a rule on a gold card — fall up, bounce once, graze-heal, orbit the ring, a crushing wake, then break four seals in order.", abilities: ["Fall up with a climbing blade gap", "Your bullets bounce once and hurt you on the way back", "Grazing heals", "Orbit a ring and shoot inward through shield gaps", "A gold pocket on a crushing wake", "Four seals in order, then the core opens"], ship: "eventhorizon", gun: "axiomlance", mod: "paradox", skills: ["hull-laststand", "gun-pierce", "warp-fold", "warp-horizon"] }
   };
   // Player versions of boss attacks. Same shot count and pattern as the boss
   // kit, aimed from the player at enemies. Damage is player-scale (clears
@@ -708,6 +718,12 @@
   var rings = [];
   var stars = [];
   var skinDecoys = [];
+  var loomThreads = [];
+  var relicBells = [];
+  var PARADOX_BOSS_CHUNK = 40;
+  var CHRONO_REWIND = 1.5;
+  var EVENTIDE_R = 16;
+  var HORIZON_GRAV_R = 26;
   var form = { ox: 0, oy: 46, dir: 1, speed: 28, minOff: 0, maxOff: 0 };
 
   function el(id) { return document.getElementById(id); }
@@ -2757,7 +2773,112 @@
     id = skinIdOf(p);
     p.skinWard = id === "bastion-fortress" ? 1 : id === "bastion-obsidian" ? 2 : 0;
     p.skinNebulaCd = id === "nebula" ? 0.4 : (p.skinNebulaCd || 0);
+    p.chronoUsed = false;
+    if (id === "eventide") initEventide(p);
+    if (id === "genesis") {
+      p.genesisReady = false;
+      p.genesisCd = 20;
+      p.genesisPerk = null;
+    }
     refreshSkinMuls(p);
+  }
+  function initEventide(p) {
+    if (!p) return;
+    p.eventide = [{ t: 0 }, { t: 0 }, { t: 0 }];
+  }
+  function eventideMaskOf(p) {
+    var m = 0, i, shards;
+    if (!p || skinIdOf(p) !== "eventide") return 0;
+    shards = p.eventide || [];
+    for (i = 0; i < 3; i++) if (shards[i] && (shards[i].t || 0) <= 0) m |= (1 << i);
+    return m;
+  }
+  function applyEventideMask(p, mask) {
+    var i;
+    if (!p) return;
+    if (!p.eventide || p.eventide.length < 3) initEventide(p);
+    mask = mask | 0;
+    for (i = 0; i < 3; i++) {
+      if (mask & (1 << i)) p.eventide[i].t = 0;
+      else if ((p.eventide[i].t || 0) <= 0) p.eventide[i].t = 0.25;
+    }
+  }
+  function eventidePos(p, i) {
+    var a = time * 1.35 + i * 2.094395;
+    return { x: p.x + Math.cos(a) * EVENTIDE_R, y: p.y + Math.sin(a) * EVENTIDE_R };
+  }
+  function twinPos(p) {
+    if (!p) return { x: W / 2, y: 0 };
+    return { x: W - p.x, y: p.y };
+  }
+  function isTwinstar(p) { return shipDef(p).passive === "twin"; }
+  function isChrono(p) { return shipDef(p).passive === "chrono"; }
+  function isHorizon(p) { return shipDef(p).passive === "horizon"; }
+  function rememberPath(p) {
+    if (!p || !p.alive) return;
+    if (!p.pathHist) p.pathHist = [];
+    p.pathHist.push({ x: p.x, y: p.y, t: time });
+    while (p.pathHist.length && time - p.pathHist[0].t > CHRONO_REWIND + 0.35) p.pathHist.shift();
+  }
+  function pathAgo(p, ago) {
+    var i, row, want;
+    if (!p || !p.pathHist || !p.pathHist.length) return { x: p.x, y: p.y };
+    want = time - ago;
+    row = p.pathHist[0];
+    for (i = 0; i < p.pathHist.length; i++) {
+      if (p.pathHist[i].t <= want) row = p.pathHist[i];
+      else break;
+    }
+    return { x: row.x, y: row.y };
+  }
+  function horizonSlowAt(x, y) {
+    var i, p;
+    for (i = 0; i < players.length; i++) {
+      p = players[i];
+      if (!p || !p.alive || !isHorizon(p)) continue;
+      if (dist2(x, y, p.x, p.y) < HORIZON_GRAV_R * HORIZON_GRAV_R) return 0.4;
+    }
+    return 1;
+  }
+  function segHitsCircle(x1, y1, x2, y2, cx, cy, r) {
+    var dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy, t, px, py;
+    if (l2 < 1e-6) return dist2(x1, y1, cx, cy) < r * r;
+    t = ((cx - x1) * dx + (cy - y1) * dy) / l2;
+    if (t < 0) t = 0;
+    if (t > 1) t = 1;
+    px = x1 + t * dx;
+    py = y1 + t * dy;
+    return dist2(px, py, cx, cy) < r * r;
+  }
+  function creditParadox(who, e, dmg) {
+    if (!who || !who.paradoxPending) return;
+    if (e && e.isBoss) who.paradoxBossDmg = (who.paradoxBossDmg || 0) + (dmg || 1);
+    else who.paradoxKills = (who.paradoxKills || 0) + 1;
+    if ((who.paradoxKills || 0) >= 6 || (who.paradoxBossDmg || 0) >= PARADOX_BOSS_CHUNK) resolveParadox(who, true);
+  }
+  function resolveParadox(who, saved) {
+    if (!who || !who.paradoxPending) return;
+    who.paradoxPending = false;
+    who.paradoxT = 0;
+    who.paradoxCd = 20;
+    who.paradoxKills = 0;
+    who.paradoxBossDmg = 0;
+    if (saved) {
+      banner = { text: "PARADOX", life: 0.8 };
+      rings.push({ x: who.x, y: who.y, r: 8, vr: 160, life: 0.35, color: "#ffd27a" });
+      who.invuln = Math.max(who.invuln || 0, 0.45);
+      return;
+    }
+    applyLifeLoss(who);
+  }
+  function startParadox(who) {
+    who.paradoxPending = true;
+    who.paradoxT = 3;
+    who.paradoxKills = 0;
+    who.paradoxBossDmg = 0;
+    who.invuln = Math.max(who.invuln || 0, 0.35);
+    banner = { text: "PARADOX 3", life: 0.5 };
+    rings.push({ x: who.x, y: who.y, r: 6, vr: 80, life: 0.3, color: "#c45a3a" });
   }
   function pushPbul(b) {
     if (pbul.length >= pbulCap()) return false;
@@ -2828,14 +2949,14 @@
     if (!owner || !e || !e.alive || isPvpRun()) return;
     id = skinIdOf(owner);
     if (id === "vulture-acid" && e.shieldHp > 0) e.shieldHp -= 1;
-    if (id === "frost") {
+    if (id === "frost" || (b && b.genesisPerk === "FREEZE")) {
       if (e.isBoss) {
         if (Math.random() < 0.08) e.freezeT = Math.max(e.freezeT || 0, 0.4);
       } else if (Math.random() < 0.2) {
         e.freezeT = Math.max(e.freezeT || 0, 1);
       }
     }
-    if (id === "solar") igniteEnemy(e, 1, owner.slot);
+    if (id === "solar" || (b && b.genesisPerk === "IGNITE")) igniteEnemy(e, 1, owner.slot);
     if (id === "strix-inferno") igniteEnemy(e, 2, owner.slot);
     if (id === "tempest-lightning" && Math.random() < 0.2) skinChain(e, owner);
   }
@@ -2888,10 +3009,11 @@
     }
   }
   function applySkinVolley(who, startIdx, g) {
-    var id, i, b, burst, echoItems;
+    var id, i, b, burst, echoItems, perk;
     if (!who || who.skinEchoing) return;
     id = skinIdOf(who);
-    if (id === "novaflux" && Math.random() < 0.16) {
+    perk = who.genesisPerk || "";
+    if ((id === "novaflux" && Math.random() < 0.16) || perk === "BURST") {
       burst = pbul[startIdx];
       if (burst && !burst.splash) burst.splash = { r: 26, dmg: 1.5 };
     }
@@ -2904,7 +3026,7 @@
         }
       }
     }
-    if (id === "mythic" && Math.random() < 0.28) {
+    if ((id === "mythic" && Math.random() < 0.28) || perk === "ECHO") {
       echoItems = [];
       for (i = startIdx; i < pbul.length; i++) {
         b = pbul[i];
@@ -2970,11 +3092,23 @@
     return true;
   }
   function skinDefendShot(pl, b) {
-    var id, d2, hitR, pr;
+    var id, d2, hitR, pr, i, shard, pos;
     if (!pl || !pl.alive || !b) return "none";
     id = skinIdOf(pl);
     d2 = dist2(b.x, b.y, pl.x, pl.y);
     if (id === "nebula" && (pl.skinNebulaT || 0) > 0 && d2 < 42 * 42) return "eat";
+    if (id === "eventide") {
+      for (i = 0; i < 3; i++) {
+        shard = (pl.eventide || [])[i];
+        if (!shard || (shard.t || 0) > 0) continue;
+        pos = eventidePos(pl, i);
+        if (dist2(b.x, b.y, pos.x, pos.y) < 8 * 8) {
+          shard.t = 10;
+          rings.push({ x: pos.x, y: pos.y, r: 3, vr: 70, life: 0.2, color: "#ffb060" });
+          return "eat";
+        }
+      }
+    }
     if (id === "warden-sentinel" && (pl.skinSentinelCd || 0) <= 0 && d2 < 40 * 40) {
       pl.skinSentinelCd = 5;
       rings.push({ x: b.x, y: b.y, r: 3, vr: 80, life: 0.2, color: "#a8ffe0" });
@@ -3022,6 +3156,38 @@
         killEnemy(e, false, e.burnDmg || 1, e.burnOwner, "burn");
       }
       if (e.burnTicks <= 0) e.burnT = 0;
+    }
+  }
+  function tickRelicShip(p, dt) {
+    var i, shard, g;
+    if (!p || !p.alive) return;
+    if ((p.paradoxCd || 0) > 0) p.paradoxCd = Math.max(0, p.paradoxCd - dt);
+    if (p.paradoxPending) {
+      p.paradoxT = (p.paradoxT || 0) - dt;
+      if (p.paradoxT <= 0) resolveParadox(p, false);
+    }
+    if (skinIdOf(p) === "eventide") {
+      if (!p.eventide || p.eventide.length < 3) initEventide(p);
+      for (i = 0; i < 3; i++) {
+        shard = p.eventide[i];
+        if ((shard.t || 0) > 0) shard.t = Math.max(0, shard.t - dt);
+      }
+    }
+    if (skinIdOf(p) === "genesis") {
+      if (p.genesisReady) {
+        /* armed */
+      } else {
+        p.genesisCd = (p.genesisCd || 0) - dt;
+        if (p.genesisCd <= 0) p.genesisReady = true;
+      }
+    }
+    g = findGun(equippedGun(p));
+    if (g && g.bell) {
+      p.bellT = (p.bellT || 0) - dt;
+      if (p.bellT <= 0) {
+        p.bellT = g.bell;
+        spawnRequiemBell(p);
+      }
     }
   }
   function tickSkinAura(p, dt) {
@@ -3099,6 +3265,11 @@
     var def = findSkin(skinId) || SKIN_TIERS[0];
     var hull = ship.color || "#7ef9ff";
     var accent = ship.accent || "#3df0ff";
+    var pal;
+    if (def.fx === "genesis") {
+      pal = BOSS_DEFS[Math.floor((typeof time === "number" ? time : 0) / 1.8) % BOSS_DEFS.length] || BOSS_DEFS[0];
+      return { hull: pal.color || hull, accent: pal.dark || accent, fx: "genesis", def: def };
+    }
     if (def.hull) {
       return { hull: def.hull, accent: def.accent || def.hull, fx: def.fx || "solid", def: def };
     }
@@ -3871,7 +4042,8 @@
       mod: spec.mod || null,
       skin: spec.skin || equippedSkinFor(spec.ship || "wisp"),
       shieldHp: p ? p.shieldHp : 0,
-      muzzle: p ? p.muzzle : 0
+      muzzle: p ? p.muzzle : 0,
+      eventideMask: p ? eventideMaskOf(p) : 7
     };
   }
   function activeWeapon(p) {
@@ -4881,7 +5053,10 @@
     for (pi = 0; pi < players.length; pi++) {
       if (players[pi] && players[pi].alive) players[pi].invuln = Math.max(players[pi].invuln, 1.15);
       resetSkinWave(players[pi]);
-      if (players[pi]) players[pi].bulkUsed = false;
+      if (players[pi]) {
+        players[pi].bulkUsed = false;
+        players[pi].chronoUsed = false;
+      }
     }
     run.maxWave = Math.max(run.maxWave, n);
     if (!run.hits) run.cleanWave = Math.max(run.cleanWave || 0, n);
@@ -4914,6 +5089,8 @@
       hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, abilityCds: [0, 0, 0, 0, 0, 0], abilityGcd: 0, dash: null, rewind: null, pvpFollow: null,
       leech: 0,
       skillCd: 0, lastStandUsed: false, skillHeld: false, skillHasteT: 0, rampartT: 0, bulkUsed: false,
+      chronoUsed: false, pathHist: [], paradoxT: 0, paradoxCd: 0, paradoxPending: false, paradoxKills: 0, paradoxBossDmg: 0,
+      twinOn: false, twinX: 0, twinY: 0, eventide: [{ t: 0 }, { t: 0 }, { t: 0 }], bellT: 0, genesisReady: false, genesisCd: 0,
       bossAbilityId: "", bossAbCd: 0, bossAbHeld: false,
       skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
       skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
@@ -5022,6 +5199,7 @@
         e.phaseIdx = 1;
         banner = { text: "ARCHON ENRAGES", life: 1.05 };
       }
+      if (owner && owner.paradoxPending && e.isBoss) creditParadox(owner, e, dmg);
       return;
     }
     e.alive = false;
@@ -5035,6 +5213,7 @@
     profile.stats.killsByType[e.type] = (profile.stats.killsByType[e.type] || 0) + 1;
     if (owner && owner.alive) {
       var sid = skinIdOf(owner);
+      if (owner.paradoxPending) creditParadox(owner, e, dmg);
       if (sid === "needle-hotstreak") {
         if ((owner.skinHotT || 0) > 0) owner.skinHotStacks = Math.min(4, (owner.skinHotStacks || 0) + 1);
         else owner.skinHotStacks = 1;
@@ -5314,6 +5493,45 @@
       updateHud();
       return;
     }
+    if (isChrono(who) && !who.chronoUsed) {
+      who.chronoUsed = true;
+      tryChronoRewind(who);
+      return;
+    }
+    if (who.paradoxPending) {
+      explode(who.x, who.y, "#c45a3a", false);
+      who.invuln = Math.max(who.invuln || 0, 0.3);
+      syncQuestProgress();
+      updateHud();
+      return;
+    }
+    if (hasMod("paradox", who) && (who.paradoxCd || 0) <= 0) {
+      startParadox(who);
+      if (!isPvpRun()) ebul.length = 0;
+      syncQuestProgress();
+      updateHud();
+      return;
+    }
+    applyLifeLoss(who);
+  }
+
+  function tryChronoRewind(who) {
+    var past = pathAgo(who, CHRONO_REWIND);
+    var margin = Math.max(10, (who.r || PLAYER_R) + 4);
+    who.x = clamp(past.x, margin, W - margin);
+    who.targetX = who.x;
+    who.y = clamp(past.y, 16, H - 16);
+    who.targetY = who.y;
+    who.invuln = Math.max(who.invuln || 0, 0.85);
+    explode(who.x, who.y, "#e8c878", false);
+    banner = { text: "REWIND", life: 0.7 };
+    if (!isPvpRun()) ebul.length = 0;
+    skinAfterHit(who, "shield");
+    syncQuestProgress();
+    updateHud();
+  }
+
+  function applyLifeLoss(who) {
     explode(who.x, who.y, "#7ef9ff", true);
     sfxHit();
     who.lives -= 1;
@@ -5456,7 +5674,15 @@
     who.shotCount = (who.shotCount || 0) + 1;
     var bolt = g.bolt && who.shotCount % g.bolt === 0;
     var cap = pbulCap();
-    if (pbul.length + shots.length + (bolt ? 1 : 0) > cap) return;
+    var twinExtra = (isTwinstar(who) && !who.twinFiring) ? shots.length + (bolt ? 1 : 0) : 0;
+    if (pbul.length + shots.length + (bolt ? 1 : 0) + twinExtra > cap) return;
+    if (skinIdOf(who) === "genesis" && who.genesisReady) {
+      who.genesisPerk = ["BURST", "FREEZE", "IGNITE", "ECHO"][(Math.random() * 4) | 0];
+      who.genesisReady = false;
+      who.genesisCd = 20;
+    } else if (skinIdOf(who) !== "genesis") {
+      who.genesisPerk = null;
+    }
     var startIdx = pbul.length;
     var sid = skinIdOf(who);
     var umbra = sid === "eclipse-umbra" && (who.skinUmbraT || 0) > 0;
@@ -5507,6 +5733,7 @@
         b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
       }
       if (g.id === "seeker") lockSeekerHome(b);
+      if (who.genesisPerk) b.genesisPerk = who.genesisPerk;
       pbul.push(b);
       if (fight.echo && !ghost) {
         fight.echoShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: b.r || 2 });
@@ -5535,13 +5762,146 @@
         fight.mimicShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: 3 });
       }
     }
+    if (isTwinstar(who) && !who.twinFiring) fireTwinstarVolley(who, g, gem, dmg, shots, bolt, orbitAim, face, volleyId);
     applySkinVolley(who, startIdx, g);
+    if (g.thread) linkLoomPairs(who, startIdx, g);
     var cd = gunInterval(g);
     if (gem === "rapid") cd *= 0.6;
     cd /= loadoutFireMul(shipDef(who), equippedMod(who), who) * (who.skinFireMul || 1);
     who.fireCd = Math.max(0.035, cd / 1000);
     who.muzzle = 1;
+    who.genesisPerk = null;
     sfxShoot(who);
+  }
+
+  function linkLoomPairs(who, startIdx, g) {
+    var i, a, b, pair;
+    if (!g || !g.thread) return;
+    for (i = startIdx; i + 1 < pbul.length; i += 2) {
+      a = pbul[i];
+      b = pbul[i + 1];
+      if (!a || !b || a.owner !== who.slot || b.owner !== who.slot) continue;
+      pair = a.pairId || allocId();
+      a.pairId = pair;
+      b.pairId = pair;
+      loomThreads.push({ a: a.id, b: b.id, ax: a.x, ay: a.y, bx: b.x, by: b.y, life: g.thread, owner: who.slot, dmg: Math.max(0.6, (g.dmg || 1) * 0.7), hit: [] });
+    }
+  }
+  function fireTwinstarVolley(who, g, gem, dmg, shots, bolt, orbitAim, face, volleyId) {
+    var twin = twinPos(who), i, s, b, y, ghost;
+    ghost = netRole === "client";
+    y = twin.y + face * -12;
+    dmg = dmg * 0.6;
+    who.twinFiring = true;
+    for (i = 0; i < shots.length; i++) {
+      s = shots[i];
+      b = {
+        id: allocId(),
+        x: twin.x - s.dx, y: y,
+        vx: -Math.sin(s.ang) * s.spd, vy: face * Math.cos(s.ang) * s.spd,
+        dmg: dmg, r: g.r || 2, age: 0, life: g.life || 0,
+        pierce: g.pierce || 0, hit: g.pierce ? [] : null,
+        homing: !!g.homing, homeT: g.homeT || 0,
+        hsp: g.hsp || 0, hturn: g.hturn || 0,
+        splash: g.splash || null, gun: g.id, owner: who.slot, ghost: ghost, volleyId: volleyId, twinShot: true
+      };
+      if (g.helix) {
+        b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
+      }
+      if (who.genesisPerk) b.genesisPerk = who.genesisPerk;
+      pbul.push(b);
+    }
+    who.twinFiring = false;
+  }
+  function tickLoomThreads(dt) {
+    var i, th, a, b, j, e, owner;
+    function findBul(id) {
+      var n;
+      for (n = 0; n < pbul.length; n++) if (pbul[n].id === id) return pbul[n];
+      return null;
+    }
+    for (i = loomThreads.length - 1; i >= 0; i--) {
+      th = loomThreads[i];
+      th.life -= dt;
+      a = findBul(th.a);
+      b = findBul(th.b);
+      if (a) { th.ax = a.x; th.ay = a.y; }
+      if (b) { th.bx = b.x; th.by = b.y; }
+      if (th.life <= 0 || (!a && !b)) { loomThreads.splice(i, 1); continue; }
+      owner = players[th.owner];
+      if (isPvpRun()) {
+        for (j = 0; j < players.length; j++) {
+          e = players[j];
+          if (!e || !e.alive || e.slot === th.owner) continue;
+          if (th.hit.indexOf("p" + e.slot) >= 0) continue;
+          if (segHitsCircle(th.ax, th.ay, th.bx, th.by, e.x, e.y, (e.r || PLAYER_R) + 2)) {
+            th.hit.push("p" + e.slot);
+            pvpHurt(e, th.dmg);
+          }
+        }
+        continue;
+      }
+      for (j = 0; j < enemies.length; j++) {
+        e = enemies[j];
+        if (!e.alive) continue;
+        if (th.hit.indexOf(e.id) >= 0) continue;
+        if (segHitsCircle(th.ax, th.ay, th.bx, th.by, e.x, e.y, e.r + 2)) {
+          th.hit.push(e.id);
+          killEnemy(e, false, th.dmg, th.owner, "thread");
+        }
+      }
+    }
+  }
+  function spawnRequiemBell(who) {
+    var face = pvpFacing(who);
+    relicBells.push({ x: who.x, y: who.y, r: 10, vr: 90, life: 0.45, face: face, owner: who.slot, hit: [] });
+  }
+  function tickRelicBells(dt) {
+    var i, bell, j, e, dx, dy, d, inner;
+    for (i = relicBells.length - 1; i >= 0; i--) {
+      bell = relicBells[i];
+      bell.life -= dt;
+      bell.r += bell.vr * dt;
+      inner = bell.r - 7;
+      for (j = ebul.length - 1; j >= 0; j--) {
+        e = ebul[j];
+        dx = e.x - bell.x; dy = e.y - bell.y;
+        d = Math.sqrt(dx * dx + dy * dy);
+        if (d < inner || d > bell.r + 4) continue;
+        if (bell.face < 0 && dy > 4) continue;
+        if (bell.face > 0 && dy < -4) continue;
+        explode(e.x, e.y, "#c8b8ff", false);
+        ebul.splice(j, 1);
+      }
+      if (!isPvpRun()) {
+        for (j = 0; j < enemies.length; j++) {
+          e = enemies[j];
+          if (!e.alive) continue;
+          if (bell.hit.indexOf(e.id) >= 0) continue;
+          dx = e.x - bell.x; dy = e.y - bell.y;
+          d = Math.sqrt(dx * dx + dy * dy);
+          if (d < inner - e.r || d > bell.r + e.r + 4) continue;
+          if (bell.face < 0 && dy > 6) continue;
+          if (bell.face > 0 && dy < -6) continue;
+          bell.hit.push(e.id);
+          killEnemy(e, false, 2, bell.owner, "bell");
+        }
+      } else {
+        for (j = 0; j < players.length; j++) {
+          e = players[j];
+          if (!e || !e.alive || e.slot === bell.owner) continue;
+          if (bell.hit.indexOf("p" + e.slot) >= 0) continue;
+          dx = e.x - bell.x; dy = e.y - bell.y;
+          d = Math.sqrt(dx * dx + dy * dy);
+          if (d < inner - (e.r || PLAYER_R) || d > bell.r + (e.r || PLAYER_R) + 4) continue;
+          if (bell.face < 0 && dy > 6) continue;
+          if (bell.face > 0 && dy < -6) continue;
+          bell.hit.push("p" + e.slot);
+          pvpHurt(e, 2);
+        }
+      }
+      if (bell.life <= 0) relicBells.splice(i, 1);
+    }
   }
 
   function skillCdFor(id) {
@@ -6216,7 +6576,8 @@
     if (!def) return false;
     if (!force && (who.bossAbCd || 0) > 0) return false;
     predict = netRole === "client";
-    who.bossAbCd = def.cd;
+    who.bossAbCd = def.cd * (hasMod("overclock", who) ? 0.7 : 1);
+    if (hasMod("overclock", who) && (who.skillCd || 0) > 0) who.skillCd *= 0.8;
     who.bossAbilityId = id;
     fireBossAbilityFx(who, def);
     banner = { text: def.name.toUpperCase(), life: 0.7 };
@@ -13161,8 +13522,14 @@
   var hangarDrag = null;
   var hangarGhost = null;
   var hangarDidDrag = false;
-  var RARITIES = ["common", "rare", "epic", "legendary"];
-  function rarityLabel(r) { return r === "legendary" ? "Legendary" : r === "epic" ? "Epic" : r === "rare" ? "Rare" : "Common"; }
+  var RARITIES = ["common", "rare", "epic", "legendary", "relic"];
+  function rarityLabel(r) {
+    if (r === "relic") return "Relic";
+    if (r === "legendary") return "Legendary";
+    if (r === "epic") return "Epic";
+    if (r === "rare") return "Rare";
+    return "Common";
+  }
   function fmtPct(m) {
     var p = Math.round((m - 1) * 100);
     return (p > 0 ? "+" : "") + p + "%";
@@ -13193,6 +13560,9 @@
     if (s.passive === "leech") h += chip("PASSIVE", "Leech", 0, "special");
     if (s.passive === "nova") h += chip("PASSIVE", "Nova", 0, "special");
     if (s.passive === "eclipse") h += chip("PASSIVE", "Eclipse", 0, "special");
+    if (s.passive === "chrono") h += chip("PASSIVE", "Rewind", 0, "special");
+    if (s.passive === "twin") h += chip("PASSIVE", "Twin", 0, "special");
+    if (s.passive === "horizon") h += chip("PASSIVE", "Gravity", 0, "special");
     return h;
   }
   function gunChips(g, eq) {
@@ -13208,6 +13578,9 @@
     if (g.splash) h += chip("SPLASH", g.splash.dmg + " dmg", 0, "special");
     if (g.bolt) h += chip("BOLT", "every " + g.bolt + "th", 0, "special");
     if (g.helix) h += chip("WEAVE", "±" + g.helix.amp + "px", 0, "special");
+    if (g.thread) h += chip("THREAD", g.thread + "s", 0, "special");
+    if (g.bell) h += chip("BELL", "every " + g.bell + "s", 0, "special");
+    if (g.wallBounce) h += chip("BOUNCE", "once +50%", 0, "special");
     return h;
   }
   function modChips(m) {
@@ -13271,7 +13644,10 @@
     h += '<div class="cat-info"><div class="cat-name">' + d.name + ' <span class="badge b-' + (d.rarity || "common") + '">' + rarityLabel(d.rarity) + "</span></div>";
     h += '<div class="cat-desc">' + d.desc + (d.perkText ? " · " + d.perkText : "") + "</div>";
     h += '<div class="chips">' + chips + "</div>";
-    if (st === "locked") h += '<div class="lock-reason">Locked · ' + lockReason(d) + "</div>";
+    if (st === "locked") {
+      if ((d.rarity || "") === "relic") h += '<div class="lock-reason">Opens at level ' + d.unlockLevel + "</div>";
+      else h += '<div class="lock-reason">Locked · ' + lockReason(d) + "</div>";
+    }
     else if (st === "buy" && !canAfford) h += '<div class="lock-reason">Need ' + (d.cost - profile.coins) + "c more</div>";
     h += "</div>";
     h += '<div class="cat-act">';
@@ -14181,6 +14557,8 @@
     pbul = []; ebul = []; particles = []; rings = []; pickups = []; teles = [];
     enemies = [];
     skinDecoys = [];
+    loomThreads = [];
+    relicBells = [];
     shake = 0; flash = 0; time = 0;
     stasisT = 0;
     resetWarpFx();
@@ -14685,7 +15063,11 @@
       mod: lo.mod || null, skin: lo.skin || "stock", targetX: p.targetX != null ? p.targetX : p.x,
       targetY: p.targetY != null ? p.targetY : p.y,
       hp: p.hp || 0, maxHp: p.maxHp || 0, facing: p.facing || -1, boss: p.boss || "",
-      bossAbilityId: p.bossAbilityId || ""
+      bossAbilityId: p.bossAbilityId || "",
+      twinOn: p.twinOn ? 1 : 0,
+      twinX: p.twinX || 0,
+      twinY: p.twinY || 0,
+      eventideMask: eventideMaskOf(p)
     };
   }
   function applyPlayerSnap(row) {
@@ -14729,6 +15111,14 @@
       p.loadout.boss = row.boss;
     }
     if (row.bossAbilityId != null && slot !== localSlot) p.bossAbilityId = row.bossAbilityId;
+    if (row.twinOn) {
+      p.twinOn = true;
+      if (row.twinX != null) p.twinX = row.twinX;
+      if (row.twinY != null) p.twinY = row.twinY;
+    } else if (row.twinOn === 0 || row.twinOn === false) {
+      p.twinOn = false;
+    }
+    if (row.eventideMask != null) applyEventideMask(p, row.eventideMask);
   }
   function fillLive(dest, src, keep) {
     var i, n = 0;
@@ -15481,6 +15871,12 @@
       }
       p.y += (p.targetY - p.y) * (1 - Math.exp(-STEER_FOLLOW * dt));
     }
+    rememberPath(p);
+    p.twinOn = isTwinstar(p);
+    if (p.twinOn) {
+      p.twinX = twinPos(p).x;
+      p.twinY = twinPos(p).y;
+    }
     p.fireCd = Math.max(0, p.fireCd - dt);
     p.invuln = Math.max(0, p.invuln - dt);
     p.muzzle = Math.max(0, p.muzzle - dt * 6);
@@ -15515,6 +15911,7 @@
       }
     }
     tickSkinAura(p, dt);
+    tickRelicShip(p, dt);
     if (p.shieldT > 0) {
       p.shieldT -= dt;
       if (p.shieldT <= 0) { p.shieldT = 0; p.shieldHp = 0; }
@@ -15842,6 +16239,17 @@
         b.x += (b.vx || 0) * dt;
       }
       b.y += b.vy * dt;
+      if (b.gun === "axiomlance" && (b.lanceBounces || 0) < 1) {
+        var bouncedLance = false;
+        if (b.x < 4 && b.vx < 0) { b.x = 4; b.vx *= -1; bouncedLance = true; }
+        if (b.x > W - 4 && b.vx > 0) { b.x = W - 4; b.vx *= -1; bouncedLance = true; }
+        if (b.y < 4 && b.vy < 0) { b.y = 4; b.vy *= -1; bouncedLance = true; }
+        if (bouncedLance) {
+          b.lanceBounces = 1;
+          b.dmg = (b.dmg || 1) * 1.5;
+          b.color = "#fff4d0";
+        }
+      }
       if (fight.bounce) {
         b.bounces = b.bounces || 0;
         if (b.x < 4 && b.vx < 0) { b.x = 4; b.vx *= -1; b.bounces += 1; }
@@ -15944,6 +16352,7 @@
         }
       }
       if (!consumed && fight.bounce && (b.bounces || 0) > 0) {
+        if (!(b.gun === "axiomlance" && (b.lanceBounces || 0) > 0)) {
         for (pi = 0; pi < players.length; pi++) {
           pl = players[pi];
           if (!pl || !pl.alive || pl.invuln > 0) continue;
@@ -15955,6 +16364,7 @@
             consumed = true;
             break;
           }
+        }
         }
       }
       if (consumed) continue;
@@ -16006,12 +16416,12 @@
         if (fight.on && fight.flow > 0) applyMaelstromVel(b, dt, 0.55);
         if (b.accel) { b.vx *= 1 + b.accel * dt; b.vy *= 1 + b.accel * dt; }
         if (b.sway) {
-          b.bx += b.vx * dt;
+          b.bx += b.vx * dt * horizonSlowAt(b.x, b.y);
           b.x = b.bx + Math.sin(b.age * b.swayF + b.swayPh) * b.sway;
         } else {
-          b.x += b.vx * dt;
+          b.x += b.vx * dt * horizonSlowAt(b.x, b.y);
         }
-        b.y += b.vy * dt;
+        b.y += b.vy * dt * horizonSlowAt(b.x, b.y);
         if (b.pauseAt && ((b.vy > 0 && b.y >= b.pauseAt) || (b.vy < 0 && b.y <= b.pauseAt))) {
           b.paused = true; b.vx = 0; b.vy = 0; b.y = b.pauseAt;
           b.pauseAt = 0;
@@ -16114,6 +16524,9 @@
       if (gone) continue;
       if (hit) break;
     }
+
+    tickLoomThreads(dt);
+    tickRelicBells(dt);
 
     dt = wallDt;
     for (i = particles.length - 1; i >= 0; i--) {
@@ -16300,7 +16713,10 @@
     nova: [[0, -12], [5, -5], [10, 6], [5, 10], [0, 7], [-5, 10], [-10, 6], [-5, -5]],
     tempest: [[0, -14], [4, -8], [11, -2], [7, 3], [9, 9], [2, 6], [0, 9], [-2, 6], [-9, 9], [-7, 3], [-11, -2], [-4, -8]],
     warden: [[0, -11], [8, -8], [12, 0], [12, 8], [6, 6], [0, 10], [-6, 6], [-12, 8], [-12, 0], [-8, -8]],
-    eclipse: [[0, -15], [3, -9], [10, -4], [12, 4], [6, 4], [4, 10], [0, 7], [-4, 10], [-6, 4], [-12, 4], [-10, -4], [-3, -9]]
+    eclipse: [[0, -15], [3, -9], [10, -4], [12, 4], [6, 4], [4, 10], [0, 7], [-4, 10], [-6, 4], [-12, 4], [-10, -4], [-3, -9]],
+    chronoweaver: [[0, -14], [5, -6], [7, 0], [5, 6], [0, 14], [-5, 6], [-7, 0], [-5, -6]],
+    twinstar: [[0, -13], [4, -4], [11, 0], [4, 4], [0, 10], [-4, 4], [-11, 0], [-4, -4]],
+    eventhorizon: [[0, -9], [5, -3], [6, 3], [3, 7], [0, 8], [-3, 7], [-6, 3], [-5, -3]]
   };
   // Legendary coin skins (and a few shared forms) may replace the visual hull only.
   // Collision still uses SHIPS[].r — never these polygons.
@@ -16319,7 +16735,7 @@
     "eclipse-corona": [[0, -16], [5, -10], [13, -6], [15, 2], [10, 6], [6, 12], [0, 8], [-6, 12], [-10, 6], [-15, 2], [-13, -6], [-5, -10]]
   };
   var DARK_SKIN_FX = {
-    void: 1, umbra: 1, pinkvoid: 1, obsidian: 1, rift: 1, hologram: 1, ghostlight: 1, spectral: 1
+    void: 1, umbra: 1, pinkvoid: 1, obsidian: 1, rift: 1, hologram: 1, ghostlight: 1, spectral: 1, eventide: 1
   };
   function visualHull(shipId, skinDef) {
     var base = SHIP_HULLS[shipId] || SHIP_HULLS.wisp;
@@ -16331,11 +16747,13 @@
     if (fx === "solar") return scalePoly(base, 1.05, 1.04);
     if (fx === "novaflux") return scalePoly(base, 1.05, 1.05);
     if (fx === "void") return scalePoly(base, 1.03, 1.03);
+    if (fx === "eventide") return scalePoly(base, 1.04, 1.04);
+    if (fx === "genesis") return scalePoly(base, 1.08, 1.06);
     return base;
   }
   function skinGlowAmt(fx) {
-    if (fx === "novaflux" || fx === "supernova" || fx === "starburst" || fx === "solar" || fx === "corona" || fx === "inferno") return 18;
-    if (fx === "ghostlight" || fx === "hologram" || fx === "spectral" || fx === "prism" || fx === "lightning") return 16;
+    if (fx === "novaflux" || fx === "supernova" || fx === "starburst" || fx === "solar" || fx === "corona" || fx === "inferno" || fx === "genesis") return 18;
+    if (fx === "ghostlight" || fx === "hologram" || fx === "spectral" || fx === "prism" || fx === "lightning" || fx === "eventide") return 16;
     if (fx === "mythic" || fx === "nebula" || fx === "aurora" || fx === "ward") return 15;
     return 12;
   }
@@ -16352,9 +16770,9 @@
       fill.addColorStop(0.4 + 0.12 * Math.sin(time * 3), accent);
       fill.addColorStop(1, hull);
       context.fillStyle = fill;
-    } else if (fx === "prism") {
+    } else if (fx === "prism" || fx === "genesis") {
       context.fillStyle = shiftPaint(hull, time * 70, 1.1, 1);
-    } else if (fx === "void" || fx === "umbra" || fx === "pinkvoid" || fx === "obsidian" || fx === "rift") {
+    } else if (fx === "void" || fx === "umbra" || fx === "pinkvoid" || fx === "obsidian" || fx === "rift" || fx === "eventide") {
       context.fillStyle = "#0a0814";
     } else if (fx === "novaflux" || fx === "supernova" || fx === "starburst") {
       g = context.createRadialGradient(0, 0, 1.2, 0, 0, 14);
@@ -16384,7 +16802,7 @@
   }
   function drawCanopy(context, fx, accent) {
     var a = 1;
-    if (fx === "void" || fx === "umbra" || fx === "obsidian" || fx === "pinkvoid" || fx === "rift") a = 0.9;
+    if (fx === "void" || fx === "umbra" || fx === "obsidian" || fx === "pinkvoid" || fx === "rift" || fx === "eventide") a = 0.9;
     if (fx === "ghostlight" || fx === "spectral" || fx === "hologram") a = 0.5 + 0.28 * Math.sin(time * 9);
     context.globalAlpha = a;
     context.fillStyle = accent;
@@ -16422,6 +16840,22 @@
       context.beginPath(); context.arc(0, 0, 3.6, 0, Math.PI * 2); context.fill();
       context.strokeStyle = accent; context.lineWidth = 1;
       context.beginPath(); context.arc(0, 0, 4.2, 0, Math.PI * 2); context.stroke();
+    } else if (shipId === "chronoweaver") {
+      context.strokeStyle = accent; context.lineWidth = 1.2;
+      context.beginPath(); context.moveTo(-4, -6); context.lineTo(4, 6); context.moveTo(4, -6); context.lineTo(-4, 6); context.stroke();
+      context.fillStyle = accent;
+      context.beginPath(); context.arc(0, 0, 1.6, 0, Math.PI * 2); context.fill();
+    } else if (shipId === "twinstar") {
+      context.fillStyle = accent;
+      context.beginPath(); context.moveTo(-6, 0); context.lineTo(-3, -2.4); context.lineTo(-3, 2.4); context.closePath(); context.fill();
+      context.beginPath(); context.moveTo(6, 0); context.lineTo(3, -2.4); context.lineTo(3, 2.4); context.closePath(); context.fill();
+    } else if (shipId === "eventhorizon") {
+      context.strokeStyle = accent; context.lineWidth = 1.1;
+      context.globalAlpha = 0.7 + 0.25 * Math.sin(flash * 4);
+      context.beginPath(); context.arc(0, 0, 6.5, 0, Math.PI * 2); context.stroke();
+      context.globalAlpha = 1;
+      context.fillStyle = "#050510";
+      context.beginPath(); context.arc(0, 0, 2.2, 0, Math.PI * 2); context.fill();
     }
   }
   // Gun barrels drawn on top of the hull, and the muzzle-flash anchor points.
@@ -16463,6 +16897,19 @@
       context.beginPath(); context.moveTo(0, -18); context.lineTo(4, -9); context.lineTo(-4, -9); context.closePath(); context.fill();
       context.fillStyle = "#ffffff";
       context.beginPath(); context.moveTo(0, -15); context.lineTo(1.6, -11); context.lineTo(-1.6, -11); context.closePath(); context.fill();
+    } else if (gunId === "loomthread") {
+      context.fillRect(-7.2, -10, 1.8, 7);
+      context.fillRect(5.4, -10, 1.8, 7);
+      context.fillStyle = "#e8c878";
+      context.fillRect(-6.8, -11, 1, 2);
+      context.fillRect(5.8, -11, 1, 2);
+    } else if (gunId === "requiem") {
+      context.beginPath(); context.arc(0, -11, 3.2, Math.PI, 0); context.fill();
+      context.fillRect(-1.1, -11, 2.2, 5);
+    } else if (gunId === "axiomlance") {
+      context.fillRect(-1.4, -20, 2.8, 12);
+      context.fillStyle = "#fff4d0";
+      context.fillRect(-0.7, -19, 1.4, 4);
     } else {
       context.fillRect(-1.1, -12, 2.2, 5);
     }
@@ -16483,11 +16930,37 @@
     } else if (gunId === "helix") {
       context.arc(-3, -16, 2 + muzzle, 0, Math.PI * 2);
       context.arc(3, -16, 2 + muzzle, 0, Math.PI * 2);
+    } else if (gunId === "loomthread") {
+      context.arc(-6, -13, 2.2 + muzzle * 1.4, 0, Math.PI * 2);
+      context.arc(6, -13, 2.2 + muzzle * 1.4, 0, Math.PI * 2);
     } else {
-      context.arc(0, gunId === "lance" || gunId === "railgun" || gunId === "prism" ? -19 : -13, 3.2 + muzzle * 2, 0, Math.PI * 2);
+      context.arc(0, gunId === "lance" || gunId === "railgun" || gunId === "prism" || gunId === "axiomlance" ? -19 : -13, 3.2 + muzzle * 2, 0, Math.PI * 2);
     }
     context.fill();
     context.globalAlpha = 1;
+  }
+  function drawEventideShards(context, mask) {
+    var i, a, x, y;
+    if (mask == null) mask = 7;
+    for (i = 0; i < 3; i++) {
+      if (!(mask & (1 << i))) continue;
+      a = time * 1.35 + i * 2.094395;
+      x = Math.cos(a) * EVENTIDE_R;
+      y = Math.sin(a) * EVENTIDE_R;
+      context.save();
+      context.globalAlpha = 0.85;
+      glow(context, "#ffb060", 8);
+      context.fillStyle = "#ffd27a";
+      context.beginPath();
+      context.arc(x, y, 2.4, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = "#fff4d0";
+      context.beginPath();
+      context.arc(x, y, 1.1, 0, Math.PI * 2);
+      context.fill();
+      noGlow(context);
+      context.restore();
+    }
   }
 
   function drawShip(context, x, y, blink, loadout) {
@@ -16539,6 +17012,7 @@
     drawCanopy(context, fx, accent);
     if (!altHull) drawShipDetail(context, shipId, hull, accent, time);
     drawSkinFx(context, fx, hull, accent, pts);
+    if (fx === "eventide") drawEventideShards(context, loadout && loadout.eventideMask);
     drawGunBarrels(context, gunId, hull);
     if (muzzle > 0.15) drawMuzzle(context, gunId, muzzle);
     drawModFxFront(context, modId, hull, def);
@@ -17185,6 +17659,21 @@
       context.beginPath();
       context.arc(0, 1, 2.2, 0, Math.PI * 2);
       context.fill();
+    } else if (fx === "eventide") {
+      context.fillStyle = "#050510";
+      context.globalAlpha = 0.55;
+      context.beginPath();
+      context.arc(0, 1, 3.4, 0, Math.PI * 2);
+      context.fill();
+      context.strokeStyle = "#ffb060";
+      context.globalAlpha = 0.45 + 0.25 * Math.sin(time * 5);
+      context.lineWidth = 1.1;
+      strokePoly(context, pts);
+    } else if (fx === "genesis") {
+      context.strokeStyle = shiftPaint(accent, time * 50, 1.2, 1.1);
+      context.globalAlpha = 0.7 + 0.2 * Math.sin(time * 4);
+      context.lineWidth = 1.3;
+      strokePoly(context, pts);
     }
     context.restore();
   }
@@ -17249,6 +17738,20 @@
       context.lineTo(3, -9);
       context.lineTo(-3, -9);
       context.closePath();
+      context.stroke();
+    } else if (modId === "overclock") {
+      context.strokeStyle = "#ffd27a";
+      context.globalAlpha = 0.45 + 0.3 * Math.sin(time * 10);
+      context.lineWidth = 1.2;
+      context.beginPath();
+      context.arc(0, 1, 5.2, time, time + 4.2);
+      context.stroke();
+    } else if (modId === "paradox") {
+      context.strokeStyle = "#c45a3a";
+      context.globalAlpha = 0.4 + 0.25 * Math.sin(time * 5);
+      context.lineWidth = 1.3;
+      context.beginPath();
+      context.arc(0, 0, 10, -Math.PI / 2, Math.PI);
       context.stroke();
     }
     context.restore();
@@ -18204,7 +18707,7 @@
         ctx.arc(b.x, b.y, 1.8, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        var pierceCol = b.gun === "prism" ? "#e0c8ff" : b.gun === "railgun" ? "#c8f0ff" : "#ffe08a";
+        var pierceCol = b.gun === "prism" ? "#e0c8ff" : b.gun === "railgun" ? "#c8f0ff" : b.gun === "axiomlance" ? "#fff4d0" : "#ffe08a";
         glow(ctx, b.pierce ? pierceCol : b.helix ? "#b6ff4d" : "#7ef9ff", 10);
         ctx.strokeStyle = b.pierce ? (b.gun === "prism" ? "#f8f0ff" : "#fff4c8") : b.helix ? "#eaffd0" : "#e8ffff";
         ctx.lineWidth = b.pierce ? (b.gun === "railgun" ? 3.2 : 2.6) : 2;
@@ -18216,6 +18719,33 @@
     }
     noGlow(ctx);
     ctx.restore();
+
+    for (i = 0; i < loomThreads.length; i++) {
+      p = loomThreads[i];
+      ctx.save();
+      ctx.globalAlpha = Math.max(0.2, Math.min(0.85, p.life / 0.4));
+      glow(ctx, "#e8c878", 8);
+      ctx.strokeStyle = "#ffe08a";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(p.ax, p.ay);
+      ctx.lineTo(p.bx, p.by);
+      ctx.stroke();
+      noGlow(ctx);
+      ctx.restore();
+    }
+    for (i = 0; i < relicBells.length; i++) {
+      p = relicBells[i];
+      ctx.save();
+      ctx.globalAlpha = Math.max(0.2, p.life / 0.45);
+      ctx.strokeStyle = "#d0c8e8";
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      if (p.face < 0) ctx.arc(p.x, p.y, p.r, Math.PI, 0);
+      else ctx.arc(p.x, p.y, p.r, 0, Math.PI);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     for (i = 0; i < ebul.length; i++) {
       b = ebul[i];
@@ -18326,6 +18856,69 @@
         drawShip(ctx, p.x, p.y, p.invuln > 0, currentLoadout(p));
       }
       ctx.restore();
+      if (p.twinOn) {
+        ctx.save();
+        if (p.facing > 0 || (fight.fallUp && !isPvpRun())) {
+          ctx.translate(p.twinX, p.twinY);
+          ctx.scale(1, -1);
+          ctx.translate(-p.twinX, -p.twinY);
+        }
+        if (fight.on && fight.type === "lodestar") {
+          var savedPolar = fight.polar;
+          fight.polar = !fight.polar;
+          drawShip(ctx, p.twinX, p.twinY, false, currentLoadout(p));
+          fight.polar = savedPolar;
+        } else {
+          ctx.globalAlpha = 0.92;
+          drawShip(ctx, p.twinX, p.twinY, false, currentLoadout(p));
+        }
+        ctx.restore();
+      }
+      if (isChrono(p) && !p.chronoUsed && p.pathHist && p.pathHist.length) {
+        var past = pathAgo(p, CHRONO_REWIND), hi;
+        ctx.save();
+        ctx.strokeStyle = "#e8c878";
+        ctx.lineWidth = 1.4;
+        ctx.globalAlpha = 0.35;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        for (hi = p.pathHist.length - 1; hi >= 0; hi--) {
+          if (time - p.pathHist[hi].t > CHRONO_REWIND) break;
+          ctx.lineTo(p.pathHist[hi].x, p.pathHist[hi].y);
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 0.45 + 0.2 * Math.sin(time * 6);
+        ctx.fillStyle = "#c8a050";
+        ctx.beginPath();
+        ctx.arc(past.x, past.y, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      if (isHorizon(p)) {
+        ctx.save();
+        ctx.globalAlpha = 0.18 + 0.08 * Math.sin(time * 3);
+        ctx.strokeStyle = "#d8c090";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, HORIZON_GRAV_R, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      if (p.paradoxPending) {
+        var pfrac = Math.max(0, Math.min(1, (p.paradoxT || 0) / 3));
+        ctx.save();
+        ctx.strokeStyle = "#c45a3a";
+        ctx.lineWidth = 2.4;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 15, -Math.PI / 2, -Math.PI / 2 + pfrac * Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 15, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
       if (axiomOnRing()) {
         ctx.save();
         ctx.strokeStyle = FIGHT_CYAN;
