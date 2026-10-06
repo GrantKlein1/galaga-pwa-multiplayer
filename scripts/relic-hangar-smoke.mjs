@@ -50,7 +50,7 @@ assert(pvp.indexOf("relic: 4") >= 0, "pvp rarity rank");
 assert(js.indexOf("var PROFILE_VER = 9") >= 0, "profile shape unchanged");
 assert(account.indexOf("v: 9") >= 0, "cloud profile ver 9");
 assert(/var VER = 13;/.test(codec), "netcodec VER 13");
-assert(sw.indexOf("galaga-coop-v77") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
 
 [
   "chronoweaver", "twinstar", "eventhorizon",

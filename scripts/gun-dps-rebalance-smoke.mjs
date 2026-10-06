@@ -75,7 +75,7 @@ assert(js.indexOf("g.bell ? 2 / g.bell : 0") >= 0, "hangar DPS counts bell");
 assert(js.indexOf("next = cur + dir * 5") >= 0, "start-wave stepper untouched");
 assert(js.indexOf("Admin: every 5 waves") >= 0, "start-wave admin copy untouched");
 assert(/var VER = 13;/.test(codec), "codec VER unchanged");
-assert(sw.indexOf("galaga-coop-v77") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
 
 console.log("gun-dps-rebalance-smoke: ok  storm=" + storm.dps.toFixed(1)
   + " nova=" + nova.dps.toFixed(1)

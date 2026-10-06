@@ -591,7 +591,10 @@
     { id: "lt_dive500", name: "Sky Warden", desc: "Destroy 750 diving foes", target: 750, kind: "diveKillsLife", reward: { coins: 500, ship: "vulture", consolation: 420 } },
     { id: "lt_clean100", name: "Silent Running", desc: "Destroy 100 foes in a run without taking a hit", target: 100, kind: "cleanKillsRun", category: "Special Operations", reward: { coins: 450 } },
     { id: "lt_boss_roster", name: "Fleet Intelligence", desc: "Defeat every boss in the roster", target: 10, kind: "bossRoster", category: "Special Operations", reward: { coins: 800 } },
-    { id: "lt_armada_ready", name: "Ready Room", desc: "Own 6 ships and 10 guns", target: 1, kind: "ownCollection", ships: 6, guns: 10, category: "Special Operations", reward: { coins: 650 } }
+    { id: "lt_armada_ready", name: "Ready Room", desc: "Own 6 ships and 10 guns", target: 1, kind: "ownCollection", ships: 6, guns: 10, category: "Special Operations", reward: { coins: 650 } },
+    { id: "lt_bosses25", name: "Endless Court", desc: "Defeat 25 bosses in one run", target: 25, kind: "bossRun", category: "Special Operations", reward: { coins: 2200, gun: "requiem", consolation: 1800, skill: 2, xpBoost: 1 } },
+    { id: "lt_roster_all", name: "Every Name", desc: "Defeat every boss in the roster", target: BOSS_DEFS.length, kind: "bossRoster", category: "Special Operations", reward: { coins: 2800, ship: "eventhorizon", consolation: 2200, skill: 2, xpBoost: 1 } },
+    { id: "lt_axiom_t1", name: "Axiom +1", desc: "Defeat Axiom at tier 1 or higher", target: 1, kind: "bossTier", type: "axiom", tier: 1, category: "Special Operations", reward: { coins: 3500, gun: "axiomlance", consolation: 2500, skill: 2, xpBoost: 1 } }
   ];
 
   var canvas = document.getElementById("board");
