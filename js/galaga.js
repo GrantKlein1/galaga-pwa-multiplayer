@@ -166,10 +166,10 @@
     { id: "helix", name: "Helix", unlockLevel: 58, cost: 4600, rarity: "epic", desc: "Two weaving bolts that sweep a wide lane", dmg: 1.6, cd: 150, shots: [{ dx: 0, ang: 0, spd: 470, ph: 0 }, { dx: 0, ang: 0, spd: 470, ph: 3.1416 }], helix: { amp: 12, freq: 13 }, r: 2.4 },
     { id: "storm", name: "Storm", unlockLevel: 70, cost: 6000, rarity: "legendary", desc: "Hyper-rapid fire; every 5th shot adds a homing bolt", dmg: 1.1, cd: 60, shots: [{ dx: 0, ang: 0, spd: 520 }], bolt: 5, boltDmg: 2, r: 2 },
     { id: "novacannon", name: "Nova Cannon", unlockLevel: 80, cost: 7500, rarity: "legendary", desc: "6-damage shell with 2-damage splash", dmg: 6, cd: 320, shots: [{ dx: 0, ang: 0, spd: 520 }], pierce: 1, splash: { r: 34, dmg: 2 }, r: 4.5 },
-    { id: "prism", name: "Prism", unlockLevel: 90, cost: 9500, rarity: "legendary", desc: "Three piercing beams. The final word", dmg: 2.2, cd: 190, shots: [{ dx: -4, ang: -0.08, spd: 560 }, { dx: 0, ang: 0, spd: 580 }, { dx: 4, ang: 0.08, spd: 560 }], pierce: 2, r: 2.4 },
-    { id: "loomthread", name: "Loomthread", unlockLevel: 105, cost: 16000, rarity: "relic", desc: "Shots fire in pairs; a thread links each pair for 0.4s and damages anything it crosses", dmg: 1, cd: 155, shots: [{ dx: -7, ang: 0, spd: 460 }, { dx: 7, ang: 0, spd: 460 }], r: 2, thread: 0.4 },
-    { id: "requiem", name: "Requiem Bell", unlockLevel: 120, cost: 22000, rarity: "relic", desc: "Fast single shots, plus every 3s a forward half-ring that erases enemy shots and deals 2 damage", dmg: 1, cd: 70, shots: [{ dx: 0, ang: 0, spd: 500 }], r: 2, bell: 3 },
-    { id: "axiomlance", name: "Axiom Lance", unlockLevel: 140, cost: 30000, rarity: "relic", desc: "Heavy piercing bolts that bounce once off walls or the top. After the bounce they deal +50% and never hurt you", dmg: 3.2, cd: 260, shots: [{ dx: 0, ang: 0, spd: 560 }], pierce: 3, r: 2.8, wallBounce: 1 }
+    { id: "prism", name: "Prism", unlockLevel: 90, cost: 9500, rarity: "legendary", desc: "Three piercing beams. The final word", dmg: 2.4, cd: 190, shots: [{ dx: -4, ang: -0.08, spd: 560 }, { dx: 0, ang: 0, spd: 580 }, { dx: 4, ang: 0.08, spd: 560 }], pierce: 2, r: 2.4 },
+    { id: "loomthread", name: "Loomthread", unlockLevel: 105, cost: 16000, rarity: "relic", desc: "Shots fire in pairs; a thread links each pair for 0.4s and damages anything it crosses", dmg: 2.35, cd: 155, shots: [{ dx: -7, ang: 0, spd: 460 }, { dx: 7, ang: 0, spd: 460 }], r: 2, thread: 0.4 },
+    { id: "requiem", name: "Requiem Bell", unlockLevel: 120, cost: 22000, rarity: "relic", desc: "Fast single shots, plus every 3s a forward half-ring that erases enemy shots and deals 2 damage", dmg: 3.2, cd: 70, shots: [{ dx: 0, ang: 0, spd: 500 }], r: 2, bell: 3 },
+    { id: "axiomlance", name: "Axiom Lance", unlockLevel: 140, cost: 30000, rarity: "relic", desc: "Heavy piercing bolts that bounce once off walls or the top. After the bounce they deal +50% and never hurt you", dmg: 9.18, cd: 260, shots: [{ dx: 0, ang: 0, spd: 560 }], pierce: 3, r: 2.8, wallBounce: 1 }
   ];
   var MODS = [
     { id: "barrier", name: "Barrier", unlockLevel: 2, cost: 300, rarity: "common", desc: "Start every run with a 2-hit shield", tags: ["SHIELD 2"] },
@@ -3642,7 +3642,10 @@
   function gunDps(g, ship, mod) {
     var per = g.dmg * g.shots.length;
     if (g.bolt) per += (g.boltDmg || 2) / g.bolt;
-    return per * (1000 / gunInterval(g)) * loadoutDmgMul(ship, mod) * loadoutFireMul(ship, mod);
+    if (g.wallBounce) per *= 1.5;
+    per *= loadoutDmgMul(ship, mod);
+    if (g.thread) per += Math.max(0.6, (g.dmg || 1) * 0.7);
+    return per * (1000 / gunInterval(g)) * loadoutFireMul(ship, mod) + (g.bell ? 2 / g.bell : 0);
   }
   function sanitizeName(s) {
     s = String(s || "").replace(/[^\w .\-]/g, "").replace(/\s+/g, " ").trim();

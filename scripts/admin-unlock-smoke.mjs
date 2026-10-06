@@ -101,7 +101,7 @@ assert(js.indexOf("grantAllSkills()") >= 0, "admin maxes skill tree");
 assert(js.indexOf("flushAccountPush") >= 0, "account sync");
 assert(html.indexOf("id=\"admin-passcode\"") >= 0, "passcode sheet");
 assert(html.indexOf("Enter passcode") >= 0, "passcode copy");
-assert(sw.indexOf("galaga-coop-v76") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v77") >= 0, "cache bump");
 assert(readme.toLowerCase().indexOf("passcode") < 0, "readme has no passcode");
 assert(readme.indexOf("1234") < 0, "readme has no code");
 assert(readme.toLowerCase().indexOf("admin unlock") < 0, "readme has no admin unlock");
