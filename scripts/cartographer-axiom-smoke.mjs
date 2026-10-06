@@ -38,7 +38,7 @@ assert(galaga.indexOf("a = AXIOM_RULES[1]") < 0, "old mix pairing gone");
 assert(galaga.indexOf('text: "BREAK THE SEALS"') >= 0, "seals card");
 
 assert(/var VER = 12;/.test(codec), "codec VER 12");
-assert(sw.indexOf("galaga-coop-v73") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v74") >= 0, "PWA cache bump");
 assert(post.indexOf("sliding-puzzle of map panes") >= 0, "docs describe the puzzle");
 assert(post.indexOf("Player bullets bounce **once**") >= 0, "docs say bounce once");
 assert(roster.indexOf("colored wrap edges") >= 0, "roster notes wrap edges");

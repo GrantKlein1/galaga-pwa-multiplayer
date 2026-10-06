@@ -55,7 +55,7 @@ assert(galaga.indexOf("if (n === 100) xpBonus += CENTURY_CLEAR_XP") >= 0, "skip-
 
 assert(galaga.indexOf("function setupFightPhase") >= 0, "phase-scoped fight setup");
 assert(galaga.indexOf("function resetFight") >= 0, "fight teardown");
-assert(galaga.indexOf("fight.invert") >= 0 && galaga.indexOf("function fightMidY") >= 0, "phase-scoped midline");
+assert(galaga.indexOf("function startTerminusSweep") >= 0 && galaga.indexOf("function fightMidY") >= 0, "phase-2 sweep, not a clamped midline");
 assert(galaga.indexOf("ECHO_LAG = 3") >= 0, "echo ghost is 3s late");
 assert(galaga.indexOf("fight.keysNeed") >= 0, "keystone core lock");
 assert(galaga.indexOf("spawnPylons") >= 0, "collapse pylons");
@@ -92,6 +92,6 @@ assert(codec.indexOf('"thread"') >= 0 && codec.indexOf('"midline"') >= 0, "threa
 assert(codec.indexOf('"keystone"') >= 0 && codec.indexOf('"pylon"') >= 0 && codec.indexOf('"ghost"') >= 0, "keystone/pylon/ghost kinds");
 
 assert(pvp.indexOf("loom:") >= 0 && pvp.indexOf("terminus:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v73") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v74") >= 0, "PWA cache bump");
 
 console.log("wave-100-boss-smoke: ok");

@@ -88,11 +88,11 @@
   ];
   var SKILL_NODES = [
     { id: "hull-life1", branch: "hull", name: "Bulkhead", short: "+1", desc: "+1 starting life. Life cap +1.", cost: 2, req: null, x: 30, y: 58 },
-    { id: "hull-iframes", branch: "hull", name: "Ablative", short: "i", desc: "+0.45s i-frames after a hit.", cost: 2, req: "hull-life1", x: 18, y: 50 },
+    { id: "hull-iframes", branch: "hull", name: "Ablative", short: "i", desc: "+0.36s i-frames after a hit.", cost: 2, req: "hull-life1", x: 18, y: 50 },
     { id: "hull-life2", branch: "hull", name: "Redundant", short: "+1", desc: "+1 starting life. Life cap +1.", cost: 2, req: "hull-iframes", x: 10, y: 42 },
-    { id: "hull-brace", branch: "hull", name: "Brace", short: "i+", desc: "+0.25s i-frames after a hit.", cost: 2, req: "hull-iframes", x: 22, y: 40 },
+    { id: "hull-brace", branch: "hull", name: "Brace", short: "i+", desc: "+0.2s i-frames after a hit.", cost: 2, req: "hull-iframes", x: 22, y: 40 },
     { id: "hull-keel", branch: "hull", name: "Keel", short: "r", desc: "Hitbox −1 (min 5.5).", cost: 2, req: "hull-life2", x: 8, y: 30 },
-    { id: "hull-iron", branch: "hull", name: "Ironclad", short: "i+", desc: "+0.3s i-frames after a hit.", cost: 3, req: "hull-brace", x: 18, y: 28 },
+    { id: "hull-iron", branch: "hull", name: "Ironclad", short: "i+", desc: "+0.24s i-frames after a hit.", cost: 3, req: "hull-brace", x: 18, y: 28 },
     { id: "hull-citadel", branch: "hull", name: "Citadel", short: "cap", desc: "Life cap +1 (not extra starting lives).", cost: 3, req: "hull-keel", x: 10, y: 18 },
     { id: "hull-bulk", branch: "hull", name: "Bulkhead II", short: "ok", desc: "Once per wave, the first hull hit is ignored.", cost: 5, req: "hull-iron", x: 22, y: 16 },
     { id: "hull-plate", branch: "hull", name: "Plate", short: "pl", desc: "Start each run with +1 shield point.", cost: 2, req: "hull-life1", x: 24, y: 70 },
@@ -137,14 +137,14 @@
     { id: "needle", name: "Needle", unlockLevel: 4, cost: 300, rarity: "common", desc: "Fast, tiny hitbox, slightly slower guns", speed: 330, r: 5.5, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 0.92, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "", color: "#ff9ad6", accent: "#ff4d9a" },
     { id: "aegis", name: "Aegis", unlockLevel: 8, cost: 600, rarity: "common", desc: "Slow. Starts shielded and regrows a shield point", speed: 190, r: 10, invuln: 2, extraLives: 0, regen: 9, startShield: 1, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "", color: "#8ec8ff", accent: "#4d88ff" },
     { id: "broadwing", name: "Broadwing", unlockLevel: 12, cost: 900, rarity: "rare", desc: "+1 life and +15% coins, but a wide hull", speed: 225, r: 12, invuln: 2, extraLives: 1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1.15, pickMul: 1, passive: "", color: "#ffd23d", accent: "#ff9a3d" },
-    { id: "phantom", name: "Phantom", unlockLevel: 18, cost: 1300, rarity: "rare", desc: "Long post-hit invulnerability; gems last longer", speed: 275, r: 8, invuln: 3.6, extraLives: 0, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1.3, passive: "", color: "#d46bff", accent: "#b07cff" },
+    { id: "phantom", name: "Phantom", unlockLevel: 18, cost: 1300, rarity: "rare", desc: "Long post-hit invulnerability; gems last longer", speed: 275, r: 8, invuln: 3.28, extraLives: 0, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1.3, passive: "", color: "#d46bff", accent: "#b07cff" },
     { id: "vulture", name: "Vulture", unlockLevel: 26, cost: 1800, rarity: "rare", desc: "Every 18 kills grows a shield point (max 2)", speed: 245, r: 9, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1.05, coinMul: 1, pickMul: 1, passive: "leech", color: "#b6ff4d", accent: "#5cff8a" },
-    { id: "bastion", name: "Bastion", unlockLevel: 34, cost: 2600, rarity: "epic", desc: "+2 lives, 2-hit shield. Slow, wide, -15% fire rate", speed: 170, r: 13, invuln: 2.4, extraLives: 2, regen: 0, startShield: 2, fireMul: 0.85, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "", color: "#a0b8ff", accent: "#6b8cff" },
+    { id: "bastion", name: "Bastion", unlockLevel: 34, cost: 2600, rarity: "epic", desc: "+2 lives, 2-hit shield. Slow, wide, -15% fire rate", speed: 170, r: 13, invuln: 2.32, extraLives: 2, regen: 0, startShield: 2, fireMul: 0.85, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "", color: "#a0b8ff", accent: "#6b8cff" },
     { id: "strix", name: "Strix", unlockLevel: 44, cost: 3400, rarity: "epic", desc: "Glass cannon: +25% damage, fast, but only 2 lives", speed: 305, r: 7, invuln: 1.6, extraLives: -1, regen: 0, startShield: 0, fireMul: 1.05, dmgMul: 1.25, coinMul: 1, pickMul: 1, passive: "", color: "#ff7a5c", accent: "#ff3355" },
-    { id: "nova", name: "Nova", unlockLevel: 55, cost: 4500, rarity: "epic", desc: "+1 life. Losing a life detonates a 6-damage nova", speed: 245, r: 9, invuln: 2.2, extraLives: 1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "nova", color: "#ffe08a", accent: "#ffb060" },
+    { id: "nova", name: "Nova", unlockLevel: 55, cost: 4500, rarity: "epic", desc: "+1 life. Losing a life detonates a 6-damage nova", speed: 245, r: 9, invuln: 2.16, extraLives: 1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "nova", color: "#ffe08a", accent: "#ffb060" },
     { id: "tempest", name: "Tempest", unlockLevel: 66, cost: 5800, rarity: "legendary", desc: "+15% fire rate, +5% damage, gems last 50% longer", speed: 280, r: 8, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.05, coinMul: 1, pickMul: 1.5, passive: "", color: "#7ef9ff", accent: "#ffffff" },
-    { id: "warden", name: "Warden", unlockLevel: 80, cost: 7500, rarity: "legendary", desc: "+1 life, 2-hit shield that regrows every 6s", speed: 215, r: 11, invuln: 2.4, extraLives: 1, regen: 6, startShield: 2, fireMul: 1, dmgMul: 1.05, coinMul: 1, pickMul: 1, passive: "", color: "#c8ffe8", accent: "#3dffb0" },
-    { id: "eclipse", name: "Eclipse", unlockLevel: 95, cost: 10000, rarity: "legendary", desc: "+30% damage, +15% fire rate, +1 life. Boss kills restore a life", speed: 290, r: 7, invuln: 3, extraLives: 1, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.3, coinMul: 1, pickMul: 1.2, passive: "eclipse", color: "#e0c8ff", accent: "#ffd23d" }
+    { id: "warden", name: "Warden", unlockLevel: 80, cost: 7500, rarity: "legendary", desc: "+1 life, 2-hit shield that regrows every 6s", speed: 215, r: 11, invuln: 2.32, extraLives: 1, regen: 6, startShield: 2, fireMul: 1, dmgMul: 1.05, coinMul: 1, pickMul: 1, passive: "", color: "#c8ffe8", accent: "#3dffb0" },
+    { id: "eclipse", name: "Eclipse", unlockLevel: 95, cost: 10000, rarity: "legendary", desc: "+30% damage, +15% fire rate, +1 life. Boss kills restore a life", speed: 290, r: 7, invuln: 2.8, extraLives: 1, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.3, coinMul: 1, pickMul: 1.2, passive: "eclipse", color: "#e0c8ff", accent: "#ffd23d" }
   ];
   // Guns. shots: list of { dx (muzzle x offset), ang (radians, 0 = straight up), spd }.
   // dmg per bullet, cd (ms), pierce (extra targets), homing, hsp/hturn (homing speed/turn),
@@ -173,7 +173,7 @@
     { id: "reactor", name: "Reactor", unlockLevel: 22, cost: 1400, rarity: "rare", desc: "+20% damage, hitbox +1", tags: ["DMG +20%", "HIT +1"] },
     { id: "afterburner", name: "Afterburner", unlockLevel: 30, cost: 1800, rarity: "rare", desc: "+12% speed; gems last 50% longer", tags: ["SPD +12%", "GEMS +50%"] },
     { id: "salvage", name: "Salvage", unlockLevel: 40, cost: 2500, rarity: "epic", desc: "Bosses drop +60% coins; wave bonus +50%", tags: ["BOSS COINS +60%", "WAVE BONUS +50%"] },
-    { id: "guardian", name: "Guardian", unlockLevel: 52, cost: 3200, rarity: "epic", desc: "Respawn with a 2-hit shield and +0.6s invuln", tags: ["RESPAWN SHIELD 2", "INV +0.6s"] },
+    { id: "guardian", name: "Guardian", unlockLevel: 52, cost: 3200, rarity: "epic", desc: "Respawn with a 2-hit shield and +0.48s invuln", tags: ["RESPAWN SHIELD 2", "INV +0.48s"] },
     { id: "berserk", name: "Berserk", unlockLevel: 64, cost: 4200, rarity: "legendary", desc: "+10% damage per missing life", tags: ["DMG +10% per lost life"] },
     { id: "ascension", name: "Ascension", unlockLevel: 78, cost: 6000, rarity: "legendary", desc: "+25% XP and +10% fire rate", tags: ["XP +25%", "ROF +10%"] }
   ];
@@ -203,7 +203,7 @@
     { id: "phantom-spectral", ship: "phantom", name: "Spectral", cost: 10000, rarity: "epic", fx: "spectral", hull: "#c8a0ff", accent: "#f0e8ff", desc: "Translucent double-outline shimmer", perk: "PHASE", perkText: "20% chance to phase through a ram or dive" },
     { id: "phantom-rift", ship: "phantom", name: "Rift", cost: 20000, rarity: "legendary", fx: "rift", hull: "#14061e", accent: "#d46bff", desc: "Split hull with a void crack", perk: "BLINK", perkText: "On hull loss, blink toward center and freeze nearby foes 0.8s" },
     { id: "vulture-acid", ship: "vulture", name: "Acid", cost: 10000, rarity: "epic", fx: "acid", hull: "#b6ff4d", accent: "#5cff8a", desc: "Dripping venom trails", perk: "CORRODE", perkText: "Hits strip an extra shield plate" },
-    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 20000, rarity: "legendary", fx: "carrion", hull: "#6a8a20", accent: "#ff7a5c", desc: "Bone-rib raptor silhouette", perk: "FEAST", perkText: "Dive/kami kills grant 0.55s invuln and +1 damage on the next shot" },
+    { id: "vulture-carrion", ship: "vulture", name: "Carrion", cost: 20000, rarity: "legendary", fx: "carrion", hull: "#6a8a20", accent: "#ff7a5c", desc: "Bone-rib raptor silhouette", perk: "FEAST", perkText: "Dive/kami kills grant 0.44s invuln and +1 damage on the next shot" },
     { id: "bastion-fortress", ship: "bastion", name: "Fortress", cost: 10000, rarity: "epic", fx: "fortress", hull: "#8aa0d8", accent: "#e0e8ff", desc: "Siege battlements on the prow", perk: "HOLD", perkText: "The first hit each wave is ignored" },
     { id: "bastion-obsidian", ship: "bastion", name: "Obsidian", cost: 20000, rarity: "legendary", fx: "obsidian", hull: "#101018", accent: "#6b8cff", desc: "Jagged black-glass bunker", perk: "BULWARK", perkText: "The first two hits each wave are ignored" },
     { id: "strix-bloodglass", ship: "strix", name: "Bloodglass", cost: 10000, rarity: "epic", fx: "bloodglass", hull: "#ff3355", accent: "#ffd0d8", desc: "Cracked ruby canopy", perk: "VENDETTA", perkText: "After a hull hit, the next 5 shots deal double damage" },
@@ -212,7 +212,7 @@
     { id: "nova-starburst", ship: "nova", name: "Starburst", cost: 20000, rarity: "legendary", fx: "starburst", hull: "#ffb060", accent: "#fff4d0", desc: "Eight-point detonation hull", perk: "SPARKS", perkText: "Every 7th shot adds two 0.7-damage sparks" },
     { id: "tempest-cyclone", ship: "tempest", name: "Cyclone", cost: 10000, rarity: "epic", fx: "cyclone", hull: "#3df0ff", accent: "#ffffff", desc: "Spiral storm-cell body", perk: "GUST", perkText: "Kills grant 0.6s of +20% speed" },
     { id: "tempest-lightning", ship: "tempest", name: "Lightning", cost: 20000, rarity: "legendary", fx: "lightning", hull: "#7ef9ff", accent: "#ffe08a", desc: "Jagged bolt silhouette", perk: "CHAIN", perkText: "20% of hits chain 1.2 damage to the nearest other foe" },
-    { id: "warden-jade", ship: "warden", name: "Jade", cost: 10000, rarity: "epic", fx: "jade", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple-green lattice plates", perk: "GEMWARD", perkText: "Collecting a non-coin gem grants 0.4s invulnerability" },
+    { id: "warden-jade", ship: "warden", name: "Jade", cost: 10000, rarity: "epic", fx: "jade", hull: "#3dffb0", accent: "#c8ffe8", desc: "Temple-green lattice plates", perk: "GEMWARD", perkText: "Collecting a non-coin gem grants 0.32s invulnerability" },
     { id: "warden-sentinel", ship: "warden", name: "Sentinel", cost: 20000, rarity: "legendary", fx: "sentinel", hull: "#a8ffe0", accent: "#ffffff", desc: "Honor-guard wings and halo", perk: "HALO", perkText: "Halo eats 1 nearby bullet every 5s" },
     { id: "eclipse-umbra", ship: "eclipse", name: "Umbra", cost: 10000, rarity: "epic", fx: "umbra", hull: "#120c1c", accent: "#ffd23d", desc: "Black disk with a gold ring", perk: "UMBRA", perkText: "While invulnerable after a hit, shots deal +25% damage" },
     { id: "eclipse-corona", ship: "eclipse", name: "Corona", cost: 20000, rarity: "legendary", fx: "corona", hull: "#e0c8ff", accent: "#ffd23d", desc: "Full eclipse with fire prominences", perk: "AURA", perkText: "While invulnerable, a 22px aura deals 1 damage every 0.55s" }
@@ -285,8 +285,8 @@
       base: ["echo"], p2: ["invert"], p3: ["keystones"], p4: ["collapse"], p5: ["medley"],
       t1: [], t2: [], p2Thresh: 0.8, p3Thresh: 0.6, p4Thresh: 0.4, p5Thresh: 0.2,
       p2Text: "THE LINE MOVES", p3Text: "BREAK THEM IN ORDER", p4Text: "THE WALLS CLOSE", p5Text: "EVERYTHING ENDS",
-      flavor: "Echo ghost, sliding midline, ordered keystones, closing walls, a last medley" },
-    { id: "hourglass", name: "HOURGLASS", color: "#e8c070", dark: "#2a1c08", r: 22, hp: 1700, spd: 32, amp: 8, freq: 0.85, cd: 1.16, tele: 0.28, pts: 9600,
+      flavor: "Echo ghost, a sweeping line with a safe gap, ordered keystones, closing walls, a last medley" },
+    { id: "hourglass", name: "HOURGLASS", color: "#e8c070", dark: "#2a1c08", r: 22, hp: 1700, spd: 32, amp: 8, freq: 0.85, cd: 0.98, tele: 0.28, pts: 9600,
       exclusive: true,
       base: ["pour"], p2: ["pile"], p3: ["timeslip"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "THE PILE RISES", p3Text: "TIME RUNS BACK",
@@ -295,7 +295,7 @@
       exclusive: true,
       base: ["glint"], p2: ["swarmfan"], p3: ["gloom"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
       p2Text: "THE SWARM", p3Text: "LIGHT DIES",
-      flavor: "A dark field, a player lamp, gold lanterns, shots that only glint" },
+      flavor: "A dim field, a player lamp, gold lanterns, shots that stay visible" },
     { id: "lodestar", name: "LODESTAR", color: "#c8d0ff", dark: "#080818", r: 21, hp: 1900, spd: 34, amp: 10, freq: 0.95, cd: 1.12, tele: 0.28, pts: 10800,
       exclusive: true,
       base: ["starred", "redrow"], p2: ["starblue", "bluerow"], p3: ["pulsar", "pulsarrow"], t1: [], t2: [], p2Thresh: 2 / 3, p3Thresh: 1 / 3,
@@ -365,9 +365,9 @@
     loom: { desc: "A weaver. Wall knots pull taut into red threads, a shuttle dart hunts the hull, then a cocoon closes.", abilities: ["Gold knots that pull taut into red threads", "Periodic aimed shuttle darts, including the bottom", "A closing cocoon"], ship: "warden", gun: "novacannon", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-rof1", "warp-rampart"] },
     tessera: { desc: "A chessboard from the first volley. Rook files, bishop diagonals, knight jumps; later the board fills.", abilities: ["Rook files through the ship", "Bishop diagonals", "Knight jumps", "A filling board you clear with a pawn"], ship: "warden", gun: "storm", mod: "ascension", skills: ["gun-dmg1", "gun-chip", "gun-focus", "warp-stasis"] },
     requiem: { desc: "A choir. Gold satellites sing, gapped rings pulse, then a heartbeat finale.", abilities: ["Gold choir satellites", "Gapped sound rings", "A heartbeat crescendo"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-rof1", "gun-chip", "warp-fold"] },
-    terminus: { desc: "The century gate. An echo ghost, a sliding midline, ordered keystones, closing walls, then everything at once.", abilities: ["An echo ghost of your shots", "A sliding midline", "Keystones that must break in order", "Closing walls", "A last medley"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-pierce", "warp-fold"] },
+    terminus: { desc: "The century gate. An echo ghost, a sweeping line with a safe gap, ordered keystones, closing walls, then everything at once.", abilities: ["An echo ghost of your shots", "A sweeping line with a safe gap", "Keystones that must break in order", "Closing walls", "A last medley"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-pierce", "warp-fold"] },
     hourglass: { desc: "Sand and rewind. Falling sand piles a floor, then time runs back and your own shots come home.", abilities: ["Falling sand", "A rising floor", "A rewind that sends shots home"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-iframes", "gun-dmg1", "warp-haunt", "warp-fold"] },
-    lanternmoth: { desc: "A dark field. Your lamp is the only light; gold lanterns glint; shots only show in the cone.", abilities: ["A dark field with a player lamp", "Gold lanterns", "Shots that only glint in the light"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "warp-stasis", "warp-fold"] },
+    lanternmoth: { desc: "A dim field. Your lamp and gold lanterns brighten it; every shot stays visible.", abilities: ["A dim field with a player lamp", "Gold lanterns", "Shots that stay visible in the gloom"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "warp-stasis", "warp-fold"] },
     lodestar: { desc: "Red and blue polarity. Matching shots pass; the wrong color hurts. Full-width rows mix red and blue so a polarity swap is not an auto-hit.", abilities: ["Red or blue polarity on the ship", "Matching shots pass through", "Full-width rows split red and blue at the same time", "A countdown pulsar ring"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-rof1", "gun-pierce", "warp-fold"] },
     lernaean: { desc: "Heads on necks. Cut a head and hit the gold stump or two more grow. The body is safe until the heads are gone.", abilities: ["Each head shoots a different pattern", "Needle chase, a fork, and a swaying spray", "A gold stump you must finish", "Two heads grow if the stump lives"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-chip", "gun-pierce", "warp-horizon"] },
     orrery: { desc: "A clockwork sky. Planets orbit, gravity rings curve shots; send one into the gold core.", abilities: ["Orbiting planets", "Gravity rings that curve shots", "A gold core you sling a shot into"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-focus", "warp-stasis", "warp-horizon"] },
@@ -429,8 +429,8 @@
     { id: "term-echo", boss: "terminus", name: "Echo", short: "ECHO", desc: "The Echo ghost fan: 5 shots, then a delayed copy.", cd: 4.2, kind: "echo", n: 5, spread: 0.55, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
     { id: "term-medley", boss: "terminus", name: "Medley", short: "MDL", desc: "Terminus medley: a 5-shot fan plus a clearing pulse.", cd: 5, kind: "medley", n: 5, spread: 0.5, spd: 230, dmg: 28, r: 2.6, pierce: 4 },
     { id: "term-key", boss: "terminus", name: "Keystone", short: "KEY", desc: "Ordered bursts on the nearest three foes.", cd: 4.6, kind: "stamp", dmg: 100, r: 20, n: 3 },
-    { id: "hour-sand", boss: "hourglass", name: "Sand Pour", short: "SAND", desc: "The sand pour: 6 amber grains at the nearest foe.", cd: 3.4, kind: "fan", n: 6, spread: 0.88, spd: 210, dmg: 28, r: 2.6, pierce: 4 },
-    { id: "hour-pile", boss: "hourglass", name: "Dune Slam", short: "DUNE", desc: "The dune slam: a 4-shot sand row at the nearest foe.", cd: 3.8, kind: "curtain", n: 4, spd: 200, dmg: 32, r: 3, pierce: 4 },
+    { id: "hour-sand", boss: "hourglass", name: "Sand Pour", short: "SAND", desc: "The sand pour: 6 amber grains at the nearest foe.", cd: 2.9, kind: "fan", n: 6, spread: 0.88, spd: 210, dmg: 28, r: 2.6, pierce: 4 },
+    { id: "hour-pile", boss: "hourglass", name: "Dune Slam", short: "DUNE", desc: "The dune slam: a 4-shot sand row at the nearest foe.", cd: 3.2, kind: "curtain", n: 4, spd: 200, dmg: 32, r: 3, pierce: 4 },
     { id: "hour-rewind", boss: "hourglass", name: "Timeslip", short: "SLIP", desc: "Timeslip: enemy shots fly back along their paths.", cd: 5.5, kind: "timeslip", dmg: 36 },
     { id: "moth-glint", boss: "lanternmoth", name: "Glint", short: "GLN", desc: "The lantern glint: 5 tight bolts at the nearest foe.", cd: 3.4, kind: "fan", n: 5, spread: 0.42, spd: 240, dmg: 28, r: 2.5, pierce: 4 },
     { id: "moth-swarm", boss: "lanternmoth", name: "Swarm", short: "SWM", desc: "The moth swarm: 8 wide bolts at the nearest foe.", cd: 3.8, kind: "fan", n: 8, spread: 1.12, spd: 220, dmg: 28, r: 2.5, pierce: 4 },
@@ -677,6 +677,7 @@
   var hostClockReady = false;
   var interpDelay = 0.055;
   var nextEntId = 1;
+  var pbulVolleySeq = 0;
   var evSeq = 0;
   var lastEvN = 0;
   var inputAcc = 0;
@@ -1878,6 +1879,16 @@
   function hasSkill(id, who) {
     return skillOwnedList(who).indexOf(id) >= 0;
   }
+  function hullIframeBonus(who) {
+    var n = 0;
+    if (hasSkill("hull-iframes", who)) n += 0.36;
+    if (hasSkill("hull-brace", who)) n += 0.2;
+    if (hasSkill("hull-iron", who)) n += 0.24;
+    return n;
+  }
+  function guardianIframeBonus(who) {
+    return hasMod("guardian", who) ? 0.48 : 0;
+  }
   function anyHasSkill(id) {
     var i;
     if (!players.length) return hasSkill(id);
@@ -2124,8 +2135,8 @@
   // wave entered, so clearing N means the next spawn set maxWave to N+1
   // (maxWave > N). Reaching N and dying leaves maxWave === N and keeps
   // the button locked. The same step-of-5 menu continues past 100 up to
-  // MAX_LEVEL. Admin (everything unlocked) may start on every integer wave,
-  // including past 100, not only multiples of 5.
+  // MAX_LEVEL — never 1-step in that range. Admin (triple-tap Reset, passcode
+  // 1234) may start on every integer wave, including past 100.
   function isStartAdmin(admin) {
     if (admin != null) return !!admin;
     return !!(profile && profile.admin);
@@ -2868,7 +2879,7 @@
         pierce: src.pierce || 0, hit: src.pierce ? [] : null,
         homing: !!src.homing, homeT: src.homeT || 0, hsp: src.hsp || 0, hturn: src.hturn || 0,
         splash: src.splash || null, gun: src.gun || "pulse", owner: who.slot, ghost: ghost, skinEcho: true,
-        homeLock: src.homeLock, homeId: src.homeId, homeSlot: src.homeSlot
+        homeLock: src.homeLock, homeId: src.homeId, homeSlot: src.homeSlot, volleyId: src.volleyId
       };
       if (src.helix) {
         b.helix = true; b.bx = b.x; b.ha = src.ha; b.hf = src.hf; b.hp0 = src.hp0 || 0;
@@ -2901,22 +2912,23 @@
           dx: b.x - who.x, vx: b.vx, vy: b.vy, dmg: (b.dmg || 1) * 0.7, r: b.r, life: b.life,
           pierce: b.pierce || 0, homing: b.homing, homeT: b.homeT, hsp: b.hsp, hturn: b.hturn,
           splash: b.splash, gun: b.gun, helix: b.helix, ha: b.ha, hf: b.hf, hp0: b.hp0,
-          homeLock: b.homeLock, homeId: b.homeId, homeSlot: b.homeSlot
+          homeLock: b.homeLock, homeId: b.homeId, homeSlot: b.homeSlot, volleyId: b.volleyId
         });
       }
       who.skinEcho = { t: 0.16, items: echoItems };
     }
     if (id === "nova-starburst" && who.shotCount % 7 === 0) {
       var face = pvpFacing(who), y = pvpMuzzleY(who), dmg = 0.7 * loadoutDmgMul(shipDef(who), equippedMod(who), who);
+      var sparkVolley = (pbul[startIdx] && pbul[startIdx].volleyId) || 0;
       pushPbul({
         id: allocId(), x: who.x, y: y, vx: Math.sin(-0.28) * 460, vy: face * Math.cos(-0.28) * 460,
         dmg: dmg, r: 2, age: 0, life: 0.7, pierce: 0, hit: null, homing: false, splash: null,
-        gun: g ? g.id : "pulse", owner: who.slot, ghost: netRole === "client", skinSpark: true
+        gun: g ? g.id : "pulse", owner: who.slot, ghost: netRole === "client", skinSpark: true, volleyId: sparkVolley
       });
       pushPbul({
         id: allocId(), x: who.x, y: y, vx: Math.sin(0.28) * 460, vy: face * Math.cos(0.28) * 460,
         dmg: dmg, r: 2, age: 0, life: 0.7, pierce: 0, hit: null, homing: false, splash: null,
-        gun: g ? g.id : "pulse", owner: who.slot, ghost: netRole === "client", skinSpark: true
+        gun: g ? g.id : "pulse", owner: who.slot, ghost: netRole === "client", skinSpark: true, volleyId: sparkVolley
       });
     }
   }
@@ -3228,6 +3240,7 @@
       cols: 6, rows: 8, tiles: [], pawn: null, piece: "", tiled: false, safeC: -1, safeR: -1, mateT: 0,
       echo: false, echoTape: [], echoShots: [], ghost: null,
       invert: false, midY: H / 2, midDir: 1,
+      scythe: false, scytheY: 0, scytheDir: 1, scytheGapX: 120, scytheGapW: 38, scytheHh: 11, scytheHurt: false, scytheT: 0,
       wallL: 0, wallR: 0, pylons: [],
       keys: [], keyOrder: [], keyNext: 0, keysNeed: false, rune: 0,
       sats: [], satGold: 0, satBeat: 0, rings: [], reqMerged: false, reqOrigin: null, reqSafe: null,
@@ -3245,7 +3258,7 @@
       fallUp: false, bounce: false, grazeHeal: false, turn: 0, pullDown: false,
       orbit: false, ringLock: false, orbitR: 0, orbitCx: 0, orbitCy: 0, orbitShields: [],
       pastClose: false, wake: [], wakeDwell: 0, pocket: null, pocketAng: 0,
-      sealsNeed: false, seals: [], sealOrder: [], sealNext: 0, axiomOpen: false, axiomOpenT: 0,
+      sealsNeed: false, seals: [], sealOrder: [], sealNext: 0, axiomOpen: false, axiomOpenT: 0, sealVolley: {},
       blades: [],
       rule: "", rule2: "", ruleIdx: -1, ruleIdx2: -1, cardT: 0
     };
@@ -3254,7 +3267,7 @@
     fight = emptyFight();
   }
   function fightMidY() {
-    return fight.invert ? fight.midY : H / 2;
+    return H / 2;
   }
   function shipYBand(p, margin) {
     var mid = fightMidY();
@@ -4531,7 +4544,7 @@
       return;
     }
     if (kind !== "coin" && kind !== "life" && kind !== "revive" && skinIdOf(who) === "warden-jade") {
-      who.invuln = Math.max(who.invuln || 0, 0.4);
+      who.invuln = Math.max(who.invuln || 0, 0.32);
     }
     var gemMul = loadoutPickMul(shipDef(who), equippedMod(who)) * gemDurationMul(who);
     if (kind === "revive") {
@@ -4687,7 +4700,7 @@
       bounce: !!opt.bounce,
       bounceMax: opt.bounceMax || 3,
       bounces: 0,
-      glintT: opt.glintT || (fight.dark ? 0.16 : 0),
+      glintT: opt.glintT || 0,
       trail: [],
       rewinding: false,
       rewindI: 0
@@ -4894,7 +4907,7 @@
       fireCd: 0, invuln: 0, muzzle: 0, alive: true,
       weapon: "normal", weaponT: 0, speedT: 0, shieldT: 0, shieldHp: 0, slowT: 0, jamT: 0, freezeT: 0,
       r: baseR, baseR: baseR, speed: loadoutSpeed(s, spec.mod, who),
-      invulnDur: s.invuln + (hasSkill("hull-iframes", who) ? 0.45 : 0) + (hasSkill("hull-brace", who) ? 0.25 : 0) + (hasSkill("hull-iron", who) ? 0.3 : 0),
+      invulnDur: s.invuln + hullIframeBonus(who),
       regen: s.regen, regenT: 0,
       shotCount: 0,
       lives: loadoutLives(s, who),
@@ -5034,7 +5047,7 @@
         rings.push({ x: owner.x, y: owner.y, r: 5, vr: 110, life: 0.2, color: "#3df0ff" });
       }
       if (sid === "vulture-carrion" && (diving || e.type === "kami" || e.state === "kami" || e.state === "dive")) {
-        owner.invuln = Math.max(owner.invuln || 0, 0.55);
+        owner.invuln = Math.max(owner.invuln || 0, 0.44);
         owner.skinCarrion = 1;
       }
       if (sid === "nova-supernova" && fromPerk !== "splash") skinSplash(e.x, e.y, 30, 2, owner.slot, "splash");
@@ -5344,7 +5357,7 @@
       who.targetY = who.y;
     }
     who.skinKeepX = false;
-    who.invuln = (who.invulnDur || INVULN) + (hasMod("guardian", who) ? 0.6 : 0);
+    who.invuln = (who.invulnDur || INVULN) + guardianIframeBonus(who);
     if (skinIdOf(who) === "eclipse-umbra") who.skinUmbraT = Math.max(who.skinUmbraT || 0, who.invuln);
     if (hasMod("guardian", who)) { who.shieldHp = Math.max(who.shieldHp, 2); who.shieldT = 0; }
     who.muzzle = 0;
@@ -5388,7 +5401,7 @@
     target.targetX = target.x;
     target.y = spawnYFor(target.slot);
     target.targetY = target.y;
-    target.invuln = (target.invulnDur || INVULN) + (hasMod("guardian", target) ? 0.6 : 0);
+    target.invuln = (target.invulnDur || INVULN) + guardianIframeBonus(target);
     target.weapon = "normal";
     target.weaponT = 0;
     target.speedT = 0;
@@ -5447,6 +5460,8 @@
     var startIdx = pbul.length;
     var sid = skinIdOf(who);
     var umbra = sid === "eclipse-umbra" && (who.skinUmbraT || 0) > 0;
+    pbulVolleySeq += 1;
+    var volleyId = pbulVolleySeq;
     for (i = 0; i < shots.length; i++) {
       s = shots[i];
       b = {
@@ -5457,7 +5472,7 @@
         pierce: g.pierce || 0, hit: g.pierce ? [] : null,
         homing: !!g.homing, homeT: g.homeT || 0,
         hsp: g.hsp || 0, hturn: g.hturn || 0,
-        splash: g.splash || null, gun: g.id, owner: who.slot, ghost: ghost
+        splash: g.splash || null, gun: g.id, owner: who.slot, ghost: ghost, volleyId: volleyId
       };
       if (orbitAim) {
         b.x = who.x + orbitAim.ux * 12 + (-orbitAim.uy) * s.dx;
@@ -5504,7 +5519,7 @@
       b = {
         id: allocId(),
         x: who.x, y: y, vx: 0, vy: face * 300, dmg: (g.boltDmg || 2) * loadoutDmgMul(shipDef(who), equippedMod(who), who) * (umbra ? 1.25 : 1), r: 3, age: 0, life: 0,
-        pierce: 0, hit: null, homing: true, homeT: 2.2, splash: null, gun: g.id, bolt: true, owner: who.slot, ghost: ghost
+        pierce: 0, hit: null, homing: true, homeT: 2.2, splash: null, gun: g.id, bolt: true, owner: who.slot, ghost: ghost, volleyId: volleyId
       };
       if (orbitAim) {
         b.x = who.x + orbitAim.ux * 12;
@@ -7498,7 +7513,7 @@
     if (atk === "constrict") return;
     var col = pentarchColor(e) || enemyColor(e.type);
     var delay = bossTeleDelay(e);
-    var px, i, gx, p;
+    var px, i, gx, p, cy;
     e.atk = atk;
     e.lastAtk = atk;
     var aim = targetPlayer(e.x, e.y);
@@ -7752,8 +7767,13 @@
       if (e.type === "tessera" && (e.phaseIdx || 0) <= 0) armTesseraVolley(atk);
     } else if (atk === "hymn" || atk === "canon" || atk === "crescendo") {
       addTele("ring", e.x, e.y, 0, 0, delay, FIGHT_WHITE);
-    } else if (atk === "echo" || atk === "invert" || atk === "keystones" || atk === "collapse" || atk === "medley") {
+    } else if (atk === "echo" || atk === "keystones" || atk === "collapse" || atk === "medley") {
       addTele("flash", e.x, e.y, 0, 0, delay, FIGHT_GOLD);
+    } else if (atk === "invert") {
+      cy = fight.scytheY || H * 0.62;
+      gx = fight.scytheGapX || W / 2;
+      addTele("hline", 8, cy, W - 8, cy, delay, FIGHT_WHITE);
+      addZone(gx, cy, fight.scytheGapW || 38, 14, delay, FIGHT_CYAN);
     } else if (atk === "pour" || atk === "pile") {
       addTele("hline", 12, 18, W - 12, 18, delay, FIGHT_WHITE);
       addZone(e.aimX, e.aimY, 16, 14, delay, FIGHT_WHITE);
@@ -8736,8 +8756,8 @@
       fight.echo = true;
       aimedShot(e, 0.5, spd, { color: FIGHT_RED, glow: FIGHT_RED });
     } else if (atk === "invert") {
-      fight.invert = true;
-      slamBox(W / 2, (fight.midY + H) * 0.5, W / 2 - 12, Math.max(16, (H - fight.midY) * 0.42), FIGHT_RED);
+      if (!fight.scythe) startTerminusSweep();
+      aimedShot(e, 0.55, spd, opt);
     } else if (atk === "keystones") {
       if (!fight.keys.length) spawnKeystones(e);
       aimedShot(e, 0.7, spd, opt);
@@ -8760,7 +8780,7 @@
       mothGlintVolley(e, 5);
     } else if (atk === "swarmfan") {
       mothGlintVolley(e, 8);
-      aimedWedge(e.x, e.y + 8, e.aimX, e.aimY, 5, 0.46, spd + 12, { color: FIGHT_WHITE, glow: FIGHT_RED, r: 2.6, glintT: 0.18 });
+      aimedWedge(e.x, e.y + 8, e.aimX, e.aimY, 5, 0.46, spd + 12, { color: FIGHT_WHITE, glow: FIGHT_RED, r: 3.2 });
     } else if (atk === "gloom") {
       mothGlintVolley(e, 6);
       fight.coneR = Math.max(28, (fight.coneR || 52) - 6);
@@ -8902,6 +8922,8 @@
     fight.ghost = null;
     fight.invert = false;
     fight.midY = H / 2;
+    fight.scythe = false;
+    fight.scytheHurt = false;
     fight.wallL = 0;
     fight.wallR = 0;
     fight.pylons = [];
@@ -9210,6 +9232,52 @@
     fight.wallL = 6;
     fight.wallR = 6;
   }
+  function startTerminusSweep() {
+    fight.invert = false;
+    fight.scythe = true;
+    fight.scytheY = H * 0.56;
+    fight.scytheDir = 1;
+    fight.scytheGapX = 48 + Math.random() * (W - 96);
+    fight.scytheGapW = 40;
+    fight.scytheHh = 11;
+    fight.scytheHurt = false;
+    fight.scytheT = 0.55;
+  }
+  function updateTerminusSweep(dt) {
+    var lo, hi, spd, gap;
+    if (!fight.scythe) return;
+    lo = H * 0.46;
+    hi = H - 34;
+    spd = 78;
+    gap = fight.scytheGapW || 40;
+    fight.scytheGapX += Math.sin(time * 1.15) * 22 * dt;
+    if (fight.scytheGapX < 40 || fight.scytheGapX > W - 40) {
+      fight.scytheGapX = clamp(fight.scytheGapX, 40, W - 40);
+    }
+    if (!fight.scytheHurt) {
+      fight.scytheT -= dt;
+      if (fight.scytheT <= 0) fight.scytheHurt = true;
+    } else {
+      fight.scytheY += fight.scytheDir * spd * dt;
+      if (fight.scytheY > hi) {
+        fight.scytheY = hi;
+        fight.scytheDir = -1;
+        fight.scytheHurt = false;
+        fight.scytheT = 0.42;
+        fight.scytheGapX = 48 + Math.random() * (W - 96);
+      } else if (fight.scytheY < lo) {
+        fight.scytheY = lo;
+        fight.scytheDir = 1;
+        fight.scytheHurt = false;
+        fight.scytheT = 0.42;
+        fight.scytheGapX = 48 + Math.random() * (W - 96);
+      }
+    }
+    if (fight.scytheHurt) {
+      tryHitPlayersRect((fight.scytheGapX - gap) * 0.5, fight.scytheY, Math.max(8, (fight.scytheGapX - gap) * 0.5), fight.scytheHh);
+      tryHitPlayersRect((W + fight.scytheGapX + gap) * 0.5, fight.scytheY, Math.max(8, (W - (fight.scytheGapX + gap)) * 0.5), fight.scytheHh);
+    }
+  }
   function isLateFight(type) {
     return type === "loom" || type === "tessera" || type === "requiem" || type === "terminus"
       || type === "hourglass" || type === "lanternmoth" || type === "lodestar"
@@ -9229,7 +9297,7 @@
         color: "#e8d090", glow: FIGHT_RED, r: 2.4, silent: i > 0, grav: 70
       });
     }
-    fight.sandH = Math.min(fight.sandMax, (fight.sandH || 0) + 3 + (e.phaseIdx || 0));
+    fight.sandH = Math.min(fight.sandMax, (fight.sandH || 0) + 5 + (e.phaseIdx || 0) * 2);
   }
   function beginBulletRewind() {
     var i, b;
@@ -9288,7 +9356,7 @@
     for (i = 0; i < n; i++) {
       a = Math.atan2(tgt.y - e.y, tgt.x - e.x) + (i - (n - 1) / 2) * 0.18;
       addEbul(e.x, e.y + 8, Math.cos(a) * spd, Math.sin(a) * spd, {
-        color: FIGHT_WHITE, glow: FIGHT_RED, r: 2.5, silent: i > 0, glintT: 0.2
+        color: FIGHT_WHITE, glow: FIGHT_RED, r: 3.2, silent: i > 0
       });
     }
   }
@@ -9385,7 +9453,7 @@
         ang: n === 1 ? 0 : -span / 2 + i * (span / (n - 1)),
         rad: 36 + (i % 2) * 8, x: e.x, y: e.y + 28, r: 10,
         nx: e.x, ny: e.y + 8,
-        hp: 20, alive: true, stump: false, stumpT: 0, sealed: false,
+        hp: 50, alive: true, stump: false, stumpT: 0, sealed: false,
         kind: i % 3, atkT: 0.4 + i * 0.25
       });
       placeLernaeanHead(e, fight.heads[i]);
@@ -9476,7 +9544,7 @@
       fight.heads.push({
         ang: from.ang + (i ? 0.42 : -0.42), rad: (from.rad || 36) + (i ? 6 : 0),
         x: from.x, y: from.y, r: 9, nx: from.nx, ny: from.ny,
-        hp: 24, alive: true, stump: false, stumpT: 0, sealed: false,
+        hp: 60, alive: true, stump: false, stumpT: 0, sealed: false,
         kind: (from.kind + 1 + i) % 3, atkT: 0.3
       });
     }
@@ -9736,6 +9804,7 @@
     fight.axiomOpen = false;
     fight.axiomOpenT = 0;
     fight.bounce = true;
+    fight.sealVolley = {};
     for (i = 0; i < placed.length; i++) {
       fight.seals.push({
         x: placed[i].x, y: placed[i].y, kind: placed[i].kind, alive: true, r: placed[i].r, hp: 1
@@ -9759,6 +9828,7 @@
     }
     fight.sealNext = 0;
     fight.axiomOpen = false;
+    fight.sealVolley = {};
     fight.rule2 = axiomSealOrderText();
     axiomSyncSealRing();
   }
@@ -9788,44 +9858,84 @@
       releaseAxiomOrbit();
     }
   }
+  function axiomVolleyId(b) {
+    if (b && b.volleyId != null) return "v" + b.volleyId;
+    if (b && b.id != null) return "b" + b.id;
+    return "x";
+  }
+  function axiomVolleyRow(vid) {
+    if (!fight.sealVolley) fight.sealVolley = {};
+    if (!fight.sealVolley[vid]) fight.sealVolley[vid] = { ok: false, wrong: false, t: time };
+    return fight.sealVolley[vid];
+  }
+  function axiomFlushSealVolleys() {
+    var vid, row;
+    if (!fight.sealsNeed || fight.axiomOpen || !fight.sealVolley) return;
+    for (vid in fight.sealVolley) {
+      if (!Object.prototype.hasOwnProperty.call(fight.sealVolley, vid)) continue;
+      row = fight.sealVolley[vid];
+      if (row.ok) {
+        if (time - row.t > 0.55) delete fight.sealVolley[vid];
+        continue;
+      }
+      if (row.wrong && time - row.t > 0.22) {
+        delete fight.sealVolley[vid];
+        axiomResetSeals(currentBoss());
+        return;
+      }
+      if (time - row.t > 0.7) delete fight.sealVolley[vid];
+    }
+  }
   function axiomTrySealShot(b, i) {
-    var n, s, cur, idx, bounced;
+    var n, s, idx, bounced, vid, row;
     if (!fight.sealsNeed || fight.axiomOpen) return false;
-    cur = axiomCurrentSeal();
     bounced = (b.bounces || 0) === 1;
+    vid = axiomVolleyId(b);
     for (n = 0; n < fight.seals.length; n++) {
       s = fight.seals[n];
       if (!s || !s.alive) continue;
       if (dist2(b.x, b.y, s.x, s.y) >= (s.r + (b.r || 2) + 1) * (s.r + (b.r || 2) + 1)) continue;
-      if (s.kind === "bounce" && (b.bounces || 0) !== 1) return false;
-      if (s.kind === "fly") {
-        axiomResetSeals(currentBoss());
+      row = axiomVolleyRow(vid);
+      if (row.ok) {
         pbul.splice(i, 1);
         return true;
       }
+      if (s.kind === "bounce" && !bounced) return false;
       idx = fight.sealOrder[fight.sealNext];
-      if (n !== idx) {
-        axiomResetSeals(currentBoss());
+      if (n === idx) {
+        if (s.kind === "shoot") {
+          row.ok = true;
+          row.t = time;
+          axiomBreakSeal(n, currentBoss());
+          pbul.splice(i, 1);
+          return true;
+        }
+        if (s.kind === "bounce" && bounced) {
+          row.ok = true;
+          row.t = time;
+          axiomBreakSeal(n, currentBoss());
+          pbul.splice(i, 1);
+          return true;
+        }
+        if (s.kind === "orbit") {
+          if (axiomOnRing()) {
+            row.ok = true;
+            row.t = time;
+            axiomBreakSeal(n, currentBoss());
+          } else {
+            row.wrong = true;
+            row.t = time;
+          }
+          pbul.splice(i, 1);
+          return true;
+        }
+        row.wrong = true;
+        row.t = time;
         pbul.splice(i, 1);
         return true;
       }
-      if (s.kind === "shoot") {
-        axiomBreakSeal(n, currentBoss());
-        pbul.splice(i, 1);
-        return true;
-      }
-      if (s.kind === "bounce" && bounced) {
-        axiomBreakSeal(n, currentBoss());
-        pbul.splice(i, 1);
-        return true;
-      }
-      if (s.kind === "orbit") {
-        if (axiomOnRing()) axiomBreakSeal(n, currentBoss());
-        else axiomResetSeals(currentBoss());
-        pbul.splice(i, 1);
-        return true;
-      }
-      axiomResetSeals(currentBoss());
+      row.wrong = true;
+      row.t = time;
       pbul.splice(i, 1);
       return true;
     }
@@ -10085,6 +10195,7 @@
   function updateAxiomSeals(dt, boss) {
     var i, pl;
     if (!fight.sealsNeed) return;
+    axiomFlushSealVolleys();
     for (i = 0; i < players.length; i++) {
       pl = players[i];
       axiomTrySealFly(pl);
@@ -10643,9 +10754,7 @@
         fight.echo = true;
         banner = { text: "IT REMEMBERS YOU", life: 1.35 };
       } else if (idx === 1) {
-        fight.invert = true;
-        fight.midY = H / 2;
-        fight.midDir = 1;
+        startTerminusSweep();
       } else if (idx === 2) {
         spawnKeystones(e);
       } else if (idx === 3) {
@@ -10659,7 +10768,8 @@
       if (idx >= 2) fight.reqMerged = true;
     } else if (e.type === "hourglass") {
       fight.glass = { x: e.x, y: e.y + 14, r: 8 };
-      fight.sandH = 8 + idx * 10;
+      fight.sandH = 12 + idx * 12;
+      if (!e.sandBorn) e.sandBorn = time;
       if (idx === 0) banner = { text: "SAND FALLS", life: 1.2 };
     } else if (e.type === "lanternmoth") {
       fight.dark = true;
@@ -10728,10 +10838,8 @@
         }
       }
     }
-    if (fight.invert) {
-      fight.midY += fight.midDir * 22 * dt;
-      if (fight.midY > H * 0.72) { fight.midY = H * 0.72; fight.midDir = -1; }
-      if (fight.midY < H * 0.38) { fight.midY = H * 0.38; fight.midDir = 1; }
+    if (fight.scythe) {
+      updateTerminusSweep(dt);
     }
     if (fight.pylons.length) {
       fight.wallL = Math.min(54, fight.wallL + 7 * dt);
@@ -10878,7 +10986,8 @@
       if (fight.beamT <= 0) fight.beamOn = false;
     }
     if (fight.type === "hourglass") {
-      fight.sandH = Math.min(fight.sandMax, (fight.sandH || 0) + (6 + boss.phaseIdx * 3) * dt);
+      if (boss.sandBorn == null) boss.sandBorn = time;
+      fight.sandH = Math.min(fight.sandMax, (fight.sandH || 0) + (8.5 + boss.phaseIdx * 4.5 + Math.min(12, Math.max(0, time - boss.sandBorn) * 0.65)) * dt);
       if (fight.glass) {
         fight.glass.x = boss.x;
         fight.glass.y = boss.y + 14;
@@ -11287,7 +11396,7 @@
       });
     }
     if (fight.ghost) out.push({ kind: "ghost", x: fight.ghost.x, y: fight.ghost.y, x2: 0, y2: 0, st: 0, t: 0, color: FIGHT_RED });
-    if (fight.invert) out.push({ kind: "midline", x: 0, y: fight.midY, x2: W, y2: fight.midY, st: 0, t: 0, color: FIGHT_WHITE });
+    if (fight.scythe) out.push({ kind: "midline", x: fight.scytheGapX, y: fight.scytheY, x2: fight.scytheGapW, y2: fight.scytheHh, st: fight.scytheHurt ? 1 : 0, t: fight.scytheT || 0, color: fight.scytheHurt ? FIGHT_RED : FIGHT_WHITE });
     if (fight.wallL || fight.wallR) out.push({ kind: "wall", x: fight.wallL, y: 0, x2: fight.wallR, y2: H, st: 0, t: 0, color: FIGHT_RED });
     for (i = 0; i < fight.pylons.length; i++) {
       obj = fight.pylons[i];
@@ -11447,6 +11556,7 @@
     fightView = list || [];
     fight.invert = false;
     fight.midY = H / 2;
+    fight.scythe = false;
     fight.wallL = 0;
     fight.wallR = 0;
     fight.orbit = false;
@@ -11456,7 +11566,15 @@
     fight.axiomOpen = false;
     for (i = 0; i < fightView.length; i++) {
       it = fightView[i];
-      if (it.kind === "midline") { fight.invert = true; fight.midY = it.y; }
+      if (it.kind === "midline") {
+        fight.scythe = true;
+        fight.scytheGapX = it.x;
+        fight.scytheY = it.y;
+        fight.scytheGapW = it.x2 || 40;
+        fight.scytheHh = it.y2 || 11;
+        fight.scytheHurt = !!it.st;
+        fight.scytheT = it.t || 0;
+      }
       if (it.kind === "wall") { fight.wallL = it.x || 0; fight.wallR = it.x2 || 0; }
       if (it.kind === "sand") fight.sandH = it.y || 0;
       if (it.kind === "flow") fight.flow = it.t || fight.flow;
@@ -11571,7 +11689,7 @@
   }
   function drawFight(context) {
     var list = netRole === "client" ? fightView : fightSnap();
-    var i, f, col, a, gap, tw, thh, cardY, showBoard = tesseraBoardLive(), showGrid = showBoard;
+    var i, f, col, a, gap, gx, tw, thh, cardY, showBoard = tesseraBoardLive(), showGrid = showBoard;
     tw = tileW();
     thh = tileH();
     for (i = 0; i < list.length; i++) if (list[i].kind === "tile" || list[i].kind === "pawn") showGrid = true;
@@ -11622,13 +11740,24 @@
         context.moveTo(f.x, f.y - 10); context.lineTo(f.x + 7, f.y + 8); context.lineTo(f.x - 7, f.y + 8);
         context.closePath(); context.fill(); context.stroke();
       } else if (f.kind === "midline") {
-        context.strokeStyle = FIGHT_WHITE;
-        context.globalAlpha = 0.7;
-        context.lineWidth = 2;
-        context.beginPath(); context.moveTo(0, f.y); context.lineTo(W, f.y); context.stroke();
-        context.globalAlpha = 0.12;
+        gx = f.x;
+        gap = f.x2 || 40;
+        a = f.y2 || 11;
+        context.globalAlpha = f.st ? 0.4 : 0.18;
+        context.fillStyle = f.st ? FIGHT_RED : FIGHT_WHITE;
+        context.fillRect(0, f.y - a, Math.max(0, gx - gap), a * 2);
+        context.fillRect(gx + gap, f.y - a, Math.max(0, W - (gx + gap)), a * 2);
+        context.globalAlpha = f.st ? 0.55 : 0.4;
         context.fillStyle = FIGHT_CYAN;
-        context.fillRect(0, f.y, W, H - f.y);
+        context.fillRect(gx - gap, f.y - a, gap * 2, a * 2);
+        context.strokeStyle = f.st ? FIGHT_RED : FIGHT_WHITE;
+        context.globalAlpha = 0.95;
+        context.lineWidth = 2.2;
+        context.beginPath(); context.moveTo(0, f.y); context.lineTo(gx - gap, f.y); context.stroke();
+        context.beginPath(); context.moveTo(gx + gap, f.y); context.lineTo(W, f.y); context.stroke();
+        context.strokeStyle = FIGHT_CYAN;
+        context.lineWidth = 1.6;
+        context.strokeRect(gx - gap, f.y - a, gap * 2, a * 2);
       } else if (f.kind === "wall") {
         context.fillStyle = FIGHT_RED;
         context.globalAlpha = 0.28;
@@ -11878,15 +12007,23 @@
     for (i = 0; i < list.length; i++) if (list[i].kind === "cone" || list[i].kind === "lantern") dark = true;
     if (!dark && !fight.dark) return;
     context.save();
-    context.fillStyle = "rgba(2, 2, 10, 0.88)";
-    context.beginPath();
-    context.rect(0, 0, W, H);
+    context.fillStyle = "rgba(10, 8, 18, 0.38)";
+    context.fillRect(0, 0, W, H);
     for (i = 0; i < list.length; i++) {
       f = list[i];
-      if (f.kind === "cone") context.arc(f.x, f.y, f.x2 || 52, 0, Math.PI * 2, true);
-      if (f.kind === "lantern" && f.st) context.arc(f.x, f.y, f.x2 || 40, 0, Math.PI * 2, true);
+      if (f.kind === "cone") {
+        context.fillStyle = "rgba(126, 249, 255, 0.1)";
+        context.beginPath();
+        context.arc(f.x, f.y, f.x2 || 52, 0, Math.PI * 2);
+        context.fill();
+      }
+      if (f.kind === "lantern" && f.st) {
+        context.fillStyle = "rgba(255, 210, 61, 0.14)";
+        context.beginPath();
+        context.arc(f.x, f.y, f.x2 || 40, 0, Math.PI * 2);
+        context.fill();
+      }
     }
-    context.fill("evenodd");
     context.restore();
   }
 
@@ -17966,6 +18103,7 @@
     }
 
     drawBossFx(ctx);
+    drawFightDark(ctx);
     drawFight(ctx);
     drawHydraLeech(ctx);
     for (i = 0; i < enemies.length; i++) if (enemies[i].alive) drawEnemy(ctx, enemies[i]);
@@ -18081,7 +18219,6 @@
 
     for (i = 0; i < ebul.length; i++) {
       b = ebul[i];
-      if (fight.dark && !(b.glintT > 0) && !inFightLight(b.x, b.y)) continue;
       if (b.polar != null) {
         glow(ctx, b.color || lodestarColor(b.polar), 12);
         ctx.fillStyle = b.color || lodestarColor(b.polar);
@@ -18247,8 +18384,6 @@
         ctx.globalAlpha = 1;
       }
     }
-
-    drawFightDark(ctx);
 
     ctx.restore();
 

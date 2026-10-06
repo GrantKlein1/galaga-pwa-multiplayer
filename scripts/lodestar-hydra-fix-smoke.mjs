@@ -36,8 +36,8 @@ assert(galaga.indexOf("function drawLernaeanNeck") >= 0 && galaga.indexOf("funct
 assert(galaga.indexOf("obj.stumpT = 1.05") >= 0, "gold stump window stays readable");
 assert(galaga.indexOf('banner = { text: "THE HEART"') >= 0, "core-open banner");
 assert(galaga.indexOf("function placeLernaeanHead") >= 0, "heads stay attached to the body");
-assert(galaga.indexOf("hp: 20, alive: true, stump: false") >= 0, "debut head HP is 4x the old 5");
-assert(galaga.indexOf("hp: 24, alive: true, stump: false") >= 0, "regrow head HP is 4x the old 6");
+assert(galaga.indexOf("hp: 50, alive: true, stump: false") >= 0, "debut head HP is 2.5x the prior 20");
+assert(galaga.indexOf("hp: 60, alive: true, stump: false") >= 0, "regrow head HP is 2.5x the prior 24");
 assert(galaga.indexOf("function fireLernaeanHead") >= 0, "per-head attack helper");
 assert(galaga.indexOf("function telegraphLernaeanHead") >= 0, "per-head telegraph");
 assert(galaga.indexOf("h.burstT = 0.2") >= 0, "needle head delayed chase shots");
@@ -46,10 +46,10 @@ assert(galaga.indexOf("sway: 20, swayF: 3.4") >= 0, "spray head swaying pellets"
 assert(galaga.indexOf("kind === \"beam\" || h.kind === 1") < 0, "kit volley no longer clones one pattern onto every head");
 
 assert(/var VER = 12;/.test(codec), "codec payload unchanged");
-assert(sw.indexOf("galaga-coop-v73") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v74") >= 0, "PWA cache bump");
 assert(post.indexOf("mixed row") >= 0, "Lodestar kit mentions mixed-color rows");
 assert(post.indexOf("never one color") >= 0, "docs forbid single-color rows");
-assert(post.indexOf("Head HP is 20") >= 0, "Hydra kit mentions 4x head HP");
+assert(post.indexOf("Head HP is 50") >= 0, "Hydra kit mentions 2.5x more head HP");
 assert(roster.indexOf("mixed-color full-width rows") >= 0, "roster notes mixed rows");
 
 console.log("lodestar-hydra-fix-smoke: ok");

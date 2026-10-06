@@ -87,8 +87,8 @@ Hourglass through Orrery. Wave-120 Hydra is id `lernaean` (heads), distinct from
 
 | Boss | Wave | Ability ids | What it does | CD |
 | --- | ---: | --- | --- | ---: |
-| Hourglass | 105 | `hour-sand` | 6 amber sand grains at the nearest foe | 3.4s |
-| | | `hour-pile` | 4-shot dune slam at the nearest foe | 3.8s |
+| Hourglass | 105 | `hour-sand` | 6 amber sand grains at the nearest foe | 2.9s |
+| | | `hour-pile` | 4-shot dune slam at the nearest foe | 3.2s |
 | | | `hour-rewind` | Enemy shots fly back, then a shock pulse | 5.5s |
 | Lanternmoth | 110 | `moth-glint` | 5 lantern glints at the nearest foe | 3.4s |
 | | | `moth-swarm` | 8-shot climbing swarm at the nearest foe | 3.8s |
