@@ -27,11 +27,11 @@ Health gems drop only on each id’s first-cycle dedicated debut. Dedicated kill
 | 85 | loom | LOOM | 3 | 740 | 66 / 33 | Warp, weft, cocoon threads; periodic aimed shuttle |
 | 90 | tessera | TESSERA | 3 | 790 | 66 / 33 | Rook / bishop / knight tiles |
 | 95 | requiem | REQUIEM | 3 | 850 | 66 / 33 | Gold choir, gapped rings |
-| 100 | terminus | TERMINUS | 5 | 1550 | 80 / 60 / 40 / 20 | Echo, invert, keystones, walls, medley |
+| 100 | terminus | TERMINUS | 5 | 1550 | 80 / 60 / 40 / 20 | Echo, sweeping gapped line, keystones, walls, medley |
 | 105 | hourglass | HOURGLASS | 3 | 1700 | 66 / 33 | Sand pile, rewind shots, gold glass |
-| 110 | lanternmoth | LANTERNMOTH | 3 | 1800 | 66 / 33 | Dark field, light cone, lanterns |
+| 110 | lanternmoth | LANTERNMOTH | 3 | 1800 | 66 / 33 | Dim field, lamp, lanterns, visible shots |
 | 115 | lodestar | LODESTAR | 3 | 1900 | 66 / 33 | Red/blue polarity; mixed-color full-width rows |
-| 120 | lernaean | HYDRA | 3 | 2000 | 66 / 33 | Heads on necks; gold stump or two grow; 4× head HP |
+| 120 | lernaean | HYDRA | 3 | 2000 | 66 / 33 | Heads on necks; gold stump or two grow; 10× head HP |
 | 125 | orrery | ORRERY | 3 | 2150 | 66 / 33 | Gravity planets, curved shots |
 | 130 | prism | PRISM | 3 | 2300 | 66 / 33 | Beams split through gold prisms that stay until the next set |
 | 135 | maelstrom | MAELSTROM | 3 | 2450 | 66 / 33 | Whirlpool current, cyan flow arrows |

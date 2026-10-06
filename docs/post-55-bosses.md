@@ -43,21 +43,21 @@ Mandala (55), Cenotaph (60), Kaleido (65), Helios (70), Selene (75), and Pentarc
 | Phase | Banner | Kit |
 | ---: | --- | --- |
 | 1 Echo | IT REMEMBERS YOU | A translucent ghost ship replays the player’s path from 3 seconds ago and fires those shots back, tinted red. Stay off the recent path. Restored when the phase ends. |
-| 2 Inversion | THE LINE MOVES | The movement midline becomes a visible bar that slides, shrinking or growing the space the player can move in. The boss bombards the open zone. Limits are phase-scoped and restored afterward. |
+| 2 Sweep | THE LINE MOVES | A horizontal bar sweeps the playable band. A cyan gap is telegraphed before each pass. Stand in the gap; the rest of the bar hurts. Movement is never clamped into the damage. Limits restore when the phase ends. |
 | 3 Keystones | BREAK THEM IN ORDER | Four keystone minions, each with a colored tether. The core is invulnerable until all four are broken in the rune order shown on the core. Out of order respawns that stone and fires a punishing burst. |
 | 4 Collapse | THE WALLS CLOSE | Side walls close in. Shooting gold pylons on the walls pushes them back. Split fire between pylons and the boss. |
 | 5 Terminus | EVERYTHING ENDS | Fast medley: an Echo ghost, one Loom thread, Tessera tiles, and a Requiem ring. At 5% HP a desperation beam sweeps with a single cyan gap. |
 
 **Victory:** banner `WAVE 100 CLEARED` and a **Century Clear** XP bonus (`CENTURY_CLEAR_XP = 8000`) on the existing `run.xpBonus` path (same bank that skip-start and harder-kill XP use). First-cycle dedicated wave 100 only, not guests or later rematches. Skip-start past 100 also credits Century Clear.
 
-Co-op replicates threads/knots, tiles, ghost, sliding midline, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, Orrery planets, Prism prisms/rays, Maelstrom flow, Cartographer panes/pins, Mimic ghosts, and Axiom rule cards plus orbit/wake/pocket/seals on netcodec VER 12 (`bx` extras).
+Co-op replicates threads/knots, tiles, ghost, sweeping gapped line, keystones, walls/pylons, choir sats, rings, pawn, the desperation beam, Hourglass sand/glass, Lanternmoth lanterns/cone, Lodestar polarity, Hydra heads/stumps, Orrery planets, Prism prisms/rays, Maelstrom flow, Cartographer panes/pins, Mimic ghosts, and Axiom rule cards plus orbit/wake/pocket/seals on netcodec VER 12 (`bx` extras).
 
 ## Hourglass — wave 105, the glass
 
 3 exclusive phases. Base HP 1700. HP ticks at 66% and 33%. Amber glass body with a gold lower bulb.
 
 - Sand pours from the top (white telegraph) and piles on the floor, raising the playable band. Standing in the pile hurts.
-- **Pour (p1):** SAND FALLS. Aimed sand grains plus a slow rise. Shoot the gold glass to drain the pile and hurt the boss.
+- **Pour (p1):** SAND FALLS. Aimed sand grains plus a quicker rise that speeds up over the fight. Shoot the gold glass to drain the pile and hurt the boss.
 - **Pile (p2):** THE PILE RISES. Faster pour and a red slam along the dune.
 - **Timeslip (p3):** TIME RUNS BACK. A white flash, then enemy shots fly back along the paths they just took.
 
@@ -67,7 +67,7 @@ Telegraphs are 0.28s, shorter than Terminus.
 
 3 exclusive phases. Base HP 1800. HP ticks at 66% and 33%. Moth body with a gold lantern abdomen.
 
-- The field goes dark except for a cyan light cone around the player. Enemy shots glint white when fired, then show only inside the light (they still hurt in the dark).
+- The field dims. A cyan lamp around the player and gold lanterns brighten patches of it. Enemy shots stay visible everywhere (they still hurt in the gloom).
 - Shoot gold lanterns to light a patch of the field for a few seconds.
 - **Glint (p1):** THE LAMP GOES OUT. Aimed glint volleys, 2 lanterns.
 - **Swarm (p2):** THE SWARM. Wider fans, 3 lanterns.
@@ -87,7 +87,7 @@ Telegraphs are 0.28s, shorter than Terminus.
 
 3 exclusive phases. Base HP 2000. HP ticks at 66% and 33%. Distinct from wave-15 Hydra. Heads sit on necks attached to the body. The body ignores shots until every remaining neck is cauterized (or nothing is left to shoot); then the gold heart can be killed.
 
-- Each living head has its own telegraphed attack at the live player: a delayed needle burst, a forked heavy bolt, or a swaying five-pellet spray. Head HP is 20 (24 on a regrow).
+- Each living head has its own telegraphed attack at the live player: a delayed needle burst, a forked heavy bolt, or a swaying five-pellet spray. Head HP is 50 (60 on a regrow).
 - Cutting a head leaves a gold stump on that neck for about a second. Hit the stump to cauterize it and wound the boss. Miss it, and two more heads grow (capped at 7).
 - **Heads (p1):** HEADS WILL GROW. Three heads, each with its own shot.
 - **Neck (p2):** TWO FROM ONE. Four heads.
@@ -153,7 +153,7 @@ Telegraphs are 0.28s, shorter than Terminus.
 | 3 Graze | GRAZING HEALS | A 0.35s near-miss then +1 life or shield (1.15s lock), plus graze needles and a gapped swath. |
 | 4 Orbit | ORBIT | A circle in the middle. The boss moves inside. The player is locked to the outer ring; left/right (or the stick) slides around it. The ship faces inward and shots fire toward the center. Rotating red shield arcs block free hits — orbit to an open gap. Normal movement returns when the phase ends. |
 | 5 Past | THE PAST CLOSES | A crushing red trail follows the path you flew ~2s ago. Standing still or repeating a line gets you hit. A gold pocket orbits the field; the boss only takes damage while you are inside it. |
-| 6 Seals | BREAK THE SEALS | The core is immune until four seals break in the order on the card (shoot / fly through / bounced shot / strike from the ring). Wrong action bursts and resets. After all four the core opens briefly, then the seals reshuffle. |
+| 6 Seals | BREAK THE SEALS | The core is immune until four seals break in the order on the card (shoot / fly through / bounced shot / strike from the ring). Wrong action bursts and resets. Extra pellets from the same volley that graze other seals do not reset if the correct seal was hit, so spread is beatable. After all four the core opens briefly, then the seals reshuffle. |
 
 **Victory:** banner `WAVE 150 CLEARED` and an **Axiom Clear** XP bonus (`AXIOM_CLEAR_XP = 12000`) on the existing `run.xpBonus` path. First-cycle dedicated wave 150 only, not guests or later rematches. Skip-start past 150 also credits Axiom Clear.
 

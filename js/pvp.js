@@ -238,9 +238,9 @@
     terminus: {
       fire: "echo", ability: "invert",
       fireHint: "SPACE / FIRE — echo volley",
-      abilityHint: "1 — invert line",
+      abilityHint: "1 — sweep gap",
       abilities: [
-        { id: "invert", key: "1", name: "Inversion", cd: 6.8 },
+        { id: "invert", key: "1", name: "Sweep", cd: 6.8 },
         { id: "keystones", key: "2", name: "Keystones", cd: 7.4 },
         { id: "collapse", key: "3", name: "Collapse", cd: 7.8 },
         { id: "medley", key: "4", name: "Terminus", cd: 8.6 }
