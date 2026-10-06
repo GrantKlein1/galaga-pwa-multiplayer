@@ -2152,7 +2152,7 @@
   // (maxWave > N). Reaching N and dying leaves maxWave === N and keeps
   // the button locked. The same step-of-5 menu continues past 100 up to
   // MAX_LEVEL — never 1-step in that range. Admin (triple-tap Reset, passcode
-  // 1234) may start on every integer wave, including past 100.
+  // 1234) uses that same 5-step grid, unlocked through ADMIN_MAX_START_WAVE.
   function isStartAdmin(admin) {
     if (admin != null) return !!admin;
     return !!(profile && profile.admin);
@@ -2182,9 +2182,9 @@
     var opts, i, best = 1;
     n = n | 0;
     if (isStartAdmin(admin)) {
-      if (n < 1) return 1;
-      if (n > ADMIN_MAX_START_WAVE) return ADMIN_MAX_START_WAVE;
-      return n;
+      if (n < 5) return 1;
+      if (n > ADMIN_MAX_START_WAVE) n = ADMIN_MAX_START_WAVE;
+      return Math.floor(n / 5) * 5;
     }
     opts = startWaveOptions(lv);
     for (i = 0; i < opts.length; i++) {
@@ -2202,7 +2202,7 @@
   // Hub/lobby ‹ Wave N › default: last *cleared* wave this run, snapped down to
   // an unlocked stepper option (1, then 5, 10, 15, …). Never a locked step.
   // Dying on 33 → beaten 32 → Wave 30. Never cleared → stay on 1.
-  // Admin keeps the exact beaten wave (every round).
+  // Admin snaps to the same 5-step grid, including past 100.
   function lastBeatenStartWave(cleared, lv, reached, admin) {
     cleared = cleared | 0;
     if (cleared < 1) return 1;
@@ -2228,7 +2228,7 @@
     dir = dir < 0 ? -1 : 1;
     if (isStartAdmin(admin)) {
       cur = clampStartWave(from, lv, reached, true);
-      next = cur + dir;
+      next = cur + dir * 5;
       return clampStartWave(next, lv, reached, true);
     }
     list = unlockedStartWaves(lv, reached, false);
@@ -13338,7 +13338,7 @@
     }
     if (admin) {
       canLeft = chosen > 1;
-      canRight = chosen < ADMIN_MAX_START_WAVE;
+      canRight = chosen < Math.floor(ADMIN_MAX_START_WAVE / 5) * 5;
     } else {
       for (i = 0; i < opts.length; i++) {
         n = opts[i];
@@ -13378,7 +13378,7 @@
     }
     bindStartWaveStepper(box, id);
     if (hint) {
-      if (admin) hint.textContent = "Admin: any wave";
+      if (admin) hint.textContent = "Admin: every 5 waves";
       else if (lv < 5) hint.textContent = "Reach level 5 to skip early waves";
       else if (hasLocked) hint.textContent = "Beat this wave first to unlock starting at it.";
       else hint.textContent = "Unlocked through wave " + maxStartWave(lv, false);

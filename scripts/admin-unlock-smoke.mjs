@@ -87,7 +87,8 @@ assert(maxStartWave(150) === 150, "lv150 start options include 150");
 
 assert(js.indexOf("var MAX_LEVEL = 150") >= 0, "level cap 150");
 assert(js.indexOf("var ADMIN_MAX_START_WAVE = 9999") >= 0, "admin start not capped at 100");
-assert(js.indexOf("Admin: any wave") >= 0, "admin stepper copy");
+assert(js.indexOf("Admin: every 5 waves") >= 0, "admin stepper copy");
+assert(js.indexOf("Admin: any wave") < 0, "admin stepper is 5-step");
 assert(js.indexOf("isStartAdmin") >= 0, "admin start-wave path");
 assert(js.indexOf("profile.admin = true") >= 0 && js.indexOf("ADMIN_MAX_START_WAVE") >= 0, "admin unlock sets any-wave gate");
 assert(account.indexOf("asInt(raw.startWave, 9999)") >= 0, "cloud startWave not capped at 100");
@@ -100,7 +101,7 @@ assert(js.indexOf("grantAllSkills()") >= 0, "admin maxes skill tree");
 assert(js.indexOf("flushAccountPush") >= 0, "account sync");
 assert(html.indexOf("id=\"admin-passcode\"") >= 0, "passcode sheet");
 assert(html.indexOf("Enter passcode") >= 0, "passcode copy");
-assert(sw.indexOf("galaga-coop-v75") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v76") >= 0, "cache bump");
 assert(readme.toLowerCase().indexOf("passcode") < 0, "readme has no passcode");
 assert(readme.indexOf("1234") < 0, "readme has no code");
 assert(readme.toLowerCase().indexOf("admin unlock") < 0, "readme has no admin unlock");

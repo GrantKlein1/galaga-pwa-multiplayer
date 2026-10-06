@@ -30,6 +30,6 @@ assert(galaga.indexOf("Math.cos(a) * 118") >= 0 && galaga.indexOf("Math.sin(a) *
 assert(galaga.indexOf("{ isBoss: true, tier: plan.tier || 0, guest: true }") >= 0, "guests still spawn through shared boss fire");
 assert(galaga.split("function eclipseRing").length - 1 === 1, "one shared eclipse ring helper");
 
-assert(sw.indexOf("galaga-coop-v75") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v76") >= 0, "PWA cache bump");
 
 console.log("nullwarden-eclipse-ring-smoke: ok");

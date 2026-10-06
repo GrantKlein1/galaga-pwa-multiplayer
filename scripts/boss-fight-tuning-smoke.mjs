@@ -11,7 +11,7 @@ var post = fs.readFileSync(new URL("../docs/post-55-bosses.md", import.meta.url)
 var roster = fs.readFileSync(new URL("../docs/boss-roster.md", import.meta.url), "utf8");
 var pvp = fs.readFileSync(new URL("../js/pvp.js", import.meta.url), "utf8");
 
-assert(sw.indexOf("galaga-coop-v75") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v76") >= 0, "PWA cache bump");
 assert(/var VER = 13;/.test(codec), "codec VER 13");
 
 assert(galaga.indexOf('if (fight.dark && !(b.glintT > 0) && !inFightLight(b.x, b.y)) continue') < 0, "Lanternmoth shots are not skipped in the dark");
@@ -47,8 +47,9 @@ assert(roster.indexOf("10× head HP") >= 0, "roster notes stacked buff");
 
 assert(galaga.indexOf("for (n = 5; n <= max; n += 5) out.push(n)") >= 0, "start-wave options always +5");
 assert(galaga.indexOf("never 1-step in that range") >= 0, "past 100 stays on 5s");
-assert(galaga.indexOf("next = cur + dir") >= 0, "admin any-wave still steps by 1");
-assert(galaga.indexOf("Admin: any wave") >= 0, "admin picker copy");
+assert(galaga.indexOf("next = cur + dir * 5") >= 0, "admin also steps by 5");
+assert(galaga.indexOf("Admin: every 5 waves") >= 0, "admin picker copy");
+assert(galaga.indexOf("Admin: any wave") < 0, "admin no longer 1-steps");
 
 assert(galaga.indexOf("function axiomVolleyId") >= 0, "seal hits are grouped by volley");
 assert(galaga.indexOf("function axiomFlushSealVolleys") >= 0, "wrong extras wait for the rest of the volley");
