@@ -9,10 +9,10 @@ var js = fs.readFileSync(new URL("../js/galaga.js", import.meta.url), "utf8");
 var sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 var account = fs.readFileSync(new URL("../api/account.js", import.meta.url), "utf8");
 
-assert(js.indexOf("var PROFILE_VER = 9") >= 0, "client profile ver 9");
-assert(account.indexOf("v: 9") >= 0, "cloud profile ver 9");
-assert(account.indexOf("p.v = 9") >= 0, "sanitize writes ver 9");
-assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
+assert(js.indexOf("var PROFILE_VER = 10") >= 0, "client profile ver 9");
+assert(account.indexOf("v: 10") >= 0, "cloud profile ver 9");
+assert(account.indexOf("p.v = 10") >= 0, "sanitize writes ver 9");
+assert(sw.indexOf("galaga-coop-v79") >= 0, "PWA cache bump");
 
 assert(js.indexOf("waveSp: []") >= 0, "default waveSp set");
 assert(js.indexOf("function cloneWaveSp") >= 0, "clone helper");
@@ -61,7 +61,7 @@ var p = sanitizeProfile({
   pid: "abcdefgh",
   skills: { owned: [], equipped: null, bonus: 4, waveSp: [100, 101, 101, 250, "nope", 0, 999] }
 });
-assert(p.v === 9, "sanitize version");
+assert(p.v === 10, "sanitize version");
 assert(p.skills.bonus === 4, "quest bonus untouched");
 assert(p.skills.waveSp.join(",") === "101,250,999", "sanitize keeps post-100 unique");
 

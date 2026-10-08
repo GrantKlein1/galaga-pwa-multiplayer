@@ -45,8 +45,8 @@ assert(galaga.indexOf("Math.cos(a - 0.42) * spd") >= 0, "fork head angled fangs"
 assert(galaga.indexOf("sway: 20, swayF: 3.4") >= 0, "spray head swaying pellets");
 assert(galaga.indexOf("kind === \"beam\" || h.kind === 1") < 0, "kit volley no longer clones one pattern onto every head");
 
-assert(/var VER = 13;/.test(codec), "codec VER 13");
-assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
+assert(/var VER = 14;/.test(codec), "codec VER 13");
+assert(sw.indexOf("galaga-coop-v79") >= 0, "PWA cache bump");
 assert(post.indexOf("mixed row") >= 0, "Lodestar kit mentions mixed-color rows");
 assert(post.indexOf("never one color") >= 0, "docs forbid single-color rows");
 assert(post.indexOf("Head HP is 50") >= 0, "Hydra kit mentions 2.5x more head HP");

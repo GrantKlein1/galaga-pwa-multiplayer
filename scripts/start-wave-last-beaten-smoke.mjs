@@ -112,6 +112,6 @@ assert(js.indexOf("next = cur + dir * 5") >= 0, "admin steps by 5");
 assert(js.indexOf("Admin: every 5 waves") >= 0, "admin picker copy");
 assert(js.indexOf("Admin: any wave") < 0, "admin no longer 1-steps");
 assert(js.indexOf("opts.fromNet || (profile && profile.admin)") >= 0, "coop honors host non-5 start");
-assert(sw.indexOf("galaga-coop-v78") >= 0, "cache bump");
+assert(sw.indexOf("galaga-coop-v79") >= 0, "cache bump");
 
 console.log("start-wave-last-beaten-smoke: ok");

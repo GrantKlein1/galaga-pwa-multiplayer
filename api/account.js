@@ -228,7 +228,7 @@ function sanitizeSkills(raw) {
 
 function defaultCloudProfile() {
   return {
-    v: 9,
+    v: 10,
     coins: 0,
     totalXp: 0,
     best: 0,
@@ -356,7 +356,7 @@ export function sanitizeProfile(raw) {
     p.stats.facedWave = p.stats.maxWave | 0;
   }
   p.updatedAt = asTime(raw.updatedAt);
-  p.v = 9;
+  p.v = 10;
   return p;
 }
 

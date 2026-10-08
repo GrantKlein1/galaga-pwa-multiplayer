@@ -19,7 +19,7 @@ function catalog(name) {
   return m[1];
 }
 
-assert(galaga.indexOf("var PROFILE_VER = 9") >= 0, "profile ver 9");
+assert(galaga.indexOf("var PROFILE_VER = 10") >= 0, "profile ver 9");
 assert(galaga.indexOf("xpCharges: 0") >= 0, "default banked charges");
 assert(galaga.indexOf("xpBoostArmed: false") >= 0, "default unarmed");
 assert(galaga.indexOf("p.xpCharges = clampXpCharges(raw.xpCharges)") >= 0, "migrate charges");
@@ -73,13 +73,13 @@ assert(galaga.indexOf("run.xpBonus = (run.xpBonus || 0) + (credit.xpBonus || 0);
 assert(account.indexOf("xpCharges: 0") >= 0, "cloud default");
 assert(account.indexOf("p.xpCharges = asInt(raw.xpCharges, 99)") >= 0, "cloud sanitize count");
 assert(account.indexOf("p.xpBoostArmed = !!raw.xpBoostArmed") >= 0, "cloud sanitize armed");
-assert(account.indexOf("v: 9") >= 0, "cloud profile ver");
+assert(account.indexOf("v: 10") >= 0, "cloud profile ver");
 assert(codec.indexOf('"xpboost"') >= 0, "snap codec knows the pickup");
-assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v79") >= 0, "PWA cache bump");
 
 var empty = sanitizeProfile({});
 assert(empty.xpCharges === 0 && empty.xpBoostArmed === false, "sanitize defaults");
-assert(empty.v === 9, "sanitize ver");
+assert(empty.v === 10, "sanitize ver");
 var kept = sanitizeProfile({ xpCharges: 4, xpBoostArmed: true, totalXp: 800 });
 assert(kept.xpCharges === 4 && kept.xpBoostArmed === true, "sanitize keeps count and armed");
 assert(kept.totalXp === 800, "totalXp untouched");

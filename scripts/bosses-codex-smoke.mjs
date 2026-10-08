@@ -27,11 +27,11 @@ function catalogUnlock(name) {
   return out;
 }
 
-assert(js.indexOf("var PROFILE_VER = 9") >= 0, "client profile ver 9");
-assert(account.indexOf("v: 9") >= 0, "cloud profile ver 9");
-assert(account.indexOf("p.v = 9") >= 0, "sanitize writes ver 9");
-assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
-assert(/var VER = 13;/.test(codec), "netcodec is 13");
+assert(js.indexOf("var PROFILE_VER = 10") >= 0, "client profile ver 9");
+assert(account.indexOf("v: 10") >= 0, "cloud profile ver 9");
+assert(account.indexOf("p.v = 10") >= 0, "sanitize writes ver 9");
+assert(sw.indexOf("galaga-coop-v79") >= 0, "PWA cache bump");
+assert(/var VER = 14;/.test(codec), "netcodec is 13");
 
 assert(js.indexOf("facedWave: 0") >= 0, "emptyStats facedWave");
 assert(js.indexOf("facedWave: Math.max(a.facedWave | 0, b.facedWave | 0)") >= 0, "mergeStats unions facedWave");
@@ -100,6 +100,6 @@ assert(admin.stats.facedWave === 0, "admin 9999 does not reveal bosses");
 var kept = sanitizeProfile({ stats: { maxWave: 9999, facedWave: 20 }, admin: true });
 assert(kept.stats.facedWave === 20, "explicit facedWave kept for admin");
 var empty = sanitizeProfile({});
-assert(empty.v === 9 && empty.stats.facedWave === 0, "empty cloud profile ver 9");
+assert(empty.v === 10 && empty.stats.facedWave === 0, "empty cloud profile ver 9");
 
 console.log("bosses-codex-smoke: ok  bosses=" + defIds.length);

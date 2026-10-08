@@ -34,7 +34,7 @@ assert(galaga.indexOf("if (b.bossAb) br += 4") >= 0, "ability shots get a wider 
 assert(galaga.indexOf("if (b.bossAb) break") >= 0, "spore mines do not eat ability shots");
 assert(galaga.indexOf("* 13") >= 0 && galaga.indexOf("kind: \"curtain\"") >= 0, "curtains are denser");
 assert(galaga.indexOf("killEnemy(e, false, dmg, owner ? owner.slot : 0)") >= 0, "rings and wells burst on first contact");
-assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v79") >= 0, "PWA cache bump");
 assert(docs.indexOf("player-scale") >= 0, "docs match");
 assert(docs.indexOf("3.4s") >= 0 && docs.indexOf("| 14s |") < 0, "docs list the shorter cooldowns");
 assert(docs.indexOf("`seraph-fan`") >= 0 && docs.indexOf("`axiom-mix`") >= 0, "ids still listed");

@@ -22,7 +22,7 @@
   var STEER_FOLLOW = 15;
   var LS_KEY = "galaga.profile";
   var SESSION_KEY = "galaga.session";
-  var PROFILE_VER = 9;
+  var PROFILE_VER = 10;
   var ACCOUNT_PUSH_MS = 900;
   var ACCOUNT_PULL_MS = 5000;
   var ADMIN_CODE = "1234";
@@ -145,9 +145,9 @@
     { id: "tempest", name: "Tempest", unlockLevel: 66, cost: 5800, rarity: "legendary", desc: "+15% fire rate, +5% damage, gems last 50% longer", speed: 280, r: 8, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.05, coinMul: 1, pickMul: 1.5, passive: "", color: "#7ef9ff", accent: "#ffffff" },
     { id: "warden", name: "Warden", unlockLevel: 80, cost: 7500, rarity: "legendary", desc: "+1 life, 2-hit shield that regrows every 6s", speed: 215, r: 11, invuln: 2.32, extraLives: 1, regen: 6, startShield: 2, fireMul: 1, dmgMul: 1.05, coinMul: 1, pickMul: 1, passive: "", color: "#c8ffe8", accent: "#3dffb0" },
     { id: "eclipse", name: "Eclipse", unlockLevel: 95, cost: 10000, rarity: "legendary", desc: "+30% damage, +15% fire rate, +1 life. Boss kills restore a life", speed: 290, r: 7, invuln: 2.8, extraLives: 1, regen: 0, startShield: 0, fireMul: 1.15, dmgMul: 1.3, coinMul: 1, pickMul: 1.2, passive: "eclipse", color: "#e0c8ff", accent: "#ffd23d" },
-    { id: "chronoweaver", name: "Chronoweaver", unlockLevel: 100, cost: 15000, rarity: "relic", desc: "Once per wave, the first life-costing hit rewinds 1.5s along your path", speed: 260, r: 9, invuln: 2, extraLives: 1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "chrono", color: "#e8c878", accent: "#c8a050" },
-    { id: "twinstar", name: "Twinstar", unlockLevel: 115, cost: 22000, rarity: "relic", desc: "A mirrored partner copies movement and fires the same gun at 60% damage. Only you can be hit", speed: 250, r: 9, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "twin", color: "#c8d0ff", accent: "#4d88ff" },
-    { id: "eventhorizon", name: "Event Horizon", unlockLevel: 135, cost: 28000, rarity: "relic", desc: "Enemy bullets within 26px slow to 40% speed. One fewer life and a smaller hull", speed: 250, r: 6.5, invuln: 2, extraLives: -1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "horizon", color: "#d8c090", accent: "#ffe08a" }
+    { id: "goldwake", name: "Goldwake", unlockLevel: 100, cost: 15000, rarity: "relic", desc: "Grazing fills a magazine (max 8). Spend 4 pips for +50% on the next volley, or stop firing and spend 8 to eat the next life-costing hit", speed: 270, r: 8, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "graze", color: "#e8c878", accent: "#c8a050" },
+    { id: "dichro", name: "Dichro", unlockLevel: 115, cost: 22000, rarity: "relic", desc: "Red or blue. Same-color bullets pass; the wrong color hits harder. Flips every 3s, or instantly when you press Q", speed: 255, r: 9, invuln: 2, extraLives: 0, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "polar", color: "#ff4d4d", accent: "#4d88ff" },
+    { id: "gyre", name: "Gyre", unlockLevel: 135, cost: 28000, rarity: "relic", desc: "A 48px current bends enemy bullets away and curves your shots. You drift on the tangent. One fewer life", speed: 250, r: 7, invuln: 2, extraLives: -1, regen: 0, startShield: 0, fireMul: 1, dmgMul: 1, coinMul: 1, pickMul: 1, passive: "gyre", color: "#d8c090", accent: "#7ef9ff" }
   ];
   // Guns. shots: list of { dx (muzzle x offset), ang (radians, 0 = straight up), spd }.
   // dmg per bullet, cd (ms), pierce (extra targets), homing, hsp/hturn (homing speed/turn),
@@ -167,9 +167,9 @@
     { id: "storm", name: "Storm", unlockLevel: 70, cost: 6000, rarity: "legendary", desc: "Hyper-rapid fire; every 5th shot adds a homing bolt", dmg: 1.1, cd: 60, shots: [{ dx: 0, ang: 0, spd: 520 }], bolt: 5, boltDmg: 2, r: 2 },
     { id: "novacannon", name: "Nova Cannon", unlockLevel: 80, cost: 7500, rarity: "legendary", desc: "6-damage shell with 2-damage splash", dmg: 6, cd: 320, shots: [{ dx: 0, ang: 0, spd: 520 }], pierce: 1, splash: { r: 34, dmg: 2 }, r: 4.5 },
     { id: "prism", name: "Prism", unlockLevel: 90, cost: 9500, rarity: "legendary", desc: "Three piercing beams. The final word", dmg: 2.4, cd: 190, shots: [{ dx: -4, ang: -0.08, spd: 560 }, { dx: 0, ang: 0, spd: 580 }, { dx: 4, ang: 0.08, spd: 560 }], pierce: 2, r: 2.4 },
-    { id: "loomthread", name: "Loomthread", unlockLevel: 105, cost: 16000, rarity: "relic", desc: "Shots fire in pairs; a thread links each pair for 0.4s and damages anything it crosses", dmg: 2.35, cd: 155, shots: [{ dx: -7, ang: 0, spd: 460 }, { dx: 7, ang: 0, spd: 460 }], r: 2, thread: 0.4 },
-    { id: "requiem", name: "Requiem Bell", unlockLevel: 120, cost: 22000, rarity: "relic", desc: "Fast single shots, plus every 3s a forward half-ring that erases enemy shots and deals 2 damage", dmg: 3.2, cd: 70, shots: [{ dx: 0, ang: 0, spd: 500 }], r: 2, bell: 3 },
-    { id: "axiomlance", name: "Axiom Lance", unlockLevel: 140, cost: 30000, rarity: "relic", desc: "Heavy piercing bolts that bounce once off walls or the top. After the bounce they deal +50% and never hurt you", dmg: 9.18, cd: 260, shots: [{ dx: 0, ang: 0, spd: 560 }], pierce: 3, r: 2.8, wallBounce: 1 }
+    { id: "triune", name: "Triune", unlockLevel: 105, cost: 16000, rarity: "relic", desc: "Damage is a three-count on one hull. Hits I and II deal 2.2; III deals 12.8. Pips fade after 2.2s", dmg: 2.2, cd: 140, shots: [{ dx: 0, ang: 0, spd: 500 }], r: 2.2, triune: 1 },
+    { id: "antiphon", name: "Antiphon", unlockLevel: 120, cost: 22000, rarity: "relic", desc: "Each volley steals the nearest enemy bullet within 50px and re-fires it as a hollow gold shot. Empty air is half the gun", dmg: 2.1, cd: 90, shots: [{ dx: 0, ang: 0, spd: 500 }], r: 2, steal: 1 },
+    { id: "recurve", name: "Recurve", unlockLevel: 140, cost: 30000, rarity: "relic", desc: "Outbound, then the bolt turns at 0.55s or a wall and returns harder. Never hurts you or a partner", dmg: 4.24, cd: 200, shots: [{ dx: 0, ang: 0, spd: 520 }], r: 2.6, pierce: 2, life: 0.55, recurve: 1 }
   ];
   var MODS = [
     { id: "barrier", name: "Barrier", unlockLevel: 2, cost: 300, rarity: "common", desc: "Start every run with a 2-hit shield", tags: ["SHIELD 2"] },
@@ -182,8 +182,8 @@
     { id: "guardian", name: "Guardian", unlockLevel: 52, cost: 3200, rarity: "epic", desc: "Respawn with a 2-hit shield and +0.48s invuln", tags: ["RESPAWN SHIELD 2", "INV +0.48s"] },
     { id: "berserk", name: "Berserk", unlockLevel: 64, cost: 4200, rarity: "legendary", desc: "+10% damage per missing life", tags: ["DMG +10% per lost life"] },
     { id: "ascension", name: "Ascension", unlockLevel: 78, cost: 6000, rarity: "legendary", desc: "+25% XP and +10% fire rate", tags: ["XP +25%", "ROF +10%"] },
-    { id: "overclock", name: "Overclock Core", unlockLevel: 110, cost: 18000, rarity: "relic", desc: "Boss ability (Q) recharges 30% faster. Each cast also takes 20% off the Warp special's remaining cooldown", tags: ["Q CD -30%", "WARP -20%"] },
-    { id: "paradox", name: "Paradox", unlockLevel: 130, cost: 25000, rarity: "relic", desc: "Delay a life-loss 3s. Kill 6 foes or chunk a boss in that window to erase it. Recharges every 20s", tags: ["DELAY 3s", "SAVE 6 KILLS"] }
+    { id: "sealbinder", name: "Sealbinder", unlockLevel: 110, cost: 18000, rarity: "relic", desc: "Q arms a gold seal for 4s. Second Q fires. E while armed fuses Warp with Q. A missed window refunds half the Q cooldown", tags: ["ARM Q", "FUSE E"] },
+    { id: "tithe", name: "Tithe", unlockLevel: 130, cost: 25000, rarity: "relic", desc: "Once per wave, spend a life to refresh Q and Warp. An unused vow starts the next wave with a 2-hit shield", tags: ["LIFE → Q+E", "UNUSED +2 SHIELD"] }
   ];
   // Shared paint tiers. Free at player levels 7, 12, 17, 22… Each hull keeps its own colorway of the FX.
   var SKIN_TIERS = [
@@ -198,8 +198,8 @@
     { id: "solar", name: "Solar", unlockLevel: 42, cost: 0, rarity: "epic", fx: "solar", hue: -55, sat: 1.32, lit: 1.16, desc: "Photosphere core and corona prominences", perk: "IGNITE", perkText: "Hits ignite: +1 damage after 0.65s" },
     { id: "nebula", name: "Nebula", unlockLevel: 47, cost: 0, rarity: "legendary", fx: "nebula", hue: 112, sat: 1.2, lit: 0.94, desc: "Living gas-cloud body with embedded stars", perk: "CLOUD", perkText: "Every 7.5s a 1.1s cloud deletes nearby bullets" },
     { id: "mythic", name: "Mythic", unlockLevel: 52, cost: 0, rarity: "legendary", fx: "mythic", hue: 158, sat: 1.24, lit: 1.08, desc: "Ceremonial wings and a gold-violet afterimage", perk: "ECHO", perkText: "28% of volleys ghost-fire 0.16s later at 70% damage" },
-    { id: "eventide", name: "Eventide", unlockLevel: 125, cost: 0, rarity: "relic", fx: "eventide", hue: -12, sat: 0.7, lit: 0.42, desc: "Dark hull with three orbiting lantern shards", perk: "LANTERN", perkText: "Each shard blocks one enemy bullet, then regrows after 10 seconds" },
-    { id: "genesis", name: "Genesis", unlockLevel: 150, cost: 0, rarity: "relic", fx: "genesis", hue: 20, sat: 1.18, lit: 1.08, desc: "Hull cycles through boss palettes", perk: "GENESIS", perkText: "Every 20s the next volley borrows Burst, Freeze, Ignite, or Echo" }
+    { id: "umbra", name: "Umbra", unlockLevel: 125, cost: 0, rarity: "relic", fx: "umbra", hue: -12, sat: 0.7, lit: 0.42, desc: "Dark hull with an 80px lamp. Bullets outside fade. Q drops a lantern", perk: "LAMP", perkText: "lamp 80px; Q drops a lantern" },
+    { id: "codex", name: "Codex", unlockLevel: 150, cost: 0, rarity: "relic", fx: "codex", hue: 20, sat: 1.18, lit: 1.08, desc: "Every 18s a gold Axiom card rules you for 7s. Q vetoes and redraws without firing", perk: "CODEX", perkText: "Axiom card every 18s; Q vetoes" }
   ];
   var SHIP_COIN_SKINS = [
     { id: "wisp-aurora", ship: "wisp", name: "Aurora", cost: 10000, rarity: "epic", fx: "aurora", hull: "#3dffc8", accent: "#ff9ad6", desc: "Northern-light ribbon wings", perk: "WEAVE", perkText: "Shots weave ±7px (Helix gains extra sweep)" },
@@ -375,17 +375,17 @@
     loom: { desc: "A weaver. Wall knots pull taut into red threads, a shuttle dart hunts the hull, then a cocoon closes.", abilities: ["Gold knots that pull taut into red threads", "Periodic aimed shuttle darts, including the bottom", "A closing cocoon"], ship: "warden", gun: "novacannon", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-rof1", "warp-rampart"] },
     tessera: { desc: "A chessboard from the first volley. Rook files, bishop diagonals, knight jumps; later the board fills.", abilities: ["Rook files through the ship", "Bishop diagonals", "Knight jumps", "A filling board you clear with a pawn"], ship: "warden", gun: "storm", mod: "ascension", skills: ["gun-dmg1", "gun-chip", "gun-focus", "warp-stasis"] },
     requiem: { desc: "A choir. Gold satellites sing, gapped rings pulse, then a heartbeat finale.", abilities: ["Gold choir satellites", "Gapped sound rings", "A heartbeat crescendo"], ship: "eclipse", gun: "prism", mod: "ascension", skills: ["gun-dmg1", "gun-rof1", "gun-chip", "warp-fold"] },
-    terminus: { desc: "The century gate. An echo ghost, a sweeping line with a safe gap, ordered keystones, closing walls, then everything at once.", abilities: ["An echo ghost of your shots", "A sweeping line with a safe gap", "Keystones that must break in order", "Closing walls", "A last medley"], ship: "chronoweaver", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-pierce", "warp-fold"] },
-    hourglass: { desc: "Sand and rewind. Falling sand piles a floor, then time runs back and your own shots come home.", abilities: ["Falling sand", "A rising floor", "A rewind that sends shots home"], ship: "chronoweaver", gun: "loomthread", mod: "ascension", skills: ["hull-iframes", "gun-dmg1", "warp-haunt", "warp-fold"] },
-    lanternmoth: { desc: "A dim field. Your lamp and gold lanterns brighten it; every shot stays visible.", abilities: ["A dim field with a player lamp", "Gold lanterns", "Shots that stay visible in the gloom"], ship: "chronoweaver", gun: "loomthread", mod: "overclock", skills: ["hull-life1", "gun-dmg1", "warp-stasis", "warp-fold"] },
-    lodestar: { desc: "Red and blue polarity. Matching shots pass; the wrong color hurts. Full-width rows mix red and blue so a polarity swap is not an auto-hit.", abilities: ["Red or blue polarity on the ship", "Matching shots pass through", "Full-width rows split red and blue at the same time", "A countdown pulsar ring"], ship: "twinstar", gun: "loomthread", mod: "overclock", skills: ["gun-dmg1", "gun-rof1", "gun-pierce", "warp-fold"] },
-    lernaean: { desc: "Heads on necks. Cut a head and hit the gold stump or two more grow. The body is safe until the heads are gone.", abilities: ["Each head shoots a different pattern", "Needle chase, a fork, and a swaying spray", "A gold stump you must finish", "Two heads grow if the stump lives"], ship: "twinstar", gun: "requiem", mod: "overclock", skills: ["gun-dmg1", "gun-chip", "gun-pierce", "warp-horizon"] },
-    orrery: { desc: "A clockwork sky. Planets orbit, gravity rings curve shots; send one into the gold core.", abilities: ["Orbiting planets", "Gravity rings that curve shots", "A gold core you sling a shot into"], ship: "twinstar", gun: "requiem", mod: "overclock", skills: ["gun-dmg1", "gun-focus", "warp-stasis", "warp-horizon"] },
-    prism: { desc: "Beams split through gold prisms that stay until the next set. Rotate a prism to send a beam home.", abilities: ["Beams that split through gold prisms", "Prisms that stay until the next set", "Rotate a prism to send a beam home", "Shard fans and ricochets"], ship: "twinstar", gun: "requiem", mod: "paradox", skills: ["gun-dmg1", "gun-pierce", "warp-fold", "warp-horizon"] },
-    maelstrom: { desc: "A whirlpool. Cyan arrows show the flow; it drags the ship and shots, then the maw opens.", abilities: ["A current that drags the ship and shots", "Cyan arrows that show the flow", "A tightening gyre", "A maw in the center"], ship: "eventhorizon", gun: "requiem", mod: "paradox", skills: ["hull-speed", "gun-dmg1", "warp-stasis", "warp-horizon"] },
-    cartographer: { desc: "A sliding map. Panes swap; matching edge colors wrap the ship. Gold pins still chip the body.", abilities: ["Sliding map panes", "Matching edge colors that wrap the ship", "Unlinked edges that are walls", "Gold pins that chip the body"], ship: "eventhorizon", gun: "axiomlance", mod: "paradox", skills: ["hull-speed", "gun-dmg1", "warp-fold", "warp-horizon"] },
-    mimic: { desc: "It copies you. Red dodge paths, red shots, then the equipped boss ability as enemy fire, then two of you.", abilities: ["Copies your dodge path in red", "Copies your shots in red", "Copies the equipped boss ability", "A doppelganger"], ship: "eventhorizon", gun: "axiomlance", mod: "paradox", skills: ["hull-life1", "gun-dmg1", "warp-haunt", "warp-horizon"] },
-    axiom: { desc: "The last gate. Each phase writes a rule on a gold card — fall up, bounce once, graze-heal, orbit the ring, a crushing wake, then break four seals in order.", abilities: ["Fall up with a climbing blade gap", "Your bullets bounce once and hurt you on the way back", "Grazing heals", "Orbit a ring and shoot inward through shield gaps", "A gold pocket on a crushing wake", "Four seals in order, then the core opens"], ship: "eventhorizon", gun: "axiomlance", mod: "paradox", skills: ["hull-laststand", "gun-pierce", "warp-fold", "warp-horizon"] }
+    terminus: { desc: "The century gate. An echo ghost, a sweeping line with a safe gap, ordered keystones, closing walls, then everything at once.", abilities: ["An echo ghost of your shots", "A sweeping line with a safe gap", "Keystones that must break in order", "Closing walls", "A last medley"], ship: "goldwake", gun: "prism", mod: "ascension", skills: ["hull-life1", "gun-dmg1", "gun-pierce", "warp-fold"] },
+    hourglass: { desc: "Sand and rewind. Falling sand piles a floor, then time runs back and your own shots come home.", abilities: ["Falling sand", "A rising floor", "A rewind that sends shots home"], ship: "goldwake", gun: "triune", mod: "ascension", skills: ["hull-iframes", "gun-dmg1", "warp-haunt", "warp-fold"] },
+    lanternmoth: { desc: "A dim field. Your lamp and gold lanterns brighten it; every shot stays visible.", abilities: ["A dim field with a player lamp", "Gold lanterns", "Shots that stay visible in the gloom"], ship: "goldwake", gun: "triune", mod: "sealbinder", skills: ["hull-life1", "gun-dmg1", "warp-stasis", "warp-fold"] },
+    lodestar: { desc: "Red and blue polarity. Matching shots pass; the wrong color hurts. Full-width rows mix red and blue so a polarity swap is not an auto-hit.", abilities: ["Red or blue polarity on the ship", "Matching shots pass through", "Full-width rows split red and blue at the same time", "A countdown pulsar ring"], ship: "dichro", gun: "triune", mod: "sealbinder", skills: ["gun-dmg1", "gun-rof1", "gun-pierce", "warp-fold"] },
+    lernaean: { desc: "Heads on necks. Cut a head and hit the gold stump or two more grow. The body is safe until the heads are gone.", abilities: ["Each head shoots a different pattern", "Needle chase, a fork, and a swaying spray", "A gold stump you must finish", "Two heads grow if the stump lives"], ship: "dichro", gun: "antiphon", mod: "sealbinder", skills: ["gun-dmg1", "gun-chip", "gun-pierce", "warp-horizon"] },
+    orrery: { desc: "A clockwork sky. Planets orbit, gravity rings curve shots; send one into the gold core.", abilities: ["Orbiting planets", "Gravity rings that curve shots", "A gold core you sling a shot into"], ship: "dichro", gun: "antiphon", mod: "sealbinder", skills: ["gun-dmg1", "gun-focus", "warp-stasis", "warp-horizon"] },
+    prism: { desc: "Beams split through gold prisms that stay until the next set. Rotate a prism to send a beam home.", abilities: ["Beams that split through gold prisms", "Prisms that stay until the next set", "Rotate a prism to send a beam home", "Shard fans and ricochets"], ship: "dichro", gun: "antiphon", mod: "tithe", skills: ["gun-dmg1", "gun-pierce", "warp-fold", "warp-horizon"] },
+    maelstrom: { desc: "A whirlpool. Cyan arrows show the flow; it drags the ship and shots, then the maw opens.", abilities: ["A current that drags the ship and shots", "Cyan arrows that show the flow", "A tightening gyre", "A maw in the center"], ship: "gyre", gun: "antiphon", mod: "tithe", skills: ["hull-speed", "gun-dmg1", "warp-stasis", "warp-horizon"] },
+    cartographer: { desc: "A sliding map. Panes swap; matching edge colors wrap the ship. Gold pins still chip the body.", abilities: ["Sliding map panes", "Matching edge colors that wrap the ship", "Unlinked edges that are walls", "Gold pins that chip the body"], ship: "gyre", gun: "recurve", mod: "tithe", skills: ["hull-speed", "gun-dmg1", "warp-fold", "warp-horizon"] },
+    mimic: { desc: "It copies you. Red dodge paths, red shots, then the equipped boss ability as enemy fire, then two of you.", abilities: ["Copies your dodge path in red", "Copies your shots in red", "Copies the equipped boss ability", "A doppelganger"], ship: "gyre", gun: "recurve", mod: "tithe", skills: ["hull-life1", "gun-dmg1", "warp-haunt", "warp-horizon"] },
+    axiom: { desc: "The last gate. Each phase writes a rule on a gold card — fall up, bounce once, graze-heal, orbit the ring, a crushing wake, then break four seals in order.", abilities: ["Fall up with a climbing blade gap", "Your bullets bounce once and hurt you on the way back", "Grazing heals", "Orbit a ring and shoot inward through shield gaps", "A gold pocket on a crushing wake", "Four seals in order, then the core opens"], ship: "gyre", gun: "recurve", mod: "tithe", skills: ["hull-laststand", "gun-pierce", "warp-fold", "warp-horizon"] }
   };
   // Player versions of boss attacks. Same shot count and pattern as the boss
   // kit, aimed from the player at enemies. Damage is player-scale (clears
@@ -592,9 +592,9 @@
     { id: "lt_clean100", name: "Silent Running", desc: "Destroy 100 foes in a run without taking a hit", target: 100, kind: "cleanKillsRun", category: "Special Operations", reward: { coins: 450 } },
     { id: "lt_boss_roster", name: "Fleet Intelligence", desc: "Defeat every boss in the roster", target: 10, kind: "bossRoster", category: "Special Operations", reward: { coins: 800 } },
     { id: "lt_armada_ready", name: "Ready Room", desc: "Own 6 ships and 10 guns", target: 1, kind: "ownCollection", ships: 6, guns: 10, category: "Special Operations", reward: { coins: 650 } },
-    { id: "lt_bosses25", name: "Endless Court", desc: "Defeat 25 bosses in one run", target: 25, kind: "bossRun", category: "Special Operations", reward: { coins: 2200, gun: "requiem", consolation: 1800, skill: 2, xpBoost: 1 } },
-    { id: "lt_roster_all", name: "Every Name", desc: "Defeat every boss in the roster", target: BOSS_DEFS.length, kind: "bossRoster", category: "Special Operations", reward: { coins: 2800, ship: "eventhorizon", consolation: 2200, skill: 2, xpBoost: 1 } },
-    { id: "lt_axiom_t1", name: "Axiom +1", desc: "Defeat Axiom at tier 1 or higher", target: 1, kind: "bossTier", type: "axiom", tier: 1, category: "Special Operations", reward: { coins: 3500, gun: "axiomlance", consolation: 2500, skill: 2, xpBoost: 1 } }
+    { id: "lt_bosses25", name: "Endless Court", desc: "Defeat 25 bosses in one run", target: 25, kind: "bossRun", category: "Special Operations", reward: { coins: 2200, gun: "antiphon", consolation: 1800, skill: 2, xpBoost: 1 } },
+    { id: "lt_roster_all", name: "Every Name", desc: "Defeat every boss in the roster", target: BOSS_DEFS.length, kind: "bossRoster", category: "Special Operations", reward: { coins: 2800, ship: "gyre", consolation: 2200, skill: 2, xpBoost: 1 } },
+    { id: "lt_axiom_t1", name: "Axiom +1", desc: "Defeat Axiom at tier 1 or higher", target: 1, kind: "bossTier", type: "axiom", tier: 1, category: "Special Operations", reward: { coins: 3500, gun: "recurve", consolation: 2500, skill: 2, xpBoost: 1 } }
   ];
 
   var canvas = document.getElementById("board");
@@ -721,12 +721,28 @@
   var rings = [];
   var stars = [];
   var skinDecoys = [];
-  var loomThreads = [];
-  var relicBells = [];
-  var PARADOX_BOSS_CHUNK = 40;
-  var CHRONO_REWIND = 1.5;
-  var EVENTIDE_R = 16;
-  var HORIZON_GRAV_R = 26;
+  var RELIC_MAP = {
+    ships: { chronoweaver: "goldwake", twinstar: "dichro", eventhorizon: "gyre" },
+    guns: { loomthread: "triune", requiem: "antiphon", axiomlance: "recurve" },
+    mods: { overclock: "sealbinder", paradox: "tithe" },
+    skins: { eventide: "umbra", genesis: "codex" }
+  };
+  var GOLDWAKE_GRAZE_MIN = 6, GOLDWAKE_GRAZE_MAX = 10, GOLDWAKE_PIPS_MAX = 8;
+  var GOLDWAKE_BURST_COST = 4, GOLDWAKE_SAVE_COST = 8, GOLDWAKE_BURST_MUL = 1.5;
+  var DICHRO_FLIP = 3, DICHRO_PULSAR_BOTH = 1, DICHRO_WRONG_MUL = 1.25;
+  var GYRE_R = 48, GYRE_BEND = 40 * Math.PI / 180, GYRE_SHOT_CURVE = 12 * Math.PI / 180;
+  var GYRE_DRIFT = 18, GYRE_SPIN = 1.4;
+  var TRIUNE_I = 2.2, TRIUNE_II = 2.2, TRIUNE_III = 12.8, TRIUNE_FADE = 2.2;
+  var ANTIPHON_STEAL_R = 50;
+  var RECURVE_LIFE = 0.55, RECURVE_OUT = 4.24, RECURVE_BACK = 6.36;
+  var SEAL_ARM = 4, SEAL_FIZZLE_REFUND = 0.5;
+  var TITHE_SHIELD = 2;
+  var UMBRA_LAMP_R = 80, UMBRA_DROP_R = 50, UMBRA_DROP_T = 8, UMBRA_OUTSIDE_A = 0.25;
+  var UMBRA_DMG_IN = 1.15, UMBRA_DMG_OUT = 0.85, UMBRA_HAUNT_R = 40;
+  var CODEX_CD = 18, CODEX_LAW_T = 7;
+  var CODEX_LAWS = ["fallUp", "bounce", "grazeHeal", "orbit", "wake", "seals"];
+  var relicLawsToast = false;
+  var lastRelicRemapChanged = false;
   var form = { ox: 0, oy: 46, dir: 1, speed: 28, minOff: 0, maxOff: 0 };
 
   function el(id) { return document.getElementById(id); }
@@ -1612,6 +1628,116 @@
     bonus = clampSkillBonus(raw.bonus);
     return { owned: owned, equipped: eq, bonus: bonus, waveSp: cloneWaveSp(raw.waveSp) };
   }
+  function remapIdList(list, map) {
+    var out = [], seen = {}, i, id;
+    list = list || [];
+    for (i = 0; i < list.length; i++) {
+      id = list[i];
+      if (map && map[id]) id = map[id];
+      if (typeof id !== "string" || seen[id]) continue;
+      seen[id] = 1;
+      out.push(id);
+    }
+    return out;
+  }
+  function relicSkinKnown(id) {
+    if (id === "stock") return true;
+    return !!findSkin(id);
+  }
+  function remapRelicIds(p) {
+    var changed = false, i, id, k, list, nlist, s, kept;
+    if (!p) return { changed: false };
+    function takeOwned(src, map, catalog, always) {
+      var mapped = remapIdList(src, map), next = [], j, row;
+      for (j = 0; j < mapped.length; j++) {
+        row = mapped[j];
+        if (row === always || findIn(catalog, row)) next.push(row);
+        else changed = true;
+      }
+      if (always && next.indexOf(always) < 0) next.push(always);
+      return next;
+    }
+    kept = takeOwned(p.ownedShips, RELIC_MAP.ships, SHIPS, "wisp");
+    if (kept.join("\n") !== (p.ownedShips || []).join("\n")) changed = true;
+    p.ownedShips = kept;
+    kept = takeOwned(p.ownedGuns, RELIC_MAP.guns, GUNS, "pulse");
+    if (kept.join("\n") !== (p.ownedGuns || []).join("\n")) changed = true;
+    p.ownedGuns = kept;
+    kept = takeOwned(p.ownedMods, RELIC_MAP.mods, MODS, "");
+    if (kept.length && kept[0] === "") kept.shift();
+    if (kept.join("\n") !== (p.ownedMods || []).join("\n")) changed = true;
+    p.ownedMods = kept;
+    if (!p.equipped) p.equipped = { ship: "wisp", gun: "pulse", mod: null };
+    id = RELIC_MAP.ships[p.equipped.ship] || p.equipped.ship;
+    if (id !== p.equipped.ship) changed = true;
+    p.equipped.ship = id;
+    id = RELIC_MAP.guns[p.equipped.gun] || p.equipped.gun;
+    if (id !== p.equipped.gun) changed = true;
+    p.equipped.gun = id;
+    if (p.equipped.mod) {
+      id = RELIC_MAP.mods[p.equipped.mod] || p.equipped.mod;
+      if (id !== p.equipped.mod) changed = true;
+      p.equipped.mod = id;
+    }
+    p.ownedSkins = remapSkinBucket(p.ownedSkins, false);
+    p.equippedSkins = remapSkinBucket(p.equippedSkins, true);
+    function remapSkinBucket(src, equip) {
+      var out = {}, key, nkey, vals, nv, j;
+      src = src || {};
+      for (key in src) {
+        if (!Object.prototype.hasOwnProperty.call(src, key)) continue;
+        nkey = RELIC_MAP.ships[key] || key;
+        if (nkey !== key) changed = true;
+        if (equip) {
+          nv = RELIC_MAP.skins[src[key]] || src[key];
+          if (nv !== src[key]) changed = true;
+          if (!out[nkey] || key === nkey) out[nkey] = nv;
+        } else {
+          if (!out[nkey]) out[nkey] = [];
+          vals = src[key] || [];
+          for (j = 0; j < vals.length; j++) {
+            nv = RELIC_MAP.skins[vals[j]] || vals[j];
+            if (nv !== vals[j]) changed = true;
+            if (out[nkey].indexOf(nv) < 0) out[nkey].push(nv);
+          }
+        }
+      }
+      return out;
+    }
+    kept = {};
+    for (k in p.ownedSkins) {
+      if (!Object.prototype.hasOwnProperty.call(p.ownedSkins, k)) continue;
+      if (k !== "wisp" && !findIn(SHIPS, k)) { changed = true; continue; }
+      list = p.ownedSkins[k] || [];
+      nlist = [];
+      for (i = 0; i < list.length; i++) {
+        s = list[i];
+        if (relicSkinKnown(s)) nlist.push(s);
+        else changed = true;
+      }
+      if (nlist.indexOf("stock") < 0) nlist.unshift("stock");
+      kept[k] = nlist;
+    }
+    if (!kept.wisp) kept.wisp = ["stock"];
+    p.ownedSkins = kept;
+    kept = {};
+    for (k in p.equippedSkins) {
+      if (!Object.prototype.hasOwnProperty.call(p.equippedSkins, k)) continue;
+      if (k !== "wisp" && !findIn(SHIPS, k)) { changed = true; continue; }
+      s = RELIC_MAP.skins[p.equippedSkins[k]] || p.equippedSkins[k];
+      if (!relicSkinKnown(s)) { s = "stock"; changed = true; }
+      if (p.ownedSkins[k] && p.ownedSkins[k].indexOf(s) < 0) s = "stock";
+      kept[k] = s;
+    }
+    if (!kept.wisp) kept.wisp = "stock";
+    p.equippedSkins = kept;
+    if (p.ownedShips.indexOf(p.equipped.ship) < 0) { p.equipped.ship = "wisp"; changed = true; }
+    if (p.ownedGuns.indexOf(p.equipped.gun) < 0) { p.equipped.gun = "pulse"; changed = true; }
+    if (p.equipped.mod && p.ownedMods.indexOf(p.equipped.mod) < 0) { p.equipped.mod = null; changed = true; }
+    p.v = PROFILE_VER;
+    lastRelicRemapChanged = changed;
+    return { changed: changed };
+  }
   function migrateProfile(raw) {
     var p = defaultProfile();
     if (!raw || typeof raw !== "object") return p;
@@ -1642,6 +1768,7 @@
     p.skills = cloneSkills(raw.skills);
     p.xpCharges = clampXpCharges(raw.xpCharges);
     p.xpBoostArmed = !!raw.xpBoostArmed;
+    remapRelicIds(p);
     grantLevelSkins(p);
     if (raw.dailies && typeof raw.dailies === "object") {
       p.dailies.date = typeof raw.dailies.date === "string" ? raw.dailies.date : "";
@@ -2465,6 +2592,13 @@
     }
     return Math.max(1, t | 0);
   }
+  function rewardIsRelic(rew) {
+    var id, row;
+    if (!rew) return false;
+    id = rew.gun || rew.ship || rew.mod;
+    row = rew.gun ? findGun(id) : rew.ship ? findShip(id) : findMod(id);
+    return !!(row && row.rarity === "relic");
+  }
   function scaleReward(def, tier) {
     var rew = def.reward, curve = questCurve(def), cap, coins, keepItem, out;
     if (rew == null) return 0;
@@ -2472,7 +2606,7 @@
     if (typeof rew === "number") return scaleCoins(rew, tier, curve.c, cap);
     out = {};
     coins = rew.coins || 0;
-    keepItem = !!(tier <= 2 && (rew.gun || rew.ship || rew.mod));
+    keepItem = !!((tier <= 2 || rewardIsRelic(rew)) && (rew.gun || rew.ship || rew.mod));
     if (keepItem) {
       if (rew.gun) out.gun = rew.gun;
       if (rew.ship) out.ship = rew.ship;
@@ -2776,72 +2910,330 @@
     id = skinIdOf(p);
     p.skinWard = id === "bastion-fortress" ? 1 : id === "bastion-obsidian" ? 2 : 0;
     p.skinNebulaCd = id === "nebula" ? 0.4 : (p.skinNebulaCd || 0);
-    p.chronoUsed = false;
-    if (id === "eventide") initEventide(p);
-    if (id === "genesis") {
-      p.genesisReady = false;
-      p.genesisCd = 20;
-      p.genesisPerk = null;
-    }
     refreshSkinMuls(p);
   }
-  function initEventide(p) {
-    if (!p) return;
-    p.eventide = [{ t: 0 }, { t: 0 }, { t: 0 }];
+  function playerFallUp(p) {
+    return !!fight.fallUp !== !!(p && p.codexLaw === "fallUp");
   }
-  function eventideMaskOf(p) {
-    var m = 0, i, shards;
-    if (!p || skinIdOf(p) !== "eventide") return 0;
-    shards = p.eventide || [];
-    for (i = 0; i < 3; i++) if (shards[i] && (shards[i].t || 0) <= 0) m |= (1 << i);
-    return m;
+  function isGoldwake(p) { return shipDef(p).passive === "graze"; }
+  function isDichro(p) { return shipDef(p).passive === "polar"; }
+  function isGyre(p) { return shipDef(p).passive === "gyre"; }
+  function rotateVel(vx, vy, ang) {
+    var c = Math.cos(ang), s = Math.sin(ang);
+    return { vx: vx * c - vy * s, vy: vx * s + vy * c };
   }
-  function applyEventideMask(p, mask) {
-    var i;
-    if (!p) return;
-    if (!p.eventide || p.eventide.length < 3) initEventide(p);
-    mask = mask | 0;
-    for (i = 0; i < 3; i++) {
-      if (mask & (1 << i)) p.eventide[i].t = 0;
-      else if ((p.eventide[i].t || 0) <= 0) p.eventide[i].t = 0.25;
+  function gyreSpinAng(p) {
+    return time * GYRE_SPIN + ((p && p.slot) || 0) * 1.7;
+  }
+  function noteGoldwakeGraze(pl, b) {
+    if (!pl || !b || !isGoldwake(pl)) return;
+    if (!pl.grazeSeen) pl.grazeSeen = {};
+    if (pl.grazeSeen[b.id]) return;
+    pl.grazeSeen[b.id] = 1;
+    if ((pl.grazePips || 0) < GOLDWAKE_PIPS_MAX) pl.grazePips = (pl.grazePips || 0) + 1;
+    if (pl.codexLaw === "grazeHeal") fillCodexGraze(pl);
+  }
+  function fillCodexGraze(pl) {
+    if (!pl || pl.codexLaw !== "grazeHeal") return;
+    if ((pl.grazeLock || 0) > 0) return;
+    pl.grazeAcc = 0;
+    pl.grazeLock = 1.15;
+    pl.shieldHp = Math.max(pl.shieldHp || 0, 1);
+    banner = { text: "GRAZE WARD", life: 0.5 };
+    sfxArmor();
+  }
+  function noteCodexSeal(who, enemyId) {
+    if (!who || skinIdOf(who) !== "codex" || who.codexLaw !== "seals") return;
+    if (enemyId == null) return;
+    if (!who.codexSealHits) who.codexSealHits = [];
+    if (who.codexSealHits.indexOf(enemyId) >= 0) who.codexSealFail = true;
+    who.codexSealHits.push(enemyId);
+    if (who.codexSealHits.length > 3) who.codexSealHits.shift();
+  }
+  function umbraDmgMul(who, x, y) {
+    var lamp;
+    if (!who || skinIdOf(who) !== "umbra") return 1;
+    if (dist2(x, y, who.x, who.y) <= UMBRA_LAMP_R * UMBRA_LAMP_R) return UMBRA_DMG_IN;
+    lamp = who.umbraLantern;
+    if (lamp && (lamp.t || 0) > 0 && dist2(x, y, lamp.x, lamp.y) <= UMBRA_DROP_R * UMBRA_DROP_R) return UMBRA_DMG_IN;
+    return UMBRA_DMG_OUT;
+  }
+  function triuneHitDmg(e, slot) {
+    var st, dmg;
+    e.triune = e.triune || {};
+    st = e.triune[slot] || { n: 0, t: 0 };
+    if (time - (st.t || 0) > TRIUNE_FADE) st.n = 0;
+    st.n += 1;
+    st.t = time;
+    if (st.n >= 3) { dmg = TRIUNE_III; st.n = 0; }
+    else dmg = TRIUNE_I;
+    e.triune[slot] = st;
+    return dmg;
+  }
+  function triunePip(e, slot, n, stamp) {
+    var st;
+    if (!e) return;
+    e.triune = e.triune || {};
+    st = e.triune[slot] || { n: 0, t: 0 };
+    if (time - (st.t || 0) > TRIUNE_FADE) st.n = 0;
+    st.n = n;
+    st.t = time;
+    e.triune[slot] = st;
+    if (stamp) {
+      st.n = 0;
+      killEnemy(e, false, TRIUNE_III, slot);
     }
   }
-  function eventidePos(p, i) {
-    var a = time * 1.35 + i * 2.094395;
-    return { x: p.x + Math.cos(a) * EVENTIDE_R, y: p.y + Math.sin(a) * EVENTIDE_R };
-  }
-  function twinPos(p) {
-    if (!p) return { x: W / 2, y: 0 };
-    return { x: W - p.x, y: p.y };
-  }
-  function isTwinstar(p) { return shipDef(p).passive === "twin"; }
-  function isChrono(p) { return shipDef(p).passive === "chrono"; }
-  function isHorizon(p) { return shipDef(p).passive === "horizon"; }
-  function rememberPath(p) {
-    if (!p || !p.alive) return;
-    if (!p.pathHist) p.pathHist = [];
-    p.pathHist.push({ x: p.x, y: p.y, t: time });
-    while (p.pathHist.length && time - p.pathHist[0].t > CHRONO_REWIND + 0.35) p.pathHist.shift();
-  }
-  function pathAgo(p, ago) {
-    var i, row, want;
-    if (!p || !p.pathHist || !p.pathHist.length) return { x: p.x, y: p.y };
-    want = time - ago;
-    row = p.pathHist[0];
-    for (i = 0; i < p.pathHist.length; i++) {
-      if (p.pathHist[i].t <= want) row = p.pathHist[i];
-      else break;
+  function applyTriuneQ(who, def) {
+    var g, list, i, e, slot;
+    if (!who || !def) return;
+    g = findGun(equippedGun(who));
+    if (!g || !g.triune) return;
+    slot = who.slot;
+    if (def.id === "term-key") {
+      list = bossAbNearest(3, who.x, who.y);
+      for (i = 0; i < list.length; i++) triunePip(list[i], slot, 3, true);
+      return;
     }
-    return { x: row.x, y: row.y };
+    if (def.id !== "tess-rook" && def.id !== "tess-bishop") return;
+    for (i = 0; i < enemies.length; i++) {
+      e = enemies[i];
+      if (!e.alive) continue;
+      if (def.id === "tess-rook") {
+        if (Math.abs(e.x - who.x) > 14 && Math.abs(e.y - who.y) > 14) continue;
+      } else if (Math.abs(Math.abs(e.x - who.x) - Math.abs(e.y - who.y)) > 16) continue;
+      e.triune = e.triune || {};
+      var st = e.triune[slot] || { n: 0, t: 0 };
+      if (time - (st.t || 0) > TRIUNE_FADE) st.n = 0;
+      st.n = Math.min(2, (st.n || 0) + 1);
+      st.t = time;
+      e.triune[slot] = st;
+    }
   }
-  function horizonSlowAt(x, y) {
-    var i, p;
+  function applyDichroQ(who, id) {
+    if (!who || !isDichro(who)) return;
+    if (id === "lode-red") who.polar = 0;
+    else if (id === "lode-blue") who.polar = 1;
+    else if (id === "lode-pulsar") who.polarBothT = DICHRO_PULSAR_BOTH;
+    else who.polar = who.polar ? 0 : 1;
+    if (id !== "lode-pulsar") who.polarT = DICHRO_FLIP;
+    who.polarFlash = 0.4;
+  }
+  function antiphonLaunch(who, g, x, y) {
+    var tgt, dx, dy, len, spd = 500, face, aim, ux, uy;
+    if (!who || !g) return;
+    face = pvpFacing(who);
+    aim = axiomOnRing() ? axiomInwardAim(who) : null;
+    tgt = bossAbNearest(1, x, y);
+    tgt = tgt && tgt[0];
+    if (aim) { ux = aim.ux; uy = aim.uy; }
+    else if (tgt && tgt.alive) {
+      dx = tgt.x - x; dy = tgt.y - y;
+      len = Math.sqrt(dx * dx + dy * dy) || 1;
+      ux = dx / len; uy = dy / len;
+    } else { ux = 0; uy = face * -1; }
+    pushPbul({
+      id: allocId(),
+      x: x, y: y,
+      vx: ux * spd, vy: uy * spd,
+      dmg: g.dmg * loadoutDmgMul(shipDef(who), equippedMod(who), who) * umbraDmgMul(who, x, y),
+      r: g.r || 2, age: 0, life: 0, pierce: 0, hit: null,
+      homing: false, splash: null, gun: "antiphon", owner: who.slot,
+      ghost: netRole === "client", stolen: 1, noSteal: 1, color: "#e8c878"
+    });
+  }
+  function antiphonStealOne(who, g) {
+    var i, b, d, best = -1, bestD = ANTIPHON_STEAL_R * ANTIPHON_STEAL_R, src;
+    if (!who || !g || !g.steal) return;
+    for (i = 0; i < ebul.length; i++) {
+      b = ebul[i];
+      if (!b || b.mine || b.noSteal || b.beam || b.stolen === 1) continue;
+      if (!isFinite(b.vx) || !isFinite(b.vy)) continue;
+      d = dist2(b.x, b.y, who.x, who.y);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    if (best < 0) return;
+    src = ebul[best];
+    ebul.splice(best, 1);
+    antiphonLaunch(who, g, src.x, src.y);
+  }
+  function antiphonConvertEbul(owner, e, bag) {
+    var g;
+    if (!owner || !e) return false;
+    g = findGun(equippedGun(owner));
+    if (!g || !g.steal) return false;
+    if ((bag.n || 0) >= 6) return false;
+    if (e.mine || e.noSteal || e.beam || e.stolen === 1) return false;
+    if (!isFinite(e.vx) || !isFinite(e.vy)) return false;
+    bag.n = (bag.n || 0) + 1;
+    antiphonLaunch(owner, g, e.x, e.y);
+    return true;
+  }
+  function tickRecurveBullet(b) {
+    var own, expired, wall, fold, q, base;
+    if (!b || !b.recurve) return false;
+    own = players[b.owner];
+    expired = !!(b.life && b.age > b.life);
+    wall = b.x < 4 || b.x > W - 4 || b.y < 4;
+    fold = !b.returning && warpInFold(b.x, b.r || 2);
+    if (b.returning) return expired;
+    if (!expired && !wall && !fold) return false;
+    q = own ? currentBossAbilityId(own) : "";
+    if (!fold && !expired && wall && q === "axiom-bounce" && !b.preBounce) {
+      if (b.x < 4 && b.vx < 0) { b.x = 4; b.vx *= -1; }
+      if (b.x > W - 4 && b.vx > 0) { b.x = W - 4; b.vx *= -1; }
+      if (b.y < 4 && b.vy < 0) { b.y = 4; b.vy *= -1; }
+      b.preBounce = 1;
+      return false;
+    }
+    if (b.x < 4) b.x = 4;
+    if (b.x > W - 4) b.x = W - 4;
+    if (b.y < 4) b.y = 4;
+    b.vx = -(b.vx || 0);
+    b.vy = -(b.vy || 0);
+    base = b.outDmg || RECURVE_OUT;
+    b.dmg = RECURVE_BACK * ((b.dmg || base) / (base || RECURVE_OUT));
+    b.returning = 1;
+    b.age = 0;
+    b.life = RECURVE_LIFE;
+    return false;
+  }
+  function tickGyreEnemyShot(b) {
+    var i, p, dx, dy, ang, turned;
+    if (!b || b.paused || b.gyreBy != null) return;
     for (i = 0; i < players.length; i++) {
       p = players[i];
-      if (!p || !p.alive || !isHorizon(p)) continue;
-      if (dist2(x, y, p.x, p.y) < HORIZON_GRAV_R * HORIZON_GRAV_R) return 0.4;
+      if (!p || !p.alive || !isGyre(p)) continue;
+      dx = b.x - p.x;
+      dy = b.y - p.y;
+      if (dx * dx + dy * dy >= GYRE_R * GYRE_R) continue;
+      ang = ((b.vx || 0) * (b.y - p.y) - (b.vy || 0) * (b.x - p.x)) >= 0 ? GYRE_BEND : -GYRE_BEND;
+      turned = rotateVel(b.vx || 0, b.vy || 0, ang);
+      b.vx = turned.vx;
+      b.vy = turned.vy;
+      b.gyreBy = p.slot;
+      return;
     }
-    return 1;
+  }
+  function tryTithe(p) {
+    if (!p || !p.alive || !hasMod("tithe", p)) return false;
+    if (p.titheUsed) return false;
+    if ((p.lives || 0) <= 1) return false;
+    if (pvpS() && pvpS().roundLock) return false;
+    p.lives -= 1;
+    run.livesLost = (run.livesLost || 0) + 1;
+    p.bossAbCd = 0;
+    p.skillCd = 0;
+    p.titheUsed = true;
+    banner = { text: "TITHE", life: 0.8 };
+    syncLocalPlayer();
+    updateHud();
+    return true;
+  }
+  function fuseWarpQ(who, warpId, qDef) {
+    var i, decoy, savedX, savedY, sh, e, f, k, hx;
+    if (!who || !qDef) return;
+    switch (warpId) {
+      case "haunt":
+        decoy = null;
+        for (i = warpHaunts.length - 1; i >= 0; i--) {
+          if (warpHaunts[i].owner === who.slot && (warpHaunts[i].t || 0) > 0) decoy = warpHaunts[i];
+        }
+        savedX = who.x; savedY = who.y;
+        if (decoy) { who.x = decoy.x; who.y = decoy.y; }
+        fireBossAbilityFx(who, qDef);
+        who.x = savedX; who.y = savedY;
+        break;
+      case "shackle":
+        for (i = 0; i < warpShackles.length; i++) {
+          sh = warpShackles[i];
+          e = warpEnemyById(sh.id);
+          if (e && e.alive) killEnemy(e, false, qDef.dmg || 1, who.slot);
+        }
+        break;
+      case "stasis":
+        stasisT = STASIS_DUR;
+        fireBossAbilityFx(who, qDef);
+        break;
+      case "rampart":
+        savedX = who.x; savedY = who.y;
+        who.y = who.y - 18;
+        fireBossAbilityFx(who, qDef);
+        who.x = savedX; who.y = savedY;
+        break;
+      case "fold":
+        fireBossAbilityFx(who, qDef);
+        f = null;
+        for (i = 0; i < warpFolds.length; i++) if (warpFolds[i].owner === who.slot) f = warpFolds[i];
+        if (f) {
+          savedX = who.x; savedY = who.y;
+          who.x = f.x;
+          fireBossAbilityFx(who, qDef);
+          who.x = savedX; who.y = savedY;
+        }
+        break;
+      case "horizon":
+        fireBossAbilityFx(who, qDef);
+        savedX = who.x; savedY = who.y;
+        for (k = 0; k < 5; k++) {
+          hx = 24 + k * ((W - 48) / 4);
+          skinSplash(hx, HORIZON_Y, 16, qDef.dmg || 1, who.slot);
+        }
+        who.x = savedX; who.y = savedY;
+        break;
+      default:
+        fireBossAbilityFx(who, qDef);
+        break;
+    }
+  }
+  function tickCodexWake(p, dt) {
+    var i, seg, e, age;
+    if (!p || p.codexLaw !== "wake") {
+      if (p && p.wake) p.wake = [];
+      return;
+    }
+    if (!p.wake) p.wake = [];
+    p.wakeAcc = (p.wakeAcc || 0) + dt;
+    if (p.wakeAcc >= 0.08) {
+      p.wakeAcc = 0;
+      p.wake.push({ x: p.x, y: p.y, t: 0.8 });
+    }
+    for (i = p.wake.length - 1; i >= 0; i--) {
+      seg = p.wake[i];
+      seg.t -= dt;
+      if (seg.t <= 0) { p.wake.splice(i, 1); continue; }
+      age = 0.8 - seg.t;
+      for (e = 0; e < enemies.length; e++) {
+        if (!enemies[e].alive) continue;
+        if (dist2(enemies[e].x, enemies[e].y, seg.x, seg.y) < 100) killEnemy(enemies[e], false, 8 * dt, p.slot, "wake");
+      }
+      if (age > 0.15 && age < 0.8 && dist2(p.x, p.y, seg.x, seg.y) < (p.r || PLAYER_R) * (p.r || PLAYER_R) + 36) playerDie(p);
+    }
+  }
+  function applyRelicSteer(p, dt) {
+    var margin, band, ang, dx, dy, d;
+    if (!p || (p.freezeT || 0) > 0 || axiomOnRing()) return;
+    margin = Math.max(10, (p.r || PLAYER_R) + 4);
+    if (skinIdOf(p) === "codex" && p.codexLaw === "orbit") {
+      if (p.codexOx == null) { p.codexOx = p.x; p.codexOy = p.y; }
+      p.codexOx += 20 * dt;
+      if (p.codexOx > W - 24) p.codexOx = 24;
+      dx = p.targetX - p.codexOx;
+      dy = p.targetY - p.codexOy;
+      d = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (d > 50) {
+        p.targetX = p.codexOx + dx / d * 50;
+        p.targetY = p.codexOy + dy / d * 50;
+      }
+      return;
+    }
+    if (!isGyre(p)) return;
+    ang = gyreSpinAng(p);
+    p.targetX += Math.cos(ang) * GYRE_DRIFT * dt;
+    p.targetY += Math.sin(ang) * GYRE_DRIFT * dt;
+    p.targetX = clamp(p.targetX, margin + fightWallPad().l, W - margin - fightWallPad().r);
+    band = shipYBand(p, margin);
+    p.targetY = clamp(p.targetY, band.lo, band.hi);
   }
   function segHitsCircle(x1, y1, x2, y2, cx, cy, r) {
     var dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy, t, px, py;
@@ -2852,36 +3244,6 @@
     px = x1 + t * dx;
     py = y1 + t * dy;
     return dist2(px, py, cx, cy) < r * r;
-  }
-  function creditParadox(who, e, dmg) {
-    if (!who || !who.paradoxPending) return;
-    if (e && e.isBoss) who.paradoxBossDmg = (who.paradoxBossDmg || 0) + (dmg || 1);
-    else who.paradoxKills = (who.paradoxKills || 0) + 1;
-    if ((who.paradoxKills || 0) >= 6 || (who.paradoxBossDmg || 0) >= PARADOX_BOSS_CHUNK) resolveParadox(who, true);
-  }
-  function resolveParadox(who, saved) {
-    if (!who || !who.paradoxPending) return;
-    who.paradoxPending = false;
-    who.paradoxT = 0;
-    who.paradoxCd = 20;
-    who.paradoxKills = 0;
-    who.paradoxBossDmg = 0;
-    if (saved) {
-      banner = { text: "PARADOX", life: 0.8 };
-      rings.push({ x: who.x, y: who.y, r: 8, vr: 160, life: 0.35, color: "#ffd27a" });
-      who.invuln = Math.max(who.invuln || 0, 0.45);
-      return;
-    }
-    applyLifeLoss(who);
-  }
-  function startParadox(who) {
-    who.paradoxPending = true;
-    who.paradoxT = 3;
-    who.paradoxKills = 0;
-    who.paradoxBossDmg = 0;
-    who.invuln = Math.max(who.invuln || 0, 0.35);
-    banner = { text: "PARADOX 3", life: 0.5 };
-    rings.push({ x: who.x, y: who.y, r: 6, vr: 80, life: 0.3, color: "#c45a3a" });
   }
   function pushPbul(b) {
     if (pbul.length >= pbulCap()) return false;
@@ -2952,14 +3314,14 @@
     if (!owner || !e || !e.alive || isPvpRun()) return;
     id = skinIdOf(owner);
     if (id === "vulture-acid" && e.shieldHp > 0) e.shieldHp -= 1;
-    if (id === "frost" || (b && b.genesisPerk === "FREEZE")) {
+    if (id === "frost") {
       if (e.isBoss) {
         if (Math.random() < 0.08) e.freezeT = Math.max(e.freezeT || 0, 0.4);
       } else if (Math.random() < 0.2) {
         e.freezeT = Math.max(e.freezeT || 0, 1);
       }
     }
-    if (id === "solar" || (b && b.genesisPerk === "IGNITE")) igniteEnemy(e, 1, owner.slot);
+    if (id === "solar") igniteEnemy(e, 1, owner.slot);
     if (id === "strix-inferno") igniteEnemy(e, 2, owner.slot);
     if (id === "tempest-lightning" && Math.random() < 0.2) skinChain(e, owner);
   }
@@ -3012,11 +3374,10 @@
     }
   }
   function applySkinVolley(who, startIdx, g) {
-    var id, i, b, burst, echoItems, perk;
+    var id, i, b, burst, echoItems;
     if (!who || who.skinEchoing) return;
     id = skinIdOf(who);
-    perk = who.genesisPerk || "";
-    if ((id === "novaflux" && Math.random() < 0.16) || perk === "BURST") {
+    if (id === "novaflux" && Math.random() < 0.16) {
       burst = pbul[startIdx];
       if (burst && !burst.splash) burst.splash = { r: 26, dmg: 1.5 };
     }
@@ -3029,7 +3390,7 @@
         }
       }
     }
-    if ((id === "mythic" && Math.random() < 0.28) || perk === "ECHO") {
+    if (id === "mythic" && Math.random() < 0.28) {
       echoItems = [];
       for (i = startIdx; i < pbul.length; i++) {
         b = pbul[i];
@@ -3095,23 +3456,11 @@
     return true;
   }
   function skinDefendShot(pl, b) {
-    var id, d2, hitR, pr, i, shard, pos;
+    var id, d2, hitR, pr;
     if (!pl || !pl.alive || !b) return "none";
     id = skinIdOf(pl);
     d2 = dist2(b.x, b.y, pl.x, pl.y);
     if (id === "nebula" && (pl.skinNebulaT || 0) > 0 && d2 < 42 * 42) return "eat";
-    if (id === "eventide") {
-      for (i = 0; i < 3; i++) {
-        shard = (pl.eventide || [])[i];
-        if (!shard || (shard.t || 0) > 0) continue;
-        pos = eventidePos(pl, i);
-        if (dist2(b.x, b.y, pos.x, pos.y) < 8 * 8) {
-          shard.t = 10;
-          rings.push({ x: pos.x, y: pos.y, r: 3, vr: 70, life: 0.2, color: "#ffb060" });
-          return "eat";
-        }
-      }
-    }
     if (id === "warden-sentinel" && (pl.skinSentinelCd || 0) <= 0 && d2 < 40 * 40) {
       pl.skinSentinelCd = 5;
       rings.push({ x: b.x, y: b.y, r: 3, vr: 80, life: 0.2, color: "#a8ffe0" });
@@ -3162,35 +3511,53 @@
     }
   }
   function tickRelicShip(p, dt) {
-    var i, shard, g;
+    var def;
     if (!p || !p.alive) return;
-    if ((p.paradoxCd || 0) > 0) p.paradoxCd = Math.max(0, p.paradoxCd - dt);
-    if (p.paradoxPending) {
-      p.paradoxT = (p.paradoxT || 0) - dt;
-      if (p.paradoxT <= 0) resolveParadox(p, false);
-    }
-    if (skinIdOf(p) === "eventide") {
-      if (!p.eventide || p.eventide.length < 3) initEventide(p);
-      for (i = 0; i < 3; i++) {
-        shard = p.eventide[i];
-        if ((shard.t || 0) > 0) shard.t = Math.max(0, shard.t - dt);
+    if (!p.pathHist) p.pathHist = [];
+    p.pathHist.push({ x: p.x, y: p.y, t: time });
+    while (p.pathHist.length && time - p.pathHist[0].t > 1.2) p.pathHist.shift();
+    if ((p.polarFlash || 0) > 0) p.polarFlash = Math.max(0, p.polarFlash - dt);
+    if ((p.prismSplitT || 0) > 0) p.prismSplitT = Math.max(0, p.prismSplitT - dt);
+    if (isDichro(p)) {
+      if ((p.polarBothT || 0) > 0) p.polarBothT = Math.max(0, p.polarBothT - dt);
+      else if (!(stasisT > 0)) {
+        p.polarT = (p.polarT == null ? DICHRO_FLIP : p.polarT) - dt;
+        if (p.polarT <= 0) {
+          p.polar = p.polar ? 0 : 1;
+          p.polarT = DICHRO_FLIP;
+          p.polarFlash = 0.4;
+        }
       }
     }
-    if (skinIdOf(p) === "genesis") {
-      if (p.genesisReady) {
-        /* armed */
+    if (p.sealArmed) {
+      p.sealT = (p.sealT || 0) - dt;
+      if (p.sealT <= 0) {
+        p.sealArmed = false;
+        p.sealFizzle = true;
+        def = bossAbilityDef(currentBossAbilityId(p));
+        if (def) p.bossAbCd = def.cd * SEAL_FIZZLE_REFUND;
+      }
+    }
+    if (p.umbraLantern) {
+      p.umbraLantern.t -= dt;
+      if (p.umbraLantern.t <= 0) p.umbraLantern = null;
+    }
+    if (skinIdOf(p) === "codex") {
+      if ((p.codexT || 0) > 0) {
+        p.codexT -= dt;
+        if (p.codexT <= 0) {
+          p.codexT = 0;
+          p.codexLaw = "";
+          p.codexCd = CODEX_CD;
+        }
       } else {
-        p.genesisCd = (p.genesisCd || 0) - dt;
-        if (p.genesisCd <= 0) p.genesisReady = true;
+        p.codexCd = (p.codexCd == null ? CODEX_CD : p.codexCd) - dt;
+        if (p.codexCd <= 0) {
+          p.codexLaw = CODEX_LAWS[(Math.random() * CODEX_LAWS.length) | 0];
+          p.codexT = CODEX_LAW_T;
+        }
       }
-    }
-    g = findGun(equippedGun(p));
-    if (g && g.bell) {
-      p.bellT = (p.bellT || 0) - dt;
-      if (p.bellT <= 0) {
-        p.bellT = g.bell;
-        spawnRequiemBell(p);
-      }
+      tickCodexWake(p, dt);
     }
   }
   function tickSkinAura(p, dt) {
@@ -3269,9 +3636,9 @@
     var hull = ship.color || "#7ef9ff";
     var accent = ship.accent || "#3df0ff";
     var pal;
-    if (def.fx === "genesis") {
+    if (def.fx === "codex") {
       pal = BOSS_DEFS[Math.floor((typeof time === "number" ? time : 0) / 1.8) % BOSS_DEFS.length] || BOSS_DEFS[0];
-      return { hull: pal.color || hull, accent: pal.dark || accent, fx: "genesis", def: def };
+      return { hull: pal.color || hull, accent: pal.dark || accent, fx: "codex", def: def };
     }
     if (def.hull) {
       return { hull: def.hull, accent: def.accent || def.hull, fx: def.fx || "solid", def: def };
@@ -3447,7 +3814,7 @@
     var mid = fightMidY();
     var sand = fight.sandH || 0;
     if (isPvpRun() && p && p.slot === 1) return { lo: margin, hi: mid - margin };
-    if (fight.fallUp) return { lo: margin, hi: mid - margin };
+    if (playerFallUp(p)) return { lo: margin, hi: mid - margin };
     if (axiomOnRing() || fight.pastClose || fight.sealsNeed) return { lo: margin, hi: H - margin - sand };
     if (fight.panes && fight.panes.length) return { lo: margin, hi: H - margin - sand };
     return { lo: mid + margin, hi: H - margin - sand };
@@ -3645,10 +4012,11 @@
   function gunDps(g, ship, mod) {
     var per = g.dmg * g.shots.length;
     if (g.bolt) per += (g.boltDmg || 2) / g.bolt;
-    if (g.wallBounce) per *= 1.5;
+    if (g.triune) per = (TRIUNE_I + TRIUNE_II + TRIUNE_III) / 3;
+    if (g.steal) per += g.dmg;
+    if (g.recurve) per += RECURVE_BACK;
     per *= loadoutDmgMul(ship, mod);
-    if (g.thread) per += Math.max(0.6, (g.dmg || 1) * 0.7);
-    return per * (1000 / gunInterval(g)) * loadoutFireMul(ship, mod) + (g.bell ? 2 / g.bell : 0);
+    return per * (1000 / gunInterval(g)) * loadoutFireMul(ship, mod);
   }
   function sanitizeName(s) {
     s = String(s || "").replace(/[^\w .\-]/g, "").replace(/\s+/g, " ").trim();
@@ -3842,7 +4210,9 @@
   }
   function applyProfile(raw) {
     var prevVer = raw && typeof raw === "object" ? raw.v : 0;
+    lastRelicRemapChanged = false;
     profile = migrateProfile(raw);
+    if (lastRelicRemapChanged && (prevVer | 0) < 10) relicLawsToast = true;
     muted = profile.muted;
     best = profile.best;
     var dirty = ensurePilot();
@@ -4048,8 +4418,7 @@
       mod: spec.mod || null,
       skin: spec.skin || equippedSkinFor(spec.ship || "wisp"),
       shieldHp: p ? p.shieldHp : 0,
-      muzzle: p ? p.muzzle : 0,
-      eventideMask: p ? eventideMaskOf(p) : 7
+      muzzle: p ? p.muzzle : 0
     };
   }
   function activeWeapon(p) {
@@ -4276,6 +4645,8 @@
         padLab = bossAbilityPadLabel(baDef, player.bossAbCd || 0);
         if (padBa.textContent !== padLab) padBa.textContent = padLab;
         padBa.setAttribute("aria-label", baDef.name);
+        if (player.sealArmed) padBa.style.boxShadow = "0 0 10px #e8c878";
+        else padBa.style.boxShadow = "";
         baFrac = baDef.cd ? 1 - Math.min(1, (player.bossAbCd || 0) / baDef.cd) : 1;
         paintPadCd(padBa, baFrac);
       }
@@ -5061,9 +5432,13 @@
       resetSkinWave(players[pi]);
       if (players[pi]) {
         players[pi].bulkUsed = false;
-        players[pi].chronoUsed = false;
+        if (hasMod("tithe", players[pi]) && (run.wavesSpawned || 0) > 0 && !players[pi].titheUsed) {
+          players[pi].shieldHp = Math.max(players[pi].shieldHp || 0, TITHE_SHIELD);
+        }
+        players[pi].titheUsed = false;
       }
     }
+    run.wavesSpawned = (run.wavesSpawned || 0) + 1;
     run.maxWave = Math.max(run.maxWave, n);
     if (!run.hits) run.cleanWave = Math.max(run.cleanWave || 0, n);
     if (!run.livesLost) run.safeWave = Math.max(run.safeWave || 0, n);
@@ -5095,8 +5470,14 @@
       hp: 0, maxHp: 0, boss: spec.boss || null, abilityCd: 0, abilityCds: [0, 0, 0, 0, 0, 0], abilityGcd: 0, dash: null, rewind: null, pvpFollow: null,
       leech: 0,
       skillCd: 0, lastStandUsed: false, skillHeld: false, skillHasteT: 0, rampartT: 0, bulkUsed: false,
-      chronoUsed: false, pathHist: [], paradoxT: 0, paradoxCd: 0, paradoxPending: false, paradoxKills: 0, paradoxBossDmg: 0,
-      twinOn: false, twinX: 0, twinY: 0, eventide: [{ t: 0 }, { t: 0 }, { t: 0 }], bellT: 0, genesisReady: false, genesisCd: 0,
+      grazePips: 0, grazeSeen: {}, grazeBurst: false,
+      polar: 0, polarT: DICHRO_FLIP, polarBothT: 0, polarFlash: 0,
+      gyreBent: {},
+      sealArmed: false, sealT: 0, sealFizzle: false,
+      titheUsed: false, titheVow: false,
+      umbraLantern: null,
+      codexCd: CODEX_CD, codexLaw: "", codexT: 0,
+      pathHist: [],
       bossAbilityId: "", bossAbCd: 0, bossAbHeld: false,
       skinBoostT: 0, skinFireMul: 1, skinSpdMul: 1, skinHotT: 0, skinHotStacks: 0,
       skinWard: 0, skinBlood: 0, skinEcho: null, skinNebulaCd: 0, skinNebulaT: 0,
@@ -5205,7 +5586,6 @@
         e.phaseIdx = 1;
         banner = { text: "ARCHON ENRAGES", life: 1.05 };
       }
-      if (owner && owner.paradoxPending && e.isBoss) creditParadox(owner, e, dmg);
       return;
     }
     e.alive = false;
@@ -5219,7 +5599,6 @@
     profile.stats.killsByType[e.type] = (profile.stats.killsByType[e.type] || 0) + 1;
     if (owner && owner.alive) {
       var sid = skinIdOf(owner);
-      if (owner.paradoxPending) creditParadox(owner, e, dmg);
       if (sid === "needle-hotstreak") {
         if ((owner.skinHotT || 0) > 0) owner.skinHotStacks = Math.min(4, (owner.skinHotStacks || 0) + 1);
         else owner.skinHotStacks = 1;
@@ -5499,42 +5878,18 @@
       updateHud();
       return;
     }
-    if (isChrono(who) && !who.chronoUsed) {
-      who.chronoUsed = true;
-      tryChronoRewind(who);
-      return;
-    }
-    if (who.paradoxPending) {
-      explode(who.x, who.y, "#c45a3a", false);
-      who.invuln = Math.max(who.invuln || 0, 0.3);
-      syncQuestProgress();
-      updateHud();
-      return;
-    }
-    if (hasMod("paradox", who) && (who.paradoxCd || 0) <= 0) {
-      startParadox(who);
-      if (!isPvpRun()) ebul.length = 0;
+    if (isGoldwake(who) && (who.grazePips || 0) >= GOLDWAKE_SAVE_COST) {
+      who.grazePips -= GOLDWAKE_SAVE_COST;
+      explode(who.x, who.y, "#e8c878", false);
+      who.invuln = 0.85;
+      ebul.length = 0;
+      banner = { text: "GOLDWAKE", life: 0.7 };
+      skinAfterHit(who, "shield");
       syncQuestProgress();
       updateHud();
       return;
     }
     applyLifeLoss(who);
-  }
-
-  function tryChronoRewind(who) {
-    var past = pathAgo(who, CHRONO_REWIND);
-    var margin = Math.max(10, (who.r || PLAYER_R) + 4);
-    who.x = clamp(past.x, margin, W - margin);
-    who.targetX = who.x;
-    who.y = clamp(past.y, 16, H - 16);
-    who.targetY = who.y;
-    who.invuln = Math.max(who.invuln || 0, 0.85);
-    explode(who.x, who.y, "#e8c878", false);
-    banner = { text: "REWIND", life: 0.7 };
-    if (!isPvpRun()) ebul.length = 0;
-    skinAfterHit(who, "shield");
-    syncQuestProgress();
-    updateHud();
   }
 
   function applyLifeLoss(who) {
@@ -5669,8 +6024,15 @@
     var gem = (who.weaponT > 0 && who.weapon !== "normal") ? who.weapon : "";
     var shots = gunShots(g, gem);
     var dmg = g.dmg * loadoutDmgMul(shipDef(who), equippedMod(who), who);
-    var i, s, b, face = pvpFacing(who), y, orbitAim;
-    if (fight.fallUp && !isPvpRun()) face = -face;
+    var i, s, b, face = pvpFacing(who), y, orbitAim, spun;
+    if (g.recurve && (who.prismSplitT || 0) > 0) {
+      shots = [
+        { dx: 0, ang: 0, spd: 520 },
+        { dx: 0, ang: -0.08, spd: 520 },
+        { dx: 0, ang: 0.08, spd: 520 }
+      ];
+    }
+    if (playerFallUp(who) && !isPvpRun()) face = -face;
     y = who.y + face * -12;
     orbitAim = axiomOnRing() ? axiomInwardAim(who) : null;
     if (who.boss) {
@@ -5680,14 +6042,10 @@
     who.shotCount = (who.shotCount || 0) + 1;
     var bolt = g.bolt && who.shotCount % g.bolt === 0;
     var cap = pbulCap();
-    var twinExtra = (isTwinstar(who) && !who.twinFiring) ? shots.length + (bolt ? 1 : 0) : 0;
-    if (pbul.length + shots.length + (bolt ? 1 : 0) + twinExtra > cap) return;
-    if (skinIdOf(who) === "genesis" && who.genesisReady) {
-      who.genesisPerk = ["BURST", "FREEZE", "IGNITE", "ECHO"][(Math.random() * 4) | 0];
-      who.genesisReady = false;
-      who.genesisCd = 20;
-    } else if (skinIdOf(who) !== "genesis") {
-      who.genesisPerk = null;
+    if (pbul.length + shots.length + (bolt ? 1 : 0) > cap) return;
+    if (isGoldwake(who) && (who.grazePips || 0) >= GOLDWAKE_BURST_COST && (who.grazePips || 0) < GOLDWAKE_SAVE_COST) {
+      who.grazePips -= GOLDWAKE_BURST_COST;
+      who.grazeBurst = true;
     }
     var startIdx = pbul.length;
     var sid = skinIdOf(who);
@@ -5712,7 +6070,29 @@
         b.vx = (orbitAim.ux * Math.cos(s.ang) + (-orbitAim.uy) * Math.sin(s.ang)) * s.spd;
         b.vy = (orbitAim.uy * Math.cos(s.ang) + orbitAim.ux * Math.sin(s.ang)) * s.spd;
       }
+      if (isGyre(who)) {
+        spun = rotateVel(b.vx, b.vy, GYRE_SHOT_CURVE);
+        b.vx = spun.vx;
+        b.vy = spun.vy;
+      }
       if (umbra) b.dmg *= 1.25;
+      b.dmg *= umbraDmgMul(who, b.x, b.y);
+      if (who.grazeBurst) b.dmg *= GOLDWAKE_BURST_MUL;
+      if (g.recurve) {
+        b.dmg = RECURVE_OUT * loadoutDmgMul(shipDef(who), equippedMod(who), who);
+        if (umbra) b.dmg *= 1.25;
+        b.dmg *= umbraDmgMul(who, b.x, b.y);
+        if (who.grazeBurst) b.dmg *= GOLDWAKE_BURST_MUL;
+        b.life = RECURVE_LIFE;
+        b.returning = 0;
+        b.safe = 1;
+        b.recurve = 1;
+        b.outDmg = b.dmg;
+      }
+      if (isDichro(who)) {
+        b.polar = who.polar;
+        b.color = who.polar ? "#4d88ff" : "#ff4d4d";
+      }
       if ((who.skinBlood || 0) > 0) { b.dmg *= 2; who.skinBlood -= 1; }
       if ((who.skinCarrion || 0) > 0) { b.dmg += 1; who.skinCarrion -= 1; }
       if (sid === "needle-pinkvoid" && Math.random() < 0.12) {
@@ -5739,7 +6119,6 @@
         b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
       }
       if (g.id === "seeker") lockSeekerHome(b);
-      if (who.genesisPerk) b.genesisPerk = who.genesisPerk;
       pbul.push(b);
       if (fight.echo && !ghost) {
         fight.echoShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: b.r || 2 });
@@ -5768,146 +6147,15 @@
         fight.mimicShots.push({ t: time, x: b.x, y: b.y, vx: b.vx, vy: b.vy, r: 3 });
       }
     }
-    if (isTwinstar(who) && !who.twinFiring) fireTwinstarVolley(who, g, gem, dmg, shots, bolt, orbitAim, face, volleyId);
     applySkinVolley(who, startIdx, g);
-    if (g.thread) linkLoomPairs(who, startIdx, g);
+    antiphonStealOne(who, g);
     var cd = gunInterval(g);
     if (gem === "rapid") cd *= 0.6;
     cd /= loadoutFireMul(shipDef(who), equippedMod(who), who) * (who.skinFireMul || 1);
     who.fireCd = Math.max(0.035, cd / 1000);
     who.muzzle = 1;
-    who.genesisPerk = null;
+    who.grazeBurst = false;
     sfxShoot(who);
-  }
-
-  function linkLoomPairs(who, startIdx, g) {
-    var i, a, b, pair;
-    if (!g || !g.thread) return;
-    for (i = startIdx; i + 1 < pbul.length; i += 2) {
-      a = pbul[i];
-      b = pbul[i + 1];
-      if (!a || !b || a.owner !== who.slot || b.owner !== who.slot) continue;
-      pair = a.pairId || allocId();
-      a.pairId = pair;
-      b.pairId = pair;
-      loomThreads.push({ a: a.id, b: b.id, ax: a.x, ay: a.y, bx: b.x, by: b.y, life: g.thread, owner: who.slot, dmg: Math.max(0.6, (g.dmg || 1) * 0.7), hit: [] });
-    }
-  }
-  function fireTwinstarVolley(who, g, gem, dmg, shots, bolt, orbitAim, face, volleyId) {
-    var twin = twinPos(who), i, s, b, y, ghost;
-    ghost = netRole === "client";
-    y = twin.y + face * -12;
-    dmg = dmg * 0.6;
-    who.twinFiring = true;
-    for (i = 0; i < shots.length; i++) {
-      s = shots[i];
-      b = {
-        id: allocId(),
-        x: twin.x - s.dx, y: y,
-        vx: -Math.sin(s.ang) * s.spd, vy: face * Math.cos(s.ang) * s.spd,
-        dmg: dmg, r: g.r || 2, age: 0, life: g.life || 0,
-        pierce: g.pierce || 0, hit: g.pierce ? [] : null,
-        homing: !!g.homing, homeT: g.homeT || 0,
-        hsp: g.hsp || 0, hturn: g.hturn || 0,
-        splash: g.splash || null, gun: g.id, owner: who.slot, ghost: ghost, volleyId: volleyId, twinShot: true
-      };
-      if (g.helix) {
-        b.helix = true; b.bx = b.x; b.ha = g.helix.amp; b.hf = g.helix.freq; b.hp0 = s.ph || 0;
-      }
-      if (who.genesisPerk) b.genesisPerk = who.genesisPerk;
-      pbul.push(b);
-    }
-    who.twinFiring = false;
-  }
-  function tickLoomThreads(dt) {
-    var i, th, a, b, j, e, owner;
-    function findBul(id) {
-      var n;
-      for (n = 0; n < pbul.length; n++) if (pbul[n].id === id) return pbul[n];
-      return null;
-    }
-    for (i = loomThreads.length - 1; i >= 0; i--) {
-      th = loomThreads[i];
-      th.life -= dt;
-      a = findBul(th.a);
-      b = findBul(th.b);
-      if (a) { th.ax = a.x; th.ay = a.y; }
-      if (b) { th.bx = b.x; th.by = b.y; }
-      if (th.life <= 0 || (!a && !b)) { loomThreads.splice(i, 1); continue; }
-      owner = players[th.owner];
-      if (isPvpRun()) {
-        for (j = 0; j < players.length; j++) {
-          e = players[j];
-          if (!e || !e.alive || e.slot === th.owner) continue;
-          if (th.hit.indexOf("p" + e.slot) >= 0) continue;
-          if (segHitsCircle(th.ax, th.ay, th.bx, th.by, e.x, e.y, (e.r || PLAYER_R) + 2)) {
-            th.hit.push("p" + e.slot);
-            pvpHurt(e, th.dmg);
-          }
-        }
-        continue;
-      }
-      for (j = 0; j < enemies.length; j++) {
-        e = enemies[j];
-        if (!e.alive) continue;
-        if (th.hit.indexOf(e.id) >= 0) continue;
-        if (segHitsCircle(th.ax, th.ay, th.bx, th.by, e.x, e.y, e.r + 2)) {
-          th.hit.push(e.id);
-          killEnemy(e, false, th.dmg, th.owner, "thread");
-        }
-      }
-    }
-  }
-  function spawnRequiemBell(who) {
-    var face = pvpFacing(who);
-    relicBells.push({ x: who.x, y: who.y, r: 10, vr: 90, life: 0.45, face: face, owner: who.slot, hit: [] });
-  }
-  function tickRelicBells(dt) {
-    var i, bell, j, e, dx, dy, d, inner;
-    for (i = relicBells.length - 1; i >= 0; i--) {
-      bell = relicBells[i];
-      bell.life -= dt;
-      bell.r += bell.vr * dt;
-      inner = bell.r - 7;
-      for (j = ebul.length - 1; j >= 0; j--) {
-        e = ebul[j];
-        dx = e.x - bell.x; dy = e.y - bell.y;
-        d = Math.sqrt(dx * dx + dy * dy);
-        if (d < inner || d > bell.r + 4) continue;
-        if (bell.face < 0 && dy > 4) continue;
-        if (bell.face > 0 && dy < -4) continue;
-        explode(e.x, e.y, "#c8b8ff", false);
-        ebul.splice(j, 1);
-      }
-      if (!isPvpRun()) {
-        for (j = 0; j < enemies.length; j++) {
-          e = enemies[j];
-          if (!e.alive) continue;
-          if (bell.hit.indexOf(e.id) >= 0) continue;
-          dx = e.x - bell.x; dy = e.y - bell.y;
-          d = Math.sqrt(dx * dx + dy * dy);
-          if (d < inner - e.r || d > bell.r + e.r + 4) continue;
-          if (bell.face < 0 && dy > 6) continue;
-          if (bell.face > 0 && dy < -6) continue;
-          bell.hit.push(e.id);
-          killEnemy(e, false, 2, bell.owner, "bell");
-        }
-      } else {
-        for (j = 0; j < players.length; j++) {
-          e = players[j];
-          if (!e || !e.alive || e.slot === bell.owner) continue;
-          if (bell.hit.indexOf("p" + e.slot) >= 0) continue;
-          dx = e.x - bell.x; dy = e.y - bell.y;
-          d = Math.sqrt(dx * dx + dy * dy);
-          if (d < inner - (e.r || PLAYER_R) || d > bell.r + (e.r || PLAYER_R) + 4) continue;
-          if (bell.face < 0 && dy > 6) continue;
-          if (bell.face > 0 && dy < -6) continue;
-          bell.hit.push("p" + e.slot);
-          pvpHurt(e, 2);
-        }
-      }
-      if (bell.life <= 0) relicBells.splice(i, 1);
-    }
   }
 
   function skillCdFor(id) {
@@ -6025,10 +6273,24 @@
     }
   }
   function tryCastSkill(who) {
-    var id, predict, cd;
+    var id, predict, cd, def;
     who = who || player;
     if (!who || !who.alive || who.boss) return false;
     if (pvpS() && pvpS().roundLock) return false;
+    if (who.sealArmed) {
+      id = equippedSpecial(who);
+      cd = skillCdFor(id);
+      def = bossAbilityDef(currentBossAbilityId(who));
+      if (!cd || (who.skillCd || 0) > 0 || !def) return false;
+      who.skillCd = cd;
+      who.bossAbCd = def.cd;
+      who.sealArmed = false;
+      skillFx(who, id);
+      fuseWarpQ(who, id, def);
+      banner = { text: "FUSE", life: 0.7 };
+      updateHud();
+      return true;
+    }
     id = equippedSpecial(who);
     cd = skillCdFor(id);
     if (!cd) return false;
@@ -6512,11 +6774,12 @@
       owner = players[f.owner];
       if (f.kind === "clear" || f.kind === "shock") {
         f.r += (f.vr || 200) * dt;
-        if (f.kind === "clear") {
-          for (j = ebul.length - 1; j >= 0; j--) {
-            e = ebul[j];
-            if (dist2(e.x, e.y, f.x, f.y) < (f.r + (e.r || 2)) * (f.r + (e.r || 2))) ebul.splice(j, 1);
-          }
+        if (!f.stealBag) f.stealBag = { n: 0 };
+        for (j = ebul.length - 1; j >= 0; j--) {
+          e = ebul[j];
+          if (dist2(e.x, e.y, f.x, f.y) >= (f.r + (e.r || 2)) * (f.r + (e.r || 2))) continue;
+          if (!(owner && antiphonConvertEbul(owner, e, f.stealBag))) ebul.splice(j, 1);
+          else ebul.splice(j, 1);
         }
         dmg = f.dmg || 32;
         if (!f.hit) f.hit = [];
@@ -6573,7 +6836,7 @@
     }
   }
   function tryCastBossAbility(who, id, force) {
-    var def, predict;
+    var def;
     who = who || player;
     if (!who || !who.alive || who.boss) return false;
     if (pvpS() && pvpS().roundLock) return false;
@@ -6581,13 +6844,42 @@
     def = bossAbilityDef(id);
     if (!def) return false;
     if (!force && (who.bossAbCd || 0) > 0) return false;
-    predict = netRole === "client";
-    who.bossAbCd = def.cd * (hasMod("overclock", who) ? 0.7 : 1);
-    if (hasMod("overclock", who) && (who.skillCd || 0) > 0) who.skillCd *= 0.8;
+    if (skinIdOf(who) === "codex" && (who.codexT || 0) > 0) {
+      who.bossAbCd = def.cd;
+      who.bossAbilityId = id;
+      who.codexLaw = CODEX_LAWS[(Math.random() * CODEX_LAWS.length) | 0];
+      banner = { text: "VETO", life: 0.6 };
+      updateHud();
+      syncPvpHudChrome();
+      return true;
+    }
+    if (hasMod("sealbinder", who) && !who.sealArmed) {
+      who.sealArmed = true;
+      who.sealT = SEAL_ARM;
+      who.bossAbCd = 0;
+      who.bossAbilityId = id;
+      banner = { text: "ARM", life: 0.5 };
+      updateHud();
+      return true;
+    }
+    if (hasMod("sealbinder", who) && who.sealArmed) who.sealArmed = false;
+    if (skinIdOf(who) === "codex" && who.codexLaw === "seals" && who.codexSealFail) {
+      who.codexSealFail = false;
+      who.bossAbCd = def.cd;
+      who.bossAbilityId = id;
+      banner = { text: "FIZZLE", life: 0.6 };
+      updateHud();
+      return true;
+    }
+    who.bossAbCd = def.cd;
     who.bossAbilityId = id;
     fireBossAbilityFx(who, def);
+    applyDichroQ(who, id);
+    if (skinIdOf(who) === "umbra") who.umbraLantern = { x: who.x, y: who.y, t: UMBRA_DROP_T };
+    if (id === "prism-split" && findGun(equippedGun(who)).recurve) who.prismSplitT = 1.2;
+    if (id === "mael-maw" && isGyre(who)) skinSplash(who.x, who.y, GYRE_R, def.dmg, who.slot);
+    applyTriuneQ(who, def);
     banner = { text: def.name.toUpperCase(), life: 0.7 };
-    if (predict) return true;
     updateHud();
     syncPvpHudChrome();
     return true;
@@ -13566,9 +13858,9 @@
     if (s.passive === "leech") h += chip("PASSIVE", "Leech", 0, "special");
     if (s.passive === "nova") h += chip("PASSIVE", "Nova", 0, "special");
     if (s.passive === "eclipse") h += chip("PASSIVE", "Eclipse", 0, "special");
-    if (s.passive === "chrono") h += chip("PASSIVE", "Rewind", 0, "special");
-    if (s.passive === "twin") h += chip("PASSIVE", "Twin", 0, "special");
-    if (s.passive === "horizon") h += chip("PASSIVE", "Gravity", 0, "special");
+    if (s.passive === "graze") h += chip("GRAZE", "mag", 0, "special");
+    if (s.passive === "polar") h += chip("POLAR", "red/blue", 0, "special");
+    if (s.passive === "gyre") h += chip("GYRE", "48px", 0, "special");
     return h;
   }
   function gunChips(g, eq) {
@@ -13584,9 +13876,9 @@
     if (g.splash) h += chip("SPLASH", g.splash.dmg + " dmg", 0, "special");
     if (g.bolt) h += chip("BOLT", "every " + g.bolt + "th", 0, "special");
     if (g.helix) h += chip("WEAVE", "±" + g.helix.amp + "px", 0, "special");
-    if (g.thread) h += chip("THREAD", g.thread + "s", 0, "special");
-    if (g.bell) h += chip("BELL", "every " + g.bell + "s", 0, "special");
-    if (g.wallBounce) h += chip("BOUNCE", "once +50%", 0, "special");
+    if (g.triune) h += chip("SEAL", "I II III", 0, "special");
+    if (g.steal) h += chip("STEAL", "50px", 0, "special");
+    if (g.recurve) h += chip("RETURN", "60%", 0, "special");
     return h;
   }
   function modChips(m) {
@@ -13709,6 +14001,10 @@
     else {
       mods = [{ id: "none", name: "None", unlockLevel: 1, cost: 0, rarity: "common", desc: "No module" }].concat(MODS);
       lists.innerHTML = sectionHtml(mods, "mod");
+    }
+    if (relicLawsToast) {
+      lists.innerHTML = '<div class="cat-title">Relic hangar rewritten. Your relics are now laws. Goldwake, Dichro, Gyre, Triune, Antiphon, Recurve, Sealbinder, Tithe, Umbra, Codex.</div>' + lists.innerHTML;
+      relicLawsToast = false;
     }
   }
   function closeBosses() {
@@ -14502,6 +14798,9 @@
       p.shieldT = 0;
     }
     resetSkinWave(p);
+    p.grazePips = 0;
+    p.grazeSeen = {};
+    p.grazeBurst = false;
   }
 
   function startNewGame(opts) {
@@ -14563,8 +14862,6 @@
     pbul = []; ebul = []; particles = []; rings = []; pickups = []; teles = [];
     enemies = [];
     skinDecoys = [];
-    loomThreads = [];
-    relicBells = [];
     shake = 0; flash = 0; time = 0;
     stasisT = 0;
     resetWarpFx();
@@ -15070,10 +15367,15 @@
       targetY: p.targetY != null ? p.targetY : p.y,
       hp: p.hp || 0, maxHp: p.maxHp || 0, facing: p.facing || -1, boss: p.boss || "",
       bossAbilityId: p.bossAbilityId || "",
-      twinOn: p.twinOn ? 1 : 0,
-      twinX: p.twinX || 0,
-      twinY: p.twinY || 0,
-      eventideMask: eventideMaskOf(p)
+      sealArmed: p.sealArmed ? 1 : 0,
+      titheUsed: p.titheUsed ? 1 : 0,
+      polar: (p.polarBothT || 0) > 0 ? 2 : (p.polar || 0),
+      grazePips: p.grazePips || 0,
+      umbraX: p.umbraLantern ? p.umbraLantern.x : 0,
+      umbraY: p.umbraLantern ? p.umbraLantern.y : 0,
+      umbraT: p.umbraLantern ? p.umbraLantern.t : 0,
+      codexLaw: p.codexLaw || "",
+      codexT: p.codexT || 0
     };
   }
   function applyPlayerSnap(row) {
@@ -15117,14 +15419,17 @@
       p.loadout.boss = row.boss;
     }
     if (row.bossAbilityId != null && slot !== localSlot) p.bossAbilityId = row.bossAbilityId;
-    if (row.twinOn) {
-      p.twinOn = true;
-      if (row.twinX != null) p.twinX = row.twinX;
-      if (row.twinY != null) p.twinY = row.twinY;
-    } else if (row.twinOn === 0 || row.twinOn === false) {
-      p.twinOn = false;
+    if (row.sealArmed != null) p.sealArmed = !!row.sealArmed;
+    if (row.titheUsed != null) p.titheUsed = !!row.titheUsed;
+    if (row.polar != null) {
+      if ((row.polar | 0) === 2) { p.polarBothT = Math.max(p.polarBothT || 0, 0.2); }
+      else p.polar = row.polar | 0;
     }
-    if (row.eventideMask != null) applyEventideMask(p, row.eventideMask);
+    if (row.grazePips != null) p.grazePips = row.grazePips | 0;
+    if (row.umbraT > 0) p.umbraLantern = { x: row.umbraX || 0, y: row.umbraY || 0, t: row.umbraT };
+    else if (row.umbraT === 0) p.umbraLantern = null;
+    if (row.codexLaw != null) p.codexLaw = row.codexLaw || "";
+    if (row.codexT != null) p.codexT = row.codexT;
   }
   function fillLive(dest, src, keep) {
     var i, n = 0;
@@ -15874,14 +16179,11 @@
         }
       }
       p.targetY = clamp(p.targetY, band.lo, band.hi);
+      var relicBeforeX = p.targetX;
+      applyRelicSteer(p, dt);
+      p.x += p.targetX - relicBeforeX;
       }
       p.y += (p.targetY - p.y) * (1 - Math.exp(-STEER_FOLLOW * dt));
-    }
-    rememberPath(p);
-    p.twinOn = isTwinstar(p);
-    if (p.twinOn) {
-      p.twinX = twinPos(p).x;
-      p.twinY = twinPos(p).y;
     }
     p.fireCd = Math.max(0, p.fireCd - dt);
     p.invuln = Math.max(0, p.invuln - dt);
@@ -15981,14 +16283,18 @@
         p.targetY = p.y;
       }
     }
+    var tithed = false;
+    if (fire && inp.ability && inp.bossAb && (!p.skillHeld || !p.bossAbHeld) && !p.boss && !(pvpS() && pvpS().roundLock)) {
+      tithed = tryTithe(p);
+    }
     if (fire && inp.fire && !(pvpS() && pvpS().roundLock)) shootPlayer(p);
-    if (fire && p.boss && !(pvpS() && pvpS().roundLock)) {
+    if (!tithed && fire && p.boss && !(pvpS() && pvpS().roundLock)) {
       var abSlot = (inp.ab | 0) || (inp.ability ? 1 : 0);
       if (abSlot) pvpBossAbility(p, abSlot);
-    } else if (fire && inp.ability && !p.skillHeld && !p.boss && !(pvpS() && pvpS().roundLock)) {
+    } else if (!tithed && fire && inp.ability && !p.skillHeld && !p.boss && !(pvpS() && pvpS().roundLock)) {
       tryCastSkill(p);
     }
-    if (fire && inp.bossAb && !p.bossAbHeld && !p.boss && !(pvpS() && pvpS().roundLock)) {
+    if (!tithed && fire && inp.bossAb && !p.bossAbHeld && !p.boss && !(pvpS() && pvpS().roundLock)) {
       tryCastBossAbility(p);
     }
     p.skillHeld = !!inp.ability;
@@ -16234,7 +16540,6 @@
         if (b.boostVy != null) b.vy = b.boostVy;
         if (b.boostVx != null) b.vx = b.boostVx;
       }
-      if (b.life && b.age > b.life) { pbul.splice(i, 1); continue; }
       if (fight.on && fight.planets && fight.planets.length) applyOrreryGravity(b, dt);
       if (fight.on && fight.flow > 0) applyMaelstromVel(b, dt, 0.7);
       if (fight.pullDown) b.vy += 90 * dt;
@@ -16245,18 +16550,12 @@
         b.x += (b.vx || 0) * dt;
       }
       b.y += b.vy * dt;
-      if (b.gun === "axiomlance" && (b.lanceBounces || 0) < 1) {
-        var bouncedLance = false;
-        if (b.x < 4 && b.vx < 0) { b.x = 4; b.vx *= -1; bouncedLance = true; }
-        if (b.x > W - 4 && b.vx > 0) { b.x = W - 4; b.vx *= -1; bouncedLance = true; }
-        if (b.y < 4 && b.vy < 0) { b.y = 4; b.vy *= -1; bouncedLance = true; }
-        if (bouncedLance) {
-          b.lanceBounces = 1;
-          b.dmg = (b.dmg || 1) * 1.5;
-          b.color = "#fff4d0";
-        }
-      }
-      if (fight.bounce) {
+      if (b.recurve) {
+        if (tickRecurveBullet(b)) { pbul.splice(i, 1); continue; }
+      } else if (b.life && b.age > b.life) { pbul.splice(i, 1); continue; }
+      var ownBounce = players[b.owner];
+      var lawBounce = !!(ownBounce && ownBounce.codexLaw === "bounce");
+      if ((fight.bounce || lawBounce) && !b.recurve && !b.safe) {
         b.bounces = b.bounces || 0;
         if (b.x < 4 && b.vx < 0) { b.x = 4; b.vx *= -1; b.bounces += 1; }
         if (b.x > W - 4 && b.vx > 0) { b.x = W - 4; b.vx *= -1; b.bounces += 1; }
@@ -16293,9 +16592,12 @@
         if (dist2(b.x, b.y, e.x, e.y) < (e.r + br) * (e.r + br)) {
           var own = players[b.owner] || player;
           var pierceJug = e.type === "juggernaut" && b.pierce > 0;
+          var hitDmg = b.dmg || 1;
           skinOnBulletHit(own, e, b);
+          if (b.gun === "triune") hitDmg = triuneHitDmg(e, b.owner);
+          noteCodexSeal(own, e.id);
           if (b.freeze && !e.isBoss) e.freezeT = Math.max(e.freezeT || 0, 1.1);
-          killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", b.dmg || 1, b.owner, pierceJug ? "pierce" : undefined);
+          killEnemy(e, e.state === "dive" || e.state === "kami" || e.state === "charge" || e.state === "lunge", hitDmg, b.owner, pierceJug ? "pierce" : undefined);
           if (b.splash) {
             var sj, se;
             for (sj = 0; sj < enemies.length; sj++) {
@@ -16318,7 +16620,7 @@
           }
         }
       }
-      if (!consumed && isPvpRun() && !(pvpS() && pvpS().roundLock)) {
+      if (!consumed && !b.safe && isPvpRun() && !(pvpS() && pvpS().roundLock)) {
         for (pi = 0; pi < players.length; pi++) {
           pl = players[pi];
           if (!pl || !pl.alive || pl.slot === b.owner) continue;
@@ -16357,11 +16659,15 @@
           }
         }
       }
-      if (!consumed && fight.bounce && (b.bounces || 0) > 0) {
-        if (!(b.gun === "axiomlance" && (b.lanceBounces || 0) > 0)) {
+      if (!consumed && !b.safe && (b.bounces || 0) > 0) {
+        var ownHit = players[b.owner];
+        var globalBounce = !!fight.bounce;
+        var ownerBounce = !!(ownHit && ownHit.codexLaw === "bounce");
+        if (globalBounce || ownerBounce) {
         for (pi = 0; pi < players.length; pi++) {
           pl = players[pi];
           if (!pl || !pl.alive || pl.invuln > 0) continue;
+          if (!globalBounce && pl.slot !== ownHit.slot) continue;
           pr = pl.r || PLAYER_R;
           if (dist2(b.x, b.y, pl.x, pl.y) < (pr + br) * (pr + br)) {
             if (isPvpRun()) pvpHurt(pl, b.dmg || 1);
@@ -16422,12 +16728,12 @@
         if (fight.on && fight.flow > 0) applyMaelstromVel(b, dt, 0.55);
         if (b.accel) { b.vx *= 1 + b.accel * dt; b.vy *= 1 + b.accel * dt; }
         if (b.sway) {
-          b.bx += b.vx * dt * horizonSlowAt(b.x, b.y);
+          b.bx += b.vx * dt;
           b.x = b.bx + Math.sin(b.age * b.swayF + b.swayPh) * b.sway;
         } else {
-          b.x += b.vx * dt * horizonSlowAt(b.x, b.y);
+          b.x += b.vx * dt;
         }
-        b.y += b.vy * dt * horizonSlowAt(b.x, b.y);
+        b.y += b.vy * dt;
         if (b.pauseAt && ((b.vy > 0 && b.y >= b.pauseAt) || (b.vy < 0 && b.y <= b.pauseAt))) {
           b.paused = true; b.vx = 0; b.vy = 0; b.y = b.pauseAt;
           b.pauseAt = 0;
@@ -16480,6 +16786,7 @@
         if (b.y > H - 4 && b.vy > 0) { b.y = H - 4; b.vy *= -1; b.bounces = (b.bounces || 0) + 1; }
         if ((b.bounces || 0) > (b.bounceMax || 3)) { ebul.splice(i, 1); continue; }
       } else if (b.y > H + 14 || b.x < -16 || b.x > W + 16 || b.y < -20) { ebul.splice(i, 1); continue; }
+      if (!b.paused) tickGyreEnemyShot(b);
       if (warpConsumeShot(b)) { ebul.splice(i, 1); continue; }
       var hit = false, gone = false;
       for (pi = 0; pi < players.length; pi++) {
@@ -16500,8 +16807,8 @@
         }
         if (pl.invuln > 0) continue;
         pr = pl.r || PLAYER_R;
+        gd = dist2(b.x, b.y, pl.x, pl.y);
         if (fight.grazeHeal) {
-          gd = dist2(b.x, b.y, pl.x, pl.y);
           if (gd > (pr + (b.r || 2)) * (pr + (b.r || 2)) && gd < (pr + 12) * (pr + 12)) {
             pl.grazeAcc = (pl.grazeAcc || 0) + dt;
             if (pl.grazeAcc >= 0.35 && (pl.grazeLock || 0) <= 0) {
@@ -16517,22 +16824,34 @@
               sfxArmor();
             }
           }
+        } else if (pl.codexLaw === "grazeHeal" && gd > (pr + (b.r || 2)) * (pr + (b.r || 2)) && gd < (pr + 12) * (pr + 12)) {
+          pl.grazeAcc = (pl.grazeAcc || 0) + dt;
+          if (pl.grazeAcc >= 0.35) fillCodexGraze(pl);
         }
-        if (dist2(b.x, b.y, pl.x, pl.y) < (pr + (b.r || 2) - 1.5) * (pr + (b.r || 2) - 1.5)) {
-          if (b.polar != null && fight.type === "lodestar" && (b.polar | 0) === (fight.polar | 0)) continue;
+        var hitR = pr + (b.r || 2) - 1.5;
+        if (isDichro(pl) && !(pl.polarBothT > 0) && b.polar != null && (b.polar | 0) !== (pl.polar | 0)) hitR = pr + (b.r || 2);
+        if (gd < hitR * hitR) {
+          if (b.polar != null && fight.type === "lodestar" && (b.polar | 0) === (fight.polar | 0)) {
+            noteGoldwakeGraze(pl, b);
+            continue;
+          }
+          if (isDichro(pl)) {
+            if ((pl.polarBothT || 0) > 0 || (b.polar != null && (b.polar | 0) === (pl.polar | 0))) {
+              noteGoldwakeGraze(pl, b);
+              continue;
+            }
+          }
           ebul.splice(i, 1);
           if (isPvpRun()) pvpHurt(pl, 8);
           else playerDie(pl);
           hit = true;
           break;
         }
+        if (gd < (pr + GOLDWAKE_GRAZE_MAX) * (pr + GOLDWAKE_GRAZE_MAX)) noteGoldwakeGraze(pl, b);
       }
       if (gone) continue;
       if (hit) break;
     }
-
-    tickLoomThreads(dt);
-    tickRelicBells(dt);
 
     dt = wallDt;
     for (i = particles.length - 1; i >= 0; i--) {
@@ -16720,9 +17039,9 @@
     tempest: [[0, -14], [4, -8], [11, -2], [7, 3], [9, 9], [2, 6], [0, 9], [-2, 6], [-9, 9], [-7, 3], [-11, -2], [-4, -8]],
     warden: [[0, -11], [8, -8], [12, 0], [12, 8], [6, 6], [0, 10], [-6, 6], [-12, 8], [-12, 0], [-8, -8]],
     eclipse: [[0, -15], [3, -9], [10, -4], [12, 4], [6, 4], [4, 10], [0, 7], [-4, 10], [-6, 4], [-12, 4], [-10, -4], [-3, -9]],
-    chronoweaver: [[0, -14], [5, -6], [7, 0], [5, 6], [0, 14], [-5, 6], [-7, 0], [-5, -6]],
-    twinstar: [[0, -13], [4, -4], [11, 0], [4, 4], [0, 10], [-4, 4], [-11, 0], [-4, -4]],
-    eventhorizon: [[0, -9], [5, -3], [6, 3], [3, 7], [0, 8], [-3, 7], [-6, 3], [-5, -3]]
+    goldwake: [[0, -14], [5, -6], [7, 0], [5, 6], [0, 14], [-5, 6], [-7, 0], [-5, -6]],
+    dichro: [[0, -13], [4, -4], [11, 0], [4, 4], [0, 10], [-4, 4], [-11, 0], [-4, -4]],
+    gyre: [[0, -9], [5, -3], [6, 3], [3, 7], [0, 8], [-3, 7], [-6, 3], [-5, -3]]
   };
   // Legendary coin skins (and a few shared forms) may replace the visual hull only.
   // Collision still uses SHIPS[].r — never these polygons.
@@ -16753,8 +17072,7 @@
     if (fx === "solar") return scalePoly(base, 1.05, 1.04);
     if (fx === "novaflux") return scalePoly(base, 1.05, 1.05);
     if (fx === "void") return scalePoly(base, 1.03, 1.03);
-    if (fx === "eventide") return scalePoly(base, 1.04, 1.04);
-    if (fx === "genesis") return scalePoly(base, 1.08, 1.06);
+    if (fx === "codex") return scalePoly(base, 1.08, 1.06);
     return base;
   }
   function skinGlowAmt(fx) {
@@ -16846,16 +17164,16 @@
       context.beginPath(); context.arc(0, 0, 3.6, 0, Math.PI * 2); context.fill();
       context.strokeStyle = accent; context.lineWidth = 1;
       context.beginPath(); context.arc(0, 0, 4.2, 0, Math.PI * 2); context.stroke();
-    } else if (shipId === "chronoweaver") {
+    } else if (shipId === "goldwake") {
       context.strokeStyle = accent; context.lineWidth = 1.2;
       context.beginPath(); context.moveTo(-4, -6); context.lineTo(4, 6); context.moveTo(4, -6); context.lineTo(-4, 6); context.stroke();
       context.fillStyle = accent;
       context.beginPath(); context.arc(0, 0, 1.6, 0, Math.PI * 2); context.fill();
-    } else if (shipId === "twinstar") {
+    } else if (shipId === "dichro") {
       context.fillStyle = accent;
       context.beginPath(); context.moveTo(-6, 0); context.lineTo(-3, -2.4); context.lineTo(-3, 2.4); context.closePath(); context.fill();
       context.beginPath(); context.moveTo(6, 0); context.lineTo(3, -2.4); context.lineTo(3, 2.4); context.closePath(); context.fill();
-    } else if (shipId === "eventhorizon") {
+    } else if (shipId === "gyre") {
       context.strokeStyle = accent; context.lineWidth = 1.1;
       context.globalAlpha = 0.7 + 0.25 * Math.sin(flash * 4);
       context.beginPath(); context.arc(0, 0, 6.5, 0, Math.PI * 2); context.stroke();
@@ -16903,16 +17221,16 @@
       context.beginPath(); context.moveTo(0, -18); context.lineTo(4, -9); context.lineTo(-4, -9); context.closePath(); context.fill();
       context.fillStyle = "#ffffff";
       context.beginPath(); context.moveTo(0, -15); context.lineTo(1.6, -11); context.lineTo(-1.6, -11); context.closePath(); context.fill();
-    } else if (gunId === "loomthread") {
+    } else if (gunId === "triune") {
       context.fillRect(-7.2, -10, 1.8, 7);
       context.fillRect(5.4, -10, 1.8, 7);
       context.fillStyle = "#e8c878";
       context.fillRect(-6.8, -11, 1, 2);
       context.fillRect(5.8, -11, 1, 2);
-    } else if (gunId === "requiem") {
+    } else if (gunId === "antiphon") {
       context.beginPath(); context.arc(0, -11, 3.2, Math.PI, 0); context.fill();
       context.fillRect(-1.1, -11, 2.2, 5);
-    } else if (gunId === "axiomlance") {
+    } else if (gunId === "recurve") {
       context.fillRect(-1.4, -20, 2.8, 12);
       context.fillStyle = "#fff4d0";
       context.fillRect(-0.7, -19, 1.4, 4);
@@ -16936,39 +17254,96 @@
     } else if (gunId === "helix") {
       context.arc(-3, -16, 2 + muzzle, 0, Math.PI * 2);
       context.arc(3, -16, 2 + muzzle, 0, Math.PI * 2);
-    } else if (gunId === "loomthread") {
+    } else if (gunId === "triune") {
       context.arc(-6, -13, 2.2 + muzzle * 1.4, 0, Math.PI * 2);
       context.arc(6, -13, 2.2 + muzzle * 1.4, 0, Math.PI * 2);
     } else {
-      context.arc(0, gunId === "lance" || gunId === "railgun" || gunId === "prism" || gunId === "axiomlance" ? -19 : -13, 3.2 + muzzle * 2, 0, Math.PI * 2);
+      context.arc(0, gunId === "lance" || gunId === "railgun" || gunId === "prism" || gunId === "recurve" ? -19 : -13, 3.2 + muzzle * 2, 0, Math.PI * 2);
     }
     context.fill();
     context.globalAlpha = 1;
   }
-  function drawEventideShards(context, mask) {
-    var i, a, x, y;
-    if (mask == null) mask = 7;
-    for (i = 0; i < 3; i++) {
-      if (!(mask & (1 << i))) continue;
-      a = time * 1.35 + i * 2.094395;
-      x = Math.cos(a) * EVENTIDE_R;
-      y = Math.sin(a) * EVENTIDE_R;
-      context.save();
-      context.globalAlpha = 0.85;
-      glow(context, "#ffb060", 8);
-      context.fillStyle = "#ffd27a";
-      context.beginPath();
-      context.arc(x, y, 2.4, 0, Math.PI * 2);
-      context.fill();
-      context.fillStyle = "#fff4d0";
-      context.beginPath();
-      context.arc(x, y, 1.1, 0, Math.PI * 2);
-      context.fill();
-      noGlow(context);
-      context.restore();
+  function drawRelicWorld(ctx, p) {
+    var i, ang, hi;
+    if (!p) return;
+    if (shipDef(p).rarity === "relic" || findGun(equippedGun(p)).rarity === "relic" || (findMod(equippedMod(p)) && findMod(equippedMod(p)).rarity === "relic") || (skinDefOf(p) && skinDefOf(p).rarity === "relic")) {
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = "#e8c878";
+      ctx.fillRect(p.x - 1.2, p.y - (p.r || 8) - 4, 2.4, 2.4);
+      ctx.restore();
+    }
+    if (isGoldwake(p) && p.pathHist && p.pathHist.length) {
+      ctx.save();
+      ctx.strokeStyle = "#e8c878";
+      ctx.lineWidth = 1.4;
+      ctx.globalAlpha = 0.4 + (p.grazePips || 0) / 8;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      for (hi = p.pathHist.length - 1; hi >= 0; hi--) ctx.lineTo(p.pathHist[hi].x, p.pathHist[hi].y);
+      ctx.stroke();
+      ctx.fillStyle = "#c8a050";
+      for (i = 0; i < (p.grazePips || 0); i++) {
+        ctx.globalAlpha = 0.7;
+        ctx.fillRect(p.x - 8 + i * 2.2, p.y + (p.r || 8) + 3, 1.4, 3);
+      }
+      ctx.restore();
+    }
+    if (isGyre(p)) {
+      ang = gyreSpinAng(p);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(ang);
+      ctx.strokeStyle = "#7ef9ff";
+      ctx.globalAlpha = 0.55;
+      ctx.beginPath();
+      ctx.arc(0, 0, GYRE_R, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if (findGun(equippedGun(p)).triune) {
+      ctx.save();
+      ctx.fillStyle = "#e8c878";
+      ctx.font = "8px ui-sans-serif, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("III", p.x, p.y - (p.r || 8) - 6);
+      ctx.restore();
+    }
+    if (skinIdOf(p) === "codex" && p.codexLaw) {
+      ctx.save();
+      ctx.fillStyle = "rgba(8,8,16,0.72)";
+      ctx.fillRect(p.x - 28, p.y - (p.r || 8) - 16, 56, 12);
+      ctx.fillStyle = "#e8c878";
+      ctx.font = "7px ui-sans-serif, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(String(p.codexLaw).toUpperCase(), p.x, p.y - (p.r || 8) - 7);
+      ctx.restore();
+    }
+    if (hasMod("tithe", p)) {
+      ctx.save();
+      ctx.strokeStyle = "#e8c878";
+      ctx.globalAlpha = (!p.titheUsed && (p.lives || 0) > 1) ? 0.9 : 0.35;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y + 6, 2.2, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
     }
   }
-
+  function umbraBulletLit(b) {
+    var local, lamp, i, h;
+    local = players[localSlot];
+    if (!local || !local.alive || skinIdOf(local) !== "umbra") return 1;
+    if (horizonT > 0 && Math.abs(b.y - HORIZON_Y) < 16) return 1;
+    if (dist2(b.x, b.y, local.x, local.y) <= UMBRA_LAMP_R * UMBRA_LAMP_R) return 1;
+    lamp = local.umbraLantern;
+    if (lamp && (lamp.t || 0) > 0 && dist2(b.x, b.y, lamp.x, lamp.y) <= UMBRA_DROP_R * UMBRA_DROP_R) return 1;
+    for (i = 0; i < warpHaunts.length; i++) {
+      h = warpHaunts[i];
+      if (h.owner !== local.slot || (h.t || 0) <= 0) continue;
+      if (dist2(b.x, b.y, h.x, h.y) <= UMBRA_HAUNT_R * UMBRA_HAUNT_R) return 1;
+    }
+    return 0;
+  }
   function drawShip(context, x, y, blink, loadout) {
     loadout = loadout || currentLoadout();
     if (blink && Math.floor(time * 12) % 2 === 0) return;
@@ -17018,7 +17393,6 @@
     drawCanopy(context, fx, accent);
     if (!altHull) drawShipDetail(context, shipId, hull, accent, time);
     drawSkinFx(context, fx, hull, accent, pts);
-    if (fx === "eventide") drawEventideShards(context, loadout && loadout.eventideMask);
     drawGunBarrels(context, gunId, hull);
     if (muzzle > 0.15) drawMuzzle(context, gunId, muzzle);
     drawModFxFront(context, modId, hull, def);
@@ -17745,14 +18119,14 @@
       context.lineTo(-3, -9);
       context.closePath();
       context.stroke();
-    } else if (modId === "overclock") {
+    } else if (modId === "sealbinder") {
       context.strokeStyle = "#ffd27a";
       context.globalAlpha = 0.45 + 0.3 * Math.sin(time * 10);
       context.lineWidth = 1.2;
       context.beginPath();
       context.arc(0, 1, 5.2, time, time + 4.2);
       context.stroke();
-    } else if (modId === "paradox") {
+    } else if (modId === "tithe") {
       context.strokeStyle = "#c45a3a";
       context.globalAlpha = 0.4 + 0.25 * Math.sin(time * 5);
       context.lineWidth = 1.3;
@@ -18713,7 +19087,7 @@
         ctx.arc(b.x, b.y, 1.8, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        var pierceCol = b.gun === "prism" ? "#e0c8ff" : b.gun === "railgun" ? "#c8f0ff" : b.gun === "axiomlance" ? "#fff4d0" : "#ffe08a";
+        var pierceCol = b.gun === "prism" ? "#e0c8ff" : b.gun === "railgun" ? "#c8f0ff" : b.gun === "recurve" ? "#fff4d0" : "#ffe08a";
         glow(ctx, b.pierce ? pierceCol : b.helix ? "#b6ff4d" : "#7ef9ff", 10);
         ctx.strokeStyle = b.pierce ? (b.gun === "prism" ? "#f8f0ff" : "#fff4c8") : b.helix ? "#eaffd0" : "#e8ffff";
         ctx.lineWidth = b.pierce ? (b.gun === "railgun" ? 3.2 : 2.6) : 2;
@@ -18726,35 +19100,10 @@
     noGlow(ctx);
     ctx.restore();
 
-    for (i = 0; i < loomThreads.length; i++) {
-      p = loomThreads[i];
-      ctx.save();
-      ctx.globalAlpha = Math.max(0.2, Math.min(0.85, p.life / 0.4));
-      glow(ctx, "#e8c878", 8);
-      ctx.strokeStyle = "#ffe08a";
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(p.ax, p.ay);
-      ctx.lineTo(p.bx, p.by);
-      ctx.stroke();
-      noGlow(ctx);
-      ctx.restore();
-    }
-    for (i = 0; i < relicBells.length; i++) {
-      p = relicBells[i];
-      ctx.save();
-      ctx.globalAlpha = Math.max(0.2, p.life / 0.45);
-      ctx.strokeStyle = "#d0c8e8";
-      ctx.lineWidth = 2.2;
-      ctx.beginPath();
-      if (p.face < 0) ctx.arc(p.x, p.y, p.r, Math.PI, 0);
-      else ctx.arc(p.x, p.y, p.r, 0, Math.PI);
-      ctx.stroke();
-      ctx.restore();
-    }
-
     for (i = 0; i < ebul.length; i++) {
       b = ebul[i];
+      ctx.save();
+      if (!umbraBulletLit(b)) ctx.globalAlpha = UMBRA_OUTSIDE_A;
       if (b.polar != null) {
         glow(ctx, b.color || lodestarColor(b.polar), 12);
         ctx.fillStyle = b.color || lodestarColor(b.polar);
@@ -18766,6 +19115,7 @@
         ctx.arc(b.x, b.y, 1.15, 0, Math.PI * 2);
         ctx.fill();
         noGlow(ctx);
+        ctx.restore();
         continue;
       }
       glow(ctx, (b.glintT > 0) ? FIGHT_WHITE : (b.glow || "#ff6b9a"), b.mine ? 12 : 8);
@@ -18773,7 +19123,13 @@
       ctx.beginPath();
       ctx.arc(b.x, b.y, b.r || 2.3, 0, Math.PI * 2);
       ctx.fill();
+      if (umbraBulletLit(b) && players[localSlot] && skinIdOf(players[localSlot]) === "umbra") {
+        ctx.strokeStyle = "#e8c878";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
       noGlow(ctx);
+      ctx.restore();
     }
 
     drawWarpFx(ctx);
@@ -18848,7 +19204,7 @@
         ctx.translate(p.x, p.y);
         ctx.rotate(Math.atan2((fight.orbitCy || AXIOM_CY) - p.y, (fight.orbitCx || AXIOM_CX) - p.x) + Math.PI / 2);
         ctx.translate(-p.x, -p.y);
-      } else if (p.facing > 0 || (fight.fallUp && !isPvpRun())) {
+      } else if (p.facing > 0 || (playerFallUp(p) && !isPvpRun())) {
         ctx.translate(p.x, p.y);
         ctx.scale(1, -1);
         ctx.translate(-p.x, -p.y);
@@ -18862,69 +19218,7 @@
         drawShip(ctx, p.x, p.y, p.invuln > 0, currentLoadout(p));
       }
       ctx.restore();
-      if (p.twinOn) {
-        ctx.save();
-        if (p.facing > 0 || (fight.fallUp && !isPvpRun())) {
-          ctx.translate(p.twinX, p.twinY);
-          ctx.scale(1, -1);
-          ctx.translate(-p.twinX, -p.twinY);
-        }
-        if (fight.on && fight.type === "lodestar") {
-          var savedPolar = fight.polar;
-          fight.polar = !fight.polar;
-          drawShip(ctx, p.twinX, p.twinY, false, currentLoadout(p));
-          fight.polar = savedPolar;
-        } else {
-          ctx.globalAlpha = 0.92;
-          drawShip(ctx, p.twinX, p.twinY, false, currentLoadout(p));
-        }
-        ctx.restore();
-      }
-      if (isChrono(p) && !p.chronoUsed && p.pathHist && p.pathHist.length) {
-        var past = pathAgo(p, CHRONO_REWIND), hi;
-        ctx.save();
-        ctx.strokeStyle = "#e8c878";
-        ctx.lineWidth = 1.4;
-        ctx.globalAlpha = 0.35;
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        for (hi = p.pathHist.length - 1; hi >= 0; hi--) {
-          if (time - p.pathHist[hi].t > CHRONO_REWIND) break;
-          ctx.lineTo(p.pathHist[hi].x, p.pathHist[hi].y);
-        }
-        ctx.stroke();
-        ctx.globalAlpha = 0.45 + 0.2 * Math.sin(time * 6);
-        ctx.fillStyle = "#c8a050";
-        ctx.beginPath();
-        ctx.arc(past.x, past.y, 3.2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-      if (isHorizon(p)) {
-        ctx.save();
-        ctx.globalAlpha = 0.18 + 0.08 * Math.sin(time * 3);
-        ctx.strokeStyle = "#d8c090";
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, HORIZON_GRAV_R, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-      }
-      if (p.paradoxPending) {
-        var pfrac = Math.max(0, Math.min(1, (p.paradoxT || 0) / 3));
-        ctx.save();
-        ctx.strokeStyle = "#c45a3a";
-        ctx.lineWidth = 2.4;
-        ctx.globalAlpha = 0.9;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 15, -Math.PI / 2, -Math.PI / 2 + pfrac * Math.PI * 2);
-        ctx.stroke();
-        ctx.globalAlpha = 0.25;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 15, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-      }
+      drawRelicWorld(ctx, p);
       if (axiomOnRing()) {
         ctx.save();
         ctx.strokeStyle = FIGHT_CYAN;
@@ -20118,6 +20412,12 @@
       migrateWarpOwnedList: migrateWarpOwnedList,
       migrateWarpEquipped: migrateWarpEquipped,
       migrateProfile: migrateProfile,
+      remapRelicIds: remapRelicIds,
+      tryTithe: tryTithe,
+      fuseWarpQ: fuseWarpQ,
+      playerFallUp: playerFallUp,
+      rewardIsRelic: rewardIsRelic,
+      scaleReward: scaleReward,
       profileLoadoutSpec: profileLoadoutSpec,
       loadoutLives: loadoutLives,
       loadoutFireMul: loadoutFireMul,

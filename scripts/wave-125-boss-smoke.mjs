@@ -57,12 +57,12 @@ assert(galaga.indexOf("THE WHEELS TURN") >= 0 && galaga.indexOf("ALIGNMENT") >= 
 });
 
 assert(codec.indexOf('"hourglass", "lanternmoth", "lodestar", "lernaean", "orrery"') >= 0, "netcodec boss ids");
-assert(/var VER = 13;/.test(codec), "codec VER 13");
+assert(/var VER = 14;/.test(codec), "codec VER 13");
 assert(codec.indexOf('"sand"') >= 0 && codec.indexOf('"lantern"') >= 0 && codec.indexOf('"polar"') >= 0, "new bx kinds");
 assert(codec.indexOf('"head"') >= 0 && codec.indexOf('"stump"') >= 0 && codec.indexOf('"planet"') >= 0, "head/stump/planet kinds");
 
 assert(pvp.indexOf("hourglass:") >= 0 && pvp.indexOf("orrery:") >= 0 && pvp.indexOf("lernaean:") >= 0, "pvp kits");
-assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
+assert(sw.indexOf("galaga-coop-v79") >= 0, "PWA cache bump");
 assert(roster.indexOf("hourglass") >= 0 && roster.indexOf("lernaean") >= 0, "roster docs");
 assert(post.indexOf("Hourglass — wave 105") >= 0 && post.indexOf("Orrery — wave 125") >= 0, "post-55 kits");
 

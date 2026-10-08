@@ -1,6 +1,6 @@
 (function () {
   var MAGIC = 0x47;
-  var VER = 13;
+  var VER = 14;
   var TYPE_SNAP = 1;
   var TYPE_INPUT = 2;
   var textEnc = new TextEncoder();
@@ -23,17 +23,17 @@
   var GUN_IDS = [
     "pulse", "twin", "rapid", "spread", "lance", "seeker", "scatter",
     "railgun", "volley", "helix", "storm", "novacannon", "prism",
-    "loomthread", "requiem", "axiomlance"
+    "triune", "antiphon", "recurve"
   ];
   var SHIP_IDS = [
     "wisp", "needle", "aegis", "broadwing", "phantom", "vulture",
     "bastion", "strix", "nova", "tempest", "warden", "eclipse",
-    "chronoweaver", "twinstar", "eventhorizon"
+    "goldwake", "dichro", "gyre"
   ];
   var MOD_IDS = [
     "", "barrier", "magnet", "fortune", "overdrive", "reactor",
     "afterburner", "salvage", "guardian", "berserk", "ascension",
-    "overclock", "paradox"
+    "sealbinder", "tithe"
   ];
   var SKIN_IDS = [
     "stock", "ion", "ember", "void", "gilded", "prism", "novaflux", "frost", "solar", "nebula", "mythic",
@@ -49,8 +49,9 @@
     "tempest-cyclone", "tempest-lightning",
     "warden-jade", "warden-sentinel",
     "eclipse-umbra", "eclipse-corona",
-    "eventide", "genesis"
+    "umbra", "codex"
   ];
+  var CODEX_LAWS = ["fallUp", "bounce", "grazeHeal", "orbit", "wake", "seals"];
   var PICKUP_KINDS = ["spread", "double", "rapid", "shield", "speed", "life", "heal", "coin", "revive", "xpboost"];
   var TELE_KINDS = ["line", "vline", "hline", "ring", "glow", "flash", "zone", "wave"];
   var BX_KINDS = ["thread", "knot", "tile", "ghost", "midline", "keystone", "wall", "pylon", "sat", "ring", "pawn", "beam", "sand", "glass", "lantern", "cone", "polar", "head", "stump", "planet", "prism", "ray", "flow", "pane", "pin", "rule", "orbit", "arc", "wake", "pocket", "seal"];
@@ -288,7 +289,7 @@
   }
 
   function writePb(w, b) {
-    var flags = (b.homing ? 1 : 0) | (b.bolt ? 2 : 0) | (b.splash ? 4 : 0) | (b.helix ? 8 : 0) | (b.bossAb ? 16 : 0);
+    var flags = (b.homing ? 1 : 0) | (b.bolt ? 2 : 0) | (b.splash ? 4 : 0) | (b.helix ? 8 : 0) | (b.bossAb ? 16 : 0) | (b.returning ? 32 : 0) | (b.stolen ? 64 : 0);
     w.u16(b.id || 0);
     w.coord(b.x);
     w.coord(b.y);
@@ -314,6 +315,8 @@
     b.splash = (flags & 4) ? { r: 34, dmg: 2 } : null;
     b.helix = !!(flags & 8);
     b.bossAb = !!(flags & 16);
+    b.returning = !!(flags & 32);
+    b.stolen = !!(flags & 64);
     b.owner = r.u8r();
     if (b.bossAb) b.color = r.rgb();
     return b;
@@ -439,14 +442,37 @@
     w.u8w((p.boss || lo.boss) ? idxOf(ENEMY_TYPES, p.boss || lo.boss) : 255);
     w.u8frac(p.freezeT, 10);
     w.u8w(idxOf(BOSS_ABILITY_IDS, p.bossAbilityId || ""));
-    w.u8w(p.twinOn ? 1 : 0);
-    w.coord(p.twinX);
-    w.coord(p.twinY);
-    w.u8w(p.eventideMask || 0);
+    w.u8w(relicFlags(p));
+    w.u8w(Math.max(0, Math.min(8, p.grazePips | 0)));
+    w.coord(lanternCoord(p, "x"));
+    w.coord(lanternCoord(p, "y"));
+    w.u8frac(lanternT(p), 10);
+    w.u8w(lawIndex(p.codexLaw));
+    w.u8frac(p.codexT, 10);
   }
 
+  function relicFlags(p) {
+    var polar = (p.polar | 0) & 3;
+    if ((p.polarBothT || 0) > 0) polar = 2;
+    return (p.sealArmed ? 1 : 0) | (p.titheUsed ? 2 : 0) | (polar << 2);
+  }
+  function lanternT(p) {
+    if (p.umbraLantern && (p.umbraLantern.t || 0) > 0) return p.umbraLantern.t;
+    return (p.umbraT || 0) > 0 ? p.umbraT : 0;
+  }
+  function lanternCoord(p, axis) {
+    if (!(lanternT(p) > 0)) return 0;
+    if (p.umbraLantern && (p.umbraLantern.t || 0) > 0) return p.umbraLantern[axis] || 0;
+    return axis === "x" ? (p.umbraX || 0) : (p.umbraY || 0);
+  }
+  function lawIndex(name) {
+    var i;
+    if (!name) return 0;
+    for (i = 0; i < CODEX_LAWS.length; i++) if (CODEX_LAWS[i] === name) return i + 1;
+    return 0;
+  }
   function readPl(r) {
-    var bi;
+    var bi, flags, law;
     var p = {
       slot: r.u8r(),
       x: r.coord(),
@@ -476,10 +502,18 @@
     p.boss = bi === 255 ? "" : (ENEMY_TYPES[bi] || "");
     p.freezeT = r.u8frac(10);
     p.bossAbilityId = BOSS_ABILITY_IDS[r.u8r()] || "";
-    p.twinOn = !!r.u8r();
-    p.twinX = r.coord();
-    p.twinY = r.coord();
-    p.eventideMask = r.u8r();
+    flags = r.u8r();
+    p.sealArmed = !!(flags & 1);
+    p.titheUsed = !!(flags & 2);
+    p.polar = (flags >> 2) & 3;
+    p.grazePips = r.u8r();
+    p.umbraX = r.coord();
+    p.umbraY = r.coord();
+    p.umbraT = r.u8frac(10);
+    p.umbraLantern = p.umbraT > 0 ? { x: p.umbraX, y: p.umbraY, t: p.umbraT } : null;
+    law = r.u8r();
+    p.codexLaw = law >= 1 && law <= CODEX_LAWS.length ? CODEX_LAWS[law - 1] : "";
+    p.codexT = r.u8frac(10);
     if (!p.mod) p.mod = null;
     if (!p.skin) p.skin = "stock";
     return p;
@@ -715,18 +749,24 @@
     buf = encodeSnap(5, s);
     out = decode(buf);
     if (!(out && out.s.pl[0].bossAbilityId === "seraph-fan" && out.s.pb[0].bossAb && out.s.pb[0].color === "#e8f6ff")) return false;
-    s.pl[0].ship = "twinstar";
-    s.pl[0].gun = "loomthread";
-    s.pl[0].mod = "overclock";
-    s.pl[0].skin = "eventide";
-    s.pl[0].twinOn = 1;
-    s.pl[0].twinX = 200;
-    s.pl[0].twinY = 326;
-    s.pl[0].eventideMask = 5;
+    s.pl[0].ship = "goldwake";
+    s.pl[0].gun = "triune";
+    s.pl[0].mod = "sealbinder";
+    s.pl[0].skin = "umbra";
+    s.pl[0].grazePips = 5;
+    s.pl[0].polar = 1;
+    s.pl[0].sealArmed = 1;
+    s.pl[0].umbraX = 200;
+    s.pl[0].umbraY = 120;
+    s.pl[0].umbraT = 4;
+    s.pl[0].codexLaw = "grazeHeal";
+    s.pl[0].codexT = 3;
+    s.pb[0].returning = 1;
+    s.pb[0].stolen = 1;
     buf = encodeSnap(6, s);
     out = decode(buf);
     p = out && out.s.pl[0];
-    return !!(p && p.ship === "twinstar" && p.gun === "loomthread" && p.mod === "overclock" && p.skin === "eventide" && p.twinOn && p.twinX === 200 && p.eventideMask === 5);
+    return !!(p && p.ship === "goldwake" && p.gun === "triune" && p.mod === "sealbinder" && p.skin === "umbra" && p.grazePips === 5 && p.polar === 1 && p.sealArmed && p.umbraX === 200 && p.codexLaw === "grazeHeal" && out.s.pb[0].returning && out.s.pb[0].stolen);
   }
 
   window.__netcodec = {

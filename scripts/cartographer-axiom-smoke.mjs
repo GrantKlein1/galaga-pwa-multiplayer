@@ -29,7 +29,7 @@ assert(galaga.indexOf("fromPerk, \"pin\"") >= 0 || galaga.indexOf('fromPerk !== 
 assert(galaga.indexOf('base: ["chart"]') >= 0 && galaga.indexOf('p4: ["atlas"]') >= 0, "four exclusive phases stay");
 
 assert(galaga.indexOf("if (b.bounces > 0) { b.color = FIGHT_RED; b.glow = FIGHT_RED; }") >= 0, "bounced shots read as red");
-assert(galaga.indexOf("if (!consumed && fight.bounce && (b.bounces || 0) > 0)") >= 0, "bounced player shots can hit ships");
+assert(galaga.indexOf("if (!consumed && !b.safe && (b.bounces || 0) > 0)") >= 0 && galaga.indexOf("var globalBounce = !!fight.bounce") >= 0, "bounced player shots can hit ships");
 assert(galaga.indexOf("else playerDie(pl);") >= 0, "PvE bounced shots kill");
 assert(galaga.indexOf("function clearAxiomRules") >= 0 && galaga.indexOf("fight.bounce = false") >= 0, "bounce clears with the phase");
 assert(galaga.indexOf('text: "YOUR BULLETS BOUNCE"') >= 0, "rule card stays");
@@ -37,8 +37,8 @@ assert(galaga.indexOf("if (b.bounces > 1)") >= 0, "one bounce then gone");
 assert(galaga.indexOf("a = AXIOM_RULES[1]") < 0, "old mix pairing gone");
 assert(galaga.indexOf('text: "BREAK THE SEALS"') >= 0, "seals card");
 
-assert(/var VER = 13;/.test(codec), "codec VER 13");
-assert(sw.indexOf("galaga-coop-v78") >= 0, "PWA cache bump");
+assert(/var VER = 14;/.test(codec), "codec VER 13");
+assert(sw.indexOf("galaga-coop-v79") >= 0, "PWA cache bump");
 assert(post.indexOf("sliding-puzzle of map panes") >= 0, "docs describe the puzzle");
 assert(post.indexOf("Player bullets bounce **once**") >= 0, "docs say bounce once");
 assert(roster.indexOf("colored wrap edges") >= 0, "roster notes wrap edges");
